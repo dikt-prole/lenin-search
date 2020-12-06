@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon>lenin.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="PSS\**" />
+    <EmbeddedResource Remove="PSS\**" />
+    <None Remove="PSS\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LeninSearch.Core\LeninSearch.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="corpus\corpus.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="lenin.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="sounds\let_me.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="sounds\so.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="sounds\some_marks.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="sounds\yes_almost.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="del /S &quot;$(TargetDir)corpus\*.zip&quot;" />
+    <Exec Command="cd &quot;$(SolutionDir)corpus\Ленин ПСС&quot; &amp;&amp; powershell Compress-Archive '.\*.json' '$(TargetDir)corpus\LeninPss.zip'" />
+    <Exec Command="cd &quot;$(SolutionDir)corpus\Сталин ПСС&quot; &amp;&amp; powershell Compress-Archive '.\*.json' '$(TargetDir)corpus\StalinPss.zip'" />
+    <Exec Command="cd &quot;$(SolutionDir)corpus\Маркс - Энгельс ПСС&quot; &amp;&amp; powershell Compress-Archive '.\*.json' '$(TargetDir)corpus\MarxEngelsPss.zip'" />
+  </Target>
+</Project>
