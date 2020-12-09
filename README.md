@@ -1,7 +1,7 @@
-# lenin-search
+# Lenin Search
 Поисковик по корпусу текстов Маркса, Энгельса, Ленина, Сталина
 
-Ведется поиск единомышленников, умеющих пользовательский **интерфейс на Android**. Всех заинтересованных просим писать **dikt-prole@mail.ru**
+**Внимание!** Ведется набор в команду для разработки приложения на **Android**. Если вы обладаете соответствующими навыками и хотели бы поучаствовать в проекте пишите - **dikt-prole@mail.ru**
 
 Дистрибутив 235 Мб (Windows 10 x64) - [LeninSearchSetup v1.0.0](https://github.com/dikt-prole/lenin-search/releases/download/lenin-search-v1.0.0/LeninSearchSetup.v1.0.0.msi) 
 
