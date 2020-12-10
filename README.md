@@ -3,7 +3,7 @@
 
 **Внимание!** Ведется набор в команду для разработки приложения на **Android**. Если вы обладаете соответствующими навыками и хотели бы поучаствовать в проекте пишите - **dikt-prole@mail.ru** (Антон)
 
-Дистрибутив 235 Мб (Windows 8.1 x64, Windows 10 x64) - [LeninSearchSetup v1.0.0](https://github.com/dikt-prole/lenin-search/releases/download/lenin-search-v1.0.0/LeninSearchSetup.v1.0.0.msi)
+Дистрибутив 235 Мб (Windows 7, 8.1, 10 x64) - [LeninSearchSetup v1.0.0](https://github.com/dikt-prole/lenin-search/releases/download/lenin-search-v1.0.0/LeninSearchSetup.v1.0.0.msi)
 
 [Презентация приложения на Len.Ru](https://youtu.be/eXpYrFGss3g)
 
