@@ -21,21 +21,21 @@ namespace LeninSearch.Core
 
         public static void UnzipCorpus(string currentFolder, CorpusItem corpusItem)
         {
-            var tempFolder = $"{Path.GetTempPath()}\\{Guid.NewGuid():N}\\{corpusItem.Name}";
-            Directory.CreateDirectory(tempFolder);
+            //var tempFolder = $"{Path.GetTempPath()}\\{Guid.NewGuid():N}\\{corpusItem.Name}";
+            //Directory.CreateDirectory(tempFolder);
 
-            var zipFile = $"corpus\\{corpusItem.File}";
+            //var zipFile = $"corpus\\{corpusItem.File}";
 
-            ZipFile.ExtractToDirectory(zipFile, tempFolder);
+            //ZipFile.ExtractToDirectory(zipFile, tempFolder);
 
-            foreach (var file in Directory.GetFiles(tempFolder))
-            {
-                var extension = file.Split('.').Last();
-                var newFile = $"{currentFolder}\\{corpusItem.Name} - {FileUtil.GetFileNameWithoutExtension(file)}.{extension}";
-                File.Move(file, newFile);
-            }
+            //foreach (var file in Directory.GetFiles(tempFolder))
+            //{
+            //    var extension = file.Split('.').Last();
+            //    var newFile = $"{currentFolder}\\{corpusItem.Name} - {FileUtil.GetFileNameWithoutExtension(file)}.{extension}";
+            //    File.Move(file, newFile);
+            //}
 
-            Directory.Delete(tempFolder);
+            //Directory.Delete(tempFolder);
         }
     }
 }

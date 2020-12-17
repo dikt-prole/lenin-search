@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using LeninSearch.Core;
+using LeninSearch.Core.Oprimized;
 using Newtonsoft.Json;
 
 namespace LeninSearch
@@ -21,6 +24,14 @@ namespace LeninSearch
 
         private readonly ToolTip _toolTip = new ToolTip();
 
+        private const string Loading = "Загрузка ...";
+
+        // is needed to reconstruct paragraph text
+        private string[] _dictionary = null;
+
+        // is needed to get word indexes for search query
+        private Dictionary<string, uint> _reverseDictionary = null; 
+
         [DllImport("user32.dll")]
         private static extern bool SendMessage(IntPtr hWnd, Int32 msg, Int32 wParam, Int32 lParam);
 
@@ -29,9 +40,41 @@ namespace LeninSearch
             InitializeComponent();
             Icon = Icon.ExtractAssociatedIcon("lenin.ico");
 
-            corpus_cb.Items.Clear();
+            bottomContext_nud.Minimum = 0;
+            bottomContext_nud.Maximum = 1000;
+            bottomContext_nud.Value = 3;
+            topContext_nud.Minimum = 0;
+            topContext_nud.Maximum = 1000;
+            topContext_nud.Value = 3;
 
-            var corpusItems = JsonConvert.DeserializeObject<List<CorpusItem>>(File.ReadAllText("corpus/corpus.json"));
+            query_tb.PlaceholderText = Placeholder;
+            query_tb.KeyPress += SearchQuery_tbOnKeyPress;
+            result_tv.AfterSelect += (sender, args) => RefreshResultTb();
+            bottomContext_nud.ValueChanged += (sender, args) => RefreshResultTb();
+            topContext_nud.ValueChanged += (sender, args) => RefreshResultTb();
+
+            corpus_cb.Items.Add(Loading);
+            corpus_cb.SelectedItem = Loading;
+            corpus_cb.Enabled = false;
+            corpus_cb.KeyPress += (sender, args) => args.Handled = true;
+
+            query_tb.Enabled = false;
+            Shown += OnShown;
+        }
+
+        private async void OnShown(object? sender, EventArgs e)
+        {
+            var corpusJson = File.ReadAllText($"corpus.json");
+            var corpusItems = JsonConvert.DeserializeObject<List<CorpusItem>>(corpusJson);
+
+            _dictionary = (await File.ReadAllLinesAsync($"{CurrentFolder}\\ls\\corpus.dic")).Where(s => s != "").ToArray();
+            _reverseDictionary = new Dictionary<string, uint>();
+            for (uint i = 0; i < _dictionary.Length; i++)
+            {
+                _reverseDictionary.Add(_dictionary[i], i);
+            }
+
+            corpus_cb.Items.Clear();
             foreach (var ci in corpusItems)
             {
                 corpus_cb.Items.Add(ci);
@@ -47,21 +90,23 @@ namespace LeninSearch
                 _toolTip.Show(text, this, posistion, 2000);
             };
 
+            var tempCorpusJsonPath = $"{CurrentFolder}\\ls\\corpus.json";
+            if (!File.Exists(tempCorpusJsonPath) || CryptoUtil.GetMD5(tempCorpusJsonPath) != CryptoUtil.GetMD5("corpus.json"))
+            {
+                await Task.Run(() =>
+                {
+                    if (Directory.Exists(CurrentFolder))
+                    {
+                        Directory.Delete(CurrentFolder, true);
+                        Directory.CreateDirectory(CurrentFolder);
+                    }
+                    ZipFile.ExtractToDirectory("corpus.zip", CurrentFolder);
+                });
+            }
 
-            bottomContext_nud.Minimum = 0;
-            bottomContext_nud.Maximum = 1000;
-            bottomContext_nud.Value = 3;
-            topContext_nud.Minimum = 0;
-            topContext_nud.Maximum = 1000;
-            topContext_nud.Value = 3;
-
-            query_tb.PlaceholderText = Placeholder;
-            query_tb.KeyPress += SearchQuery_tbOnKeyPress;
-            result_tv.AfterSelect += (sender, args) => RefreshResultTb();
-            bottomContext_nud.ValueChanged += (sender, args) => RefreshResultTb();
-            topContext_nud.ValueChanged += (sender, args) => RefreshResultTb();
-
-            Shown += (sender, args) => query_tb.Focus();
+            corpus_cb.Enabled = true;
+            query_tb.Enabled = true;
+            query_tb.Focus();
         }
 
         private async void SearchQuery_tbOnKeyPress(object sender, KeyPressEventArgs e)
@@ -79,53 +124,39 @@ namespace LeninSearch
 
             result_tv.Nodes.Clear();
 
-            Text = "Lenin Search - Распаковка ...";
-
             PlayStart();
 
-            if (Directory.Exists(CurrentFolder))
-            {
-                Directory.Delete(CurrentFolder, true);
-            }
-            Directory.CreateDirectory(CurrentFolder);
-
             var corpusItem = (CorpusItem)corpus_cb.SelectedItem;
-            await Task.Run(() => FileUtil.UnzipCorpus(CurrentFolder, corpusItem));
 
             Text = "Lenin Search - Поиск ...";
 
-            var files = Directory.GetFiles(CurrentFolder, "*.json").ToList();
             progressBar1.Minimum = 1;
             progressBar1.Value = 1;
-            progressBar1.Maximum = files.Count;
+            progressBar1.Maximum = corpusItem.Files.Count;
 
-            var searchSplit = query_tb.Text.Split('+');
-
-            var searchOptions = new SearchOptions
-            {
-                SearchText = searchSplit[0].Trim(' '),
-                AdditionalText = searchSplit.Length > 1 ? searchSplit.Last().Trim(' ') : null
-            };
+            var searchOptions = new SearchOptions(query_tb.Text, "", "", _reverseDictionary);
 
             var totalMatches = 0;
 
-            for (var i = 0; i < files.Count; i++)
+            for (var i = 0; i < corpusItem.Files.Count; i++)
             {
-                var file = files[i];
+                var corpusFileItem = corpusItem.Files[i];
 
                 var currentSearchOptions = searchOptions.Copy();
-                currentSearchOptions.File = file;
-                currentSearchOptions.Corpus = FileUtil.GetFileNameWithoutExtension(file);
+                currentSearchOptions.File = $"{CurrentFolder}\\ls\\{corpusFileItem.Path}";
+                currentSearchOptions.Corpus = corpusFileItem.Name;
 
-                var searchResult = await Task.Run(() => Search(currentSearchOptions));
+                var fileData = ArchiveUtil.LoadOptimized($"{CurrentFolder}\\ls\\{corpusFileItem.Path}", CancellationToken.None);
 
-                if (searchResult.ParagraphIndexes.Count > 0)
+                var searchResult = await Task.Run(() => Search(fileData, currentSearchOptions));
+
+                if (searchResult.OptimizedParagraphs.Count > 0)
                 {
-                    totalMatches += searchResult.ParagraphIndexes.Count;
+                    totalMatches += searchResult.OptimizedParagraphs.Count;
                     PlayRandomFound();
                 }
 
-                AddLinkLabel(searchResult);
+                OutputSearchResult(searchResult);
 
                 if (i + 2 <= progressBar1.Maximum)
                 {
@@ -149,20 +180,36 @@ namespace LeninSearch
 
         private void RefreshResultTb()
         {
-            var tuple = result_tv.SelectedNode?.Tag as Tuple<SearchResult, int>;
+            var tuple = result_tv.SelectedNode?.Tag as Tuple<SearchResult, OptimizedParagraph>;
             if (tuple == null) return;
 
+            var paragraph = tuple.Item2;
+            var ofd = tuple.Item1.OptimizedFileData;
 
+            var paragraphs = ofd.GetParagraphs(paragraph.Index, (ushort)topContext_nud.Value, (ushort)bottomContext_nud.Value, _dictionary);
 
-            var paragraphIndex = tuple.Item2;
-            var fileData = tuple.Item1.FileData;
+            var paragraphsText = string.Join($"{Environment.NewLine}{Environment.NewLine}", paragraphs.Select(p => p.GetText(_dictionary)));
 
-            result_rtb.Text = fileData.GetText(paragraphIndex, (int)bottomContext_nud.Value, (int)topContext_nud.Value);
+            var header = ofd.GetHeader(paragraph.Index);
 
-            MarkText(tuple.Item1.SearchOptions.SearchText);
-            if (!string.IsNullOrWhiteSpace(tuple.Item1.SearchOptions.AdditionalText))
+            var page = ofd.GetPage(paragraph.Index);
+
+            if (page != null || header != null)
             {
-                var words = TextUtil.GetIndexWords(tuple.Item1.SearchOptions.AdditionalText);
+                var pageHeader = page == null
+                    ? header.GetText(_dictionary)
+                    : header == null
+                        ? $"стр. {page}"
+                        : $"стр. {page}, {header.GetText(_dictionary)}";
+                paragraphsText = $"{pageHeader + Environment.NewLine}{string.Join("", Enumerable.Repeat("-", 30))}{Environment.NewLine + Environment.NewLine}{paragraphsText}";
+            }
+
+            result_rtb.Text = paragraphsText;
+
+            MarkText(tuple.Item1.SearchOptions.MainQuery);
+            if (!string.IsNullOrWhiteSpace(tuple.Item1.SearchOptions.AdditionalQuery))
+            {
+                var words = TextUtil.GetIndexWords(tuple.Item1.SearchOptions.AdditionalQuery);
                 foreach (var word in words)
                 {
                     MarkText(word);
@@ -172,6 +219,8 @@ namespace LeninSearch
 
         private void MarkText(string text)
         {
+            if (string.IsNullOrWhiteSpace(text)) return;
+
             var selectionLength = text.Length;
             var selectionStart = result_rtb.Text.ToLower().IndexOf(text.ToLower());
             while (selectionStart >= 0)
@@ -182,49 +231,19 @@ namespace LeninSearch
             }
         }
 
-        private SearchResult Search(SearchOptions searchOptions)
+        private SearchResult Search(OptimizedFileData ofd, SearchOptions searchOptions)
         {
             try
             {
-                var fileDataJson = File.ReadAllText(searchOptions.File);
-                var fileData = JsonConvert.DeserializeObject<FileData>(fileDataJson);
-                var searchWords = TextUtil.GetIndexWords(searchOptions.SearchText);
-                if (!string.IsNullOrEmpty(searchOptions.AdditionalText))
-                {
-                    searchWords = searchWords.Concat(TextUtil.GetIndexWords(searchOptions.AdditionalText)).Distinct().ToList();
-                }
-
-                List<int> suspectIndexes = null;
-                foreach (var searchWord in searchWords)
-                {
-                    var searchWordIndexes = fileData.Index.Keys.Where(k => k.StartsWith(searchWord)).SelectMany(k => fileData.Index[k]).Distinct();
-                    suspectIndexes = suspectIndexes == null
-                        ? searchWordIndexes.ToList()
-                        : suspectIndexes.Intersect(searchWordIndexes).ToList();
-                }
-
-                suspectIndexes = suspectIndexes.OrderBy(x => x).ToList();
-
-                var paragraphIndexes = new List<int>();
-                foreach (var suspectIndex in suspectIndexes)
-                {
-                    var text = fileData.Paragraphs[suspectIndex];
-
-                    if (text == null) continue;
-
-                    if (!text.ToLower().Contains(searchOptions.SearchText.ToLower())) continue;
-
-                    paragraphIndexes.Add(suspectIndex);
-                }
-
+                var paragraphs = ofd.FindParagraphs(searchOptions, _dictionary).ToList();
                 return new SearchResult
                 {
                     Id = Guid.NewGuid(),
                     SearchOptions = searchOptions,
                     Success = true,
                     ErrorMessage = null,
-                    ParagraphIndexes = paragraphIndexes,
-                    FileData = fileData
+                    OptimizedParagraphs = paragraphs,
+                    OptimizedFileData = ofd
                 };
             }
             catch (Exception exc)
@@ -261,18 +280,20 @@ namespace LeninSearch
             Sounds.Play(Sounds.So, true);
         }
 
-        private void AddLinkLabel(SearchResult searchResult)
+        private void OutputSearchResult(SearchResult searchResult)
         {
-            if (searchResult.Success && searchResult.ParagraphIndexes.Any())
+            if (searchResult.Success && searchResult.OptimizedParagraphs.Any())
             {
                 var treeNode = new TreeNode(searchResult.ToString());
                 result_tv.Nodes.Add(treeNode);
-                foreach (var paragraphIndex in searchResult.ParagraphIndexes)
+                foreach (var p in searchResult.OptimizedParagraphs)
                 {
-                    var nodeText = new string(searchResult.FileData.Paragraphs[paragraphIndex].Take(20).ToArray()) + " ...";
+                    
+
+                    var nodeText = new string(p.GetText(_dictionary).Take(20).ToArray()) + " ...";
                     var paragraphNode = new TreeNode(nodeText);
                     treeNode.Nodes.Add(paragraphNode);
-                    paragraphNode.Tag = new Tuple<SearchResult, int>(searchResult, paragraphIndex);
+                    paragraphNode.Tag = new Tuple<SearchResult, OptimizedParagraph>(searchResult, p);
                 }
             }
         }

@@ -225,9 +225,13 @@
             // 
             // corpus_cb
             // 
+            this.corpus_cb.BackColor = System.Drawing.SystemColors.Window;
             this.corpus_cb.Dock = System.Windows.Forms.DockStyle.Fill;
             this.corpus_cb.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.corpus_cb.ForeColor = System.Drawing.Color.Black;
             this.corpus_cb.FormattingEnabled = true;
+            this.corpus_cb.Items.AddRange(new object[] {
+            ""});
             this.corpus_cb.Location = new System.Drawing.Point(5, 3);
             this.corpus_cb.Margin = new System.Windows.Forms.Padding(5, 3, 3, 3);
             this.corpus_cb.Name = "corpus_cb";

@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="corpus\corpus.json">
+    <None Update="corpus.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="lenin.ico">
@@ -42,9 +42,7 @@
     </None>
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="del /S &quot;$(TargetDir)corpus\*.zip&quot;" />
-    <Exec Command="cd &quot;$(SolutionDir)corpus\Ленин ПСС&quot; &amp;&amp; powershell Compress-Archive '.\*.json' '$(TargetDir)corpus\LeninPss.zip'" />
-    <Exec Command="cd &quot;$(SolutionDir)corpus\Сталин ПСС&quot; &amp;&amp; powershell Compress-Archive '.\*.json' '$(TargetDir)corpus\StalinPss.zip'" />
-    <Exec Command="cd &quot;$(SolutionDir)corpus\Маркс - Энгельс ПСС&quot; &amp;&amp; powershell Compress-Archive '.\*.json' '$(TargetDir)corpus\MarxEngelsPss.zip'" />
+    <Exec Command="del /S &quot;$(TargetDir)*.zip&quot;" />
+    <Exec Command="powershell Compress-Archive -Path $(SolutionDir)corpus\ls '$(TargetDir)corpus.zip'" />
   </Target>
 </Project>

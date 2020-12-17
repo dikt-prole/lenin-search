@@ -6,10 +6,10 @@ namespace LeninSearch.Core
 {
     public class FileData
     {
-        public Dictionary<int, string> Headers { get; set; }
+        public Dictionary<ushort, string> Headers { get; set; }
         public List<string> Paragraphs { get; set; }
-        public Dictionary<string, List<int>> Index { get; set; }
-        public Dictionary<int, int> Pages { get; set; }
+        public Dictionary<string, List<ushort>> Index { get; set; }
+        public Dictionary<ushort, ushort> Pages { get; set; }
 
         public string GetText(int paragraph, int bottomContext, int topContext)
         {
@@ -40,15 +40,15 @@ namespace LeninSearch.Core
         {
             if (Pages?.Any() != true) return null;
 
-            var minPageKey = Pages.Keys.Where(k => k <= paragraph).DefaultIfEmpty(-1).Max();
-            var maxPageKey = Pages.Keys.Where(k => k >= paragraph).DefaultIfEmpty(-1).Min();
+            var minPageKey = Pages.Keys.Where(k => k <= paragraph).OrderByDescending(k => k).FirstOrDefault();
+            var maxPageKey = Pages.Keys.Where(k => k >= paragraph).OrderBy(k => k).FirstOrDefault();
 
-            if (minPageKey == -1)
+            if (minPageKey == default(ushort))
             {
                 return $"стр. < {Pages[maxPageKey]}";
             }
 
-            if (maxPageKey == -1)
+            if (maxPageKey == default(ushort))
             {
                 return $"стр. > {Pages[minPageKey]}";
             }

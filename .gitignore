@@ -362,8 +362,10 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # Remove Extra Projects
-LeninSearch.Metadata/
-LeninSearchDocxAnalyser/
+LeninSearch.Docx/
+LeninSearch.Pages/
+LeninSearch.Headers/
+Tests/
 LeninSearchIndexer/
 LeninSearchSetup/
 FullLeninSearch.sln
