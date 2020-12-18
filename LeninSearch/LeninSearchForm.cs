@@ -27,10 +27,10 @@ namespace LeninSearch
         private const string Loading = "Загрузка ...";
 
         // is needed to reconstruct paragraph text
-        private string[] _dictionary = null;
+        private string[] _dictionary;
 
         // is needed to get word indexes for search query
-        private Dictionary<string, uint> _reverseDictionary = null; 
+        private Dictionary<string, uint> _reverseDictionary; 
 
         [DllImport("user32.dll")]
         private static extern bool SendMessage(IntPtr hWnd, Int32 msg, Int32 wParam, Int32 lParam);
@@ -64,16 +64,23 @@ namespace LeninSearch
 
         private async void OnShown(object? sender, EventArgs e)
         {
-            var corpusJson = File.ReadAllText($"corpus.json");
+            var corpusJson = File.ReadAllText($"corpus\\main.json");
             var corpusItems = JsonConvert.DeserializeObject<List<CorpusItem>>(corpusJson);
 
-            _dictionary = (await File.ReadAllLinesAsync($"{CurrentFolder}\\ls\\corpus.dic")).Where(s => s != "").ToArray();
-            _reverseDictionary = new Dictionary<string, uint>();
-            for (uint i = 0; i < _dictionary.Length; i++)
+            var tempCorpusJsonPath = $"{CurrentFolder}\\main.json";
+            if (!File.Exists(tempCorpusJsonPath) || CryptoUtil.GetMD5(tempCorpusJsonPath) != CryptoUtil.GetMD5("corpus\\main.json"))
             {
-                _reverseDictionary.Add(_dictionary[i], i);
+                await Task.Run(() =>
+                {
+                    if (Directory.Exists(CurrentFolder))
+                    {
+                        Directory.Delete(CurrentFolder, true);
+                        Directory.CreateDirectory(CurrentFolder);
+                    }
+                    ZipFile.ExtractToDirectory("corpus\\main.zip", CurrentFolder);
+                });
             }
-
+            
             corpus_cb.Items.Clear();
             foreach (var ci in corpusItems)
             {
@@ -90,20 +97,6 @@ namespace LeninSearch
                 _toolTip.Show(text, this, posistion, 2000);
             };
 
-            var tempCorpusJsonPath = $"{CurrentFolder}\\ls\\corpus.json";
-            if (!File.Exists(tempCorpusJsonPath) || CryptoUtil.GetMD5(tempCorpusJsonPath) != CryptoUtil.GetMD5("corpus.json"))
-            {
-                await Task.Run(() =>
-                {
-                    if (Directory.Exists(CurrentFolder))
-                    {
-                        Directory.Delete(CurrentFolder, true);
-                        Directory.CreateDirectory(CurrentFolder);
-                    }
-                    ZipFile.ExtractToDirectory("corpus.zip", CurrentFolder);
-                });
-            }
-
             corpus_cb.Enabled = true;
             query_tb.Enabled = true;
             query_tb.Focus();
@@ -117,10 +110,8 @@ namespace LeninSearch
 
             if (string.IsNullOrWhiteSpace(query_tb.Text)) return;
 
-            Invoke(new Action(() =>
-            {
-                SendMessage(progressBar1.Handle, 1040, 2, 0);
-            }));
+            // red progress bar
+            Invoke(new Action(() => { SendMessage(progressBar1.Handle, 1040, 2, 0); }));
 
             result_tv.Nodes.Clear();
 
@@ -134,6 +125,16 @@ namespace LeninSearch
             progressBar1.Value = 1;
             progressBar1.Maximum = corpusItem.Files.Count;
 
+            if (_dictionary == null || _reverseDictionary == null)
+            {
+                _dictionary = (await File.ReadAllLinesAsync($"{CurrentFolder}\\main.dic")).Where(s => s != "").ToArray();
+                _reverseDictionary = new Dictionary<string, uint>();
+                for (uint i = 0; i < _dictionary.Length; i++)
+                {
+                    _reverseDictionary.Add(_dictionary[i], i);
+                }
+            }
+
             var searchOptions = new SearchOptions(query_tb.Text, "", "", _reverseDictionary);
 
             var totalMatches = 0;
@@ -143,10 +144,10 @@ namespace LeninSearch
                 var corpusFileItem = corpusItem.Files[i];
 
                 var currentSearchOptions = searchOptions.Copy();
-                currentSearchOptions.File = $"{CurrentFolder}\\ls\\{corpusFileItem.Path}";
+                currentSearchOptions.File = $"{CurrentFolder}\\{corpusFileItem.Path}";
                 currentSearchOptions.Corpus = corpusFileItem.Name;
 
-                var fileData = ArchiveUtil.LoadOptimized($"{CurrentFolder}\\ls\\{corpusFileItem.Path}", CancellationToken.None);
+                var fileData = ArchiveUtil.LoadOptimized($"{CurrentFolder}\\{corpusFileItem.Path}", CancellationToken.None);
 
                 var searchResult = await Task.Run(() => Search(fileData, currentSearchOptions));
 
@@ -158,6 +159,7 @@ namespace LeninSearch
 
                 OutputSearchResult(searchResult);
 
+                // progress bar bug fix
                 if (i + 2 <= progressBar1.Maximum)
                 {
                     progressBar1.Value = i + 2;
