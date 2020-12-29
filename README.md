@@ -5,6 +5,8 @@
 
 Дистрибутив 235 Мб (Windows 7, 8.1, 10 x64) - [LeninSearchSetup v1.0.0](https://github.com/dikt-prole/lenin-search/releases/download/lenin-search-v1.0.0/LeninSearchSetup.v1.0.0.msi)
 
+Дистрибутив Android (5.1+) - [Lenin Search Android v1](https://github.com/dikt-prole/lenin-search/releases/download/android-1/dikt_prole.leninsearch.apk)
+
 [Презентация приложения на Len.Ru](https://youtu.be/eXpYrFGss3g)
 
 Просим сообщать об обнаруженных ошибках в разделе **Issues** (вверху страницы)
