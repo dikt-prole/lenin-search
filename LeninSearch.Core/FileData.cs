@@ -8,7 +8,6 @@ namespace LeninSearch.Core
     {
         public Dictionary<ushort, string> Headers { get; set; }
         public List<string> Paragraphs { get; set; }
-        public Dictionary<string, List<ushort>> Index { get; set; }
         public Dictionary<ushort, ushort> Pages { get; set; }
 
         public string GetText(int paragraph, int bottomContext, int topContext)

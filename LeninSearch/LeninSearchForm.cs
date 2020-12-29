@@ -135,7 +135,7 @@ namespace LeninSearch
                 }
             }
 
-            var searchOptions = new SearchOptions(query_tb.Text, "", "", _reverseDictionary);
+            var searchOptions = new SearchOptions(query_tb.Text, "", _reverseDictionary);
 
             var totalMatches = 0;
 
@@ -144,8 +144,7 @@ namespace LeninSearch
                 var corpusFileItem = corpusItem.Files[i];
 
                 var currentSearchOptions = searchOptions.Copy();
-                currentSearchOptions.File = $"{CurrentFolder}\\{corpusFileItem.Path}";
-                currentSearchOptions.Corpus = corpusFileItem.Name;
+                currentSearchOptions.File = corpusFileItem.Name;
 
                 var fileData = ArchiveUtil.LoadOptimized($"{CurrentFolder}\\{corpusFileItem.Path}", CancellationToken.None);
 

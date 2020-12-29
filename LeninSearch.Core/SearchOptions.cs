@@ -8,9 +8,8 @@ namespace LeninSearch.Core
     {
         public SearchOptions() {}
 
-        public SearchOptions(string query, string corpus, string file, Dictionary<string, uint> reversedDictionary)
+        public SearchOptions(string query, string file, Dictionary<string, uint> reversedDictionary)
         {
-            Corpus = corpus;
             File = file;
 
             var querySplit = query.Split('+');
@@ -67,7 +66,6 @@ namespace LeninSearch.Core
         public string MainQuery { get; set; }
         public string AdditionalQuery { get; set; }
         public List<List<uint>> WordIndexes { get; set; }
-        public string Corpus { get; set; }
         public string File { get; set; }
 
         public SearchOptions Copy()
@@ -77,7 +75,6 @@ namespace LeninSearch.Core
                 MainQuery = MainQuery,
                 AdditionalQuery = AdditionalQuery,
                 WordIndexes = WordIndexes,
-                Corpus = Corpus,
                 File = File,
             };
         }

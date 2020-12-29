@@ -13,6 +13,39 @@ namespace LeninSearch.Core.Oprimized
         private readonly Dictionary<ushort, ushort> _pages;
         private readonly Dictionary<ushort, List<ushort>> _wordParagraphMap;
 
+        public IEnumerable<OptimizedParagraph> Paragraphs
+        {
+            get
+            {
+                foreach (var op in _paragraphs)
+                {
+                    yield return op;
+                }
+            }
+        }
+
+        public IEnumerable<OptimizedParagraph> Headers
+        {
+            get
+            {
+                foreach (var h in _headers)
+                {
+                    yield return h.Value;
+                }
+            }
+        }
+
+        public IEnumerable<ushort> Pages
+        {
+            get
+            {
+                foreach (var p in _pages)
+                {
+                    yield return p.Value;
+                }
+            }
+        }
+
         public OptimizedFileData(List<uint> localDictionary)
         {
             _paragraphs = new List<OptimizedParagraph>();
