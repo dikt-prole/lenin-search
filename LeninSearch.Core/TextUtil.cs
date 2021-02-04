@@ -188,6 +188,11 @@ namespace LeninSearch.Core
             return numbers;
         }
 
+        public static bool IsHeadingXml(string xml)
+        {
+            return xml.Contains("<w:b w:val=\"1\" />") && xml.Contains("<w:jc w:val=\"center\" />");
+        }
+
         private enum SymbolType { Letter = 0, Digit = 1, Other = 2 }
     }
 }
