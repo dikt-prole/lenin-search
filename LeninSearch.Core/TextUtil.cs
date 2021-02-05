@@ -188,9 +188,39 @@ namespace LeninSearch.Core
             return numbers;
         }
 
+        private const string LeftIndentToken = "<w:ind w:left=\"";
         public static bool IsHeadingXml(string xml)
         {
-            return xml.Contains("<w:b w:val=\"1\" />") && xml.Contains("<w:jc w:val=\"center\" />");
+            var leftIndent = 0;
+            var leftIndentStart = xml.IndexOf(LeftIndentToken);
+            if (leftIndentStart > 0)
+            {
+                var numberChars = xml.Skip(leftIndentStart + LeftIndentToken.Length).TakeWhile(char.IsDigit).ToArray();
+                if (numberChars.Any())
+                {
+                    leftIndent = int.Parse(new string(numberChars));
+                }
+            }
+
+            var result = xml.Contains("<w:jc w:val=\"center\" />") || leftIndent > 2000;
+
+            result = result && xml.Contains("<w:b w:val=\"1\" />");
+
+            return result;
+        }
+
+        public static string GetLettersOnly(string text, bool lower = true)
+        {
+            if (string.IsNullOrEmpty(text)) return text;
+
+            var result = new string(text.Where(char.IsLetter).ToArray());
+
+            if (lower)
+            {
+                result = result.ToLower();
+            }
+
+            return result;
         }
 
         private enum SymbolType { Letter = 0, Digit = 1, Other = 2 }
