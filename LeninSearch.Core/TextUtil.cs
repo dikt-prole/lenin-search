@@ -189,7 +189,7 @@ namespace LeninSearch.Core
         }
 
         private const string LeftIndentToken = "<w:ind w:left=\"";
-        public static bool IsHeadingXml(string xml)
+        public static bool IsHeadingXml(string text, string xml)
         {
             var leftIndent = 0;
             var leftIndentStart = xml.IndexOf(LeftIndentToken);
@@ -202,9 +202,26 @@ namespace LeninSearch.Core
                 }
             }
 
-            var result = xml.Contains("<w:jc w:val=\"center\" />") || leftIndent > 2000;
+            var largeIndent = leftIndent > 1000;
 
-            result = result && xml.Contains("<w:b w:val=\"1\" />");
+            var centered = xml.Contains("<w:jc w:val=\"center\" />");
+
+            var allCapital = text.Where(char.IsLetter).All(char.IsUpper);
+
+            var bold = xml.Contains("<w:b w:val=\"1\" />");
+
+            var result = (largeIndent || centered) && (bold || allCapital);
+
+            return result;
+        }
+
+        public static bool IsHeadingXmlV2(string text, string xml)
+        {
+            var allCapital = text.Where(char.IsLetter).All(char.IsUpper);
+
+            var bold = xml.Contains("<w:b w:val=\"1\" />");
+
+            var result = bold || allCapital;
 
             return result;
         }
@@ -214,6 +231,20 @@ namespace LeninSearch.Core
             if (string.IsNullOrEmpty(text)) return text;
 
             var result = new string(text.Where(char.IsLetter).ToArray());
+
+            if (lower)
+            {
+                result = result.ToLower();
+            }
+
+            return result;
+        }
+
+        public static string GetLettersAndDigitsOnly(string text, bool lower = true)
+        {
+            if (string.IsNullOrEmpty(text)) return text;
+
+            var result = new string(text.Where(c => char.IsLetter(c) || char.IsDigit(c)).ToArray());
 
             if (lower)
             {
