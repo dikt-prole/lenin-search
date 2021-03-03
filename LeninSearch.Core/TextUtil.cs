@@ -188,8 +188,24 @@ namespace LeninSearch.Core
             return numbers;
         }
 
-        private const string LeftIndentToken = "<w:ind w:left=\"";
+        
         public static bool IsHeadingXml(string text, string xml)
+        {
+            var largeIndent = GetLeftIndent(xml) > 1000;
+
+            var isCentered = IsCentered(xml);
+
+            var allCapital = text.Where(char.IsLetter).All(char.IsUpper);
+
+            var isBold = IsBold(xml);
+
+            var result = (largeIndent || isCentered) && (isBold || allCapital);
+
+            return result;
+        }
+
+        private const string LeftIndentToken = "<w:ind w:left=\"";
+        public static int GetLeftIndent(string xml)
         {
             var leftIndent = 0;
             var leftIndentStart = xml.IndexOf(LeftIndentToken);
@@ -202,17 +218,17 @@ namespace LeninSearch.Core
                 }
             }
 
-            var largeIndent = leftIndent > 1000;
+            return leftIndent;
+        }
 
-            var centered = xml.Contains("<w:jc w:val=\"center\" />");
+        public static bool IsCentered(string xml)
+        {
+            return xml.Contains("<w:jc w:val=\"center\" />");
+        }
 
-            var allCapital = text.Where(char.IsLetter).All(char.IsUpper);
-
-            var bold = xml.Contains("<w:b w:val=\"1\" />");
-
-            var result = (largeIndent || centered) && (bold || allCapital);
-
-            return result;
+        public static bool IsBold(string xml)
+        {
+            return xml.Contains("<w:b w:val=\"1\" />");
         }
 
         public static bool IsHeadingXmlV2(string text, string xml)

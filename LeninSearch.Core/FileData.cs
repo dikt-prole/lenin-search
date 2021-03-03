@@ -11,6 +11,7 @@ namespace LeninSearch.Core
         public List<string> Paragraphs { get; set; }
         public Dictionary<ushort, ushort> Pages { get; set; }
         public List<string> Xml { get; set; }
+        public List<Paragraph> Pars { get; set; }
 
         public string GetText(int paragraph, int bottomContext, int topContext)
         {
