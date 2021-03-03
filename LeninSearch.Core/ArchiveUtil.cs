@@ -15,9 +15,9 @@ namespace LeninSearch.Core
 
             // construct paragraph bytes
             var paragraphBytes = new List<byte>();
-            foreach (var p in fileData.Paragraphs)
+            foreach (var p in fileData.Pars)
             {
-                var pWords = TextUtil.GetOrderedWords(p).ToList();
+                var pWords = TextUtil.GetOrderedWords(p.Text).ToList();
                 var paragraphLength = (ushort) pWords.Count;
                 paragraphBytes.AddRange(BitConverter.GetBytes(paragraphLength));
                 foreach (var w in pWords)
@@ -97,7 +97,7 @@ namespace LeninSearch.Core
             var lsBytes = new List<byte>();
 
             lsBytes.AddRange(BitConverter.GetBytes((ushort)localDictionary.Count)); // word count
-            lsBytes.AddRange(BitConverter.GetBytes((ushort)fileData.Paragraphs.Count)); // paragraph count
+            lsBytes.AddRange(BitConverter.GetBytes((ushort)fileData.Pars.Count)); // paragraph count
             lsBytes.AddRange(BitConverter.GetBytes((ushort)(fileData.Pages?.Count ?? 0))); // page count
             lsBytes.AddRange(BitConverter.GetBytes((ushort)(fileData.Headers?.Count ?? 0))); // header count
 

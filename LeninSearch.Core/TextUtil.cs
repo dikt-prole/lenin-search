@@ -189,17 +189,13 @@ namespace LeninSearch.Core
         }
 
         
-        public static bool IsHeadingXml(string text, string xml)
+        public static bool IsHeadingXml(Paragraph p)
         {
-            var largeIndent = GetLeftIndent(xml) > 1000;
+            var largeIndent = p.LeftIndent > 1000;
 
-            var isCentered = IsCentered(xml);
+            var allCapital = p.Text.Where(char.IsLetter).All(char.IsUpper);
 
-            var allCapital = text.Where(char.IsLetter).All(char.IsUpper);
-
-            var isBold = IsBold(xml);
-
-            var result = (largeIndent || isCentered) && (isBold || allCapital);
+            var result = (largeIndent || p.Centered) && (p.Bold || allCapital);
 
             return result;
         }
@@ -231,13 +227,11 @@ namespace LeninSearch.Core
             return xml.Contains("<w:b w:val=\"1\" />");
         }
 
-        public static bool IsHeadingXmlV2(string text, string xml)
+        public static bool IsHeadingXmlV2(Paragraph p)
         {
-            var allCapital = text.Where(char.IsLetter).All(char.IsUpper);
+            var allCapital = p.Text.Where(char.IsLetter).All(char.IsUpper);
 
-            var bold = xml.Contains("<w:b w:val=\"1\" />");
-
-            var result = bold || allCapital;
+            var result = p.Bold || allCapital;
 
             return result;
         }
