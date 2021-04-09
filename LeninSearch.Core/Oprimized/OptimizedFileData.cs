@@ -9,7 +9,7 @@ namespace LeninSearch.Core.Oprimized
     {
         private readonly Dictionary<uint, ushort> _inversedLocalDictionary;
         private readonly List<OptimizedParagraph> _paragraphs;
-        private readonly Dictionary<ushort, OptimizedParagraph> _headers;
+        private readonly Dictionary<ushort, List<OptimizedHeading>> _headings;
         private readonly Dictionary<ushort, ushort> _pages;
         private readonly Dictionary<ushort, List<ushort>> _wordParagraphMap;
 
@@ -24,13 +24,16 @@ namespace LeninSearch.Core.Oprimized
             }
         }
 
-        public IEnumerable<OptimizedParagraph> Headers
+        public IEnumerable<OptimizedHeading> Headings
         {
             get
             {
-                foreach (var h in _headers)
+                foreach (var hBucket in _headings.Values)
                 {
-                    yield return h.Value;
+                    foreach (var h in hBucket)
+                    {
+                        yield return h;
+                    }
                 }
             }
         }
@@ -49,7 +52,7 @@ namespace LeninSearch.Core.Oprimized
         public OptimizedFileData(List<uint> localDictionary)
         {
             _paragraphs = new List<OptimizedParagraph>();
-            _headers = new Dictionary<ushort, OptimizedParagraph>();
+            _headings = new Dictionary<ushort, List<OptimizedHeading>>();
             _wordParagraphMap = new Dictionary<ushort, List<ushort>>();
             _inversedLocalDictionary = new Dictionary<uint, ushort>();
             _pages = new Dictionary<ushort, ushort>();
@@ -77,9 +80,14 @@ namespace LeninSearch.Core.Oprimized
             }
         }
 
-        public void AddHeader(ushort index, OptimizedParagraph h)
+        public void AddHeading(ushort index, OptimizedHeading h)
         {
-            _headers.Add(index, h);
+            if (!_headings.ContainsKey(index))
+            {
+                _headings.Add(index, new List<OptimizedHeading>());
+            }
+
+            _headings[index].Add(h);
         }
 
         public void AddPage(ushort index, ushort page)
@@ -158,15 +166,15 @@ namespace LeninSearch.Core.Oprimized
             return paragraphs;
         }
 
-        public OptimizedParagraph GetHeader(ushort paragraphIndex)
+        public List<OptimizedHeading> GetHeadings(ushort paragraphIndex)
         {
-            if (_headers?.Any() != true) return null;
+            if (_headings?.Any() != true) return null;
 
-            var headerIndex = _headers.Keys.Where(k => k < paragraphIndex).DefaultIfEmpty().Max();
+            var headerIndex = _headings.Keys.Where(k => k < paragraphIndex).DefaultIfEmpty().Max();
 
             return headerIndex == default(ushort)
                 ? null
-                : _headers[headerIndex];
+                : _headings[headerIndex].ToArray().ToList();
         }
 
         public string GetPage(ushort paragraphIndex)

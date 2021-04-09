@@ -62,7 +62,8 @@ namespace LeninSearch.Core
             {
                 foreach (var h in fileData.Headings)
                 {
-                    headerBytes.AddRange(BitConverter.GetBytes((ushort)h.Index));
+                    headerBytes.AddRange(BitConverter.GetBytes(h.Index));
+                    headerBytes.Add(h.Level);
                     var hWords = TextUtil.GetOrderedWords(h.Text);
                     headerBytes.AddRange(BitConverter.GetBytes((ushort)hWords.Count));
                     foreach (var w in hWords)
@@ -116,7 +117,7 @@ namespace LeninSearch.Core
             var wordCount = BitConverter.ToUInt16(lsBytes, 0);
             var paragraphCount = BitConverter.ToUInt16(lsBytes, 2);
             var pageCount = BitConverter.ToUInt16(lsBytes, 4);
-            var headerCount = BitConverter.ToUInt16(lsBytes, 6);
+            var headingCount = BitConverter.ToUInt16(lsBytes, 6);
 
             int cursor = 8;
 
@@ -161,20 +162,22 @@ namespace LeninSearch.Core
                 }
             }
 
-            if (headerCount > 0)
+            if (headingCount > 0)
             {
-                for (ushort i = 0; i < headerCount; i++)
+                for (ushort i = 0; i < headingCount; i++)
                 {
                     if (ct.IsCancellationRequested) return null;
 
-                    var headerIndex = BitConverter.ToUInt16(lsBytes, cursor);
+                    var headingIndex = BitConverter.ToUInt16(lsBytes, cursor);
                     cursor += 2;
-                    var headerLength = BitConverter.ToUInt16(lsBytes, cursor);
+                    var headingLevel = lsBytes[cursor];
+                    cursor += 1;
+                    var headingLength = BitConverter.ToUInt16(lsBytes, cursor);
                     cursor += 2;
 
-                    var hBytes = lsBytes.Skip(cursor).Take(headerLength * 2).ToArray();
-                    var optimizedParagraph = new OptimizedParagraph(hBytes, localDictionary);
-                    optimizedFileData.AddHeader(headerIndex, optimizedParagraph);
+                    var hBytes = lsBytes.Skip(cursor).Take(headingLength * 2).ToArray();
+                    var optimizedParagraph = new OptimizedHeading(headingIndex, headingLevel, hBytes, localDictionary);
+                    optimizedFileData.AddHeading(headingIndex, optimizedParagraph);
 
                     cursor += hBytes.Length;
                 }

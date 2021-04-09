@@ -191,17 +191,17 @@ namespace LeninSearch
 
             var paragraphsText = string.Join($"{Environment.NewLine}{Environment.NewLine}", paragraphs.Select(p => p.GetText(_dictionary)));
 
-            var header = ofd.GetHeader(paragraph.Index);
+            var headings = ofd.GetHeadings(paragraph.Index);
 
             var page = ofd.GetPage(paragraph.Index);
 
-            if (page != null || header != null)
+            if (page != null || headings != null)
             {
                 var pageHeader = page == null
-                    ? header.GetText(_dictionary)
-                    : header == null
+                    ? headings.GetText(_dictionary)
+                    : headings == null
                         ? $"стр. {page}"
-                        : $"стр. {page}, {header.GetText(_dictionary)}";
+                        : $"стр. {page}, {headings.GetText(_dictionary)}";
                 paragraphsText = $"{pageHeader + Environment.NewLine}{string.Join("", Enumerable.Repeat("-", 30))}{Environment.NewLine + Environment.NewLine}{paragraphsText}";
             }
 
