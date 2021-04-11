@@ -25,6 +25,10 @@ namespace LeninSearch
         private void ok_btn_Click(object sender, EventArgs e)
         {
             var settings = new LeninSearchSettings { PreloadFiles = preloadFiles_chb.Checked };
+            if (!Directory.Exists(Constants.TempFolder))
+            {
+                Directory.CreateDirectory(Constants.TempFolder);
+            }
             File.WriteAllText(Constants.SettingsJsonPath, JsonConvert.SerializeObject(settings));
             DialogResult = DialogResult.OK;
             Close();

@@ -4,6 +4,8 @@ namespace LeninSearch
 {
     public class Constants
     {
-        public static string SettingsJsonPath => $"{Path.GetTempPath()}\\lenin_search_settings.json";
+        public static readonly string TempFolder = $"{Path.GetTempPath()}\\LeninSearch";
+
+        public static readonly string SettingsJsonPath = $"{Path.GetTempPath()}\\LeninSearch\\lenin_search_settings.json";
     }
 }

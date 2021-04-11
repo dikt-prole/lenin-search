@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using LeninSearch.Core;
@@ -60,6 +60,55 @@ namespace LeninSearch
 
             query_tb.Enabled = false;
             Shown += OnShown;
+            Closing += OnClosing;
+
+            result_tv.MouseUp += ResultTvOnMouseUp;
+        }
+
+        private void OnClosing(object sender, CancelEventArgs e)
+        {
+            var htmlFiles = Directory.GetFiles(Constants.TempFolder, "*.html");
+            foreach (var htmlFile in htmlFiles)
+            {
+                try
+                {
+                    File.Delete(htmlFile);
+                }
+                catch { }
+            }
+        }
+
+        private void ResultTvOnMouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Right || result_tv.SelectedNode == null) return;
+
+            var searchTuple = result_tv.SelectedNode.Tag as Tuple<SearchResult, OptimizedParagraph>;
+
+            if (searchTuple == null) return;
+
+            var paragraphIndex = searchTuple.Item2.Index;
+
+            var ofd = searchTuple.Item1.OptimizedFileData;
+
+            var menu = new ContextMenuStrip();
+
+            var readItem = new ToolStripMenuItem { Text = "Читать работу" };
+            readItem.Click += (o, args) =>
+            {
+                var tempFile = $"{Constants.TempFolder}\\ls_{Guid.NewGuid().ToString("N").Substring(0, 8)}.html";
+                var html = HtmlTool.GetHtml(ofd, paragraphIndex, _dictionary);
+                if (!Directory.Exists(Constants.TempFolder))
+                {
+                    Directory.CreateDirectory(Constants.TempFolder);
+                }
+                File.WriteAllText(tempFile, html);
+                var p = new Process {StartInfo = new ProcessStartInfo(tempFile) {UseShellExecute = true}};
+                p.Start();
+            };
+
+            menu.Items.Add(readItem);
+
+            menu.Show(result_tv, e.Location);
         }
 
         private async void OnShown(object? sender, EventArgs e)

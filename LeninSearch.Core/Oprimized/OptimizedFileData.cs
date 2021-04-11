@@ -39,16 +39,7 @@ namespace LeninSearch.Core.Oprimized
             }
         }
 
-        public IEnumerable<ushort> Pages
-        {
-            get
-            {
-                foreach (var p in _pages)
-                {
-                    yield return p.Value;
-                }
-            }
-        }
+        public Dictionary<ushort, ushort> Pages => _pages;
 
         public OptimizedFileData(List<uint> localDictionary)
         {
