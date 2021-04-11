@@ -16,10 +16,6 @@ namespace LeninSearch
 {
     public partial class LeninSearchForm : Form
     {
-        private static readonly Random Random = new Random();
-
-        private static readonly string CurrentFolder = Path.Combine(Path.GetTempPath(), "LeninSearch_EE354AE8");
-
         private const string Placeholder = "Введите запрос и нажмите Enter";
 
         private readonly ToolTip _toolTip = new ToolTip();
@@ -30,7 +26,9 @@ namespace LeninSearch
         private string[] _dictionary;
 
         // is needed to get word indexes for search query
-        private Dictionary<string, uint> _reverseDictionary; 
+        private Dictionary<string, uint> _reverseDictionary;
+
+        private readonly FileDataSource _fileDataSource = new FileDataSource();
 
         [DllImport("user32.dll")]
         private static extern bool SendMessage(IntPtr hWnd, Int32 msg, Int32 wParam, Int32 lParam);
@@ -39,6 +37,7 @@ namespace LeninSearch
         {
             InitializeComponent();
             Icon = Icon.ExtractAssociatedIcon("lenin.ico");
+            setting_btn.Image = new Bitmap(Image.FromFile("images/settings_48.png"), 22, 22);
 
             bottomContext_nud.Minimum = 0;
             bottomContext_nud.Maximum = 1000;
@@ -57,6 +56,7 @@ namespace LeninSearch
             corpus_cb.SelectedItem = Loading;
             corpus_cb.Enabled = false;
             corpus_cb.KeyPress += (sender, args) => args.Handled = true;
+            corpus_cb.SelectedIndexChanged += (sender, args) => StartFiledataRenew();
 
             query_tb.Enabled = false;
             Shown += OnShown;
@@ -67,20 +67,6 @@ namespace LeninSearch
             var corpusJson = File.ReadAllText($"corpus\\main.json");
             var corpusItems = JsonConvert.DeserializeObject<List<CorpusItem>>(corpusJson);
 
-            var tempCorpusJsonPath = $"{CurrentFolder}\\main.json";
-            if (!File.Exists(tempCorpusJsonPath) || CryptoUtil.GetMD5(tempCorpusJsonPath) != CryptoUtil.GetMD5("corpus\\main.json"))
-            {
-                await Task.Run(() =>
-                {
-                    if (Directory.Exists(CurrentFolder))
-                    {
-                        Directory.Delete(CurrentFolder, true);
-                        Directory.CreateDirectory(CurrentFolder);
-                    }
-                    ZipFile.ExtractToDirectory("corpus\\main.zip", CurrentFolder);
-                });
-            }
-            
             corpus_cb.Items.Clear();
             foreach (var ci in corpusItems)
             {
@@ -90,7 +76,7 @@ namespace LeninSearch
                     corpus_cb.SelectedItem = ci;
                 }
             }
-            corpus_cb.MouseEnter += (sender, args) =>
+            corpus_cb.MouseEnter += (s, o) =>
             {
                 var posistion = new Point(15, 65);
                 var text = (corpus_cb.SelectedItem as CorpusItem).Description;
@@ -100,6 +86,23 @@ namespace LeninSearch
             corpus_cb.Enabled = true;
             query_tb.Enabled = true;
             query_tb.Focus();
+        }
+
+        private void StartFiledataRenew()
+        {
+            var corpusItem = (CorpusItem)corpus_cb.SelectedItem;
+
+            if (_dictionary == null || _reverseDictionary == null)
+            {
+                _dictionary = (File.ReadAllLines($"corpus\\corpus.dic")).Where(s => s != "").ToArray();
+                _reverseDictionary = new Dictionary<string, uint>();
+                for (uint i = 0; i < _dictionary.Length; i++)
+                {
+                    _reverseDictionary.Add(_dictionary[i], i);
+                }
+            }
+
+            _fileDataSource.Refresh(corpusItem);
         }
 
         private async void SearchQuery_tbOnKeyPress(object sender, KeyPressEventArgs e)
@@ -115,8 +118,6 @@ namespace LeninSearch
 
             result_tv.Nodes.Clear();
 
-            PlayStart();
-
             var corpusItem = (CorpusItem)corpus_cb.SelectedItem;
 
             Text = "Lenin Search - Поиск ...";
@@ -125,35 +126,23 @@ namespace LeninSearch
             progressBar1.Value = 1;
             progressBar1.Maximum = corpusItem.Files.Count;
 
-            if (_dictionary == null || _reverseDictionary == null)
-            {
-                _dictionary = (await File.ReadAllLinesAsync($"{CurrentFolder}\\main.dic")).Where(s => s != "").ToArray();
-                _reverseDictionary = new Dictionary<string, uint>();
-                for (uint i = 0; i < _dictionary.Length; i++)
-                {
-                    _reverseDictionary.Add(_dictionary[i], i);
-                }
-            }
-
             var searchOptions = new SearchOptions(query_tb.Text, "", _reverseDictionary);
 
             var totalMatches = 0;
 
-            for (var i = 0; i < corpusItem.Files.Count; i++)
+            for (int i = 0; i < corpusItem.Files.Count; i++)
             {
-                var corpusFileItem = corpusItem.Files[i];
-
+                var cfi = corpusItem.Files[i];
                 var currentSearchOptions = searchOptions.Copy();
-                currentSearchOptions.File = corpusFileItem.Name;
+                currentSearchOptions.File = cfi.Name;
 
-                var fileData = ArchiveUtil.LoadOptimized($"{CurrentFolder}\\{corpusFileItem.Path}", CancellationToken.None);
+                var fileData = _fileDataSource.Get(cfi);
 
                 var searchResult = await Task.Run(() => Search(fileData, currentSearchOptions));
 
                 if (searchResult.OptimizedParagraphs.Count > 0)
                 {
                     totalMatches += searchResult.OptimizedParagraphs.Count;
-                    PlayRandomFound();
                 }
 
                 OutputSearchResult(searchResult);
@@ -167,8 +156,6 @@ namespace LeninSearch
 
                 Text = $"Lenin Search ... {totalMatches} совпадений";
             }
-
-            PlayStop();
 
             Text = $"Lenin Search -  найдено {totalMatches} совпадений";
 
@@ -258,29 +245,6 @@ namespace LeninSearch
                 };
             }
         }
-
-        private void PlayRandomFound()
-        {
-            if (Random.Next(2) == 1)
-            {
-                Sounds.Play(Sounds.SomeMarks);
-            }
-            else
-            {
-                Sounds.Play(Sounds.YesAlmost);
-            }
-        }
-
-        private void PlayStart()
-        {
-            Sounds.Play(Sounds.LetMe, true);
-        }
-
-        private void PlayStop()
-        {
-            Sounds.Play(Sounds.So, true);
-        }
-
         private void OutputSearchResult(SearchResult searchResult)
         {
             if (searchResult.Success && searchResult.OptimizedParagraphs.Any())
@@ -289,14 +253,21 @@ namespace LeninSearch
                 result_tv.Nodes.Add(treeNode);
                 foreach (var p in searchResult.OptimizedParagraphs)
                 {
-                    
-
                     var nodeText = new string(p.GetText(_dictionary).Take(20).ToArray()) + " ...";
                     var paragraphNode = new TreeNode(nodeText);
                     treeNode.Nodes.Add(paragraphNode);
                     paragraphNode.Tag = new Tuple<SearchResult, OptimizedParagraph>(searchResult, p);
                 }
             }
+        }
+
+        private void setting_btn_Click(object sender, EventArgs e)
+        {
+            var settingForm = new SettingsForm();
+
+            if (settingForm.ShowDialog() != DialogResult.OK) return;
+
+            _fileDataSource.Refresh((CorpusItem)corpus_cb.SelectedItem);
         }
     }
 }

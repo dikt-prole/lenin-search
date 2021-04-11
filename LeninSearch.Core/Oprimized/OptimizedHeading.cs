@@ -43,9 +43,11 @@ namespace LeninSearch.Core.Oprimized
     {
         public static string GetText(this List<OptimizedHeading> headings, string[] dictionary)
         {
-            // todo: fix
+            if (headings == null || headings.Count == 0) return null;
 
-            return "GET TEXT IS NOT IMPLEMENTED YET";
+            var headingTexts = headings.OrderBy(h => h.Level).Select(h => h.GetText(dictionary)).ToList();
+
+            return string.Join(" - ", headingTexts);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Threading;
 
 namespace LeninSearch.Core.Oprimized
@@ -170,11 +171,25 @@ namespace LeninSearch.Core.Oprimized
         {
             if (_headings?.Any() != true) return null;
 
-            var headerIndex = _headings.Keys.Where(k => k < paragraphIndex).DefaultIfEmpty().Max();
+            var headingIndex = _headings.Keys.Where(k => k < paragraphIndex).DefaultIfEmpty().Max();
 
-            return headerIndex == default(ushort)
-                ? null
-                : _headings[headerIndex].ToArray().ToList();
+            if (headingIndex == default(ushort)) return null;
+
+            var totalHeadings = _headings[headingIndex].ToArray().ToList();
+
+            while (totalHeadings.All(h => h.Index > 0))
+            {
+                var minLevel = totalHeadings.Min(h => h.Level);
+                var minIndex = totalHeadings.Min(h => h.Index);
+
+                var prevHeadings = Headings.Where(h => h.Index <= minIndex && h.Level < minLevel).OrderByDescending(h => h.Index).ToList();
+
+                if (prevHeadings.Count == 0) break;;
+
+                totalHeadings.Add(prevHeadings[0]);
+            }
+
+            return totalHeadings;
         }
 
         public string GetPage(ushort paragraphIndex)

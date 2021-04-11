@@ -22,27 +22,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="corpus\main.json">
+    <None Update="corpus\readme.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="images\settings_48.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="lenin.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="sounds\let_me.wav">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="sounds\so.wav">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="sounds\some_marks.wav">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="sounds\yes_almost.wav">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="del /S &quot;$(TargetDir)corpus\*.zip&quot;" />
-    <Exec Command="powershell Compress-Archive -Path $(SolutionDir)corpus\ls\* '$(TargetDir)corpus\main.zip'" />
+    <Exec Command="xcopy &quot;$(SolutionDir)corpus\ls\*.*&quot; &quot;$(TargetDir)corpus&quot; /K /D /H /Y" />
   </Target>
 </Project>
