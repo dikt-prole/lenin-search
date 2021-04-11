@@ -3,7 +3,7 @@
 
 **Внимание!** Приложение доступно в [Google Play](https://play.google.com/store/apps/details?id=dikt_prole.leninsearch) 
 
-Дистрибутив 235 Мб (Windows 7, 8.1, 10 x64) - [LeninSearchSetup v1.0.0](https://github.com/dikt-prole/lenin-search/releases/download/lenin-search-v1.0.0/LeninSearchSetup.v1.0.0.msi)
+Дистрибутив 172 Мб (Windows 7, 8.1, 10 x64) - [LeninSearchSetup v1.0.1](https://github.com/dikt-prole/lenin-search/releases/download/1.0.1/LeninSearchSetup.msi)
 
 [Презентация приложения (Windows) на Len.Ru](https://youtu.be/eXpYrFGss3g)
 
