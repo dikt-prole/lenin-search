@@ -1,18 +1,19 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Net.WebSockets;
-using System.Threading;
 
 namespace LeninSearch.Core.Oprimized
 {
     public class OptimizedFileData
     {
         private readonly Dictionary<uint, ushort> _inversedLocalDictionary;
+
+        private readonly Dictionary<ushort, List<ushort>> _localWordParagraphMap;
+
         private readonly List<OptimizedParagraph> _paragraphs;
+
         private readonly Dictionary<ushort, List<OptimizedHeading>> _headings;
+
         private readonly Dictionary<ushort, ushort> _pages;
-        private readonly Dictionary<ushort, List<ushort>> _wordParagraphMap;
 
         public IEnumerable<OptimizedParagraph> Paragraphs
         {
@@ -45,7 +46,7 @@ namespace LeninSearch.Core.Oprimized
         {
             _paragraphs = new List<OptimizedParagraph>();
             _headings = new Dictionary<ushort, List<OptimizedHeading>>();
-            _wordParagraphMap = new Dictionary<ushort, List<ushort>>();
+            _localWordParagraphMap = new Dictionary<ushort, List<ushort>>();
             _inversedLocalDictionary = new Dictionary<uint, ushort>();
             _pages = new Dictionary<ushort, ushort>();
             for (ushort i = 0; i < localDictionary.Count; i++)
@@ -63,12 +64,12 @@ namespace LeninSearch.Core.Oprimized
             p.Index = pIndex;
             foreach (var localWordIndex in p.LocalWordIndexes)
             {
-                if (!_wordParagraphMap.ContainsKey(localWordIndex))
+                if (!_localWordParagraphMap.ContainsKey(localWordIndex))
                 {
-                    _wordParagraphMap.Add(localWordIndex, new List<ushort>());
+                    _localWordParagraphMap.Add(localWordIndex, new List<ushort>());
                 }
 
-                _wordParagraphMap[localWordIndex].Add(pIndex);
+                _localWordParagraphMap[localWordIndex].Add(pIndex);
             }
         }
 
@@ -78,7 +79,6 @@ namespace LeninSearch.Core.Oprimized
             {
                 _headings.Add(index, new List<OptimizedHeading>());
             }
-
             _headings[index].Add(h);
         }
 
@@ -111,12 +111,15 @@ namespace LeninSearch.Core.Oprimized
         private List<ushort> GetParagraphIndexes(List<uint> globalIndexes)
         {
             var paragraphIndexes = new List<ushort>();
-            foreach (var gi in globalIndexes)
+            foreach (var globalIndex in globalIndexes)
             {
-                if (_inversedLocalDictionary.ContainsKey(gi))
+                if (_inversedLocalDictionary.ContainsKey(globalIndex))
                 {
-                    var localWordIndex = _inversedLocalDictionary[gi];
-                    paragraphIndexes.AddRange(_wordParagraphMap[localWordIndex]);
+                    var localIndex = _inversedLocalDictionary[globalIndex];
+                    if (_localWordParagraphMap.ContainsKey(localIndex))
+                    {
+                        paragraphIndexes.AddRange(_localWordParagraphMap[localIndex]);
+                    }
                 }
             }
 

@@ -189,6 +189,12 @@ namespace LeninSearch
 
                 var searchResult = await Task.Run(() => Search(fileData, currentSearchOptions));
 
+                if (!searchResult.Success)
+                {
+                    MessageBox.Show(searchResult.ErrorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    continue;
+                }
+
                 if (searchResult.OptimizedParagraphs.Count > 0)
                 {
                     totalMatches += searchResult.OptimizedParagraphs.Count;
