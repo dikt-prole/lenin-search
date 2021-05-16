@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using LeninSearch.Standard.Core;
 using LeninSearch.Xam.Core;
 
 namespace LeninSearch.Xam.Searcher
@@ -61,8 +61,8 @@ namespace LeninSearch.Xam.Searcher
             return Task.Run(() =>
             {
                 var fileBytes = FileUtil.ReadCorpusFile(cfi.Path);
-                var ofd = ArchiveUtil.LoadOptimized(fileBytes, CancellationToken.None);
-                var paragraphs = ofd.FindParagraphs(options).ToList();
+                var ofd = LsUtil.LoadOptimized(fileBytes, CancellationToken.None);
+                var paragraphs = ofd.FindParagraphs(options, OptimizedDictionary.Instance.Words).ToList();
 
                 return paragraphs.Select(p =>
                     new SearchParagraphResult
@@ -78,10 +78,10 @@ namespace LeninSearch.Xam.Searcher
             return Task.Run(() =>
             {
                 var fileBytes = FileUtil.ReadCorpusFile(cfi.Path);
-                var ofd = ArchiveUtil.LoadOptimized(fileBytes, CancellationToken.None);
-                var headers = ofd.FindHeaders(options).ToList();
+                var ofd = LsUtil.LoadOptimized(fileBytes, CancellationToken.None);
+                var headings = ofd.FindHeaders(options).ToList();
 
-                return headers.Select(h =>
+                return headings.Select(h =>
                     new SearchHeaderResult
                     {
                         Index = h.Index,

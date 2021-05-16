@@ -2,8 +2,8 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using LeninSearch.Core;
-using LeninSearch.Core.Oprimized;
+using LeninSearch.Standard.Core;
+using LeninSearch.Standard.Core.Oprimized;
 using Newtonsoft.Json;
 
 namespace LeninSearch
@@ -29,7 +29,7 @@ namespace LeninSearch
                     for (var i = 0; i < ci.Files.Count; i++)
                     {
                         var cfi = ci.Files[i];
-                        var ofd = ArchiveUtil.LoadOptimized($"corpus\\{cfi.Path}", CancellationToken.None);
+                        var ofd = LsUtil.LoadOptimized($"corpus\\{cfi.Path}", CancellationToken.None);
                         _fileDatas.Add(cfi.Path, ofd);
                     }
                 });
@@ -49,7 +49,7 @@ namespace LeninSearch
                 return _fileDatas[cfi.Path];
             }
 
-            return ArchiveUtil.LoadOptimized($"corpus\\{cfi.Path}", CancellationToken.None);
+            return LsUtil.LoadOptimized($"corpus\\{cfi.Path}", CancellationToken.None);
         }
     }
 }

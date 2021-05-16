@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using LeninSearch.Core;
+using LeninSearch.Standard.Core;
 
 namespace LeninSearch
 {

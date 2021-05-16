@@ -1,4 +1,5 @@
-﻿using LeninSearch.Xam.Core.Oprimized;
+﻿using LeninSearch.Standard.Core.Oprimized;
+using LeninSearch.Xam.Core;
 using Xamarin.Forms;
 
 namespace LeninSearch.Xam.ParagraphAdder
@@ -23,8 +24,9 @@ namespace LeninSearch.Xam.ParagraphAdder
 
             if (p.IsHeader)
             {
-                var ofd = OptimizedFileData.Get(state.ReadingFile);
-                var headerText = ofd.GetHeader(p.Index).GetText();
+                var ofd = OptimizedFileDataSource.Get(state.ReadingFile);
+                //var headerText = ofd.GetHeader(p.Index).GetText();
+                var headerText = "NOT IMPLEMENTED";
                 var pLabel = new Label { Text = headerText, TextColor = Color.Black, HorizontalOptions = LayoutOptions.Center, FontAttributes = FontAttributes.Bold };
                 pLabel.TabIndex = p.Index;
                 return pLabel;

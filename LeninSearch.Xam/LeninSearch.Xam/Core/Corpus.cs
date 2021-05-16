@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using LeninSearch.Standard.Core;
 
 namespace LeninSearch.Xam.Core
 {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Windows.Forms;
-using LeninSearch.Core;
+using LeninSearch.Standard.Core;
 using Newtonsoft.Json;
 
 namespace LeninSearch

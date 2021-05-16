@@ -8,8 +8,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using LeninSearch.Core;
-using LeninSearch.Core.Oprimized;
+using LeninSearch.Standard.Core;
+using LeninSearch.Standard.Core.Oprimized;
 using Newtonsoft.Json;
 
 namespace LeninSearch

@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using LeninSearch.Standard.Core;
+using LeninSearch.Standard.Core.Oprimized;
 using LeninSearch.Xam.Controls;
 using LeninSearch.Xam.Core;
-using LeninSearch.Xam.Core.Oprimized;
 using Xamarin.Forms;
 
 namespace LeninSearch.Xam.ParagraphAdder
@@ -16,12 +17,12 @@ namespace LeninSearch.Xam.ParagraphAdder
             {
                 return new ExtendedLabel
                 {
-                    Text = p.GetText(), TextColor = Color.Black, JustifyText = true, Margin = new Thickness(0, 5, 0, 0),
+                    Text = p.GetText(OptimizedDictionary.Instance.Words), TextColor = Color.Black, JustifyText = true, Margin = new Thickness(0, 5, 0, 0),
                     TabIndex = p.Index
                 };
             }
 
-            var pText = p.GetText();
+            var pText = p.GetText(OptimizedDictionary.Instance.Words);
 
             var so = state.SearchOptions;
             var selection = TextUtil.GetOrderedWords(so.AdditionalQuery);
@@ -32,7 +33,7 @@ namespace LeninSearch.Xam.ParagraphAdder
 
             var fString = new FormattedString();
 
-            fString.Spans.Add(GetHeaderSpan(state));
+            fString.Spans.Add(GetHeadingSpan(state));
 
             fString.Spans.Add(new Span { Text = Environment.NewLine });
 
@@ -46,28 +47,28 @@ namespace LeninSearch.Xam.ParagraphAdder
 
         }
 
-        private Span GetHeaderSpan(State state)
+        private Span GetHeadingSpan(State state)
         {
-            var corpusFileItem = state.GetReadingCorpusFileItem();
-            var searchParagraphResult = state.GetCurrentSearchParagraphResult();
+            //var corpusFileItem = state.GetReadingCorpusFileItem();
+            //var searchParagraphResult = state.GetCurrentSearchParagraphResult();
 
-            var ofd = OptimizedFileData.Get(corpusFileItem.Path);
+            //var ofd = OptimizedFileDataSource.Get(corpusFileItem.Path);
 
-            var header = ofd.GetParagraphHeader(searchParagraphResult.Index);
-            var page = ofd.GetPage(searchParagraphResult.Index);
-            var pageHeader = corpusFileItem.Name;
-            if (page != null || header != null)
-            {
-                pageHeader = page == null
-                    ? header.GetText()
-                    : header == null
-                        ? $"{corpusFileItem.Name}, стр. {page}"
-                        : $"{corpusFileItem.Name}, стр. {page}, {header.GetText()}";
-            }
+            //var header = ofd.GetParagraphHeader(searchParagraphResult.Index);
+            //var page = ofd.GetPage(searchParagraphResult.Index);
+            //var pageHeader = corpusFileItem.Name;
+            //if (page != null || header != null)
+            //{
+            //    pageHeader = page == null
+            //        ? header.GetText()
+            //        : header == null
+            //            ? $"{corpusFileItem.Name}, стр. {page}"
+            //            : $"{corpusFileItem.Name}, стр. {page}, {header.GetText()}";
+            //}
 
             return new Span
             {
-                Text = $" {pageHeader} ",
+                Text = $"NOT IMPLEMENTED",
                 BackgroundColor = Settings.MainColor,
                 TextColor = Color.White
             };

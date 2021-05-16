@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using LeninSearch.Xam.Core;
+using LeninSearch.Standard.Core;
 
 namespace LeninSearch.Xam.Searcher
 {

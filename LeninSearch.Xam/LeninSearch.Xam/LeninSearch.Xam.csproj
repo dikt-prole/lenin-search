@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
     <Version>1.0.1</Version>
   </PropertyGroup>
@@ -18,5 +18,13 @@
     <PackageReference Include="Xamarin.Forms" Version="4.8.0.1821" />
     <PackageReference Include="Xamarin.Essentials" Version="1.6.0" />
     <PackageReference Include="Xamarin.Plugins.Clipboard" Version="2.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\LeninSearch.Standard.Core\LeninSearch.Standard.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Core\Oprimized\" />
   </ItemGroup>
 </Project>

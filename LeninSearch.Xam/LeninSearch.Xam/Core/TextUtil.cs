@@ -5,7 +5,7 @@ using System.Text;
 
 namespace LeninSearch.Xam.Core
 {
-    public class TextUtil
+    public class XamTextUtil
     {
         public static List<string> GetOrderedWords(string text)
         {

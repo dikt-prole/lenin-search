@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>lenin.ico</ApplicationIcon>
     <Version>1.0.1</Version>
@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\LeninSearch.Core\LeninSearch.Core.csproj" />
+    <ProjectReference Include="..\LeninSearch.Standard.Core\LeninSearch.Standard.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

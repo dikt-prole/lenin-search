@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using LeninSearch.Xam.Core.Oprimized;
+using LeninSearch.Standard.Core.Oprimized;
 using Xamarin.Forms;
 
 namespace LeninSearch.Xam.ParagraphAdder

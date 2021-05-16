@@ -1,5 +1,4 @@
-﻿using LeninSearch.Xam.Core;
-using LeninSearch.Xam.Core.Oprimized;
+﻿using LeninSearch.Standard.Core.Oprimized;
 using Xamarin.Forms;
 
 namespace LeninSearch.Xam.ParagraphAdder

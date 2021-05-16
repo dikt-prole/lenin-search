@@ -3,8 +3,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using LeninSearch.Standard.Core.Oprimized;
 using LeninSearch.Xam.Core;
-using LeninSearch.Xam.Core.Oprimized;
 using Newtonsoft.Json;
 using Xamarin.Forms;
 
@@ -35,7 +35,7 @@ namespace LeninSearch.Xam
         protected override void OnSleep()
         {
             Debug.WriteLine($"OnSleep");
-            OptimizedFileData.Clear();
+            OptimizedFileDataSource.Clear();
             OptimizedDictionary.Clear();
             SaveState(_state);
         }

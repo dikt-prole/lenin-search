@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using LeninSearch.Core.Oprimized;
+using LeninSearch.Standard.Core.Oprimized;
 
 namespace LeninSearch
 {

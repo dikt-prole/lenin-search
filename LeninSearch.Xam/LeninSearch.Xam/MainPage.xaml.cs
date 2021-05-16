@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using LeninSearch.Standard.Core;
+using LeninSearch.Standard.Core.Oprimized;
+using LeninSearch.Standard.Core.Reporting;
 using LeninSearch.Xam.Controls;
 using LeninSearch.Xam.Core;
-using LeninSearch.Xam.Core.Oprimized;
-using LeninSearch.Xam.Core.Reporting;
 using LeninSearch.Xam.ParagraphAdder;
 using LeninSearch.Xam.Searcher;
 using Newtonsoft.Json;
@@ -134,7 +134,7 @@ namespace LeninSearch.Xam
             var corpusFileItem = _state.GetReadingCorpusFileItem();
             if (corpusFileItem == null) return;
 
-            var ofd = OptimizedFileData.Get(corpusFileItem.Path);
+            var ofd = OptimizedFileDataSource.Get(corpusFileItem.Path);
             var pIndex = _selectionDecorator.SelectedIndexes.First();
 
             var bookmark = new Bookmark
@@ -142,7 +142,7 @@ namespace LeninSearch.Xam
                 BookName = corpusFileItem.Name,
                 File = corpusFileItem.Path,
                 ParagraphIndex = pIndex,
-                ParagraphText = ofd.GetParagraph(pIndex).GetText(),
+                ParagraphText = ofd.GetParagraph(pIndex).GetText(OptimizedDictionary.Instance.Words),
                 CorpusItemName = corpusItem.Name,
                 Id = Guid.NewGuid(),
                 When = DateTime.UtcNow
@@ -344,9 +344,9 @@ namespace LeninSearch.Xam
         private async void ClipboardButtonOnClicked(object sender, EventArgs e)
         {
             await Rotate360(ClipboardButton);
-            var ofd = OptimizedFileData.Get(_state.ReadingFile);
+            var ofd = OptimizedFileDataSource.Get(_state.ReadingFile);
             var indexes = _selectionDecorator.SelectedIndexes;
-            var pTexts = indexes.Select(i => ofd.GetParagraph(i).GetText()).ToList();
+            var pTexts = indexes.Select(i => ofd.GetParagraph(i).GetText(OptimizedDictionary.Instance.Words)).ToList();
             var separator = $"{Environment.NewLine}{Environment.NewLine}";
             var cbText = string.Join(separator, pTexts);
             CrossClipboard.Current.SetText(cbText);
@@ -456,7 +456,7 @@ namespace LeninSearch.Xam
             var scrollingSpace = ResultScroll.ContentSize.Height - ResultScroll.Height - 11; // 10 is a margin
             if (e.ScrollY == 0) // reached top
             {
-                var ofd = OptimizedFileData.Get(_state.ReadingFile);
+                var ofd = OptimizedFileDataSource.Get(_state.ReadingFile);
 
                 if (ResultStack.Children.Count > Settings.MaxParagraphCount) // run stack cleanup
                 {
@@ -485,7 +485,7 @@ namespace LeninSearch.Xam
             }
             else if (scrollingSpace <= e.ScrollY) // reached bottom
             {
-                var ofd = OptimizedFileData.Get(_state.ReadingFile);
+                var ofd = OptimizedFileDataSource.Get(_state.ReadingFile);
                 if (ResultStack.Children.Count > Settings.MaxParagraphCount) // run stack cleanup
                 {
                     ResultScroll.Scrolled -= ResultScrollOnScrolled;
@@ -643,7 +643,7 @@ namespace LeninSearch.Xam
                 HideSearchResultBar();
                 await RebuildScroll(true);
 
-                var ofd = OptimizedFileData.Get(cfi.Path);
+                var ofd = OptimizedFileDataSource.Get(cfi.Path);
                 var p = ofd.GetPrevParagraph(paragraphIndex) ?? ofd.GetParagraph(paragraphIndex);
                 while (!IsResultScrollReady())
                 {
@@ -684,9 +684,9 @@ namespace LeninSearch.Xam
                 FontSize = Settings.SummaryFontSize
             });
 
-            var ofd = OptimizedFileData.Get(cfi.Path);
-            var headers = ofd.GetHeaders();
-            if (headers?.Any() != true)
+            var ofd = OptimizedFileDataSource.Get(cfi.Path);
+            var headings = ofd.Headings.ToList();
+            if (headings?.Any() != true)
             {
                 ResultStack.Children.Add(new Label
                 {
@@ -699,14 +699,14 @@ namespace LeninSearch.Xam
             }
             else
             {
-                foreach (var headerKvp in headers)
+                foreach (var heading in headings)
                 {
-                    var headerText = headerKvp.Value.GetText();
+                    var headerText = heading.GetText(OptimizedDictionary.Instance.Words);
                     var headerLabel = new Label
                     { Text = headerText, TextColor = Color.Black, FontSize = Settings.SummaryFontSize };
                     ResultStack.Children.Add(headerLabel);
                     var readLink = ConstructHyperlink("читать",
-                        new Command(async () => await Read(cfi, headerKvp.Key)), Settings.SummaryFontSize);
+                        new Command(async () => await Read(cfi, heading.Index)), Settings.SummaryFontSize);
                     ResultStack.Children.Add(readLink);
                 }
             }
@@ -769,7 +769,7 @@ namespace LeninSearch.Xam
 
             var isHeaderSearch = SearchEntry.Text.StartsWith("*");
             var searchQuery = SearchEntry.Text.TrimStart('*');
-            var searchOptions = new SearchOptions(searchQuery);
+            var searchOptions = new SearchOptions(searchQuery, "", OptimizedDictionary.Instance.Reversed);
             _state.SearchOptions = searchOptions;
             CorpusButton.IsEnabled = false;
 
@@ -858,7 +858,7 @@ namespace LeninSearch.Xam
             await RebuildScroll(true);
 
             _state.ReadingFile = paragraphResult.File;
-            var ofd = OptimizedFileData.Get(paragraphResult.File);
+            var ofd = OptimizedFileDataSource.Get(paragraphResult.File);
 
             var p = ofd.GetParagraph(paragraphResult.Index);
 
