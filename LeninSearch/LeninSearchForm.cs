@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using LeninSearch.Standard.Core;
 using LeninSearch.Standard.Core.Oprimized;
+using LeninSearch.Standard.Core.Search;
 using Newtonsoft.Json;
 
 namespace LeninSearch

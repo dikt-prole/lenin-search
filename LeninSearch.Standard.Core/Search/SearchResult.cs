@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using LeninSearch.Standard.Core.Oprimized;
 
-namespace LeninSearch.Standard.Core
+namespace LeninSearch.Standard.Core.Search
 {
     public class SearchResult
     {

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using LeninSearch.Standard.Core;
+using LeninSearch.Standard.Core.Search;
 using LeninSearch.Xam.Core;
 
 namespace LeninSearch.Xam.Searcher

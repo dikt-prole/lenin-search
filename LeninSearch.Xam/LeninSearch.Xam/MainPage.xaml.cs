@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using LeninSearch.Standard.Core;
 using LeninSearch.Standard.Core.Oprimized;
 using LeninSearch.Standard.Core.Reporting;
+using LeninSearch.Standard.Core.Search;
 using LeninSearch.Xam.Controls;
 using LeninSearch.Xam.Core;
 using LeninSearch.Xam.ParagraphAdder;
