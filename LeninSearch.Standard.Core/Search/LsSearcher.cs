@@ -10,7 +10,14 @@ namespace LeninSearch.Standard.Core.Search
         {
             var allTokens = request.Ordered.Concat(request.NonOrdered).ToList();
 
-            if (allTokens.Any(t => t.WordIndexes.Count == 0)) return new List<ParagraphSearchResult>();
+            foreach (var token in allTokens)
+            {
+                token.WordIndexes = token.WordIndexes.Where(wi => lsIndexData.WordParagraphData.ContainsKey(wi)).ToList();
+                if (token.WordIndexes.Count == 0)
+                {
+                    return new List<ParagraphSearchResult>();
+                }
+            }
 
             var chains = GetWordIndexChains(allTokens);
 
@@ -58,13 +65,13 @@ namespace LeninSearch.Standard.Core.Search
 
                             goto ParagraphMismatch;
 
-                            LocalParagraphMatch: 
+                            LocalParagraphMatch:
                             currentParagraphDatas = nextParagraphDatas;
                         }
 
                         searchResults.Add(new ParagraphSearchResult(paragraphIndex, chain));
 
-                        ParagraphMismatch: ;
+                        ParagraphMismatch:;
                     }
                 }
             }
@@ -85,34 +92,24 @@ namespace LeninSearch.Standard.Core.Search
 
         private List<WordIndexChain> GetWordIndexChains(List<SearchToken> tokens)
         {
-            var chains = new List<WordIndexChain>();
+            var chains = tokens[0].WordIndexes.Select(wi => new WordIndexChain(wi)).ToList();
 
-            foreach (var token in tokens)
+            for (var i = 1; i < tokens.Count; i++)
             {
-                if (chains.Count == 0)
+                var token = tokens[i];
+                var chainsTemplate = chains.Select(c => c.Copy()).ToList();
+                foreach (var chain in chains)
                 {
-                    foreach (var wordIndex in token.WordIndexes)
-                    {
-                        var chain = new WordIndexChain(wordIndex);
-                        chains.Add(chain);
-                    }
+                    chain.WordIndexes.Add(token.WordIndexes[0]);
                 }
-                else
+                for (var j = 1; j < token.WordIndexes.Count; j++)
                 {
-                    var chainsTemplate = new List<WordIndexChain>(chains);
-                    foreach (var chain in chains)
+                    var addChains = chainsTemplate.Select(c => c.Copy()).ToList();
+                    foreach (var chain in addChains)
                     {
-                        chain.WordIndexes.Add(token.WordIndexes[0]);    
+                        chain.WordIndexes.Add(token.WordIndexes[j]);
                     }
-                    for (var i = 1; i < token.WordIndexes.Count; i++)
-                    {
-                        var addChains = new List<WordIndexChain>(chainsTemplate);
-                        foreach (var chain in addChains)
-                        {
-                            chain.WordIndexes.Add(token.WordIndexes[i]);
-                        }
-                        chains.AddRange(addChains);
-                    }
+                    chains.AddRange(addChains);
                 }
             }
 

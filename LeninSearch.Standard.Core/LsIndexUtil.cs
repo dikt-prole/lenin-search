@@ -10,7 +10,7 @@ namespace LeninSearch.Standard.Core
         public static byte[] ToLsIndexBytes(OptimizedFileData ofd)
         {
             // construct word position dictionary
-            var wordPositionDictionary = new Dictionary<uint, List<WordPosition>>();
+            var wordPositionDictionary = new Dictionary<uint, List<LsWordParagraphData>>();
             var paragraphs = ofd.Paragraphs.ToList();
             var headings = ofd.Headings.ToList();
             var pages = ofd.Pages;
@@ -28,18 +28,18 @@ namespace LeninSearch.Standard.Core
 
                 for (ushort i = 0; i < words.Count; i++)
                 {
-                    var wordPosition = new WordPosition
+                    var wordPosition = new LsWordParagraphData
                     {
                         ParagraphIndex = (ushort)paragraphIndex,
-                        Position = i
+                        WordPosition = i
                     };
 
-                    if (!wordPositionDictionary.ContainsKey(i))
+                    if (!wordPositionDictionary.ContainsKey(words[i]))
                     {
-                        wordPositionDictionary.Add(i, new List<WordPosition>());
+                        wordPositionDictionary.Add(words[i], new List<LsWordParagraphData>());
                     }
 
-                    wordPositionDictionary[i].Add(wordPosition);
+                    wordPositionDictionary[words[i]].Add(wordPosition);
                 }
             }
 
@@ -47,13 +47,13 @@ namespace LeninSearch.Standard.Core
             var wordPositionBytes = new List<byte>();
             foreach (var key in wordPositionDictionary.Keys)
             {
-                var positionCount = (uint)wordPositionDictionary.Count;
+                var positionCount = (uint)wordPositionDictionary[key].Count;
                 wordPositionBytes.AddRange(BitConverter.GetBytes(key));
                 wordPositionBytes.AddRange(BitConverter.GetBytes(positionCount));
                 foreach (var wordPosition in wordPositionDictionary[key])
                 {
                     wordPositionBytes.AddRange(BitConverter.GetBytes(wordPosition.ParagraphIndex));
-                    wordPositionBytes.AddRange(BitConverter.GetBytes(wordPosition.Position));
+                    wordPositionBytes.AddRange(BitConverter.GetBytes(wordPosition.WordPosition));
                 }
             }
 
@@ -79,23 +79,50 @@ namespace LeninSearch.Standard.Core
                 }
             }
 
-            var lsBytes = new List<byte>();
+            var lsiBytes = new List<byte>();
 
-            lsBytes.AddRange(BitConverter.GetBytes((ushort)wordPositionBytes.Count)); // word position count
-            lsBytes.AddRange(BitConverter.GetBytes((ushort)headerBytes.Count)); // header bytes count
-            lsBytes.AddRange(BitConverter.GetBytes((ushort)(pageBytes.Count))); // page bytes count
+            lsiBytes.AddRange(BitConverter.GetBytes((uint)wordPositionBytes.Count)); // word position count
+            lsiBytes.AddRange(BitConverter.GetBytes((uint)headerBytes.Count)); // header bytes count
+            lsiBytes.AddRange(BitConverter.GetBytes((uint)(pageBytes.Count))); // page bytes count
 
-            lsBytes.AddRange(wordPositionBytes);
-            lsBytes.AddRange(headerBytes);
-            lsBytes.AddRange(pageBytes);
+            lsiBytes.AddRange(wordPositionBytes);
+            lsiBytes.AddRange(headerBytes);
+            lsiBytes.AddRange(pageBytes);
 
-            return lsBytes.ToArray();
+            return lsiBytes.ToArray();
         }
-
-        public class WordPosition
+        
+        public static LsIndexData FromLsIndexBytes(byte[] lsIndexBytes)
         {
-            public ushort ParagraphIndex { get; set; }
-            public ushort Position { get; set; }
+            var cursor = 0;
+
+            var wordPositionBytesCount = BitConverter.ToUInt32(lsIndexBytes, cursor); cursor += 4;
+            var headerBytesCount = BitConverter.ToUInt32(lsIndexBytes, cursor); cursor += 4;
+            var pageBytesCount = BitConverter.ToUInt32(lsIndexBytes, cursor); cursor += 4;
+
+            var wordPositionDictionary = new Dictionary<uint, List<LsWordParagraphData>>();
+            while (cursor < wordPositionBytesCount + 12)
+            {
+                var wordIndex = BitConverter.ToUInt32(lsIndexBytes, cursor); cursor += 4;
+                var positionCount = BitConverter.ToUInt32(lsIndexBytes, cursor); cursor += 4;
+                var wordInParagraphPositions = new List<LsWordParagraphData>();
+                for (var i = 0; i < positionCount; i++)
+                {
+                    var paragraphIndex = BitConverter.ToUInt16(lsIndexBytes, cursor); cursor += 2;
+                    var wordPosition = BitConverter.ToUInt16(lsIndexBytes, cursor); cursor += 2;
+                    wordInParagraphPositions.Add(new LsWordParagraphData
+                    {
+                        ParagraphIndex = paragraphIndex,
+                        WordPosition = wordPosition
+                    });
+                }
+                wordPositionDictionary.Add(wordIndex, wordInParagraphPositions);
+            }
+
+            return new LsIndexData
+            {
+                WordParagraphData = wordPositionDictionary
+            };
         }
     }
 }

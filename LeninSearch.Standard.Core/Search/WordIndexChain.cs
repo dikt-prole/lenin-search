@@ -11,11 +11,11 @@ namespace LeninSearch.Standard.Core.Search
         }
 
         public List<uint> WordIndexes { get; set; }
-        public WordIndexChain Copy(WordIndexChain chain)
+        public WordIndexChain Copy()
         {
             return new WordIndexChain
             {
-                WordIndexes = new List<uint>(chain.WordIndexes)
+                WordIndexes = new List<uint>(WordIndexes)
             };
         }
     }
