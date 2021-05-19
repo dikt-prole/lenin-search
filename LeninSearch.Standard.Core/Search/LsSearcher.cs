@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using LeninSearch.Standard.Core.Oprimized;
+using LeninSearch.Standard.Core.Optimized;
 
 namespace LeninSearch.Standard.Core.Search
 {
@@ -8,11 +8,27 @@ namespace LeninSearch.Standard.Core.Search
     {
         public List<ParagraphSearchResult> SearchParagraphs(LsIndexData lsIndexData, SearchRequest request)
         {
+            return SearchParagraphData(lsIndexData.WordParagraphData, request);
+        }
+
+        public List<ParagraphSearchResult> SearchHeadings(LsIndexData lsIndexData, SearchRequest request)
+        {
+            var headingIndexes = lsIndexData.HeadingData.Select(hd => hd.Index).ToHashSet();
+
+            var searchResult = SearchParagraphData(lsIndexData.WordParagraphData, request);
+
+            searchResult = searchResult.Where(sr => headingIndexes.Contains(sr.ParagraphIndex)).ToList();
+
+            return searchResult;
+        }
+
+        public List<ParagraphSearchResult> SearchParagraphData(Dictionary<uint, List<LsWordParagraphData>> wordParagraphData, SearchRequest request)
+        {
             var allTokens = request.Ordered.Concat(request.NonOrdered).ToList();
 
             foreach (var token in allTokens)
             {
-                token.WordIndexes = token.WordIndexes.Where(wi => lsIndexData.WordParagraphData.ContainsKey(wi)).ToList();
+                token.WordIndexes = token.WordIndexes.Where(wordParagraphData.ContainsKey).ToList();
                 if (token.WordIndexes.Count == 0)
                 {
                     return new List<ParagraphSearchResult>();
@@ -25,10 +41,10 @@ namespace LeninSearch.Standard.Core.Search
 
             foreach (var chain in chains)
             {
-                var currentParagraphIndexList = lsIndexData.WordParagraphData[chain.WordIndexes[0]].Select(wpd => wpd.ParagraphIndex).ToList();
+                var currentParagraphIndexList = wordParagraphData[chain.WordIndexes[0]].Select(wpd => wpd.ParagraphIndex).ToList();
                 for (var i = 1; i < chain.WordIndexes.Count; i++)
                 {
-                    var paragraphIndexList = lsIndexData.WordParagraphData[chain.WordIndexes[i]].Select(wpd => wpd.ParagraphIndex).ToList();
+                    var paragraphIndexList = wordParagraphData[chain.WordIndexes[i]].Select(wpd => wpd.ParagraphIndex).ToList();
                     currentParagraphIndexList = currentParagraphIndexList.Intersect(paragraphIndexList).ToList();
                 }
 
@@ -48,10 +64,10 @@ namespace LeninSearch.Standard.Core.Search
                     var paragraphIndexes = candidateParagraphIndexes[chain];
                     foreach (var paragraphIndex in paragraphIndexes)
                     {
-                        var currentParagraphDatas = lsIndexData.WordParagraphData[orderedWords[0]].Where(wpd => wpd.ParagraphIndex == paragraphIndex).ToList();
+                        var currentParagraphDatas = wordParagraphData[orderedWords[0]].Where(wpd => wpd.ParagraphIndex == paragraphIndex).ToList();
                         for (var i = 1; i < orderedWords.Count; i++)
                         {
-                            var nextParagraphDatas = lsIndexData.WordParagraphData[orderedWords[i]].Where(wpd => wpd.ParagraphIndex == paragraphIndex).ToList();
+                            var nextParagraphDatas = wordParagraphData[orderedWords[i]].Where(wpd => wpd.ParagraphIndex == paragraphIndex).ToList();
                             foreach (var cpd in currentParagraphDatas)
                             {
                                 foreach (var npd in nextParagraphDatas)
@@ -69,7 +85,16 @@ namespace LeninSearch.Standard.Core.Search
                             currentParagraphDatas = nextParagraphDatas;
                         }
 
-                        searchResults.Add(new ParagraphSearchResult(paragraphIndex, chain));
+                        var searchResult = searchResults.FirstOrDefault(r => r.ParagraphIndex == paragraphIndex);
+                        if (searchResult == null)
+                        {
+                            searchResult = new ParagraphSearchResult(paragraphIndex);
+                            searchResults.Add(searchResult);
+                        }
+                        else
+                        {
+                            searchResult.AddChain(chain);
+                        }
 
                         ParagraphMismatch:;
                     }
@@ -82,7 +107,16 @@ namespace LeninSearch.Standard.Core.Search
                     var paragraphIndexes = candidateParagraphIndexes[chain];
                     foreach (var paragraphIndex in paragraphIndexes)
                     {
-                        searchResults.Add(new ParagraphSearchResult(paragraphIndex, chain));
+                        var searchResult = searchResults.FirstOrDefault(r => r.ParagraphIndex == paragraphIndex);
+                        if (searchResult == null)
+                        {
+                            searchResult = new ParagraphSearchResult(paragraphIndex);
+                            searchResults.Add(searchResult);
+                        }
+                        else
+                        {
+                            searchResult.AddChain(chain);
+                        }
                     }
                 }
             }

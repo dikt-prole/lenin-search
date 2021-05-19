@@ -3,7 +3,8 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using LeninSearch.Standard.Core;
-using LeninSearch.Standard.Core.Oprimized;
+using LeninSearch.Standard.Core.OldShit;
+using LeninSearch.Standard.Core.Optimized;
 using Newtonsoft.Json;
 
 namespace LeninSearch

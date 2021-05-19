@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using LeninSearch.Standard.Core;
+using LeninSearch.Standard.Core.OldShit;
 using LeninSearch.Standard.Core.Search;
 
 namespace LeninSearch

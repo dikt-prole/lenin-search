@@ -1,4 +1,4 @@
-﻿using LeninSearch.Standard.Core.Oprimized;
+﻿using LeninSearch.Standard.Core.Optimized;
 using Xamarin.Forms;
 
 namespace LeninSearch.Xam.ParagraphAdder
@@ -13,7 +13,7 @@ namespace LeninSearch.Xam.ParagraphAdder
             _fontSize = fontSize;
         }
 
-        public View Build(OptimizedParagraph p, State state)
+        public View Build(LsParagraph p, State state)
         {
             var view = _builder.Build(p, state);
 

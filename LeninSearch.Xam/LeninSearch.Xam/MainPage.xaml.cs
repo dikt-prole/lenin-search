@@ -6,13 +6,13 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using LeninSearch.Standard.Core;
-using LeninSearch.Standard.Core.Oprimized;
+using LeninSearch.Standard.Core.OldShit;
+using LeninSearch.Standard.Core.Optimized;
 using LeninSearch.Standard.Core.Reporting;
 using LeninSearch.Standard.Core.Search;
 using LeninSearch.Xam.Controls;
 using LeninSearch.Xam.Core;
 using LeninSearch.Xam.ParagraphAdder;
-using LeninSearch.Xam.Searcher;
 using Newtonsoft.Json;
 using Plugin.Clipboard;
 using Xamarin.Forms;
@@ -29,7 +29,7 @@ namespace LeninSearch.Xam
 
         private readonly HttpClient _httpClient = new HttpClient();
 
-        private readonly ISearcher _searcher = new OfflineSearcher();
+        private readonly LsSearcher _searcher = new LsSearcher();
 
         private Dictionary<string, string> _corpusImages = new Dictionary<string, string>
         {
@@ -135,7 +135,7 @@ namespace LeninSearch.Xam
             var corpusFileItem = _state.GetReadingCorpusFileItem();
             if (corpusFileItem == null) return;
 
-            var ofd = OptimizedFileDataSource.Get(corpusFileItem.Path);
+            var lsiData = LsIndexDataSource.Get(corpusFileItem.Path);
             var pIndex = _selectionDecorator.SelectedIndexes.First();
 
             var bookmark = new Bookmark
@@ -143,7 +143,7 @@ namespace LeninSearch.Xam
                 BookName = corpusFileItem.Name,
                 File = corpusFileItem.Path,
                 ParagraphIndex = pIndex,
-                ParagraphText = ofd.GetParagraph(pIndex).GetText(OptimizedDictionary.Instance.Words),
+                ParagraphText = lsiData.LsData.Paragraphs[pIndex].GetText(LsDictionary.Instance.Words),
                 CorpusItemName = corpusItem.Name,
                 Id = Guid.NewGuid(),
                 When = DateTime.UtcNow
@@ -345,9 +345,9 @@ namespace LeninSearch.Xam
         private async void ClipboardButtonOnClicked(object sender, EventArgs e)
         {
             await Rotate360(ClipboardButton);
-            var ofd = OptimizedFileDataSource.Get(_state.ReadingFile);
+            var lsiData = LsIndexDataSource.Get(_state.ReadingFile);
             var indexes = _selectionDecorator.SelectedIndexes;
-            var pTexts = indexes.Select(i => ofd.GetParagraph(i).GetText(OptimizedDictionary.Instance.Words)).ToList();
+            var pTexts = indexes.Select(i => lsiData.LsData.Paragraphs[i].GetText(LsDictionary.Instance.Words)).ToList();
             var separator = $"{Environment.NewLine}{Environment.NewLine}";
             var cbText = string.Join(separator, pTexts);
             CrossClipboard.Current.SetText(cbText);
@@ -457,12 +457,12 @@ namespace LeninSearch.Xam
             var scrollingSpace = ResultScroll.ContentSize.Height - ResultScroll.Height - 11; // 10 is a margin
             if (e.ScrollY == 0) // reached top
             {
-                var ofd = OptimizedFileDataSource.Get(_state.ReadingFile);
+                var lsData = LsIndexDataSource.Get(_state.ReadingFile).LsData;
 
                 if (ResultStack.Children.Count > Settings.MaxParagraphCount) // run stack cleanup
                 {
                     ResultScroll.Scrolled -= ResultScrollOnScrolled;
-                    Task.Run(() => Device.InvokeOnMainThreadAsync(async () => await RebuildScrollFromTop(ofd)));
+                    Task.Run(() => Device.InvokeOnMainThreadAsync(async () => await RebuildScrollFromTop(lsData)));
                 }
                 else
                 {
@@ -470,7 +470,7 @@ namespace LeninSearch.Xam
                     while (scrollToAfter < Settings.ScreensPulledOnTopScroll * ResultScroll.Height)
                     {
                         var readingIndexMin = (ushort)ResultStack.Children[0].TabIndex;
-                        var p = ofd.GetPrevParagraph(readingIndexMin);
+                        var p = lsData.GetPrevParagraph(readingIndexMin);
                         if (p == null) return;
                         var pView = _paragraphViewBuilder.Build(p, _state);
                         ResultStack.Children.Insert(0, pView);
@@ -486,11 +486,11 @@ namespace LeninSearch.Xam
             }
             else if (scrollingSpace <= e.ScrollY) // reached bottom
             {
-                var ofd = OptimizedFileDataSource.Get(_state.ReadingFile);
+                var lsData = LsIndexDataSource.Get(_state.ReadingFile).LsData;
                 if (ResultStack.Children.Count > Settings.MaxParagraphCount) // run stack cleanup
                 {
                     ResultScroll.Scrolled -= ResultScrollOnScrolled;
-                    Task.Run(() => Device.InvokeOnMainThreadAsync(async () => await RebuildScrollFromBottom(ofd)));
+                    Task.Run(() => Device.InvokeOnMainThreadAsync(async () => await RebuildScrollFromBottom(lsData)));
                 }
                 else
                 {
@@ -498,7 +498,7 @@ namespace LeninSearch.Xam
                     while (addedHeight < Settings.ScreensPulledOnBottomScroll * ResultScroll.Height)
                     {
                         var readingIndexMax = (ushort)ResultStack.Children.Last().TabIndex;
-                        var p = ofd.GetNextParagraph(readingIndexMax);
+                        var p = lsData.GetNextParagraph(readingIndexMax);
                         if (p == null) return;
                         var pView = _paragraphViewBuilder.Build(p, _state);
                         ResultStack.Children.Add(pView);
@@ -511,16 +511,16 @@ namespace LeninSearch.Xam
             }
         }
 
-        private async Task RebuildScroll(OptimizedFileData ofd, ushort index, double scrollToAfter)
+        private async Task RebuildScroll(LsData lsData, ushort index, double scrollToAfter)
         {
             await RebuildScroll(false);
-            var p = ofd.GetParagraph(index);
+            var p = lsData.Paragraphs[index];
             while (!IsResultScrollReady())
             {
                 if (p == null) break;
                 var pView = _paragraphViewBuilder.Build(p, _state);
                 ResultStack.Children.Add(pView);
-                p = ofd.GetNextParagraph(p.Index);
+                p = lsData.GetNextParagraph(p.Index);
             }
             await ResultScroll.ScrollToAsync(0, scrollToAfter, false);
             ResultScroll.IsEnabled = false;
@@ -530,20 +530,20 @@ namespace LeninSearch.Xam
             ResultScroll.Scrolled += ResultScrollOnScrolled;
         }
 
-        private async Task RebuildScrollFromTop(OptimizedFileData ofd)
+        private async Task RebuildScrollFromTop(LsData lsData)
         {
             var firstChildIndex = (ushort)ResultStack.Children[0].TabIndex;
-            var prevP = ofd.GetPrevParagraph(firstChildIndex);
+            var prevP = lsData.GetPrevParagraph(firstChildIndex);
             if (prevP == null) return;
             var prevView = _paragraphViewBuilder.Build(prevP, _state);
             ResultStack.Children.Insert(0, prevView);
             var scrollToAfter = ResultStack.Children[0].Height;
             ResultScroll.Scrolled -= ResultScrollOnScrolled;
             ResultScroll.IsEnabled = false;
-            await RebuildScroll(ofd, prevP.Index, scrollToAfter);
+            await RebuildScroll(lsData, prevP.Index, scrollToAfter);
         }
 
-        private async Task RebuildScrollFromBottom(OptimizedFileData ofd)
+        private async Task RebuildScrollFromBottom(LsData lsData)
         {
             double heightFromBottom = 0;
             int childIndex;
@@ -558,7 +558,7 @@ namespace LeninSearch.Xam
 
             var scrollY = heightFromBottom - ResultScroll.Height;
             var pIndex = (ushort)ResultStack.Children[childIndex].TabIndex;
-            await RebuildScroll(ofd, pIndex, scrollY);
+            await RebuildScroll(lsData, pIndex, scrollY);
         }
 
         private async Task DisplayCorpusBooks()
@@ -644,8 +644,8 @@ namespace LeninSearch.Xam
                 HideSearchResultBar();
                 await RebuildScroll(true);
 
-                var ofd = OptimizedFileDataSource.Get(cfi.Path);
-                var p = ofd.GetPrevParagraph(paragraphIndex) ?? ofd.GetParagraph(paragraphIndex);
+                var lsData = LsIndexDataSource.Get(cfi.Path).LsData;
+                var p = lsData.GetPrevParagraph(paragraphIndex) ?? lsData.Paragraphs[paragraphIndex];
                 while (!IsResultScrollReady())
                 {
                     if (p == null) break;
@@ -654,7 +654,7 @@ namespace LeninSearch.Xam
 
                     ResultStack.Children.Add(pView);
 
-                    p = ofd.GetNextParagraph(p.Index);
+                    p = lsData.GetNextParagraph(p.Index);
                 }
 
                 await ResultScroll.ScrollToAsync(0, 20, true);
@@ -685,8 +685,8 @@ namespace LeninSearch.Xam
                 FontSize = Settings.SummaryFontSize
             });
 
-            var ofd = OptimizedFileDataSource.Get(cfi.Path);
-            var headings = ofd.Headings.ToList();
+            var lsData = LsIndexDataSource.Get(cfi.Path).LsData;
+            var headings = lsData.Headings.ToList();
             if (headings?.Any() != true)
             {
                 ResultStack.Children.Add(new Label
@@ -702,7 +702,7 @@ namespace LeninSearch.Xam
             {
                 foreach (var heading in headings)
                 {
-                    var headerText = heading.GetText(OptimizedDictionary.Instance.Words);
+                    var headerText = heading.GetText(LsDictionary.Instance.Words);
                     var headerLabel = new Label
                     { Text = headerText, TextColor = Color.Black, FontSize = Settings.SummaryFontSize };
                     ResultStack.Children.Add(headerLabel);
@@ -715,23 +715,23 @@ namespace LeninSearch.Xam
             await ResultScrollFadeIn();
         }
 
-        private async Task DisplaySearchHeaders(List<SearchHeaderResult> headers)
+        private async Task DisplaySearchHeadings(List<ParagraphSearchResult> searchResults)
         {
             _state.ReadingFile = null;
 
             HideSearchResultBar();
 
-            foreach (var h in headers)
+            foreach (var sr in searchResults)
             {
                 var corpusItem = _state.GetCurrentCorpusItem();
-                var corpusItemFile = corpusItem.Files.First(cfi => cfi.Path == h.File);
+                var corpusItemFile = corpusItem.Files.First(cfi => cfi.Path == sr.File);
 
-                var headerText = $"{corpusItem.Name}, {corpusItemFile.Name}, {h.Text}";
-                var headerLabel = new Label
-                { Text = headerText, TextColor = Color.Black, FontSize = Settings.SummaryFontSize };
-                ResultStack.Children.Add(headerLabel);
+                var headingText = $"{corpusItem.Name}, {corpusItemFile.Name}, {sr.Text}";
+                var headingLabel = new Label
+                { Text = headingText, TextColor = Color.Black, FontSize = Settings.SummaryFontSize };
+                ResultStack.Children.Add(headingLabel);
                 var readLink = ConstructHyperlink("читать",
-                    new Command(async () => await Read(corpusItemFile, h.Index)), Settings.SummaryFontSize);
+                    new Command(async () => await Read(corpusItemFile, sr.ParagraphIndex)), Settings.SummaryFontSize);
                 ResultStack.Children.Add(readLink);
             }
 
@@ -768,20 +768,29 @@ namespace LeninSearch.Xam
 
             await ReplaceCorpusWithLoading();
 
-            var isHeaderSearch = SearchEntry.Text.StartsWith("*");
-            var searchQuery = SearchEntry.Text.TrimStart('*');
-            var searchOptions = new SearchOptions(searchQuery, "", OptimizedDictionary.Instance.Reversed);
-            _state.SearchOptions = searchOptions;
+            var isHeadingSearch = SearchEntry.Text.StartsWith("*");
+            var searchRequest = SearchRequest.Construct(SearchEntry.Text.TrimStart('*'), LsDictionary.Instance.Words);
+            _state.SearchRequest = searchRequest;
             CorpusButton.IsEnabled = false;
+            
+            var searchResults = new List<ParagraphSearchResult>();
+            foreach (var fileItem in currentCorpusItem.Files)
+            {
+                var lsiData = LsIndexDataSource.Get(fileItem.Path);
+                var results = isHeadingSearch
+                    ? _searcher.SearchHeadings(lsiData, searchRequest)
+                    : _searcher.SearchParagraphs(lsiData, searchRequest);
 
-            var headerResults = new List<SearchHeaderResult>();
-            if (isHeaderSearch)
-            {
-                await _searcher.SearchHeaders(currentCorpusItem, searchOptions, headerResults);
-            }
-            else
-            {
-                await _searcher.Search(currentCorpusItem, searchOptions, _state.ParagraphResults);
+                foreach (var r in results)
+                {
+                    r.File = fileItem.Path;
+                    if (isHeadingSearch)
+                    {
+                        r.Text = lsiData.LsData.Headings[r.ParagraphIndex].GetText(LsDictionary.Instance.Words);
+                    }
+                }
+
+                searchResults.AddRange(results);
             }
 
             await ReplaceLoadingWithCorpus();
@@ -794,9 +803,9 @@ namespace LeninSearch.Xam
                 _state.CurrentParagraphResultIndex = 0;
                 await OnCurrentParagraphResultIndexChange();
             }
-            else if (headerResults.Count > 0)
+            else if (isHeadingSearch)
             {
-                await DisplaySearchHeaders(headerResults);
+                await DisplaySearchHeadings(searchResults);
             }
             else
             {
@@ -859,17 +868,17 @@ namespace LeninSearch.Xam
             await RebuildScroll(true);
 
             _state.ReadingFile = paragraphResult.File;
-            var ofd = OptimizedFileDataSource.Get(paragraphResult.File);
+            var lsData = LsIndexDataSource.Get(paragraphResult.File).LsData;
 
-            var p = ofd.GetParagraph(paragraphResult.Index);
+            var p = lsData.Paragraphs[paragraphResult.ParagraphIndex];
 
             ResultStack.Children.Add(_paragraphViewBuilder.Build(p, _state));
-            var prevP = ofd.GetPrevParagraph(p.Index);
+            var prevP = lsData.GetPrevParagraph(p.Index);
             ResultStack.Children.Insert(0, _paragraphViewBuilder.Build(prevP, _state));
             var maxIndex = p.Index;
             while (!IsResultScrollReady())
             {
-                var nextP = ofd.GetNextParagraph(maxIndex);
+                var nextP = lsData.GetNextParagraph(maxIndex);
                 if (nextP == null) break;
                 maxIndex = nextP.Index;
                 ResultStack.Children.Add(_paragraphViewBuilder.Build(nextP, _state));

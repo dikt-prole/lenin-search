@@ -1,14 +1,22 @@
-﻿namespace LeninSearch.Standard.Core.Search
+﻿using System.Collections.Generic;
+
+namespace LeninSearch.Standard.Core.Search
 {
     public class ParagraphSearchResult
     {
-        public ParagraphSearchResult(ushort paragraphIndex, WordIndexChain wordIndexChain)
+        public ParagraphSearchResult(ushort paragraphIndex)
         {
             ParagraphIndex = paragraphIndex;
-            WordIndexChain = wordIndexChain;
+            WordIndexChains = new List<WordIndexChain>();
+        }
+        public void AddChain(WordIndexChain chain)
+        {
+            WordIndexChains.Add(chain);
         }
 
         public ushort ParagraphIndex { get; set; }
-        public WordIndexChain WordIndexChain { get; set; }
+        public List<WordIndexChain> WordIndexChains { get; set; }
+        public string File { get; set; }
+        public string Text { get; set; }
     }
 }

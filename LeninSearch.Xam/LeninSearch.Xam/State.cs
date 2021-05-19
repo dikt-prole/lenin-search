@@ -25,8 +25,8 @@ namespace LeninSearch.Xam
 
         public string CorpusName { get; set; }
         public string ReadingFile { get; set; }
-        public SearchOptions SearchOptions { get; set; }
-        public List<SearchParagraphResult> ParagraphResults { get; set; }
+        public SearchRequest SearchRequest { get; set; }
+        public List<ParagraphSearchResult> ParagraphResults { get; set; }
         public int CurrentParagraphResultIndex { get; set; }
         public ushort ReadingParagraphIndex { get; set; }
 
@@ -60,7 +60,7 @@ namespace LeninSearch.Xam
             return CurrentParagraphResultIndex  < ParagraphResults.Count - 1;
         }
 
-        public SearchParagraphResult GetCurrentSearchParagraphResult()
+        public ParagraphSearchResult GetCurrentSearchParagraphResult()
         {
             if (ParagraphResults.Count == 0) return null;
 

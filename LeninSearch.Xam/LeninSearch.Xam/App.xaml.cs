@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using LeninSearch.Standard.Core.Oprimized;
+using LeninSearch.Standard.Core.Search;
 using LeninSearch.Xam.Core;
 using Newtonsoft.Json;
 using Xamarin.Forms;
@@ -35,8 +35,8 @@ namespace LeninSearch.Xam
         protected override void OnSleep()
         {
             Debug.WriteLine($"OnSleep");
-            OptimizedFileDataSource.Clear();
-            OptimizedDictionary.Clear();
+            LsIndexDataSource.Clear();
+            LsDictionary.Clear();
             SaveState(_state);
         }
 
@@ -78,9 +78,9 @@ namespace LeninSearch.Xam
             {
                 CorpusName = corpusItem.Name,
                 CurrentParagraphResultIndex = -1,
-                ParagraphResults = new List<SearchParagraphResult>(),
+                ParagraphResults = new List<ParagraphSearchResult>(),
                 ReadingFile = null,
-                SearchOptions = null
+                SearchRequest = null
             };
         }
     }

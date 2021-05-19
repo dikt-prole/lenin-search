@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using LeninSearch.Standard.Core.Oprimized;
+using LeninSearch.Standard.Core.OldShit;
+using LeninSearch.Standard.Core.Optimized;
 
 namespace LeninSearch.Standard.Core
 {
@@ -97,10 +98,16 @@ namespace LeninSearch.Standard.Core
             var cursor = 0;
 
             var wordPositionBytesCount = BitConverter.ToUInt32(lsIndexBytes, cursor); cursor += 4;
-            var headerBytesCount = BitConverter.ToUInt32(lsIndexBytes, cursor); cursor += 4;
+            var headingBytesCount = BitConverter.ToUInt32(lsIndexBytes, cursor); cursor += 4;
             var pageBytesCount = BitConverter.ToUInt32(lsIndexBytes, cursor); cursor += 4;
 
-            var wordPositionDictionary = new Dictionary<uint, List<LsWordParagraphData>>();
+            var lsIndexData = new LsIndexData
+            {
+                WordParagraphData = new Dictionary<uint, List<LsWordParagraphData>>(),
+                HeadingData = new List<LsWordHeadingData>(),
+                PageData = new List<LsPageData>()
+            };
+
             while (cursor < wordPositionBytesCount + 12)
             {
                 var wordIndex = BitConverter.ToUInt32(lsIndexBytes, cursor); cursor += 4;
@@ -116,13 +123,34 @@ namespace LeninSearch.Standard.Core
                         WordPosition = wordPosition
                     });
                 }
-                wordPositionDictionary.Add(wordIndex, wordInParagraphPositions);
+                lsIndexData.WordParagraphData.Add(wordIndex, wordInParagraphPositions);
             }
 
-            return new LsIndexData
+            while (cursor < wordPositionBytesCount + 12 + headingBytesCount)
             {
-                WordParagraphData = wordPositionDictionary
-            };
+                var headingIndex = BitConverter.ToUInt16(lsIndexBytes, cursor); cursor += 2;
+                var headingLevel = lsIndexBytes[cursor]; cursor += 1;
+                var headingData = new LsWordHeadingData
+                {
+                    Index = headingIndex,
+                    Level = headingLevel
+                };
+                lsIndexData.HeadingData.Add(headingData);
+            }
+
+            while (cursor < wordPositionBytesCount + 12 + headingBytesCount + pageBytesCount)
+            {
+                var pageIndex = BitConverter.ToUInt16(lsIndexBytes, cursor); cursor += 2;
+                var pageNumber = BitConverter.ToUInt16(lsIndexBytes, cursor); cursor += 2;
+                var pageData = new LsPageData
+                {
+                    Index = pageIndex,
+                    Number = pageNumber
+                };
+                lsIndexData.PageData.Add(pageData);
+            }
+
+            return lsIndexData;
         }
     }
 }

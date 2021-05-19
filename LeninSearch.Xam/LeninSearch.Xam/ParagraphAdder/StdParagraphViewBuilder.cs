@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using LeninSearch.Standard.Core;
-using LeninSearch.Standard.Core.Oprimized;
+using LeninSearch.Standard.Core.Optimized;
 using LeninSearch.Xam.Controls;
 using LeninSearch.Xam.Core;
 using Xamarin.Forms;
@@ -11,25 +11,22 @@ namespace LeninSearch.Xam.ParagraphAdder
 {
     public class StdParagraphViewBuilder : IParagraphViewBuilder
     {
-        public View Build(OptimizedParagraph p, State state)
+        public View Build(LsParagraph p, State state)
         {
-            if (p.Index != state.GetCurrentSearchParagraphResult()?.Index)
+            var paragraphResult = state.ParagraphResults.FirstOrDefault(pr => pr.ParagraphIndex != p.Index);
+            if (paragraphResult == null)
             {
                 return new ExtendedLabel
                 {
-                    Text = p.GetText(OptimizedDictionary.Instance.Words), TextColor = Color.Black, JustifyText = true, Margin = new Thickness(0, 5, 0, 0),
+                    Text = p.GetText(LsDictionary.Instance.Words), TextColor = Color.Black, JustifyText = true, Margin = new Thickness(0, 5, 0, 0),
                     TabIndex = p.Index
                 };
             }
 
-            var pText = p.GetText(OptimizedDictionary.Instance.Words);
+            var pText = p.GetText(LsDictionary.Instance.Words);
+            var chain = paragraphResult.WordIndexChains[0];
 
-            var so = state.SearchOptions;
-            var selection = TextUtil.GetOrderedWords(so.AdditionalQuery);
-            if (!string.IsNullOrWhiteSpace(so.MainQuery))
-            {
-                selection.Add(so.MainQuery);
-            }
+            var selection = chain.WordIndexes.Select(wi => LsDictionary.Instance.Words[wi]).ToList();
 
             var fString = new FormattedString();
 
@@ -49,26 +46,31 @@ namespace LeninSearch.Xam.ParagraphAdder
 
         private Span GetHeadingSpan(State state)
         {
-            //var corpusFileItem = state.GetReadingCorpusFileItem();
-            //var searchParagraphResult = state.GetCurrentSearchParagraphResult();
+            var corpusFileItem = state.GetReadingCorpusFileItem();
+            var searchParagraphResult = state.GetCurrentSearchParagraphResult();
 
-            //var ofd = OptimizedFileDataSource.Get(corpusFileItem.Path);
+            var lsiData = LsIndexDataSource.Get(corpusFileItem.Path);
 
-            //var header = ofd.GetParagraphHeader(searchParagraphResult.Index);
-            //var page = ofd.GetPage(searchParagraphResult.Index);
-            //var pageHeader = corpusFileItem.Name;
-            //if (page != null || header != null)
-            //{
-            //    pageHeader = page == null
-            //        ? header.GetText()
-            //        : header == null
-            //            ? $"{corpusFileItem.Name}, стр. {page}"
-            //            : $"{corpusFileItem.Name}, стр. {page}, {header.GetText()}";
-            //}
+            var headings = lsiData.LsData.GetHeadingsDownToZero(searchParagraphResult.ParagraphIndex);
+            var page = lsiData.LsData.GetClosestPage(searchParagraphResult.ParagraphIndex);
+
+            var spanText = corpusFileItem.Name;
+            if (page != null || headings.Any())
+            {
+                var headingText = headings.Count > 0
+                    ? string.Join(" - ", headings.Select(h => h.GetText(LsDictionary.Instance.Words)))
+                    : null;
+
+                spanText = page == null
+                    ? headingText
+                    : string.IsNullOrEmpty(headingText)
+                        ? $"{corpusFileItem.Name}, стр. {page}"
+                        : $"{corpusFileItem.Name}, стр. {page}, {headingText}";
+            }
 
             return new Span
             {
-                Text = $"NOT IMPLEMENTED",
+                Text = spanText,
                 BackgroundColor = Settings.MainColor,
                 TextColor = Color.White
             };

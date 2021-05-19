@@ -1,4 +1,4 @@
-﻿using LeninSearch.Standard.Core.Oprimized;
+﻿using LeninSearch.Standard.Core.Optimized;
 using LeninSearch.Xam.Core;
 using Xamarin.Forms;
 
@@ -13,7 +13,7 @@ namespace LeninSearch.Xam.ParagraphAdder
             _builder = builder;
         }
 
-        public View Build(OptimizedParagraph p, State state)
+        public View Build(LsParagraph p, State state)
         {
             if (p.IsPageNumber)
             {
@@ -22,12 +22,10 @@ namespace LeninSearch.Xam.ParagraphAdder
                 return pLabel;
             }
 
-            if (p.IsHeader)
+            if (p.IsHeading)
             {
-                var ofd = OptimizedFileDataSource.Get(state.ReadingFile);
-                //var headerText = ofd.GetHeader(p.Index).GetText();
-                var headerText = "NOT IMPLEMENTED";
-                var pLabel = new Label { Text = headerText, TextColor = Color.Black, HorizontalOptions = LayoutOptions.Center, FontAttributes = FontAttributes.Bold };
+                var headingText = p.GetText(LsDictionary.Instance.Words);
+                var pLabel = new Label { Text = headingText, TextColor = Color.Black, HorizontalOptions = LayoutOptions.Center, FontAttributes = FontAttributes.Bold };
                 pLabel.TabIndex = p.Index;
                 return pLabel;
             }

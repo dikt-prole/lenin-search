@@ -1,10 +1,10 @@
-﻿using LeninSearch.Standard.Core.Oprimized;
+﻿using LeninSearch.Standard.Core.Optimized;
 using Xamarin.Forms;
 
 namespace LeninSearch.Xam.ParagraphAdder
 {
     public interface IParagraphViewBuilder
     {
-        View Build(OptimizedParagraph p, State state);
+        View Build(LsParagraph p, State state);
     }
 }

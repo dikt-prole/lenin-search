@@ -1,0 +1,77 @@
+﻿using System.Collections.Generic;
+using System.Reflection;
+
+namespace LeninSearch.Standard.Core.Optimized
+{
+    public class LsIndexData
+    {
+        public Dictionary<uint, List<LsWordParagraphData>> WordParagraphData { get; set; }
+        public List<LsWordHeadingData> HeadingData { get; set; }
+        public List<LsPageData> PageData { get; set; }
+
+        private LsData _lsData;
+        public LsData LsData
+        {
+            get
+            {
+                if (_lsData == null)
+                {
+                    _lsData = ToLsData();
+                }
+
+                return _lsData;
+            }
+        }
+
+        public LsData ToLsData()
+        {
+            var lsData = new LsData
+            {
+                Paragraphs = new Dictionary<ushort, LsParagraph>(),
+                Headings = new List<LsHeading>(),
+                Pages = new Dictionary<ushort, ushort>()
+            };
+
+            foreach (var wordIndex in WordParagraphData.Keys)
+            {
+                foreach (var wpData in WordParagraphData[wordIndex])
+                {
+                    if (!lsData.Paragraphs.ContainsKey(wpData.ParagraphIndex))
+                    {
+                        lsData.Paragraphs.Add(wpData.ParagraphIndex, new LsParagraph(wpData.ParagraphIndex));
+                    }
+
+                    AddWord(lsData.Paragraphs[wpData.ParagraphIndex].WordIndexes, wpData, wordIndex);
+                }
+            }
+
+            foreach (var headingData in HeadingData)
+            {
+                var paragraph = lsData.Paragraphs[headingData.Index];
+                var lsHeading = LsHeading.FromLsParagraph(paragraph, headingData.Level);
+                lsData.Headings.Add(lsHeading);
+                lsData.Paragraphs[headingData.Index].IsHeading = true;
+            }
+
+            foreach (var pageData in PageData)
+            {
+                lsData.Pages.Add(pageData.Index, pageData.Number);
+                lsData.Paragraphs[pageData.Index].IsPageNumber = true;
+                lsData.Paragraphs[pageData.Index].PageNumber = pageData.Number;
+            }
+
+            return lsData;
+        }
+
+        private void AddWord(List<uint> paragraphWords, LsWordParagraphData wpData, uint wordIndex)
+        {
+            while (paragraphWords.Count <= wpData.WordPosition)
+            {
+                paragraphWords.Add(0);
+            }
+
+            paragraphWords[wpData.WordPosition] = wordIndex;
+        }
+
+    }
+}
