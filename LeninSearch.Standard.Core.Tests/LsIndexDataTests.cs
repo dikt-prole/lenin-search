@@ -8,10 +8,9 @@ using NUnit.Framework;
 namespace LeninSearch.Standard.Core.Tests
 {
     public class LsIndexDataTests
-    {
-        private const string DicFile = @"C:\Users\vbncmx\source\repos\lenin-search\corpus\ls\corpus";
-        private const string LsIndexFolder = @"C:\Users\vbncmx\source\repos\lenin-search\corpus\ls_index";
-        private const string LsFolder = @"C:\Users\vbncmx\source\repos\lenin-search\corpus\ls_test";
+    {        
+        private const string LsIndexFolder = @"C:\Repo\lenin-search\corpus\ls_index";
+        private const string LsFolder = @"C:\Repo\lenin-search\corpus\ls_test";
         private string[] _dictionary;
 
         [SetUp]

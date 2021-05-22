@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -11,9 +11,8 @@ namespace LeninSearch.Standard.Core.Tests
     public class LsSearcherTests
     {
         private LsSearcher _lsSearcher;
-        private const string DicFile = @"C:\Users\vbncmx\source\repos\lenin-search\corpus\ls\corpus";
-        private const string LsIndexFolder = @"C:\Users\vbncmx\source\repos\lenin-search\corpus\ls_index";
-        private const string LsFolder = @"C:\Users\vbncmx\source\repos\lenin-search\corpus\ls_test";
+        private const string LsIndexFolder = @"C:\Repo\lenin-search\corpus\ls_index";
+        private const string LsFolder = @"C:\Repo\lenin-search\corpus\ls_test";
         private string[] _dictionary;
 
         [SetUp]
@@ -24,10 +23,10 @@ namespace LeninSearch.Standard.Core.Tests
             _dictionary = File.ReadAllLines(dictionaryPath, Encoding.UTF8);
         }
 
-        [TestCase("lenin-t39.lsi", "диктатура* пролетар* + латин* науч*", 1)]
-        [TestCase("marxengels-t23.lsi", "Паук совершает операции", 1)]
-        [TestCase("stalin-t12.lsi", "политическая партия рабочего класса", 1)]
-        [TestCase("hegel-objective-logic.lsi", "находящееся существенно + определение", 1)]
+        [TestCase("lenin-t39.lsi", "РґРёРєС‚Р°С‚СѓСЂР°* РїСЂРѕР»РµС‚Р°СЂ* + Р»Р°С‚РёРЅ* РЅР°СѓС‡*", 1)]
+        [TestCase("marxengels-t23.lsi", "РџР°СѓРє СЃРѕРІРµСЂС€Р°РµС‚ РѕРїРµСЂР°С†РёРё", 1)]
+        [TestCase("stalin-t12.lsi", "РїРѕР»РёС‚РёС‡РµСЃРєР°СЏ РїР°СЂС‚РёСЏ СЂР°Р±РѕС‡РµРіРѕ РєР»Р°СЃСЃР°", 1)]
+        [TestCase("hegel-objective-logic.lsi", "РЅР°С…РѕРґСЏС‰РµРµСЃСЏ СЃСѓС‰РµСЃС‚РІРµРЅРЅРѕ + РѕРїСЂРµРґРµР»РµРЅРёРµ", 1)]
         public void SearchParagraphs_ParagraphsAreFound(string lsiFile, string query, int expectedCount)
         {
             // Arrange
@@ -44,10 +43,10 @@ namespace LeninSearch.Standard.Core.Tests
             Assert.That(searchResults.Count, Is.EqualTo(expectedCount));
         }
 
-        [TestCase("lenin-t39.lsi", "о современном + полож* ближайш*", 1)]
-        [TestCase("marxengels-t23.lsi", "повременная заработная плат*", 1)]
-        [TestCase("stalin-t12.lsi", "растущий подъем социалистич*", 1)]
-        [TestCase("hegel-objective-logic.lsi", "определенные сущности или опред*", 1)]
+        [TestCase("lenin-t39.lsi", "Рѕ СЃРѕРІСЂРµРјРµРЅРЅРѕРј + РїРѕР»РѕР¶* Р±Р»РёР¶Р°Р№С€*", 1)]
+        [TestCase("marxengels-t23.lsi", "РїРѕРІСЂРµРјРµРЅРЅР°СЏ Р·Р°СЂР°Р±РѕС‚РЅР°СЏ РїР»Р°С‚*", 1)]
+        [TestCase("stalin-t12.lsi", "СЂР°СЃС‚СѓС‰РёР№ РїРѕРґСЉРµРј СЃРѕС†РёР°Р»РёСЃС‚РёС‡*", 1)]
+        [TestCase("hegel-objective-logic.lsi", "РѕРїСЂРµРґРµР»РµРЅРЅС‹Рµ СЃСѓС‰РЅРѕСЃС‚Рё РёР»Рё РѕРїСЂРµРґ*", 1)]
         public void SearchParagraphs_HeadingsAreFound(string lsiFile, string query, int expectedCount)
         {
             // Arrange
