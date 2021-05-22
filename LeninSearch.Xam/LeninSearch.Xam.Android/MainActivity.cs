@@ -17,6 +17,8 @@ using LeninSearch.Standard.Core.Reporting;
 using LeninSearch.Xam.Core;
 using LeninSearch.Standard.Core;
 using System.Threading;
+using System.Diagnostics;
+using System.Linq;
 
 namespace LeninSearch.Xam.Droid
 {
@@ -61,18 +63,19 @@ namespace LeninSearch.Xam.Droid
                         Directory.Delete(FileUtil.CorpusFolder, true);
                     }
                     UnzipAsset("main.zip", FileUtil.CorpusFolder);
-                                        
+
                     // 2. index
                     var lsFiles = Directory.GetFiles(FileUtil.CorpusFolder, "*.ls");
-                    foreach (var lsFile in lsFiles)
+                    var oneByOne = Build.VERSION.SdkInt == BuildVersionCodes.LollipopMr1;
+                    if (oneByOne)
                     {
-                        var lsBytes = File.ReadAllBytes(lsFile);
-                        var lsData = LsUtil.LoadOptimized(lsBytes, CancellationToken.None);                        
-                        var lsiBytes = LsIndexUtil.ToLsIndexBytes(lsData);
-                        var lsiFileName = lsFile.Replace(".ls", ".lsi");
-                        File.WriteAllBytes(lsiFileName, lsiBytes);
-                        File.Delete(lsFile);
+                        foreach (var lsFile in lsFiles) ConvertLsToLsi(lsFile);
                     }
+                    else
+                    {
+                        var tasks = lsFiles.Select(lsFile => Task.Run(() => ConvertLsToLsi(lsFile))).ToArray();
+                        Task.WaitAll(tasks);
+                    }                    
                 }
             }
 
@@ -82,6 +85,17 @@ namespace LeninSearch.Xam.Droid
             _app = new App(_globalEvents);
             LoadApplication(_app);
         }
+
+        private static void ConvertLsToLsi(string lsFile)
+        {
+            var lsiFileName = lsFile.Replace(".ls", ".lsi");
+            var lsBytes = File.ReadAllBytes(lsFile);
+            var lsData = LsUtil.LoadOptimized(lsBytes, CancellationToken.None);
+            var lsiBytes = LsIndexUtil.ToLsIndexBytes(lsData);
+            File.WriteAllBytes(lsiFileName, lsiBytes);
+            File.Delete(lsFile);
+        }
+
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
