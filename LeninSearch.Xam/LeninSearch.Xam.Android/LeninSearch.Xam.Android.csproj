@@ -98,6 +98,10 @@
     <AndroidResource Include="Resources\drawable-xxxhdpi\down.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\LeninSearch.Standard.Core\LeninSearch.Standard.Core.csproj">
+      <Project>{0bc475e1-73ab-4cb9-9f88-de866fa9f6f5}</Project>
+      <Name>LeninSearch.Standard.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\LeninSearch.Xam\LeninSearch.Xam.csproj">
       <Project>{76CD83A0-F952-4416-98D8-2AAA30994E05}</Project>
       <Name>LeninSearch.Xam</Name>

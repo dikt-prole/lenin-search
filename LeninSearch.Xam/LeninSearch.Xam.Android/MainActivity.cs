@@ -9,14 +9,12 @@ using Android.Views;
 using Android.Widget;
 using Android.OS;
 using Java.Util.Zip;
-using LeninSearch.Xam.Core;
-using LeninSearch.Xam.Core.Oprimized;
-using LeninSearch.Xam.Core.Reporting;
-using LeninSearch.Xam.Searcher;
 using Newtonsoft.Json;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
+using LeninSearch.Standard.Core.Reporting;
+using LeninSearch.Xam.Core;
 
 namespace LeninSearch.Xam.Droid
 {
@@ -37,7 +35,7 @@ namespace LeninSearch.Xam.Droid
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
 
-            OfflineSearcher.OneByOne = Build.VERSION.SdkInt ==  BuildVersionCodes.LollipopMr1;
+            //OfflineSearcher.OneByOne = Build.VERSION.SdkInt ==  BuildVersionCodes.LollipopMr1;
 
             ReportItem.GlobalDeviceId = Android.Provider.Settings.Secure.GetString(Application.Context.ContentResolver, Android.Provider.Settings.Secure.AndroidId);
 
