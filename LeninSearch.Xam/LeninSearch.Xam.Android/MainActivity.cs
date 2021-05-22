@@ -15,6 +15,8 @@ using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
 using LeninSearch.Standard.Core.Reporting;
 using LeninSearch.Xam.Core;
+using LeninSearch.Standard.Core;
+using System.Threading;
 
 namespace LeninSearch.Xam.Droid
 {
@@ -53,11 +55,24 @@ namespace LeninSearch.Xam.Droid
                                 corpus.Version;
                 if (needUnzip)
                 {
+                    // 1. unzip
                     if (Directory.Exists(FileUtil.CorpusFolder))
                     {
                         Directory.Delete(FileUtil.CorpusFolder, true);
                     }
                     UnzipAsset("main.zip", FileUtil.CorpusFolder);
+                                        
+                    // 2. index
+                    var lsFiles = Directory.GetFiles(FileUtil.CorpusFolder, "*.ls");
+                    foreach (var lsFile in lsFiles)
+                    {
+                        var lsBytes = File.ReadAllBytes(lsFile);
+                        var lsData = LsUtil.LoadOptimized(lsBytes, CancellationToken.None);                        
+                        var lsiBytes = LsIndexUtil.ToLsIndexBytes(lsData);
+                        var lsiFileName = lsFile.Replace(".ls", ".lsi");
+                        File.WriteAllBytes(lsiFileName, lsiBytes);
+                        File.Delete(lsFile);
+                    }
                 }
             }
 

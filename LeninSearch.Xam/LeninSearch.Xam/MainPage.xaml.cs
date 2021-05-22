@@ -817,6 +817,7 @@ namespace LeninSearch.Xam
                     TextColor = Settings.MainColor,
                     FontSize = Settings.MainFontSize
                 });
+
                 await ResultScrollFadeIn();
             }
         }
