@@ -772,26 +772,42 @@ namespace LeninSearch.Xam
             var searchRequest = SearchRequest.Construct(SearchEntry.Text.TrimStart('*'), LsDictionary.Instance.Words);
             _state.SearchRequest = searchRequest;
             CorpusButton.IsEnabled = false;
-            
+
+            Console.WriteLine($"[ls] searchRequest.NonOrdered.Count = {searchRequest.NonOrdered.Count}");
+            Console.WriteLine($"[ls] searchRequest.Ordered.Count = {searchRequest.Ordered.Count}");
+
             var searchResults = new List<ParagraphSearchResult>();
+
             foreach (var fileItem in currentCorpusItem.Files)
             {
-                var lsiData = LsIndexDataSource.Get(fileItem.Path);
-                var results = isHeadingSearch
-                    ? _searcher.SearchHeadings(lsiData, searchRequest)
-                    : _searcher.SearchParagraphs(lsiData, searchRequest);
-
-                foreach (var r in results)
-                {
-                    r.File = fileItem.Path;
-                    if (isHeadingSearch)
-                    {
-                        r.Text = lsiData.LsData.Headings[r.ParagraphIndex].GetText(LsDictionary.Instance.Words);
-                    }
-                }
-
+                var results = DoSearch(fileItem, searchRequest, isHeadingSearch);
                 searchResults.AddRange(results);
             }
+
+            //if (ConcurrentOptions.OneByOne)
+            //{
+            //    foreach (var fileItem in currentCorpusItem.Files)
+            //    {
+            //        var results = DoSearch(fileItem, searchRequest, isHeadingSearch);
+            //        searchResults.AddRange(results);
+            //    }
+            //}
+            //else
+            //{
+            //    for (var i = 0; i < currentCorpusItem.Files.Count; i += ConcurrentOptions.LsToLsiBatchSize)
+            //    {
+            //        var tasks = currentCorpusItem.Files.Skip(i).Take(ConcurrentOptions.LsToLsiBatchSize)
+            //            .Select(cfi => Task.Run(() => DoSearch(cfi, searchRequest, isHeadingSearch)));
+
+            //        var resultsList = Task.WhenAll(tasks).Result;
+
+            //        foreach (var results in resultsList) searchResults.AddRange(results);
+            //    }
+            //}            
+
+            Console.WriteLine($"[ls] searchResults.Count = {searchResults.Count}");
+
+            _state.ParagraphResults = searchResults;
 
             await ReplaceLoadingWithCorpus();
 
@@ -820,6 +836,25 @@ namespace LeninSearch.Xam
 
                 await ResultScrollFadeIn();
             }
+        }
+
+        private List<ParagraphSearchResult> DoSearch(CorpusFileItem cfi, SearchRequest searchRequest, bool isHeadingSearch = false)
+        {
+            var lsiData = LsIndexDataSource.Get(cfi.Path);
+            var results = _searcher.SearchParagraphs(lsiData, searchRequest);
+
+            Console.WriteLine($"[ls] {cfi.Path} results.Count = {results.Count}");
+
+            foreach (var r in results)
+            {
+                r.File = cfi.Path;
+                if (isHeadingSearch)
+                {
+                    r.Text = lsiData.LsData.Headings[r.ParagraphIndex].GetText(LsDictionary.Instance.Words);
+                }
+            }
+
+            return results;
         }
 
         private async Task RebuildScroll(bool attachScrollEvent)

@@ -26,7 +26,7 @@ namespace LeninSearch.Xam.Droid
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
         private App _app;
-        private GlobalEvents _globalEvents;
+        private GlobalEvents _globalEvents;        
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -66,15 +66,18 @@ namespace LeninSearch.Xam.Droid
 
                     // 2. index
                     var lsFiles = Directory.GetFiles(FileUtil.CorpusFolder, "*.ls");
-                    var oneByOne = Build.VERSION.SdkInt == BuildVersionCodes.LollipopMr1;
-                    if (oneByOne)
+                    ConcurrentOptions.OneByOne = Build.VERSION.SdkInt == BuildVersionCodes.LollipopMr1;
+                    if (ConcurrentOptions.OneByOne)
                     {
                         foreach (var lsFile in lsFiles) ConvertLsToLsi(lsFile);
                     }
                     else
                     {
-                        var tasks = lsFiles.Select(lsFile => Task.Run(() => ConvertLsToLsi(lsFile))).ToArray();
-                        Task.WaitAll(tasks);
+                        for (var i = 0; i < lsFiles.Length; i += ConcurrentOptions.LsToLsiBatchSize)
+                        {
+                            var tasks = lsFiles.Skip(i).Take(ConcurrentOptions.LsToLsiBatchSize).Select(lsFile => Task.Run(() => ConvertLsToLsi(lsFile))).ToArray();
+                            Task.WaitAll(tasks);
+                        }                        
                     }                    
                 }
             }

@@ -18,7 +18,7 @@ namespace LeninSearch.Xam.Core
                 return _currentLsiData;
             }
 
-            var lsiBytes = File.ReadAllBytes($"{FileUtil.LsiFolder}/{lsiPath}");
+            var lsiBytes = File.ReadAllBytes($"{FileUtil.CorpusFolder}/{lsiPath}");
             _currentLsiData = LsIndexUtil.FromLsIndexBytes(lsiBytes);
             _currentLsiPath = lsiPath;
 
