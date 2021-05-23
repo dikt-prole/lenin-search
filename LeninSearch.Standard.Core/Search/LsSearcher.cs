@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using LeninSearch.Standard.Core.Optimized;
 
@@ -24,8 +25,9 @@ namespace LeninSearch.Standard.Core.Search
 
         public List<ParagraphSearchResult> SearchParagraphData(Dictionary<uint, List<LsWordParagraphData>> wordParagraphData, SearchRequest request)
         {
-            var allTokens = request.Ordered.Concat(request.NonOrdered).ToList();
+            request = request.Copy();
 
+            var allTokens = request.Ordered.Concat(request.NonOrdered).ToList();
             foreach (var token in allTokens)
             {
                 token.WordIndexes = token.WordIndexes.Where(wordParagraphData.ContainsKey).ToList();

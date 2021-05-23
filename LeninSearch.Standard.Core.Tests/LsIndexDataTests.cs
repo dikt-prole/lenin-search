@@ -9,8 +9,8 @@ namespace LeninSearch.Standard.Core.Tests
 {
     public class LsIndexDataTests
     {        
-        private const string LsIndexFolder = @"C:\Repo\lenin-search\corpus\ls_index";
-        private const string LsFolder = @"C:\Repo\lenin-search\corpus\ls_test";
+        private const string LsIndexFolder = @"E:\Repo\lenin-search\corpus\ls_index";
+        private const string LsFolder = @"E:\Repo\lenin-search\corpus\ls_test";
         private string[] _dictionary;
 
         [SetUp]
@@ -75,7 +75,7 @@ namespace LeninSearch.Standard.Core.Tests
             Assert.That(sw.ElapsedMilliseconds, Is.LessThan(timeMs));
         }
 
-        [TestCase("lenin-t39.lsi", (ushort)1870, "мы не можем их даже приблизительно сравнивать")]
+        [TestCase("lenin-t39.lsi", (ushort)1870, "мы не можем их даже приблизительно сравнивать")]        
         [TestCase("marxengels-t23.lsi", (ushort)1818, "нечто отличное от его собственной потребительной стоимости")]
         [TestCase("stalin-t12.lsi", (ushort)1924, "В этом же основа")]
         [TestCase("hegel-objective-logic.lsi", (ushort)1770, "способ проявления указанного единства")]

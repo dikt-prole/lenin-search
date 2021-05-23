@@ -769,19 +769,25 @@ namespace LeninSearch.Xam
             await ReplaceCorpusWithLoading();
 
             var isHeadingSearch = SearchEntry.Text.StartsWith("*");
-            var searchRequest = SearchRequest.Construct(SearchEntry.Text.TrimStart('*'), LsDictionary.Instance.Words);
+            var searchText = SearchEntry.Text.TrimStart('*');
+            var searchRequest = SearchRequest.Construct(searchText, LsDictionary.Instance.Words);
             _state.SearchRequest = searchRequest;
-            CorpusButton.IsEnabled = false;
+            CorpusButton.IsEnabled = false;                  
 
-            Console.WriteLine($"[ls] searchRequest.NonOrdered.Count = {searchRequest.NonOrdered.Count}");
-            Console.WriteLine($"[ls] searchRequest.Ordered.Count = {searchRequest.Ordered.Count}");
-
-            var searchResults = new List<ParagraphSearchResult>();
+            var searchResults = new List<ParagraphSearchResult>();            
 
             foreach (var fileItem in currentCorpusItem.Files)
             {
-                var results = DoSearch(fileItem, searchRequest, isHeadingSearch);
-                searchResults.AddRange(results);
+                try
+                {
+                    Console.WriteLine($"[ls] searching '{fileItem.Path}'");
+                    var results = DoSearch(fileItem, searchRequest, isHeadingSearch);
+                    searchResults.AddRange(results);
+                }
+                catch (Exception exc)
+                {
+                    Console.WriteLine($"[ls] Error: {exc}");
+                }                
             }
 
             //if (ConcurrentOptions.OneByOne)
@@ -803,7 +809,7 @@ namespace LeninSearch.Xam
 
             //        foreach (var results in resultsList) searchResults.AddRange(results);
             //    }
-            //}            
+            //}
 
             Console.WriteLine($"[ls] searchResults.Count = {searchResults.Count}");
 
@@ -815,9 +821,16 @@ namespace LeninSearch.Xam
 
             if (_state.ParagraphResults.Count > 0)
             {
-                ShowSearchResultBar();
-                _state.CurrentParagraphResultIndex = 0;
-                await OnCurrentParagraphResultIndexChange();
+                try
+                {
+                    ShowSearchResultBar();
+                    _state.CurrentParagraphResultIndex = 0;
+                    await OnCurrentParagraphResultIndexChange();
+                }
+                catch (Exception exc)
+                {
+                    Console.WriteLine($"[ls] Error: {exc}");
+                }                
             }
             else if (isHeadingSearch)
             {
@@ -834,16 +847,22 @@ namespace LeninSearch.Xam
                     FontSize = Settings.MainFontSize
                 });
 
-                await ResultScrollFadeIn();
+                try
+                {
+                    await ResultScrollFadeIn();
+                }
+                catch (Exception exc)
+                {
+                    Console.WriteLine($"[ls] Error: {exc}");
+                }                
             }
         }
 
         private List<ParagraphSearchResult> DoSearch(CorpusFileItem cfi, SearchRequest searchRequest, bool isHeadingSearch = false)
         {
             var lsiData = LsIndexDataSource.Get(cfi.Path);
-            var results = _searcher.SearchParagraphs(lsiData, searchRequest);
 
-            Console.WriteLine($"[ls] {cfi.Path} results.Count = {results.Count}");
+            var results = _searcher.SearchParagraphs(lsiData, searchRequest);
 
             foreach (var r in results)
             {

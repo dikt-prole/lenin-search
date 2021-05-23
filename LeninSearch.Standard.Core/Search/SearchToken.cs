@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace LeninSearch.Standard.Core.Search
 {
@@ -55,6 +56,15 @@ namespace LeninSearch.Standard.Core.Search
             token.TokenType = SearchTokenType.Ordered;
 
             return token;
+        }
+        public SearchToken Copy()
+        {
+            return new SearchToken
+            {
+                WordIndexes = new List<uint>(WordIndexes),
+                Order = Order,
+                TokenType = TokenType
+            };
         }
     }
 

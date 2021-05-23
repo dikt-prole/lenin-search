@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace LeninSearch.Standard.Core.Search
@@ -62,6 +63,16 @@ namespace LeninSearch.Standard.Core.Search
                 var splitUnit = new string(spaceSplit[i].Where(c => char.IsLetter(c) || c == '*').ToArray());
                 yield return splitUnit;
             }
+        }
+
+        public SearchRequest Copy()
+        {
+            return new SearchRequest
+            {
+                Text = Text,
+                Ordered = Ordered.Select(t => t.Copy()).ToList(),
+                NonOrdered = NonOrdered.Select(t => t.Copy()).ToList()
+            };
         }
     }
 }
