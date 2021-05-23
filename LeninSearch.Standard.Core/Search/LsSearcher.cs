@@ -90,15 +90,13 @@ namespace LeninSearch.Standard.Core.Search
                         var searchResult = searchResults.FirstOrDefault(r => r.ParagraphIndex == paragraphIndex);
                         if (searchResult == null)
                         {
-                            searchResult = new ParagraphSearchResult(paragraphIndex);
+                            searchResult = new ParagraphSearchResult(paragraphIndex);                            
                             searchResults.Add(searchResult);
                         }
-                        else
-                        {
-                            searchResult.AddChain(chain);
-                        }
 
-                        ParagraphMismatch:;
+                        searchResult.AddChain(chain);
+
+                    ParagraphMismatch:;
                     }
                 }
             }
@@ -115,10 +113,8 @@ namespace LeninSearch.Standard.Core.Search
                             searchResult = new ParagraphSearchResult(paragraphIndex);
                             searchResults.Add(searchResult);
                         }
-                        else
-                        {
-                            searchResult.AddChain(chain);
-                        }
+
+                        searchResult.AddChain(chain);
                     }
                 }
             }
