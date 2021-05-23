@@ -774,42 +774,28 @@ namespace LeninSearch.Xam
             _state.SearchRequest = searchRequest;
             CorpusButton.IsEnabled = false;                  
 
-            var searchResults = new List<ParagraphSearchResult>();            
+            var searchResults = new List<ParagraphSearchResult>();
 
-            foreach (var fileItem in currentCorpusItem.Files)
+            if (ConcurrentOptions.OneByOne)
             {
-                try
+                foreach (var fileItem in currentCorpusItem.Files)
                 {
-                    Console.WriteLine($"[ls] searching '{fileItem.Path}'");
                     var results = DoSearch(fileItem, searchRequest, isHeadingSearch);
                     searchResults.AddRange(results);
                 }
-                catch (Exception exc)
-                {
-                    Console.WriteLine($"[ls] Error: {exc}");
-                }                
             }
+            else
+            {
+                for (var i = 0; i < currentCorpusItem.Files.Count; i += ConcurrentOptions.LsToLsiBatchSize)
+                {
+                    var tasks = currentCorpusItem.Files.Skip(i).Take(ConcurrentOptions.LsToLsiBatchSize)
+                        .Select(cfi => Task.Run(() => DoSearch(cfi, searchRequest, isHeadingSearch)));
 
-            //if (ConcurrentOptions.OneByOne)
-            //{
-            //    foreach (var fileItem in currentCorpusItem.Files)
-            //    {
-            //        var results = DoSearch(fileItem, searchRequest, isHeadingSearch);
-            //        searchResults.AddRange(results);
-            //    }
-            //}
-            //else
-            //{
-            //    for (var i = 0; i < currentCorpusItem.Files.Count; i += ConcurrentOptions.LsToLsiBatchSize)
-            //    {
-            //        var tasks = currentCorpusItem.Files.Skip(i).Take(ConcurrentOptions.LsToLsiBatchSize)
-            //            .Select(cfi => Task.Run(() => DoSearch(cfi, searchRequest, isHeadingSearch)));
+                    var resultsList = Task.WhenAll(tasks).Result;
 
-            //        var resultsList = Task.WhenAll(tasks).Result;
-
-            //        foreach (var results in resultsList) searchResults.AddRange(results);
-            //    }
-            //}
+                    foreach (var results in resultsList) searchResults.AddRange(results);
+                }
+            }
 
             Console.WriteLine($"[ls] searchResults.Count = {searchResults.Count}");
 
