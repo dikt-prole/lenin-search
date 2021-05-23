@@ -13,8 +13,8 @@ namespace LeninSearch.Xam.ParagraphAdder
     {
         public View Build(LsParagraph p, State state)
         {
-            var paragraphResult = state.ParagraphResults.FirstOrDefault(pr => pr.ParagraphIndex != p.Index);
-            if (paragraphResult == null)
+            var paragraphResult = state.ParagraphResults?[state.CurrentParagraphResultIndex];
+            if (paragraphResult.ParagraphIndex != p.Index)
             {
                 return new ExtendedLabel
                 {
