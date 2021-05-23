@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using LeninSearch.Standard.Core;
 using LeninSearch.Standard.Core.Optimized;
 using LeninSearch.Xam.Controls;
 using LeninSearch.Xam.Core;
@@ -26,7 +25,7 @@ namespace LeninSearch.Xam.ParagraphAdder
             var pText = p.GetText(LsDictionary.Instance.Words);
             var chain = paragraphResult.WordIndexChains[0];
 
-            var selection = chain.WordIndexes.Select(wi => LsDictionary.Instance.Words[wi]).ToList();
+            var selection = chain.WordIndexes.Select(wi => LsDictionary.Instance.Words[wi].ToLower()).ToArray();
 
             var fString = new FormattedString();
 
@@ -42,6 +41,45 @@ namespace LeninSearch.Xam.ParagraphAdder
             pLabel.TabIndex = p.Index;
             return pLabel;
 
+        }
+
+        private IEnumerable<Span> GetSpans(string text, string[] selection)
+        {
+            var lowerText = text.ToLower();
+
+            var selectionIndexes = new List<Tuple<int, string>>();
+            foreach (var token in selection)
+            {
+                var selectionIndex = lowerText.IndexOf(token, 0);
+                while (selectionIndex >= 0)
+                {
+                    selectionIndexes.Add(new Tuple<int, string>(selectionIndex, token));
+                    selectionIndex = lowerText.IndexOf(token, selectionIndex + token.Length);
+                }
+            }
+
+            var startIndex = 0;
+            foreach (var si in selectionIndexes.OrderBy(si => si.Item1))
+            {
+                if (si.Item1 < 0) continue;
+
+                if (si.Item1 > startIndex)
+                {
+                    var fragment = text.Substring(startIndex, si.Item1 - startIndex);
+                    yield return new Span { Text = fragment };
+                    startIndex = si.Item1;
+                }
+
+                var sFragment = text.Substring(startIndex, si.Item2.Length);
+                yield return new Span { Text = sFragment, FontAttributes = FontAttributes.Bold };
+                startIndex = startIndex + sFragment.Length;
+            }
+
+            if (startIndex < text.Length - 1)
+            {
+                var fragment = text.Substring(startIndex);
+                yield return new Span { Text = fragment };
+            }
         }
 
         private Span GetHeadingSpan(State state)
@@ -74,36 +112,6 @@ namespace LeninSearch.Xam.ParagraphAdder
                 BackgroundColor = Settings.MainColor,
                 TextColor = Color.White
             };
-        }
-
-        private IEnumerable<Span> GetSpans(string text, List<string> selection)
-        {
-            var lowerText = text.ToLower();
-
-            var selectionIndexes = selection.Select(s => s.ToLower()).Distinct().ToDictionary(s => s, s => lowerText.IndexOf(s));
-
-            var startIndex = 0;
-            foreach (var siKvp in selectionIndexes.OrderBy(si => si.Value))
-            {
-                if (siKvp.Value < 0) continue;
-
-                if (siKvp.Value > startIndex)
-                {
-                    var fragment = text.Substring(startIndex, siKvp.Value - startIndex);
-                    yield return new Span { Text = fragment };
-                    startIndex = siKvp.Value;
-                }
-
-                var sFragment = text.Substring(startIndex, siKvp.Key.Length);
-                yield return new Span { Text = sFragment, FontAttributes = FontAttributes.Bold };
-                startIndex = startIndex + sFragment.Length;
-            }
-
-            if (startIndex < text.Length - 1)
-            {
-                var fragment = text.Substring(startIndex);
-                yield return new Span { Text = fragment };
-            }
         }
     }
 }
