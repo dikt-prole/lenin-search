@@ -102,9 +102,14 @@ namespace LeninSearch.Xam.Droid
                 State.AddCorpus(corpus);
 
                 var targetCorpusFile = $"{FileUtil.CorpusFolder}/main.json";
-                var needUnzip = !File.Exists(targetCorpusFile) ||
-                                JsonConvert.DeserializeObject<Corpus>(File.ReadAllText(targetCorpusFile)).Version !=
-                                corpus.Version;
+
+                var needUnzip = true;
+                if (File.Exists(targetCorpusFile))
+                {
+                    var existingCorpus = JsonConvert.DeserializeObject<Corpus>(File.ReadAllText(targetCorpusFile));
+                    needUnzip = existingCorpus.Version != corpus.Version;
+                }
+
                 if (needUnzip)
                 {
                     // 1. unzip
