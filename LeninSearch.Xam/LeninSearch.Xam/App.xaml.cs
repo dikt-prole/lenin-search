@@ -73,7 +73,11 @@ namespace LeninSearch.Xam
                 return JsonConvert.DeserializeObject<State>(json);
             }
 
-            var corpusItem = State.CorpusItems.First(ci => ci.Selected);
+            var corpusItem = State.CorpusItems.FirstOrDefault(ci => ci.Selected);
+            if (corpusItem == null)
+            {
+                corpusItem = State.CorpusItems.First();
+            }
             return new State
             {
                 CorpusName = corpusItem.Name,

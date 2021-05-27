@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using LeninSearch.Standard.Core.Optimized;
+using LeninSearch.Standard.Core.Search;
 using LeninSearch.Xam.Controls;
 using LeninSearch.Xam.Core;
 using Xamarin.Forms;
@@ -12,8 +13,13 @@ namespace LeninSearch.Xam.ParagraphAdder
     {
         public View Build(LsParagraph p, State state)
         {
-            var paragraphResult = state.ParagraphResults?[state.CurrentParagraphResultIndex];
-            if (paragraphResult.ParagraphIndex != p.Index)
+            ParagraphSearchResult paragraphResult = null;
+            if (state.ParagraphResults?.Any() == true && state.CurrentParagraphResultIndex > 0)
+            {
+                paragraphResult = state.ParagraphResults[state.CurrentParagraphResultIndex];
+            }
+
+            if (paragraphResult?.ParagraphIndex != p.Index)
             {
                 return new ExtendedLabel
                 {
