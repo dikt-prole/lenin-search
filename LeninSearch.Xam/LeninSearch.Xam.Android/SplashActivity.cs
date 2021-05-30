@@ -27,7 +27,8 @@ namespace LeninSearch.Xam.Droid
 
         public override void OnCreate(Bundle savedInstanceState, PersistableBundle persistentState)
         {
-            base.OnCreate(savedInstanceState, persistentState);            
+            base.OnCreate(savedInstanceState, persistentState);
+            SetContentView(Resource.Layout.Splash);
         }
 
         public void UnzipAsset(string assetName, string destPath)
