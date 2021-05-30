@@ -14,7 +14,7 @@ namespace LeninSearch.Xam.ParagraphAdder
         public View Build(LsParagraph p, State state)
         {
             ParagraphSearchResult paragraphResult = null;
-            if (state.ParagraphResults?.Any() == true && state.CurrentParagraphResultIndex > 0)
+            if (state.ParagraphResults?.Any() == true && state.CurrentParagraphResultIndex >= 0)
             {
                 paragraphResult = state.ParagraphResults[state.CurrentParagraphResultIndex];
             }

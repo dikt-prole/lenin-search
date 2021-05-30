@@ -917,12 +917,12 @@ namespace LeninSearch.Xam
             _state.ReadingFile = paragraphResult.File;
             var lsData = LsIndexDataSource.Get(paragraphResult.File).LsData;
 
-            var p = lsData.Paragraphs[paragraphResult.ParagraphIndex];
+            var paragraph = lsData.Paragraphs[paragraphResult.ParagraphIndex];
 
-            ResultStack.Children.Add(_paragraphViewBuilder.Build(p, _state));
-            var prevP = lsData.GetPrevParagraph(p.Index);
-            ResultStack.Children.Insert(0, _paragraphViewBuilder.Build(prevP, _state));
-            var maxIndex = p.Index;
+            ResultStack.Children.Add(_paragraphViewBuilder.Build(paragraph, _state));
+            var prevParagraph = lsData.GetPrevParagraph(paragraph.Index);
+            ResultStack.Children.Insert(0, _paragraphViewBuilder.Build(prevParagraph, _state));
+            var maxIndex = paragraph.Index;
             while (!IsResultScrollReady())
             {
                 var nextP = lsData.GetNextParagraph(maxIndex);
