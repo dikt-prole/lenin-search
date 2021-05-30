@@ -645,16 +645,22 @@ namespace LeninSearch.Xam
                 await RebuildScroll(true);
 
                 var lsData = LsIndexDataSource.Get(cfi.Path).LsData;
-                var p = lsData.GetPrevParagraph(paragraphIndex) ?? lsData.Paragraphs[paragraphIndex];
+                var paragraph = lsData.GetPrevParagraph(paragraphIndex);
+                if (paragraph == null)
+                {
+                    paragraphIndex = lsData.Paragraphs.Min(p => p.Key);
+                    paragraph = lsData.Paragraphs[paragraphIndex];
+                }
+
                 while (!IsResultScrollReady())
                 {
-                    if (p == null) break;
+                    if (paragraph == null) break;
 
-                    var pView = _paragraphViewBuilder.Build(p, _state);
+                    var pView = _paragraphViewBuilder.Build(paragraph, _state);
 
                     ResultStack.Children.Add(pView);
 
-                    p = lsData.GetNextParagraph(p.Index);
+                    paragraph = lsData.GetNextParagraph(paragraph.Index);
                 }
 
                 await ResultScroll.ScrollToAsync(0, 20, true);
