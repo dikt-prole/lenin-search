@@ -376,7 +376,7 @@ namespace LeninSearch.Xam
             {
                 await HideBugMenu();
             }
-            
+
         }
 
         private void HideSearchResultBar()
@@ -778,7 +778,7 @@ namespace LeninSearch.Xam
             var isHeadingSearch = SearchEntry.Text.StartsWith("*");
             var searchText = SearchEntry.Text.TrimStart('*');
             var searchRequest = SearchRequest.Construct(searchText, LsDictionary.Instance.Words);
-            _state.SearchRequest = searchRequest;            
+            _state.SearchRequest = searchRequest;
 
             if (isHeadingSearch)
             {
@@ -792,34 +792,42 @@ namespace LeninSearch.Xam
 
         private async Task StartHeadingSearch(SearchRequest searchRequest)
         {
-            await BeforeSearch();
-
-            var corpusItem = _state.GetCurrentCorpusItem();
-
-            var searchResults = new List<ParagraphSearchResult>();
-
-            if (ConcurrentOptions.OneByOne)
+            try
             {
-                foreach (var fileItem in corpusItem.Files)
+                await BeforeSearch();
+
+                var corpusItem = _state.GetCurrentCorpusItem();
+
+                var searchResults = new List<ParagraphSearchResult>();
+
+                if (ConcurrentOptions.OneByOne)
                 {
-                    var results = SearchCorpusFileItem(fileItem, searchRequest, true);
-                    searchResults.AddRange(results);
+                    foreach (var fileItem in corpusItem.Files)
+                    {
+                        var results = SearchCorpusFileItem(fileItem, searchRequest, true);
+                        searchResults.AddRange(results);
+                    }
                 }
+                else
+                {
+                    for (var i = 0; i < corpusItem.Files.Count; i += ConcurrentOptions.LsToLsiBatchSize)
+                    {
+                        var tasks = corpusItem.Files.Skip(i).Take(ConcurrentOptions.LsToLsiBatchSize)
+                            .Select(cfi => Task.Run(() => SearchCorpusFileItem(cfi, searchRequest, true)));
+
+                        var resultsList = Task.WhenAll(tasks).Result;
+
+                        foreach (var results in resultsList) searchResults.AddRange(results);
+                    }
+                }
+
+                await AfterHeadingSearch(searchResults);
+
             }
-            else
+            catch (Exception exc)
             {
-                for (var i = 0; i < corpusItem.Files.Count; i += ConcurrentOptions.LsToLsiBatchSize)
-                {
-                    var tasks = corpusItem.Files.Skip(i).Take(ConcurrentOptions.LsToLsiBatchSize)
-                        .Select(cfi => Task.Run(() => SearchCorpusFileItem(cfi, searchRequest, true)));
-
-                    var resultsList = Task.WhenAll(tasks).Result;
-
-                    foreach (var results in resultsList) searchResults.AddRange(results);
-                }
+                Debug.WriteLine(exc);
             }
-
-            await AfterHeadingSearch(searchResults);
         }
 
         private async Task StartParagraphSearch(SearchRequest searchRequest)
@@ -832,7 +840,7 @@ namespace LeninSearch.Xam
             string lastCorpusFile = null;
             var beforeSearchCount = 0;
             if (_state.PartialParagraphSearchResult != null)
-            {                
+            {
                 lastCorpusFile = _state.PartialParagraphSearchResult.LastCorpusFile;
                 beforeSearchCount = _state.PartialParagraphSearchResult.SearchResults.Count;
             }
@@ -957,14 +965,17 @@ namespace LeninSearch.Xam
         {
             var lsiData = LsIndexDataSource.Get(cfi.Path);
 
-            var results = _searcher.SearchParagraphs(lsiData, searchRequest);
+            var results = isHeadingSearch 
+                ? _searcher.SearchHeadings(lsiData, searchRequest) 
+                : _searcher.SearchParagraphs(lsiData, searchRequest);
 
             foreach (var r in results)
             {
                 r.File = cfi.Path;
                 if (isHeadingSearch)
                 {
-                    r.Text = lsiData.LsData.Headings[r.ParagraphIndex].GetText(LsDictionary.Instance.Words);
+                    var heading = lsiData.LsData.Headings.First(h => h.Index == r.ParagraphIndex);
+                    r.Text = heading.GetText(LsDictionary.Instance.Words);
                 }
             }
 
