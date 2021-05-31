@@ -211,7 +211,7 @@
     <AndroidResource Include="Resources\drawable-xxxhdpi\left.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="Resources\layout\Splash.xml">
+    <AndroidResource Include="Resources\layout\Splash.axml">
       <Generator>MSBuild:UpdateGeneratedFiles</Generator>
     </AndroidResource>
     <AndroidResource Include="Resources\values\colors.xml" />

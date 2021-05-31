@@ -7,8 +7,10 @@
     android:background="#fff"
     android:id="@+id/splashview">
     <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="300dp"
+        android:layout_height="200dp"
+        android:layout_marginTop="80dp"        
+        android:layout_centerHorizontal="true"
         android:src = "@drawable/left"
     />
 
@@ -19,10 +21,10 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_marginLeft="30dp"
-        android:layout_marginBottom="30dp"
+        android:layout_marginBottom="200dp"
         android:textColor="#000"
-        android:textSize="24sp"
-        android:gravity= "bottom"
+        android:textSize="16sp"
+        android:gravity= "top"
         android:layout_centerHorizontal="true"/>
 </RelativeLayout>
 

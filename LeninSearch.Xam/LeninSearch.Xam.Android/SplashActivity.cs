@@ -1,9 +1,7 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.OS;
-using Android.Runtime;
 using Android.Util;
-using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.App;
 using Java.Util.Zip;
@@ -11,10 +9,8 @@ using LeninSearch.Standard.Core;
 using LeninSearch.Xam.Core;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,10 +21,17 @@ namespace LeninSearch.Xam.Droid
     {
         static readonly string TAG = "[ls]";
 
-        public override void OnCreate(Bundle savedInstanceState, PersistableBundle persistentState)
+        private TextView _progressTextView;
+
+        protected override void OnCreate(Bundle savedInstanceState)
         {
-            base.OnCreate(savedInstanceState, persistentState);
+            base.OnCreate(savedInstanceState);
             SetContentView(Resource.Layout.Splash);
+            _progressTextView = FindViewById<TextView>(Resource.Id.txtAppVersion);
+            _progressTextView.Text = "";
+            ConcurrentOptions.OneByOne = Build.VERSION.SdkInt == BuildVersionCodes.LollipopMr1;
+
+            Task.Run(() => Startup());
         }
 
         public void UnzipAsset(string assetName, string destPath)
@@ -85,13 +88,6 @@ namespace LeninSearch.Xam.Droid
             }            
         }
 
-        // Launches the startup task
-        protected override void OnResume()
-        {
-            base.OnResume();
-            Startup();
-        }
-
         private void Startup()
         {
             State.ClearCorpusData();
@@ -113,31 +109,46 @@ namespace LeninSearch.Xam.Droid
 
                 if (needUnzip)
                 {
+                    SetProgressText("unzipping");
                     // 1. unzip
                     if (Directory.Exists(FileUtil.CorpusFolder))
                     {
                         Directory.Delete(FileUtil.CorpusFolder, true);
                     }
-                    UnzipAsset("main.zip", FileUtil.CorpusFolder);
+                    UnzipAsset("main.zip", FileUtil.CorpusFolder);                    
+                }
 
-                    // 2. index
-                    var lsFiles = Directory.GetFiles(FileUtil.CorpusFolder, "*.ls");
-                    ConcurrentOptions.OneByOne = Build.VERSION.SdkInt == BuildVersionCodes.LollipopMr1;
+                // 2. index
+                var lsFiles = Directory.GetFiles(FileUtil.CorpusFolder, "*.ls");
+                if (lsFiles.Length > 0)
+                {
                     if (ConcurrentOptions.OneByOne)
                     {
-                        foreach (var lsFile in lsFiles) ConvertLsToLsi(lsFile);
+                        for (var i = 0; i < lsFiles.Length; i++)
+                        {
+                            var lsFile = lsFiles[i];
+                            SetProgressText($"indexing {i + 1} of {lsFiles.Length}");
+                            ConvertLsToLsi(lsFile);
+                        }
                     }
                     else
                     {
                         for (var i = 0; i < lsFiles.Length; i += ConcurrentOptions.LsToLsiBatchSize)
                         {
+                            SetProgressText($"indexing {i + 1} of {lsFiles.Length}");
                             var tasks = lsFiles.Skip(i).Take(ConcurrentOptions.LsToLsiBatchSize).Select(lsFile => Task.Run(() => ConvertLsToLsi(lsFile))).ToArray();
                             Task.WaitAll(tasks);
                         }
                     }
-                }
+                }                
             }
+
             StartActivity(new Intent(Application.Context, typeof(MainActivity)));
+        }
+
+        private void SetProgressText(string text)
+        {
+            RunOnUiThread(() => _progressTextView.Text = text);
         }
 
         public override void OnBackPressed() { }
