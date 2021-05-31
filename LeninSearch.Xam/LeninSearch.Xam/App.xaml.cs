@@ -82,7 +82,6 @@ namespace LeninSearch.Xam
             {
                 CorpusName = corpusItem.Name,
                 CurrentParagraphResultIndex = -1,
-                ParagraphResults = new List<ParagraphSearchResult>(),
                 ReadingFile = null,
                 SearchRequest = null
             };

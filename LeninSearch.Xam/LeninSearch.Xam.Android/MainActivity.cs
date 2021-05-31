@@ -1,24 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using Android.App;
+﻿using Android.App;
 using Android.Content.PM;
 using Android.Runtime;
 using Android.Views;
-using Android.Widget;
 using Android.OS;
-using Java.Util.Zip;
-using Newtonsoft.Json;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
 using LeninSearch.Standard.Core.Reporting;
-using LeninSearch.Xam.Core;
-using LeninSearch.Standard.Core;
-using System.Threading;
-using System.Diagnostics;
-using System.Linq;
 
 namespace LeninSearch.Xam.Droid
 {

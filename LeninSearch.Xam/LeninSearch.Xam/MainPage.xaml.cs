@@ -95,7 +95,7 @@ namespace LeninSearch.Xam
             TextMenuStack.WidthRequest = 0;
             SearchActivityIndicator.IsVisible = false;
 
-            if (_state.IsWatchingSearchResults())
+            if (_state.IsWatchingParagraphSearchResults())
             {
                 Device.InvokeOnMainThreadAsync(async () =>
                 {
@@ -176,7 +176,7 @@ namespace LeninSearch.Xam
 
         private async void SwipeRight(object sender, EventArgs e)
         {
-            if (!_state.CanGoToPrevSearchResult()) return;
+            if (!_state.CanGoToPrevParagraphSearchResult()) return;
 
             ResultScroll.IsEnabled = false;
             _state.CurrentParagraphResultIndex--;
@@ -185,8 +185,19 @@ namespace LeninSearch.Xam
 
         private async void SwipeLeft(object sender, EventArgs e)
         {
-            if (!_state.CanGoToNextSearchResult()) return;
+            // 1. continue search if it is not complete
 
+            var isSearchComplete = _state.PartialParagraphSearchResult.IsSearchComplete;
+            var isLastSearchResult = _state.CurrentParagraphResultIndex == _state.PartialParagraphSearchResult.SearchResults.Count - 1;
+            if (!isSearchComplete && isLastSearchResult)
+            {
+                await StartParagraphSearch(_state.SearchRequest);
+                return;
+            }
+
+            // 2. go to next search result
+
+            if (!_state.CanGoToNextParagraphSearchResult()) return;
             ResultScroll.IsEnabled = false;
             _state.CurrentParagraphResultIndex++;
             await OnCurrentParagraphResultIndexChange();
@@ -636,7 +647,7 @@ namespace LeninSearch.Xam
         {
             try
             {
-                _state.ParagraphResults?.Clear();
+                _state.PartialParagraphSearchResult = null;
                 _state.ReadingFile = cfi.Path;
                 _state.ReadingParagraphIndex = paragraphIndex;
                 _selectionDecorator.ClearSelection();
@@ -764,38 +775,43 @@ namespace LeninSearch.Xam
         {
             if (string.IsNullOrWhiteSpace(SearchEntry.Text)) return;
 
-            _state.ReadingFile = null;
-            _state.ParagraphResults.Clear();
-            var currentCorpusItem = _state.GetCurrentCorpusItem();
-
-            HideSearchResultBar();
-
-            await RebuildScroll(false);
-
-            await ReplaceCorpusWithLoading();
-
             var isHeadingSearch = SearchEntry.Text.StartsWith("*");
             var searchText = SearchEntry.Text.TrimStart('*');
             var searchRequest = SearchRequest.Construct(searchText, LsDictionary.Instance.Words);
-            _state.SearchRequest = searchRequest;
-            CorpusButton.IsEnabled = false;                  
+            _state.SearchRequest = searchRequest;            
+
+            if (isHeadingSearch)
+            {
+                await StartHeadingSearch(searchRequest);
+            }
+            else
+            {
+                await StartParagraphSearch(searchRequest);
+            }
+        }
+
+        private async Task StartHeadingSearch(SearchRequest searchRequest)
+        {
+            await BeforeSearch();
+
+            var corpusItem = _state.GetCurrentCorpusItem();
 
             var searchResults = new List<ParagraphSearchResult>();
 
             if (ConcurrentOptions.OneByOne)
             {
-                foreach (var fileItem in currentCorpusItem.Files)
+                foreach (var fileItem in corpusItem.Files)
                 {
-                    var results = DoSearch(fileItem, searchRequest, isHeadingSearch);
+                    var results = SearchCorpusFileItem(fileItem, searchRequest, true);
                     searchResults.AddRange(results);
                 }
             }
             else
             {
-                for (var i = 0; i < currentCorpusItem.Files.Count; i += ConcurrentOptions.LsToLsiBatchSize)
+                for (var i = 0; i < corpusItem.Files.Count; i += ConcurrentOptions.LsToLsiBatchSize)
                 {
-                    var tasks = currentCorpusItem.Files.Skip(i).Take(ConcurrentOptions.LsToLsiBatchSize)
-                        .Select(cfi => Task.Run(() => DoSearch(cfi, searchRequest, isHeadingSearch)));
+                    var tasks = corpusItem.Files.Skip(i).Take(ConcurrentOptions.LsToLsiBatchSize)
+                        .Select(cfi => Task.Run(() => SearchCorpusFileItem(cfi, searchRequest, true)));
 
                     var resultsList = Task.WhenAll(tasks).Result;
 
@@ -803,32 +819,52 @@ namespace LeninSearch.Xam
                 }
             }
 
-            Console.WriteLine($"[ls] searchResults.Count = {searchResults.Count}");
+            await AfterHeadingSearch(searchResults);
+        }
 
-            _state.ParagraphResults = searchResults;
+        private async Task StartParagraphSearch(SearchRequest searchRequest)
+        {
+            if (_state.PartialParagraphSearchResult?.IsSearchComplete == true) return;
 
+            await BeforeSearch();
+
+            var corpusItem = _state.GetCurrentCorpusItem();
+            string lastCorpusFile = null;
+            var beforeSearchCount = 0;
+            if (_state.PartialParagraphSearchResult != null)
+            {                
+                lastCorpusFile = _state.PartialParagraphSearchResult.LastCorpusFile;
+                beforeSearchCount = _state.PartialParagraphSearchResult.SearchResults.Count;
+            }
+
+            var partialResult = DoPartialParagraphSearch(corpusItem, lastCorpusFile, searchRequest);
+
+            if (_state.PartialParagraphSearchResult == null)
+            {
+                _state.PartialParagraphSearchResult = partialResult;
+            }
+
+            _state.PartialParagraphSearchResult.SearchResults.AddRange(partialResult.SearchResults);
+            _state.PartialParagraphSearchResult.IsSearchComplete = partialResult.IsSearchComplete;
+
+            await AfterParagraphSearch(beforeSearchCount);
+        }
+
+        private async Task BeforeSearch()
+        {
+            _state.ReadingFile = null;
+            HideSearchResultBar();
+            await RebuildScroll(false);
+            await ReplaceCorpusWithLoading();
+            CorpusButton.IsEnabled = false;
+        }
+
+        private async Task AfterParagraphSearch(int beforeSearchCount)
+        {
             await ReplaceLoadingWithCorpus();
-
             CorpusButton.IsEnabled = true;
 
-            if (_state.ParagraphResults.Count > 0)
-            {
-                try
-                {
-                    ShowSearchResultBar();
-                    _state.CurrentParagraphResultIndex = 0;
-                    await OnCurrentParagraphResultIndexChange();
-                }
-                catch (Exception exc)
-                {
-                    Console.WriteLine($"[ls] Error: {exc}");
-                }                
-            }
-            else if (isHeadingSearch)
-            {
-                await DisplaySearchHeadings(searchResults);
-            }
-            else
+            if (_state.PartialParagraphSearchResult.SearchResults.Count == 0)
             {
                 ResultStack.Children.Add(new Label
                 {
@@ -838,19 +874,86 @@ namespace LeninSearch.Xam
                     TextColor = Settings.MainColor,
                     FontSize = Settings.MainFontSize
                 });
-
-                try
-                {
-                    await ResultScrollFadeIn();
-                }
-                catch (Exception exc)
-                {
-                    Console.WriteLine($"[ls] Error: {exc}");
-                }                
+                await ResultScrollFadeIn();
+            }
+            else
+            {
+                ShowSearchResultBar();
+                _state.CurrentParagraphResultIndex = beforeSearchCount;
+                await OnCurrentParagraphResultIndexChange();
             }
         }
 
-        private List<ParagraphSearchResult> DoSearch(CorpusFileItem cfi, SearchRequest searchRequest, bool isHeadingSearch = false)
+        private async Task AfterHeadingSearch(List<ParagraphSearchResult> searchResults)
+        {
+            await ReplaceLoadingWithCorpus();
+            CorpusButton.IsEnabled = true;
+
+            if (searchResults.Count == 0)
+            {
+                ResultStack.Children.Add(new Label
+                {
+                    HorizontalOptions = LayoutOptions.Center,
+                    Margin = new Thickness(10),
+                    Text = "ничего не найдено",
+                    TextColor = Settings.MainColor,
+                    FontSize = Settings.MainFontSize
+                });
+                await ResultScrollFadeIn();
+            }
+            else
+            {
+                await DisplaySearchHeadings(searchResults);
+            }
+        }
+
+        private PartialParagraphSearchResult DoPartialParagraphSearch(CorpusItem corpusItem, string lastSearchedFile, SearchRequest searchRequest)
+        {
+            var partialResult = new PartialParagraphSearchResult
+            {
+                IsSearchComplete = false,
+                SearchResults = new List<ParagraphSearchResult>()
+            };
+
+            var corpusFileItems = lastSearchedFile == null
+                ? corpusItem.Files
+                : corpusItem.Files.SkipWhile(cfi => cfi.Path != lastSearchedFile).Skip(1).ToList();
+
+            if (ConcurrentOptions.OneByOne)
+            {
+                foreach (var fileItem in corpusFileItems)
+                {
+                    var results = SearchCorpusFileItem(fileItem, searchRequest);
+                    if (results.Count > 0)
+                    {
+                        partialResult.SearchResults.AddRange(results);
+                        return partialResult;
+                    }
+                }
+            }
+            else
+            {
+                for (var i = 0; i < corpusFileItems.Count; i += ConcurrentOptions.LsToLsiBatchSize)
+                {
+                    var tasks = corpusFileItems.Skip(i).Take(ConcurrentOptions.LsToLsiBatchSize)
+                        .Select(cfi => Task.Run(() => SearchCorpusFileItem(cfi, searchRequest)));
+
+                    var results = Task.WhenAll(tasks).Result.SelectMany(r => r).ToList();
+
+                    if (results.Count > 0)
+                    {
+                        partialResult.SearchResults.AddRange(results);
+                        return partialResult;
+                    }
+                }
+            }
+
+            partialResult.IsSearchComplete = true;
+
+            return partialResult;
+        }
+
+        private List<ParagraphSearchResult> SearchCorpusFileItem(CorpusFileItem cfi, SearchRequest searchRequest, bool isHeadingSearch = false)
         {
             var lsiData = LsIndexDataSource.Get(cfi.Path);
 
@@ -902,11 +1005,11 @@ namespace LeninSearch.Xam
 
         private async Task OnCurrentParagraphResultIndexChange()
         {
-            if (!_state.IsWatchingSearchResults()) return;
+            if (!_state.IsWatchingParagraphSearchResults()) return;
             var paragraphResult = _state.GetCurrentSearchParagraphResult();
 
             PrevLabel.Text = (_state.CurrentParagraphResultIndex + 1).ToString();
-            NextLabel.Text = _state.ParagraphResults.Count.ToString();
+            NextLabel.Text = _state.PartialParagraphSearchResult.SearchResults.Count.ToString();
 
             _selectionDecorator.ClearSelection();
 

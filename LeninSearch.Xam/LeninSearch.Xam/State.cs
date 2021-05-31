@@ -26,9 +26,10 @@ namespace LeninSearch.Xam
         public string CorpusName { get; set; }
         public string ReadingFile { get; set; }
         public SearchRequest SearchRequest { get; set; }
-        public List<ParagraphSearchResult> ParagraphResults { get; set; }
         public int CurrentParagraphResultIndex { get; set; }
         public ushort ReadingParagraphIndex { get; set; }
+
+        public PartialParagraphSearchResult PartialParagraphSearchResult { get; set; }
 
         public CorpusFileItem GetReadingCorpusFileItem()
         {
@@ -41,35 +42,32 @@ namespace LeninSearch.Xam
             return CorpusItems.First(ci => ci.Name == CorpusName);
         }
 
-        public bool IsWatchingSearchResults()
+        public bool IsWatchingParagraphSearchResults()
         {
-            return ParagraphResults.Count > 0;
+            return PartialParagraphSearchResult?.SearchResults?.Any() == true;
         }
 
-        public bool CanGoToPrevSearchResult()
+        public bool CanGoToPrevParagraphSearchResult()
         {
-            if (ParagraphResults.Count == 0) return false;
-
+            if (!IsWatchingParagraphSearchResults()) return false;
             return CurrentParagraphResultIndex > 0;
         }
 
-        public bool CanGoToNextSearchResult()
+        public bool CanGoToNextParagraphSearchResult()
         {
-            if (ParagraphResults.Count == 0) return false;
-
-            return CurrentParagraphResultIndex  < ParagraphResults.Count - 1;
+            if (!IsWatchingParagraphSearchResults()) return false;
+            return CurrentParagraphResultIndex  < PartialParagraphSearchResult.SearchResults.Count - 1;
         }
 
         public ParagraphSearchResult GetCurrentSearchParagraphResult()
         {
-            if (ParagraphResults.Count == 0) return null;
-
-            return ParagraphResults[CurrentParagraphResultIndex];
+            if (!IsWatchingParagraphSearchResults()) return null;
+            return PartialParagraphSearchResult.SearchResults[CurrentParagraphResultIndex];
         }
 
         public bool IsReading()
         {
-            return ParagraphResults.Count == 0 && !string.IsNullOrEmpty(ReadingFile);
+            return !IsWatchingParagraphSearchResults() && !string.IsNullOrEmpty(ReadingFile);
         }
     }
 }
