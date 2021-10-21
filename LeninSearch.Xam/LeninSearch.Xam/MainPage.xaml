@@ -12,18 +12,12 @@
             <ActivityIndicator x:Name="SearchActivityIndicator" Color="#D6181F" IsRunning="False" VerticalOptions="Start" WidthRequest="32" HeightRequest="32" Margin="8"></ActivityIndicator>
             <ImageButton Padding="0" x:Name="CorpusButton" WidthRequest="48" HeightRequest="48" Source="lenin.png" BackgroundColor="White" HorizontalOptions="Start" Margin="0"></ImageButton>
             <Entry x:Name="SearchEntry" Placeholder="Введите запрос" ReturnType="Search" HorizontalOptions="FillAndExpand" Margin="0" FontSize="Small" TextColor="Black" MinimumWidthRequest="100"></Entry>
-            <StackLayout x:Name="TextMenuStack" HorizontalOptions="End" WidthRequest="126" BackgroundColor="White" Orientation="Horizontal" Spacing="0" Margin="0">
+            <StackLayout x:Name="TextMenuStack" HorizontalOptions="End" WidthRequest="84" BackgroundColor="White" Orientation="Horizontal" Spacing="0" Margin="0">
                 <ImageButton x:Name="ClipboardButton" Source="clipboard.png" WidthRequest="32" HeightRequest="32" VerticalOptions="Center" Margin="5" BackgroundColor="White" Padding="0"></ImageButton>
                 <ImageButton x:Name="BookmarkButton" Source="bookmark.png" WidthRequest="32" HeightRequest="32" VerticalOptions="Center" Margin="5" Padding="0" BackgroundColor="White"></ImageButton>
-                <ImageButton x:Name="ExclamationButton" Source="exclamation.png" WidthRequest="32" HeightRequest="32" VerticalOptions="Center" Margin="5" Padding="0" BackgroundColor="White"></ImageButton>
             </StackLayout>
         </StackLayout>
         <StackLayout HorizontalOptions="FillAndExpand" HeightRequest="2" BackgroundColor="#D6181F"></StackLayout>
-        <StackLayout x:Name="BugPanel" Orientation="Horizontal" HorizontalOptions="End" WidthRequest="126" HeightRequest="0" BackgroundColor="White" Spacing="0">
-            <Image x:Name="OcrButton" Source="ocr.png" WidthRequest="32" HeightRequest="32" VerticalOptions="Center" Margin="5" BackgroundColor="White"></Image>
-            <Image x:Name="XheaderButton" Source="xheader.png" WidthRequest="32" HeightRequest="32" VerticalOptions="Center" Margin="5" BackgroundColor="White"></Image>
-            <Image x:Name="XfootnoteButton" Source="xfootnote.png" WidthRequest="32" HeightRequest="32" VerticalOptions="Center" Margin="5"  BackgroundColor="White"></Image>
-        </StackLayout>
         <StackLayout x:Name="SearchResultBar" HeightRequest="22" Orientation="Vertical" HorizontalOptions="Fill" Spacing="0">
             <StackLayout Orientation="Horizontal" Spacing="0">
                 <StackLayout WidthRequest="48" HeightRequest="24" BackgroundColor="#D6181F" HorizontalOptions="Start" Spacing="0">

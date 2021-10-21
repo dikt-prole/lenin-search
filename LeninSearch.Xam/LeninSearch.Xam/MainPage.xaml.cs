@@ -68,22 +68,12 @@ namespace LeninSearch.Xam
                 else
                 {
                     await HideTextMenu();
-                    await HideBugMenu();
                 }
             };
 
             // text menu
             BookmarkButton.Clicked += BookmarkButtonOnClicked;
             ClipboardButton.Clicked += ClipboardButtonOnClicked;
-            ExclamationButton.Clicked += ExclamationButtonOnClicked;
-
-            // bug menu
-            var reportGestureRecognizer = new TapGestureRecognizer();
-            reportGestureRecognizer.Tapped += ReportButtonClick;
-            OcrButton.GestureRecognizers.Add(reportGestureRecognizer);
-            XheaderButton.GestureRecognizers.Add(reportGestureRecognizer);
-            XfootnoteButton.GestureRecognizers.Add(reportGestureRecognizer);
-
             HideSearchResultBar();
         }
 
@@ -91,7 +81,6 @@ namespace LeninSearch.Xam
         {
             _state = state;
             CorpusButton.Source = _corpusImages[_state.GetCurrentCorpusItem().Name];
-            BugPanel.HeightRequest = 0;
             TextMenuStack.WidthRequest = 0;
             SearchActivityIndicator.IsVisible = false;
 
@@ -301,27 +290,6 @@ namespace LeninSearch.Xam
             await ResultScrollFadeIn();
         }
 
-        private async void ReportButtonClick(object sender, EventArgs args)
-        {
-            var btn = sender as Image;
-            var index = _selectionDecorator.SelectedIndexes.FirstOrDefault();
-            if (index == default) return;
-            await Rotate360(btn);
-            _selectionDecorator.ClearSelection();
-
-            var type = sender == OcrButton
-                ? ReportType.Ocr
-                : sender == XheaderButton
-                    ? ReportType.Xheader
-                    : ReportType.Xfootnote;
-
-            var result = await Report(ReportItem.Construct(type, _state.ReadingFile, index));
-            if (!result)
-            {
-                await DisplayAlert($"Отчет {type}", "Не удалось отправить отчет. Проверьте соединение с интеренетом", "OK");
-            }
-        }
-
         private async Task AnimateDisappear(View view)
         {
             await view.FadeTo(0, Settings.DisappearMs, Easing.Linear);
@@ -397,19 +365,6 @@ namespace LeninSearch.Xam
             _selectionDecorator.ClearSelection();
         }
 
-        private async void ExclamationButtonOnClicked(object sender, EventArgs e)
-        {
-            if (BugPanel.Height == 0)
-            {
-                await ShowBugPanel();
-            }
-            else
-            {
-                await HideBugMenu();
-            }
-
-        }
-
         private void HideSearchResultBar()
         {
             if (SearchResultBar.Height == 0) return;
@@ -440,21 +395,8 @@ namespace LeninSearch.Xam
         {
             var menu = TextMenuStack;
             menu.ScaleY = 0;
-            menu.WidthRequest = showReportButtons ? 126 : 42;
+            menu.WidthRequest = showReportButtons ? 84 : 42;
             await menu.ScaleYTo(1, Settings.TextMenuAnimationMs, Easing.Linear);
-        }
-
-        private async Task HideBugMenu()
-        {
-            await BugPanel.ScaleYTo(0, Settings.BugMenuAnimationMs, Easing.Linear);
-            BugPanel.HeightRequest = 0;
-        }
-
-        private async Task ShowBugPanel()
-        {
-            BugPanel.ScaleY = 0;
-            BugPanel.HeightRequest = 42;
-            await BugPanel.ScaleYTo(1, Settings.BugMenuAnimationMs, Easing.Linear);
         }
 
         private bool IsResultScrollReady()
@@ -871,10 +813,7 @@ namespace LeninSearch.Xam
 
             var partialResult = DoPartialParagraphSearch(corpusItem, lastCorpusFile, searchRequest);
 
-            if (_state.PartialParagraphSearchResult == null)
-            {
-                _state.PartialParagraphSearchResult = partialResult;
-            }
+            _state.PartialParagraphSearchResult ??= new PartialParagraphSearchResult();
 
             _state.PartialParagraphSearchResult.SearchResults.AddRange(partialResult.SearchResults);
             _state.PartialParagraphSearchResult.IsSearchComplete = partialResult.IsSearchComplete;
@@ -959,6 +898,7 @@ namespace LeninSearch.Xam
                     if (results.Count > 0)
                     {
                         partialResult.SearchResults.AddRange(results);
+                        partialResult.LastCorpusFile = fileItem.Path;
                         return partialResult;
                     }
                 }
@@ -967,14 +907,15 @@ namespace LeninSearch.Xam
             {
                 for (var i = 0; i < corpusFileItems.Count; i += ConcurrentOptions.LsToLsiBatchSize)
                 {
-                    var tasks = corpusFileItems.Skip(i).Take(ConcurrentOptions.LsToLsiBatchSize)
-                        .Select(cfi => Task.Run(() => SearchCorpusFileItem(cfi, searchRequest)));
+                    var cfiBatch = corpusFileItems.Skip(i).Take(ConcurrentOptions.LsToLsiBatchSize).ToList();
+                    var tasks = cfiBatch.Select(cfi => Task.Run(() => SearchCorpusFileItem(cfi, searchRequest)));
 
                     var results = Task.WhenAll(tasks).Result.SelectMany(r => r).ToList();
 
                     if (results.Count > 0)
                     {
                         partialResult.SearchResults.AddRange(results);
+                        partialResult.LastCorpusFile = cfiBatch.Last().Path;
                         return partialResult;
                     }
                 }

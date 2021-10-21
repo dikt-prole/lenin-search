@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -12,15 +13,13 @@ namespace LeninSearch.Standard.Core.Tests
     public class LsSearcherTests
     {
         private LsSearcher _lsSearcher;
-        private const string LsIndexFolder = @"E:\Repo\lenin-search\corpus\ls_index";
-        private const string LsFolder = @"E:\Repo\lenin-search\corpus\ls_test";
         private string[] _dictionary;
 
         [SetUp]
         public void Setup()
         {
             _lsSearcher = new LsSearcher();
-            var dictionaryPath = $"{LsFolder}\\corpus.dic";
+            var dictionaryPath = $"{ConstantData.LsFolder}\\corpus.dic";
             _dictionary = File.ReadAllLines(dictionaryPath, Encoding.UTF8);
         }
 
@@ -31,7 +30,7 @@ namespace LeninSearch.Standard.Core.Tests
         public void SearchParagraphs_ParagraphsAreFound(string lsiFile, string query, int expectedCount)
         {
             // Arrange
-            var lsiPath = $"{LsIndexFolder}\\{lsiFile}";
+            var lsiPath = $"{ConstantData.LsIndexFolder}\\{lsiFile}";
             var lsiBytes = File.ReadAllBytes(lsiPath);
             var lsiData = LsIndexUtil.FromLsIndexBytes(lsiBytes);
 
@@ -51,7 +50,7 @@ namespace LeninSearch.Standard.Core.Tests
         public void SearchParagraphs_HeadingsAreFound(string lsiFile, string query, int expectedCount)
         {
             // Arrange
-            var lsiPath = $"{LsIndexFolder}\\{lsiFile}";
+            var lsiPath = $"{ConstantData.LsIndexFolder}\\{lsiFile}";
             var lsiBytes = File.ReadAllBytes(lsiPath);
             var lsiData = LsIndexUtil.FromLsIndexBytes(lsiBytes);
 
@@ -72,7 +71,7 @@ namespace LeninSearch.Standard.Core.Tests
         public void LsToLsiThenRead_HeadingsAreFound(string lsFile, string query, int expectedCount)
         {
             // Arrange
-            var lsPath = $"{LsFolder}\\{lsFile}";
+            var lsPath = $"{ConstantData.LsFolder}\\{lsFile}";
             var lsBytes = File.ReadAllBytes(lsPath);
             var ofd = LsUtil.LoadOptimized(lsBytes, CancellationToken.None);
             var lsiBytes = LsIndexUtil.ToLsIndexBytes(ofd);
@@ -87,6 +86,25 @@ namespace LeninSearch.Standard.Core.Tests
 
             // Assert
             Assert.That(searchResults.Count, Is.EqualTo(expectedCount));
+        }
+
+        [TestCase("lenin-t39.ls", "дикт* + прол*")]
+        [TestCase("lenin-t40.ls", "дикт* + прол*")]
+        public void LsToLsiThenRead_DoesNotDuplicateResults(string lsFile, string query)
+        {
+            // Arrange
+            var request = SearchRequest.Construct(query, _dictionary);
+            var lsPath = $"{ConstantData.LsFolder}\\{lsFile}";
+            var lsBytes = File.ReadAllBytes(lsPath);
+            var ofd = LsUtil.LoadOptimized(lsBytes, CancellationToken.None);
+            var lsiBytes = LsIndexUtil.ToLsIndexBytes(ofd);
+            var lsiData = LsIndexUtil.FromLsIndexBytes(lsiBytes);
+
+            // Act
+            var searchResult = _lsSearcher.SearchParagraphs(lsiData, request);
+
+            // Assert
+            Assert.That(searchResult.Select(r => r.ParagraphIndex).Distinct().Count(), Is.EqualTo(searchResult.Count));
         }
     }
 }

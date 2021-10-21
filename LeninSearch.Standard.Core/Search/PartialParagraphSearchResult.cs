@@ -5,7 +5,12 @@ namespace LeninSearch.Standard.Core.Search
 {
     public class PartialParagraphSearchResult
     {
-        public string LastCorpusFile => SearchResults?.Select(r => r.File).LastOrDefault();
+        public PartialParagraphSearchResult()
+        {
+            SearchResults = new List<ParagraphSearchResult>();
+        }
+
+        public string LastCorpusFile { get; set; }
         public List<ParagraphSearchResult> SearchResults { get; set; }
         public bool IsSearchComplete { get; set; }
     }

@@ -9,14 +9,12 @@ namespace LeninSearch.Standard.Core.Tests
 {
     public class LsIndexDataTests
     {        
-        private const string LsIndexFolder = @"E:\Repo\lenin-search\corpus\ls_index";
-        private const string LsFolder = @"E:\Repo\lenin-search\corpus\ls_test";
         private string[] _dictionary;
 
         [SetUp]
         public void Setup()
         {
-            var dictionaryPath = $"{LsFolder}\\corpus.dic";
+            var dictionaryPath = $"{ConstantData.LsFolder}\\corpus.dic";
             _dictionary = File.ReadAllLines(dictionaryPath, Encoding.UTF8);
         }
 
@@ -27,7 +25,7 @@ namespace LeninSearch.Standard.Core.Tests
         public void HeadingCountIsFine(string lsiFile, int headingCount)
         {
             // Arrange
-            var lsiPath = $"{LsIndexFolder}\\{lsiFile}";
+            var lsiPath = $"{ConstantData.LsIndexFolder}\\{lsiFile}";
             var lsiBytes = File.ReadAllBytes(lsiPath);
 
             // Act
@@ -43,7 +41,7 @@ namespace LeninSearch.Standard.Core.Tests
         public void PageCountIsFine(string lsiFile, int pageCount)
         {
             // Arrange
-            var lsiPath = $"{LsIndexFolder}\\{lsiFile}";
+            var lsiPath = $"{ConstantData.LsIndexFolder}\\{lsiFile}";
             var lsiBytes = File.ReadAllBytes(lsiPath);
 
             // Act
@@ -54,14 +52,14 @@ namespace LeninSearch.Standard.Core.Tests
             Assert.That(lsiData.PageData.All(pd => pd.Number < 1000));
         }
 
-        [TestCase("lenin-t39.lsi", 100)]
-        [TestCase("marxengels-t23.lsi", 100)]
-        [TestCase("stalin-t12.lsi", 100)]
-        [TestCase("hegel-objective-logic.lsi", 100)]
+        [TestCase("lenin-t39.lsi", 200)]
+        [TestCase("marxengels-t23.lsi", 200)]
+        [TestCase("stalin-t12.lsi", 200)]
+        [TestCase("hegel-objective-logic.lsi", 200)]
         public void ToLsDataWorksInReasonableTime(string lsiFile, int timeMs)
         {
             // Arrange
-            var lsiPath = $"{LsIndexFolder}\\{lsiFile}";
+            var lsiPath = $"{ConstantData.LsIndexFolder}\\{lsiFile}";
             var lsiBytes = File.ReadAllBytes(lsiPath);
             var lsiData = LsIndexUtil.FromLsIndexBytes(lsiBytes);
 
@@ -82,7 +80,7 @@ namespace LeninSearch.Standard.Core.Tests
         public void ToLsDataProducesReasonableText(string lsiFile, ushort paragraphIndex, string stringToken)
         {
             // Arrange
-            var lsiPath = $"{LsIndexFolder}\\{lsiFile}";
+            var lsiPath = $"{ConstantData.LsIndexFolder}\\{lsiFile}";
             var lsiBytes = File.ReadAllBytes(lsiPath);
             var lsiData = LsIndexUtil.FromLsIndexBytes(lsiBytes);
 
