@@ -3,20 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using LeninSearch.Standard.Core;
 using LeninSearch.Standard.Core.Optimized;
-using LeninSearch.Standard.Core.Reporting;
 using LeninSearch.Standard.Core.Search;
 using LeninSearch.Xam.Controls;
 using LeninSearch.Xam.Core;
 using LeninSearch.Xam.ParagraphAdder;
-using Newtonsoft.Json;
 using Plugin.Clipboard;
-using Xamarin.Essentials;
 using Xamarin.Forms;
-using Xamarin.Forms.Markup;
 using Label = Xamarin.Forms.Label;
 
 namespace LeninSearch.Xam
@@ -27,8 +22,6 @@ namespace LeninSearch.Xam
         private readonly GlobalEvents _globalEvents;
         private IParagraphViewBuilder _paragraphViewBuilder;
         private ParagraphViewBuilderTapDecorator _selectionDecorator;
-
-        private readonly HttpClient _httpClient = new HttpClient();
 
         private readonly LsSearcher _searcher = new LsSearcher();
 
@@ -227,21 +220,20 @@ namespace LeninSearch.Xam
         private async void SwipeLeft(object sender, EventArgs e)
         {
             // 1. continue search if it is not complete
-
             var isSearchComplete = _state.PartialParagraphSearchResult.IsSearchComplete;
             var isLastSearchResult = _state.CurrentParagraphResultIndex == _state.PartialParagraphSearchResult.SearchResults.Count - 1;
             if (!isSearchComplete && isLastSearchResult)
             {
                 await StartParagraphSearch(_state.SearchRequest);
-                return;
             }
-
-            // 2. go to next search result
-
-            if (!_state.CanGoToNextParagraphSearchResult()) return;
-            ResultScroll.IsEnabled = false;
-            _state.CurrentParagraphResultIndex++;
-            await OnCurrentParagraphResultIndexChange();
+            else
+            {
+                // 2. go to next search result
+                if (!_state.CanGoToNextParagraphSearchResult()) return;
+                ResultScroll.IsEnabled = false;
+                _state.CurrentParagraphResultIndex++;
+                await OnCurrentParagraphResultIndexChange();
+            }
         }
 
         private async void DisplayCorpus()
@@ -846,6 +838,7 @@ namespace LeninSearch.Xam
             _state.PartialParagraphSearchResult ??= new PartialParagraphSearchResult();
 
             _state.PartialParagraphSearchResult.SearchResults.AddRange(partialResult.SearchResults);
+            _state.PartialParagraphSearchResult.LastCorpusFile = partialResult.LastCorpusFile;
             _state.PartialParagraphSearchResult.IsSearchComplete = partialResult.IsSearchComplete;
 
             await AfterParagraphSearch(beforeSearchCount);
@@ -879,8 +872,20 @@ namespace LeninSearch.Xam
             }
             else
             {
+                var corpusItem = State.CorpusItems.First(ci => ci.Name == _state.CorpusName);
+
+                SearchResultTitle.Text = "результаты поиска (полные)";
+                if (!_state.PartialParagraphSearchResult.IsSearchComplete)
+                {
+                    var firstCfiName = corpusItem.Files[0].Name;
+                    var lastCfiName = corpusItem.Files.First(cfi => cfi.Path == _state.PartialParagraphSearchResult.LastCorpusFile).Name;
+                    SearchResultTitle.Text = $"результаты поиска ({firstCfiName} - {lastCfiName})";
+                }
+
                 ShowSearchResultBar();
-                _state.CurrentParagraphResultIndex = beforeSearchCount;
+                _state.CurrentParagraphResultIndex = _state.PartialParagraphSearchResult.SearchResults.Count > beforeSearchCount
+                    ? beforeSearchCount
+                    : beforeSearchCount - 1;
                 await OnCurrentParagraphResultIndexChange();
             }
         }
@@ -949,6 +954,8 @@ namespace LeninSearch.Xam
                         return partialResult;
                     }
                 }
+
+                partialResult.LastCorpusFile = corpusFileItems.Last().Path;
             }
 
             partialResult.IsSearchComplete = true;

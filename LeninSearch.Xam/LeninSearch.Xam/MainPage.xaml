@@ -23,7 +23,7 @@
                     <Label Margin="0" HorizontalOptions="Center" VerticalOptions="Center" FontSize="Small"  x:Name="PrevLabel" TextColor="White"></Label>
                 </StackLayout>
                 <StackLayout HorizontalOptions="FillAndExpand" BackgroundColor="#D6181F" HeightRequest="24">
-                    <Label Margin="0" HorizontalOptions="Center" VerticalOptions="Center" FontSize="Small" TextColor="White" Text="просмотр результатов поиска"></Label>
+                    <Label Margin="0" HorizontalOptions="Center" VerticalOptions="Center" FontSize="Small" TextColor="White" Text="просмотр результатов поиска" x:Name="SearchResultTitle"></Label>
                 </StackLayout>
                 <StackLayout WidthRequest="48" HeightRequest="24" BackgroundColor="#D6181F" HorizontalOptions="End" Spacing="0">
                     <Label Margin="0" VerticalOptions="Center" HorizontalOptions="Center" FontSize="Small" x:Name="NextLabel" TextColor="White"></Label>
@@ -38,11 +38,11 @@
         </StackLayout>
         <StackLayout x:Name="QueryPanel" VerticalOptions="End" HorizontalOptions="FillAndExpand" Orientation="Vertical" Spacing="0">
             <StackLayout HorizontalOptions="FillAndExpand" Orientation="Vertical" HeightRequest="2" BackgroundColor="#D6181F"></StackLayout>
-            <StackLayout VerticalOptions="End" HorizontalOptions="FillAndExpand" HeightRequest="36" Orientation="Horizontal">
+            <StackLayout VerticalOptions="End" HorizontalOptions="FillAndExpand" HeightRequest="36" Orientation="Horizontal" Spacing="0">
                 <Button x:Name="QueryType1Button" Text="ВИД-1" Background= "White" TextColor="#D6181F" BorderWidth="0" />
                 <Button x:Name="QueryType2Button" Text="ВИД-2" Background= "White" TextColor="#D6181F" BorderWidth="0" />
                 <Button x:Name="QueryType3Button" Text="ВИД-3" Background= "White" TextColor="#D6181F" BorderWidth="0" />
-                <Button Margin="40, 0, 0, 0" x:Name="QuerySwitchButton" Text="ПЕРЕКЛ." Background= "White" TextColor="#D6181F" BorderWidth="0" />
+                <Button Margin="20, 0, 0, 0" x:Name="QuerySwitchButton" Text="ПЕРЕКЛ." Background= "White" TextColor="#D6181F" BorderWidth="0" />
             </StackLayout>
         </StackLayout>
     </StackLayout>
