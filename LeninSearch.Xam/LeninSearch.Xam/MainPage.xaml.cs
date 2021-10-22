@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using LeninSearch.Standard.Core;
-using LeninSearch.Standard.Core.OldShit;
 using LeninSearch.Standard.Core.Optimized;
 using LeninSearch.Standard.Core.Reporting;
 using LeninSearch.Standard.Core.Search;
@@ -15,7 +14,9 @@ using LeninSearch.Xam.Core;
 using LeninSearch.Xam.ParagraphAdder;
 using Newtonsoft.Json;
 using Plugin.Clipboard;
+using Xamarin.Essentials;
 using Xamarin.Forms;
+using Xamarin.Forms.Markup;
 using Label = Xamarin.Forms.Label;
 
 namespace LeninSearch.Xam
@@ -31,6 +32,8 @@ namespace LeninSearch.Xam
 
         private readonly LsSearcher _searcher = new LsSearcher();
 
+        private const string QueryTemplateFragment = "frag";
+
         private Dictionary<string, string> _corpusImages = new Dictionary<string, string>
         {
             { "Ленин ПСС" , "lenin.png" },
@@ -45,6 +48,7 @@ namespace LeninSearch.Xam
         {
             _globalEvents = globalEvents;
             InitializeComponent();
+            QueryPanel.IsVisible = false;
 
             // corpus button
             CorpusButton.Pressed += (sender, args) => DisplayCorpus();
@@ -52,7 +56,17 @@ namespace LeninSearch.Xam
             SearchEntry.Text = null;
             SearchEntry.FontSize = Settings.MainFontSize;
             SearchEntry.ReturnCommand = new Command(async () => await OnSearchButtonPressed());
-            SearchEntry.Focused += (sender, args) => HideTextMenu();
+            SearchEntry.Focused += (sender, args) =>
+            {
+                HideTextMenu();
+                QueryPanel.IsVisible = true;
+                CorpusButton.IsVisible = false;
+            };
+            SearchEntry.Unfocused += (sender, args) =>
+            {
+                QueryPanel.IsVisible = false;
+                CorpusButton.IsVisible = true;
+            };
 
             _paragraphViewBuilder = new StdParagraphViewBuilder();
             _paragraphViewBuilder = new ParagraphViewBuilderPagerHeaderDecorator(_paragraphViewBuilder);
@@ -75,7 +89,45 @@ namespace LeninSearch.Xam
             BookmarkButton.Clicked += BookmarkButtonOnClicked;
             ClipboardButton.Clicked += ClipboardButtonOnClicked;
             HideSearchResultBar();
+
+            // query panel
+            QueryType1Button.Clicked += (sender, args) => OnQueryTypeButtonClicked($"{QueryTemplateFragment}*");
+            QueryType2Button.Clicked += (sender, args) => OnQueryTypeButtonClicked($"{QueryTemplateFragment}* + {QueryTemplateFragment}*");
+            QueryType3Button.Clicked += (sender, args) => OnQueryTypeButtonClicked($"{QueryTemplateFragment}* {QueryTemplateFragment}* + {QueryTemplateFragment}* {QueryTemplateFragment}*");
+            QuerySwitchButton.Clicked += (sender, args) =>
+            {
+                if (string.IsNullOrEmpty(SearchEntry.Text)) return;
+
+                if (!SearchEntry.Text.Contains(QueryTemplateFragment)) return;
+
+                var offset = SearchEntry.CursorPosition + SearchEntry.SelectionLength;
+                var startFragmentIndex = SearchEntry.Text.IndexOf(QueryTemplateFragment, offset);
+                if (startFragmentIndex < 0)
+                {
+                    startFragmentIndex = SearchEntry.Text.IndexOf(QueryTemplateFragment);
+                }
+                SearchEntry.Focus();
+                Device.InvokeOnMainThreadAsync(async () =>
+                {
+                    SearchEntry.CursorPosition = startFragmentIndex;
+                    SearchEntry.SelectionLength = QueryTemplateFragment.Length;
+                });
+            };
         }
+
+        public void OnQueryTypeButtonClicked(string queryTemplate)
+        {
+            SearchEntry.Text = queryTemplate;
+            SearchEntry.Focus();
+            var startFragmentIndex = queryTemplate.IndexOf(QueryTemplateFragment);
+            Device.InvokeOnMainThreadAsync(async () =>
+            {
+                SearchEntry.CursorPosition = startFragmentIndex;
+                SearchEntry.SelectionLength = QueryTemplateFragment.Length;
+            });
+        }
+
+        
 
         public void SetState(State state)
         {
@@ -306,21 +358,6 @@ namespace LeninSearch.Xam
             view.Rotation = 0;
         }
 
-        private async Task<bool> Report(ReportItem item)
-        {
-            try
-            {
-                var url = "https://lsreporter.azurewebsites.net/api/LsReporter";
-                var content = JsonConvert.SerializeObject(item);
-                var response = await _httpClient.PostAsync(url, new StringContent(content));
-                return response.IsSuccessStatusCode;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
         private async void ClipboardButtonOnClicked(object sender, EventArgs e)
         {
             await Rotate360(ClipboardButton);
@@ -358,7 +395,7 @@ namespace LeninSearch.Xam
                 return paragraphText;
             };
 
-            var pTexts = indexes.Select(i => getParagraphTextFunc(i)).ToList();            
+            var pTexts = indexes.Select(i => getParagraphTextFunc(i)).ToList();
             var cbText = string.Join(separator, pTexts);
             CrossClipboard.Current.SetText(cbText);
             await AnimateAppear(ClipboardButton);
@@ -411,13 +448,6 @@ namespace LeninSearch.Xam
         private double GetResultStackHeight()
         {
             return ResultStack.Measure(ScrollWrapper.Width, ScrollWrapper.Height).Request.Height;
-        }
-
-        private double GetResultStackChildHeight(View view)
-        {
-            var measure = view.Measure(ScrollWrapper.Width, ScrollWrapper.Height);
-
-            return Math.Max(measure.Minimum.Height, measure.Request.Height);
         }
 
         private async void ResultScrollOnScrolled(object sender, ScrolledEventArgs e)

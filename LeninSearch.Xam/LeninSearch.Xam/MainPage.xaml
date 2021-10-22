@@ -6,7 +6,6 @@
              xmlns:controls="clr-namespace:LeninSearch.Xam.Controls;assembly=LeninSearch.Xam"
              mc:Ignorable="d"
              x:Class="LeninSearch.Xam.MainPage">
-
     <StackLayout Orientation="Vertical" Spacing="0">
         <StackLayout x:Name="TopLayout" Orientation="Horizontal" HorizontalOptions="Fill" Spacing="0" BackgroundColor="White"   Margin="0">
             <ActivityIndicator x:Name="SearchActivityIndicator" Color="#D6181F" IsRunning="False" VerticalOptions="Start" WidthRequest="32" HeightRequest="32" Margin="8"></ActivityIndicator>
@@ -36,6 +35,15 @@
                 <StackLayout Margin="10" Orientation="Vertical" VerticalOptions="Start" x:Name="ResultStack" BackgroundColor="White">
                 </StackLayout>
             </controls:GestureScrollView>
+        </StackLayout>
+        <StackLayout x:Name="QueryPanel" VerticalOptions="End" HorizontalOptions="FillAndExpand" Orientation="Vertical" Spacing="0">
+            <StackLayout HorizontalOptions="FillAndExpand" Orientation="Vertical" HeightRequest="2" BackgroundColor="#D6181F"></StackLayout>
+            <StackLayout VerticalOptions="End" HorizontalOptions="FillAndExpand" HeightRequest="36" Orientation="Horizontal">
+                <Button x:Name="QueryType1Button" Text="ВИД-1" Background= "White" TextColor="#D6181F" BorderWidth="0" />
+                <Button x:Name="QueryType2Button" Text="ВИД-2" Background= "White" TextColor="#D6181F" BorderWidth="0" />
+                <Button x:Name="QueryType3Button" Text="ВИД-3" Background= "White" TextColor="#D6181F" BorderWidth="0" />
+                <Button Margin="40, 0, 0, 0" x:Name="QuerySwitchButton" Text="ПЕРЕКЛ." Background= "White" TextColor="#D6181F" BorderWidth="0" />
+            </StackLayout>
         </StackLayout>
     </StackLayout>
 </ContentPage>

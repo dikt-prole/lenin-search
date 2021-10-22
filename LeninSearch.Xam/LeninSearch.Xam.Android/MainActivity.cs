@@ -3,14 +3,17 @@ using Android.Content.PM;
 using Android.Runtime;
 using Android.Views;
 using Android.OS;
+using Android.Views.InputMethods;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
 using LeninSearch.Standard.Core.Reporting;
+using Xamarin.Forms;
+using Application = Android.App.Application;
 
 namespace LeninSearch.Xam.Droid
 {
-    [Activity(Label = "LeninSearch.Xam", Icon = "@drawable/icon", Theme = "@style/MainTheme"/*, MainLauncher = true*/, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Label = "LeninSearch", Icon = "@drawable/icon", Theme = "@style/MainTheme"/*, MainLauncher = true*/, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
         private App _app;
@@ -21,7 +24,7 @@ namespace LeninSearch.Xam.Droid
             base.OnCreate(savedInstanceState);
 
             Window.SetStatusBarColor(Android.Graphics.Color.Argb(180, 214, 24, 31));
-
+            
             AppCenter.Start("82046ff3-062c-4160-870a-62dbb982859b", typeof(Analytics), typeof(Crashes));
 
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
@@ -55,6 +58,6 @@ namespace LeninSearch.Xam.Droid
             {
                 _globalEvents.OnBackButtonPressed();
             }
-        }        
+        }
     }
 }

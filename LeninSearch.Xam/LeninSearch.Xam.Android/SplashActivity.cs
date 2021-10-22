@@ -13,6 +13,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Android.Views;
+using Xamarin.Forms;
+using Application = Android.App.Application;
 
 namespace LeninSearch.Xam.Droid
 {
@@ -26,6 +29,7 @@ namespace LeninSearch.Xam.Droid
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
+
             SetContentView(Resource.Layout.Splash);
             _progressTextView = FindViewById<TextView>(Resource.Id.txtAppVersion);
             _progressTextView.Text = "";
