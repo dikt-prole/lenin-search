@@ -49,7 +49,13 @@ namespace LeninSearch.Xam
             SearchEntry.Focused += (sender, args) =>
             {
                 HideTextMenu();
+                CorpusButton.IsVisible = false;
             };
+
+            // keyboard
+            Keyboard.BindToEntry(SearchEntry);
+            Keyboard.SearchClick += async () => await OnSearchButtonPressed();
+            Keyboard.NonKeyaboardUnfocus += () => CorpusButton.IsVisible = true;
 
             _paragraphViewBuilder = new StdParagraphViewBuilder();
             _paragraphViewBuilder = new ParagraphViewBuilderPagerHeaderDecorator(_paragraphViewBuilder);
@@ -73,8 +79,7 @@ namespace LeninSearch.Xam
             ClipboardButton.Clicked += ClipboardButtonOnClicked;
             HideSearchResultBar();
 
-            Keyboard.BindToEntry(SearchEntry);
-            Keyboard.OnSearch += async () => await OnSearchButtonPressed();
+            
         }
         public void SetState(State state)
         {

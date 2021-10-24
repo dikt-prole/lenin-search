@@ -17,8 +17,10 @@ namespace LeninSearch.Xam.Controls
         private SimpleLsKeyButton _type4Button;
         private SimpleLsKeyButton _switchButton;
         private ImageButton _searchButton;
+        public event Action SearchClick;
+        public event Action NonKeyaboardUnfocus;
+        private bool _unfocus;
 
-        public event Action OnSearch;
         public LsKeyboard()
         {
             HorizontalOptions = LayoutOptions.FillAndExpand;
@@ -127,17 +129,28 @@ namespace LeninSearch.Xam.Controls
 
         private void SearchButtonOnClicked(object sender, EventArgs e)
         {
+            _entry.Text = _entry.Text.Replace($"{Settings.Query.Token}*", "").Replace("  ", " ").TrimEnd('+', ' ');
             _entry.Unfocus();
-            OnSearch?.Invoke();
+            SearchClick?.Invoke();
         }
 
         private void EntryOnUnfocused(object sender, FocusEventArgs e)
         {
-            SelfHide();
+            _unfocus = true;
+            Device.InvokeOnMainThreadAsync(async () =>
+            {
+                await Task.Delay(50);
+                if (_unfocus)
+                {
+                    NonKeyaboardUnfocus?.Invoke();
+                    SelfHide();
+                }
+            });
         }
 
         private void KeyButtonOnClicked(object sender, EventArgs e)
         {
+            _unfocus = false;
             var keyButton = sender as SimpleLsKeyButton;
             var paste = keyButton.Paste;
             if (paste == Settings.Query.Txt1 || paste == Settings.Query.Txt2 || paste == Settings.Query.Txt3 || paste == Settings.Query.Title1)

@@ -32,9 +32,9 @@ namespace LeninSearch.Xam
         {
             public const string Token = "токен";
             public static readonly string InitialQuery = "дикт* проле* + науч* латин*";
-            public static readonly string Txt1 = $"{Token}*";
-            public static readonly string Txt2 = $"{Token}* + {Token}*";
-            public static readonly string Txt3 = $"{Token}* {Token}* + {Token}* {Token}*";
+            public static readonly string Txt1 = $"{Token}* + {Token}*";
+            public static readonly string Txt2 = $"{Token}* {Token}* + {Token}* {Token}*";
+            public static readonly string Txt3 = $"{Token}* {Token}* {Token}* + {Token}* {Token}* {Token}*";
             public static readonly string Title1 = $"* {Token}* + {Token}*";
         }
     }
