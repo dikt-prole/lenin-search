@@ -12,6 +12,7 @@ using LeninSearch.Xam.Core;
 using LeninSearch.Xam.ParagraphAdder;
 using Plugin.Clipboard;
 using Xamarin.Forms;
+using Xamarin.Forms.Xaml;
 using Label = Xamarin.Forms.Label;
 
 namespace LeninSearch.Xam
@@ -24,8 +25,6 @@ namespace LeninSearch.Xam
         private ParagraphViewBuilderTapDecorator _selectionDecorator;
 
         private readonly LsSearcher _searcher = new LsSearcher();
-
-        private const string QueryTemplateFragment = "frag";
 
         private Dictionary<string, string> _corpusImages = new Dictionary<string, string>
         {
@@ -41,24 +40,15 @@ namespace LeninSearch.Xam
         {
             _globalEvents = globalEvents;
             InitializeComponent();
-            QueryPanel.IsVisible = false;
 
             // corpus button
             CorpusButton.Pressed += (sender, args) => DisplayCorpus();
 
-            SearchEntry.Text = null;
+            // search entry
             SearchEntry.FontSize = Settings.MainFontSize;
-            SearchEntry.ReturnCommand = new Command(async () => await OnSearchButtonPressed());
             SearchEntry.Focused += (sender, args) =>
             {
                 HideTextMenu();
-                QueryPanel.IsVisible = true;
-                CorpusButton.IsVisible = false;
-            };
-            SearchEntry.Unfocused += (sender, args) =>
-            {
-                QueryPanel.IsVisible = false;
-                CorpusButton.IsVisible = true;
             };
 
             _paragraphViewBuilder = new StdParagraphViewBuilder();
@@ -83,45 +73,9 @@ namespace LeninSearch.Xam
             ClipboardButton.Clicked += ClipboardButtonOnClicked;
             HideSearchResultBar();
 
-            // query panel
-            QueryType1Button.Clicked += (sender, args) => OnQueryTypeButtonClicked($"{QueryTemplateFragment}*");
-            QueryType2Button.Clicked += (sender, args) => OnQueryTypeButtonClicked($"{QueryTemplateFragment}* + {QueryTemplateFragment}*");
-            QueryType3Button.Clicked += (sender, args) => OnQueryTypeButtonClicked($"{QueryTemplateFragment}* {QueryTemplateFragment}* + {QueryTemplateFragment}* {QueryTemplateFragment}*");
-            QuerySwitchButton.Clicked += (sender, args) =>
-            {
-                if (string.IsNullOrEmpty(SearchEntry.Text)) return;
-
-                if (!SearchEntry.Text.Contains(QueryTemplateFragment)) return;
-
-                var offset = SearchEntry.CursorPosition + SearchEntry.SelectionLength;
-                var startFragmentIndex = SearchEntry.Text.IndexOf(QueryTemplateFragment, offset);
-                if (startFragmentIndex < 0)
-                {
-                    startFragmentIndex = SearchEntry.Text.IndexOf(QueryTemplateFragment);
-                }
-                SearchEntry.Focus();
-                Device.InvokeOnMainThreadAsync(async () =>
-                {
-                    SearchEntry.CursorPosition = startFragmentIndex;
-                    SearchEntry.SelectionLength = QueryTemplateFragment.Length;
-                });
-            };
+            Keyboard.BindToEntry(SearchEntry);
+            Keyboard.OnSearch += async () => await OnSearchButtonPressed();
         }
-
-        public void OnQueryTypeButtonClicked(string queryTemplate)
-        {
-            SearchEntry.Text = queryTemplate;
-            SearchEntry.Focus();
-            var startFragmentIndex = queryTemplate.IndexOf(QueryTemplateFragment);
-            Device.InvokeOnMainThreadAsync(async () =>
-            {
-                SearchEntry.CursorPosition = startFragmentIndex;
-                SearchEntry.SelectionLength = QueryTemplateFragment.Length;
-            });
-        }
-
-        
-
         public void SetState(State state)
         {
             _state = state;

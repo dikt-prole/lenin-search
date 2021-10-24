@@ -1,0 +1,214 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+using Xamarin.Forms;
+using Xamarin.Forms.Internals;
+
+namespace LeninSearch.Xam.Controls
+{
+    public class LsKeyboard : Grid
+    {
+        private NoKeyboardEntry _entry;
+        private SimpleLsKeyButton _type1Button;
+        private SimpleLsKeyButton _type2Button;
+        private SimpleLsKeyButton _type3Button;
+        private SimpleLsKeyButton _type4Button;
+        private SimpleLsKeyButton _switchButton;
+        private ImageButton _searchButton;
+
+        public event Action OnSearch;
+        public LsKeyboard()
+        {
+            HorizontalOptions = LayoutOptions.FillAndExpand;
+            ColumnSpacing = 1;
+            RowSpacing = 1;
+            RowDefinitions = new RowDefinitionCollection
+            {
+                new RowDefinition {Height = 40},
+                new RowDefinition {Height = 40},
+                new RowDefinition {Height = 40},
+                new RowDefinition {Height = 40},
+                new RowDefinition {Height = 40}
+            };
+            ColumnDefinitions = new ColumnDefinitionCollection
+            {
+                new ColumnDefinition {Width = GridLength.Star},
+                new ColumnDefinition {Width = GridLength.Star},
+                new ColumnDefinition {Width = GridLength.Star},
+                new ColumnDefinition {Width = GridLength.Star},
+                new ColumnDefinition {Width = GridLength.Star},
+                new ColumnDefinition {Width = GridLength.Star},
+                new ColumnDefinition {Width = GridLength.Star},
+                new ColumnDefinition {Width = GridLength.Star},
+                new ColumnDefinition {Width = GridLength.Star},
+                new ColumnDefinition {Width = GridLength.Star},
+                new ColumnDefinition {Width = GridLength.Star}
+            };
+
+            var allKeys = LsKey.LsKeyValues.AllKeys().ToList();
+
+            _type1Button = new SimpleLsKeyButton { Key = allKeys[0] };
+            Children.Add(_type1Button, 0, 0);
+            SetRow(_type1Button, 0);
+            SetColumn(_type1Button, 0);
+            SetColumnSpan(_type1Button, 2);
+
+            _type2Button = new SimpleLsKeyButton { Key = allKeys[1] };
+            Children.Add(_type2Button, 0, 0);
+            SetRow(_type2Button, 0);
+            SetColumn(_type2Button, 2);
+            SetColumnSpan(_type2Button, 2);
+
+            _type3Button = new SimpleLsKeyButton { Key = allKeys[2] };
+            Children.Add(_type3Button, 0, 0);
+            SetRow(_type3Button, 0);
+            SetColumn(_type3Button, 4);
+            SetColumnSpan(_type3Button, 2);
+
+            _type4Button = new SimpleLsKeyButton { Key = allKeys[3] };
+            Children.Add(_type4Button, 0, 0);
+            SetRow(_type4Button, 0);
+            SetColumn(_type4Button, 6);
+            SetColumnSpan(_type4Button, 2);
+
+            _switchButton = new SimpleLsKeyButton { Key = allKeys[4] };
+            Children.Add(_switchButton, 0, 0);
+            SetRow(_switchButton, 0);
+            SetColumn(_switchButton, 8);
+            SetColumnSpan(_switchButton, 3);
+
+            var keyRows = new List<List<string>>
+            {
+                LsKey.LsKeyValues.AllKeys().Skip(5).Take(11).ToList(),
+                LsKey.LsKeyValues.AllKeys().Skip(5 + 11).Take(11).ToList(),
+                LsKey.LsKeyValues.AllKeys().Skip(5 + 22).Take(11).ToList(),
+                LsKey.LsKeyValues.AllKeys().Skip(5 + 33).Take(11).ToList()
+            };
+
+            for (var rowIndex = 0; rowIndex < keyRows.Count; rowIndex++)
+            {
+                for (var colIndex = 0; colIndex < 11; colIndex++)
+                {
+                    if (rowIndex == 4 && colIndex == 10) continue;
+
+                    var keyButton = new SimpleLsKeyButton { Key = keyRows[rowIndex][colIndex] };
+                    Children.Add(keyButton, 0, 0);
+                    SetRow(keyButton, rowIndex + 1);
+                    SetColumn(keyButton, colIndex);
+                }
+            }
+
+            _searchButton = new ImageButton
+            {
+                Source = "search.png",
+                BackgroundColor = Settings.MainColor
+            };
+            Children.Add(_searchButton);
+            SetRow(_searchButton, 4);
+            SetColumn(_searchButton, 10);
+
+            SelfHide();
+        }
+        public void BindToEntry(NoKeyboardEntry entry)
+        {
+            _entry = entry;
+            foreach (var keyButton in Children.OfType<SimpleLsKeyButton>())
+            {
+                keyButton.Clicked += KeyButtonOnClicked;
+            }
+
+            _searchButton.Clicked += SearchButtonOnClicked;
+
+            _entry.TapFocused += SelfShow;
+            _entry.Unfocused += EntryOnUnfocused;
+        }
+
+        private void SearchButtonOnClicked(object sender, EventArgs e)
+        {
+            _entry.Unfocus();
+            OnSearch?.Invoke();
+        }
+
+        private void EntryOnUnfocused(object sender, FocusEventArgs e)
+        {
+            SelfHide();
+        }
+
+        private void KeyButtonOnClicked(object sender, EventArgs e)
+        {
+            var keyButton = sender as SimpleLsKeyButton;
+            var paste = keyButton.Paste;
+            if (paste == Settings.Query.Txt1 || paste == Settings.Query.Txt2 || paste == Settings.Query.Txt3 || paste == Settings.Query.Title1)
+            {
+                _entry.Text = paste;
+                var startTokenIndex = _entry.Text.IndexOf(Settings.Query.Token);
+                Device.InvokeOnMainThreadAsync(async () =>
+                {
+                    _entry.CursorPosition = startTokenIndex;
+                    _entry.SelectionLength = Settings.Query.Token.Length;
+                });
+            }
+            else if (paste == "переключ")
+            {
+                if (string.IsNullOrEmpty(_entry.Text)) return;
+
+                if (!_entry.Text.Contains(Settings.Query.Token)) return;
+
+                _entry.Focus();
+
+                var offset = _entry.CursorPosition + _entry.SelectionLength;
+                var startTokenIndex = _entry.Text.IndexOf(Settings.Query.Token, offset);
+                if (startTokenIndex < 0)
+                {
+                    startTokenIndex = _entry.Text.IndexOf(Settings.Query.Token);
+                }
+                Device.InvokeOnMainThreadAsync(async () =>
+                {
+                    _entry.CursorPosition = startTokenIndex;
+                    _entry.SelectionLength = Settings.Query.Token.Length;
+                });
+            }
+            else
+            {
+                var currentText = _entry.Text;
+                if (string.IsNullOrEmpty(currentText))
+                {
+                    _entry.Text = keyButton.Paste;
+                    Device.InvokeOnMainThreadAsync(async () =>
+                    {
+                        _entry.CursorPosition = keyButton.Paste.Length;
+                    });
+                }
+                else
+                {
+                    var before = currentText.Substring(0, _entry.CursorPosition);
+                    var after = currentText.Substring(_entry.CursorPosition);
+                    if (_entry.SelectionLength > 0)
+                    {
+                        after = after.Substring(_entry.SelectionLength);
+                    }
+
+                    _entry.Text = $"{before}{keyButton.Paste}{after}";
+                    Device.InvokeOnMainThreadAsync(async () =>
+                    {
+                        _entry.CursorPosition = before.Length + keyButton.Paste.Length;
+                        _entry.SelectionLength = 0;
+                    });
+                }
+            }
+
+            SelfShow();
+        }
+
+        private void SelfShow()
+        {
+            IsVisible = true;
+        }
+        private void SelfHide()
+        {
+            IsVisible = false;
+        }
+    }
+}

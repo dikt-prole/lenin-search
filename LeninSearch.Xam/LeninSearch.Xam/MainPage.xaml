@@ -10,7 +10,7 @@
         <StackLayout x:Name="TopLayout" Orientation="Horizontal" HorizontalOptions="Fill" Spacing="0" BackgroundColor="White"   Margin="0">
             <ActivityIndicator x:Name="SearchActivityIndicator" Color="#D6181F" IsRunning="False" VerticalOptions="Start" WidthRequest="32" HeightRequest="32" Margin="8"></ActivityIndicator>
             <ImageButton Padding="0" x:Name="CorpusButton" WidthRequest="48" HeightRequest="48" Source="lenin.png" BackgroundColor="White" HorizontalOptions="Start" Margin="0"></ImageButton>
-            <Entry x:Name="SearchEntry" Placeholder="Введите запрос" ReturnType="Search" HorizontalOptions="FillAndExpand" Margin="0" FontSize="Small" TextColor="Black" MinimumWidthRequest="100"></Entry>
+            <controls:NoKeyboardEntry x:Name="SearchEntry" Placeholder="Введите запрос" ReturnType="Search" HorizontalOptions="FillAndExpand" Margin="0" FontSize="Small" TextColor="Black" MinimumWidthRequest="100"></controls:NoKeyboardEntry>
             <StackLayout x:Name="TextMenuStack" HorizontalOptions="End" WidthRequest="84" BackgroundColor="White" Orientation="Horizontal" Spacing="0" Margin="0">
                 <ImageButton x:Name="ClipboardButton" Source="clipboard.png" WidthRequest="32" HeightRequest="32" VerticalOptions="Center" Margin="5" BackgroundColor="White" Padding="0"></ImageButton>
                 <ImageButton x:Name="BookmarkButton" Source="bookmark.png" WidthRequest="32" HeightRequest="32" VerticalOptions="Center" Margin="5" Padding="0" BackgroundColor="White"></ImageButton>
@@ -36,14 +36,6 @@
                 </StackLayout>
             </controls:GestureScrollView>
         </StackLayout>
-        <StackLayout x:Name="QueryPanel" VerticalOptions="End" HorizontalOptions="FillAndExpand" Orientation="Vertical" Spacing="0">
-            <StackLayout HorizontalOptions="FillAndExpand" Orientation="Vertical" HeightRequest="2" BackgroundColor="#D6181F"></StackLayout>
-            <StackLayout VerticalOptions="End" HorizontalOptions="FillAndExpand" HeightRequest="36" Orientation="Horizontal" Spacing="0">
-                <Button x:Name="QueryType1Button" Text="ВИД-1" Background= "White" TextColor="#D6181F" BorderWidth="0" />
-                <Button x:Name="QueryType2Button" Text="ВИД-2" Background= "White" TextColor="#D6181F" BorderWidth="0" />
-                <Button x:Name="QueryType3Button" Text="ВИД-3" Background= "White" TextColor="#D6181F" BorderWidth="0" />
-                <Button Margin="20, 0, 0, 0" x:Name="QuerySwitchButton" Text="ПЕРЕКЛ." Background= "White" TextColor="#D6181F" BorderWidth="0" />
-            </StackLayout>
-        </StackLayout>
+        <controls:LsKeyboard x:Name="Keyboard"></controls:LsKeyboard>
     </StackLayout>
 </ContentPage>

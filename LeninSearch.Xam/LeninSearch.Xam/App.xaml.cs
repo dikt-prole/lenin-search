@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 using LeninSearch.Standard.Core.Search;
 using LeninSearch.Xam.Core;
 using Newtonsoft.Json;
+using Xamarin.Forms;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using Application = Xamarin.Forms.Application;
 
+[assembly: ExportFont("MaterialIcons-Regular.ttf", Alias = "Material")]
 namespace LeninSearch.Xam
 {
     public partial class App : Application
@@ -19,7 +21,7 @@ namespace LeninSearch.Xam
 
         public App(GlobalEvents globalEvents)
         {
-            Current.On<Xamarin.Forms.PlatformConfiguration.Android>().UseWindowSoftInputModeAdjust(WindowSoftInputModeAdjust.Resize);
+            Current.On<Android>().UseWindowSoftInputModeAdjust(WindowSoftInputModeAdjust.Resize);
             InitializeComponent();
             MainPage = new MainPage(globalEvents);
         }

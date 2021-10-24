@@ -3,17 +3,19 @@ using Android.Content.PM;
 using Android.Runtime;
 using Android.Views;
 using Android.OS;
-using Android.Views.InputMethods;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
 using LeninSearch.Standard.Core.Reporting;
-using Xamarin.Forms;
 using Application = Android.App.Application;
 
 namespace LeninSearch.Xam.Droid
 {
-    [Activity(Label = "LeninSearch", Icon = "@drawable/icon", Theme = "@style/MainTheme"/*, MainLauncher = true*/, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Label = "LeninSearch", 
+        Icon = "@drawable/icon", 
+        Theme = "@style/MainTheme", 
+        ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation,
+        WindowSoftInputMode = SoftInput.StateAlwaysHidden)]
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
         private App _app;
@@ -38,10 +40,13 @@ namespace LeninSearch.Xam.Droid
 
             _globalEvents = new GlobalEvents();
             _app = new App(_globalEvents);
+
             LoadApplication(_app);
+
+            Window.SetSoftInputMode(SoftInput.StateAlwaysHidden);
         }        
 
-        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
+        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Permission[] grantResults)
         {
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 

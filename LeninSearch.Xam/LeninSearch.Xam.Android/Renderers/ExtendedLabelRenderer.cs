@@ -1,12 +1,12 @@
 ﻿using System.ComponentModel;
 using Android.Content;
 using LeninSearch.Xam.Controls;
-using LeninSearch.Xam.Droid;
+using LeninSearch.Xam.Droid.Renderers;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
 
 [assembly: ExportRenderer(typeof(ExtendedLabel), typeof(ExtendedLabelRenderer))]
-namespace LeninSearch.Xam.Droid
+namespace LeninSearch.Xam.Droid.Renderers
 {
     public class ExtendedLabelRenderer : LabelRenderer
     {

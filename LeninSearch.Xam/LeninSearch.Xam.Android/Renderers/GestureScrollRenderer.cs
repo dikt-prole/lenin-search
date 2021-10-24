@@ -2,12 +2,12 @@
 using Android.Content;
 using Android.Views;
 using LeninSearch.Xam.Controls;
-using LeninSearch.Xam.Droid;
+using LeninSearch.Xam.Droid.Renderers;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
 
 [assembly: ExportRenderer(typeof(GestureScrollView), typeof(GestureScrollViewRenderer))]
-namespace LeninSearch.Xam.Droid
+namespace LeninSearch.Xam.Droid.Renderers
 {
     public class GestureScrollViewRenderer : ScrollViewRenderer
     {
