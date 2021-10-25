@@ -26,6 +26,8 @@ namespace LeninSearch.Xam.Controls
             Margin = new Thickness(0);
             BackgroundColor = Settings.MainColor;
             TextColor = Color.White;
+            BorderColor = Color.White;
+            BorderWidth = 1;
         }
     }
 }

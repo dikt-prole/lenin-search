@@ -11,7 +11,6 @@ using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using Application = Xamarin.Forms.Application;
 
-[assembly: ExportFont("MaterialIcons-Regular.ttf", Alias = "Material")]
 namespace LeninSearch.Xam
 {
     public partial class App : Application
@@ -29,7 +28,7 @@ namespace LeninSearch.Xam
         protected override void OnStart()
         {
             Debug.WriteLine($"OnStart");
-            _state = LoadState();
+            _state = LoadState(true);
             if (MainPage is MainPage mainPage)
             {
                 mainPage.SetState(_state);
@@ -67,14 +66,25 @@ namespace LeninSearch.Xam
             File.WriteAllText(stateFilePath, json);
         }
 
-        private static State LoadState()
+        private static State LoadState(bool leaveOnlyCorpusSelection = false)
         {
             var stateFilePath = $"{FileUtil.StateFolder}/state.json";
 
             if (File.Exists(stateFilePath))
             {
                 var json = File.ReadAllText(stateFilePath);
-                return JsonConvert.DeserializeObject<State>(json);
+
+                var state = JsonConvert.DeserializeObject<State>(json);
+
+                if (leaveOnlyCorpusSelection)
+                {
+                    state.PartialParagraphSearchResult = null;
+                    state.CurrentParagraphResultIndex = -1;
+                    state.SearchRequest = null;
+                    state.ReadingFile = null;
+                }
+
+                return state;
             }
 
             var corpusItem = State.CorpusItems.FirstOrDefault(ci => ci.Selected);
@@ -82,6 +92,7 @@ namespace LeninSearch.Xam
             {
                 corpusItem = State.CorpusItems.First();
             }
+
             return new State
             {
                 CorpusName = corpusItem.Name,

@@ -113,7 +113,7 @@ namespace LeninSearch.Xam.Droid
 
                 if (needUnzip)
                 {
-                    SetProgressText("unzipping");
+                    SetProgressText("распаковка");
                     // 1. unzip
                     if (Directory.Exists(FileUtil.CorpusFolder))
                     {
@@ -131,7 +131,7 @@ namespace LeninSearch.Xam.Droid
                         for (var i = 0; i < lsFiles.Length; i++)
                         {
                             var lsFile = lsFiles[i];
-                            SetProgressText($"indexing {i + 1} of {lsFiles.Length}");
+                            SetProgressText($"индексация {i + 1} из {lsFiles.Length} файлов");
                             ConvertLsToLsi(lsFile);
                         }
                     }
@@ -139,7 +139,7 @@ namespace LeninSearch.Xam.Droid
                     {
                         for (var i = 0; i < lsFiles.Length; i += ConcurrentOptions.LsToLsiBatchSize)
                         {
-                            SetProgressText($"indexing {i + 1} of {lsFiles.Length}");
+                            SetProgressText($"индексация {i + 1} из {lsFiles.Length} файлов");
                             var tasks = lsFiles.Skip(i).Take(ConcurrentOptions.LsToLsiBatchSize).Select(lsFile => Task.Run(() => ConvertLsToLsi(lsFile))).ToArray();
                             Task.WaitAll(tasks);
                         }

@@ -12,7 +12,7 @@
             <ImageButton Padding="0" x:Name="CorpusButton" WidthRequest="48" HeightRequest="48" Source="lenin.png" BackgroundColor="White" HorizontalOptions="Start" Margin="0"></ImageButton>
             <controls:NoKeyboardEntry x:Name="SearchEntry" Placeholder="Введите запрос" ReturnType="Search" HorizontalOptions="FillAndExpand" Margin="0" FontSize="Small" TextColor="Black" MinimumWidthRequest="100"></controls:NoKeyboardEntry>
             <StackLayout x:Name="TextMenuStack" HorizontalOptions="End" WidthRequest="84" BackgroundColor="White" Orientation="Horizontal" Spacing="0" Margin="0">
-                <ImageButton x:Name="ClipboardButton" Source="clipboard.png" WidthRequest="32" HeightRequest="32" VerticalOptions="Center" Margin="5" BackgroundColor="White" Padding="0"></ImageButton>
+                <ImageButton x:Name="ShareButton" Source="share.png" WidthRequest="32" HeightRequest="32" VerticalOptions="Center" Margin="5" BackgroundColor="White" Padding="0"></ImageButton>
                 <ImageButton x:Name="BookmarkButton" Source="bookmark.png" WidthRequest="32" HeightRequest="32" VerticalOptions="Center" Margin="5" Padding="0" BackgroundColor="White"></ImageButton>
             </StackLayout>
         </StackLayout>

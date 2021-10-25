@@ -10,9 +10,8 @@ using LeninSearch.Standard.Core.Search;
 using LeninSearch.Xam.Controls;
 using LeninSearch.Xam.Core;
 using LeninSearch.Xam.ParagraphAdder;
-using Plugin.Clipboard;
+using Xamarin.Essentials;
 using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
 using Label = Xamarin.Forms.Label;
 
 namespace LeninSearch.Xam
@@ -76,10 +75,8 @@ namespace LeninSearch.Xam
 
             // text menu
             BookmarkButton.Clicked += BookmarkButtonOnClicked;
-            ClipboardButton.Clicked += ClipboardButtonOnClicked;
+            ShareButton.Clicked += ShareButtonOnClicked;
             HideSearchResultBar();
-
-            
         }
         public void SetState(State state)
         {
@@ -309,9 +306,8 @@ namespace LeninSearch.Xam
             view.Rotation = 0;
         }
 
-        private async void ClipboardButtonOnClicked(object sender, EventArgs e)
+        private async void ShareButtonOnClicked(object sender, EventArgs e)
         {
-            await Rotate360(ClipboardButton);
             var lsiData = LsIndexDataSource.Get(_state.ReadingFile);
             var indexes = _selectionDecorator.SelectedIndexes;
             var separator = $"{Environment.NewLine}{Environment.NewLine}";
@@ -347,10 +343,16 @@ namespace LeninSearch.Xam
             };
 
             var pTexts = indexes.Select(i => getParagraphTextFunc(i)).ToList();
-            var cbText = string.Join(separator, pTexts);
-            CrossClipboard.Current.SetText(cbText);
-            await AnimateAppear(ClipboardButton);
+            var shareText = string.Join(separator, pTexts);
+            shareText = $"{shareText}{separator}Подготовлено при помощи Lenin Search для Android (доступно в Google Play) за считанные секунды";
+
             _selectionDecorator.ClearSelection();
+
+            await Share.RequestAsync(new ShareTextRequest
+            {
+                Text = shareText,
+                Title = "Lenin Search Share"
+            });
         }
 
         private void HideSearchResultBar()

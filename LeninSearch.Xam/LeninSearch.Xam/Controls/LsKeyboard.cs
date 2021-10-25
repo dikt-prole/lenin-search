@@ -24,15 +24,15 @@ namespace LeninSearch.Xam.Controls
         public LsKeyboard()
         {
             HorizontalOptions = LayoutOptions.FillAndExpand;
-            ColumnSpacing = 1;
-            RowSpacing = 1;
+            ColumnSpacing = 0;
+            RowSpacing = 0;
             RowDefinitions = new RowDefinitionCollection
             {
-                new RowDefinition {Height = 40},
-                new RowDefinition {Height = 40},
-                new RowDefinition {Height = 40},
-                new RowDefinition {Height = 40},
-                new RowDefinition {Height = 40}
+                new RowDefinition {Height = 50},
+                new RowDefinition {Height = 50},
+                new RowDefinition {Height = 50},
+                new RowDefinition {Height = 50},
+                new RowDefinition {Height = 50}
             };
             ColumnDefinitions = new ColumnDefinitionCollection
             {
@@ -105,7 +105,9 @@ namespace LeninSearch.Xam.Controls
             _searchButton = new ImageButton
             {
                 Source = "search.png",
-                BackgroundColor = Settings.MainColor
+                BackgroundColor = Settings.MainColor,
+                BorderColor = Color.White,
+                BorderWidth = 1
             };
             Children.Add(_searchButton);
             SetRow(_searchButton, 4);
@@ -167,20 +169,27 @@ namespace LeninSearch.Xam.Controls
             {
                 if (string.IsNullOrEmpty(_entry.Text)) return;
 
-                if (!_entry.Text.Contains(Settings.Query.Token)) return;
+                if (!_entry.Text.Contains('*')) return;
 
                 _entry.Focus();
 
-                var offset = _entry.CursorPosition + _entry.SelectionLength;
-                var startTokenIndex = _entry.Text.IndexOf(Settings.Query.Token, offset);
-                if (startTokenIndex < 0)
+                var offset = _entry.CursorPosition + _entry.SelectionLength + 1;
+                var asteriskIndex = offset >= _entry.Text.Length ? - 1 : _entry.Text.IndexOf('*', offset);
+                if (asteriskIndex < 0)
                 {
-                    startTokenIndex = _entry.Text.IndexOf(Settings.Query.Token);
+                    asteriskIndex = _entry.Text.IndexOf('*');
                 }
+
+                var textBeforeAsterisk = _entry.Text.Substring(0, asteriskIndex);
+                var spaceIndex = textBeforeAsterisk.LastIndexOf(' ');
+
+                var selectionStart = spaceIndex + 1;
+                var selectionLength = asteriskIndex - spaceIndex - 1;
+
                 Device.InvokeOnMainThreadAsync(async () =>
                 {
-                    _entry.CursorPosition = startTokenIndex;
-                    _entry.SelectionLength = Settings.Query.Token.Length;
+                    _entry.CursorPosition = selectionStart;
+                    _entry.SelectionLength = selectionLength;
                 });
             }
             else
