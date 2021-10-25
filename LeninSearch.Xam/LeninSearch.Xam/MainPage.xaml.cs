@@ -323,8 +323,7 @@ namespace LeninSearch.Xam
                     var corpusFileItem = corpusItem.Files.First(f => f.Path == searchResult.File);
                     var page = lsiData.LsData.GetClosestPage(searchResult.ParagraphIndex);
                     var headings = lsiData.LsData.GetHeadingsDownToZero(searchResult.ParagraphIndex);
-                    string additionalParagaph = corpusFileItem.Name;
-
+                    string additionalParagaph = $"{corpusItem.Name}, {corpusFileItem.Name}";
                     if (page != null)
                     {
                         additionalParagaph = $"{additionalParagaph}, стр. {page}";
