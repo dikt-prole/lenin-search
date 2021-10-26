@@ -4,6 +4,7 @@
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="clr-namespace:LeninSearch.Xam.Controls;assembly=LeninSearch.Xam"
+             xmlns:views="http://xamarin.com/schemas/2020/toolkit"
              mc:Ignorable="d"
              x:Class="LeninSearch.Xam.MainPage">
     <StackLayout Orientation="Vertical" Spacing="0">
@@ -30,6 +31,34 @@
                 </StackLayout>
             </StackLayout>
         </StackLayout>
+        <views:TabView
+            x:Name="InitialTabs"
+            TabStripPlacement="Top"
+            TabStripBackgroundColor="White"
+            TabStripHeight="40"
+
+            TabIndicatorColor="#D6181F"
+            TabContentBackgroundColor="White">
+
+            <views:TabViewItem
+                Text="КОРПУС"
+                TextColor="Black">
+                <StackLayout Orientation="Vertical" x:Name="CorpusTab"></StackLayout>
+            </views:TabViewItem>
+
+            <views:TabViewItem
+                Text="ЗАКЛАДКИ"
+                TextColor="Black">
+                <StackLayout Orientation="Vertical" x:Name="BookmarkTab"></StackLayout>
+            </views:TabViewItem>
+
+            <views:TabViewItem
+                Text="ОБУЧЕНИЕ"
+                TextColor="Black">
+                <StackLayout Orientation="Vertical" x:Name="LearningTab"></StackLayout>
+            </views:TabViewItem>
+
+        </views:TabView>
         <StackLayout x:Name="ScrollWrapper" VerticalOptions="FillAndExpand"  BackgroundColor="White" Orientation="Horizontal" HorizontalOptions="FillAndExpand">
             <controls:GestureScrollView VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" x:Name="ResultScroll">
                 <StackLayout Margin="10" Orientation="Vertical" VerticalOptions="Start" x:Name="ResultStack" BackgroundColor="White">

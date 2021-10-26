@@ -27,7 +27,8 @@ namespace LeninSearch.Xam.Controls
                 yield return "ТКСТ-2";
                 yield return "ТКСТ-3";
                 yield return "ЗГЛВК";
-                yield return "ПЕРЕКЛЮЧ";
+                yield return "ПРКЛЧ";
+                yield return "<";
 
                 yield return "Й";
                 yield return "Ц";
@@ -89,7 +90,8 @@ namespace LeninSearch.Xam.Controls
                 _dictionary.Add(allKeys[2], new LsKey(allKeys[2], Settings.Query.Txt3));
                 _dictionary.Add(allKeys[3], new LsKey(allKeys[3], Settings.Query.Title1));
                 _dictionary.Add(allKeys[4], new LsKey(allKeys[4]));
-                foreach (var key in allKeys.Skip(5))
+                _dictionary.Add(allKeys[5], new LsKey(allKeys[5]));
+                foreach (var key in allKeys.Skip(6))
                 {
                     _dictionary.Add(key, new LsKey(key));
                 }

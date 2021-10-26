@@ -83,10 +83,10 @@ namespace LeninSearch.Xam.Controls
 
             var keyRows = new List<List<string>>
             {
-                LsKey.LsKeyValues.AllKeys().Skip(5).Take(11).ToList(),
-                LsKey.LsKeyValues.AllKeys().Skip(5 + 11).Take(11).ToList(),
-                LsKey.LsKeyValues.AllKeys().Skip(5 + 22).Take(11).ToList(),
-                LsKey.LsKeyValues.AllKeys().Skip(5 + 33).Take(11).ToList()
+                LsKey.LsKeyValues.AllKeys().Skip(6).Take(11).ToList(),
+                LsKey.LsKeyValues.AllKeys().Skip(6 + 11).Take(11).ToList(),
+                LsKey.LsKeyValues.AllKeys().Skip(6 + 22).Take(11).ToList(),
+                LsKey.LsKeyValues.AllKeys().Skip(6 + 33).Take(11).ToList()
             };
 
             for (var rowIndex = 0; rowIndex < keyRows.Count; rowIndex++)
@@ -107,7 +107,8 @@ namespace LeninSearch.Xam.Controls
                 Source = "search.png",
                 BackgroundColor = Settings.MainColor,
                 BorderColor = Color.White,
-                BorderWidth = 1
+                BorderWidth = 1,
+                Padding = new Thickness(6)
             };
             Children.Add(_searchButton);
             SetRow(_searchButton, 4);
@@ -125,7 +126,7 @@ namespace LeninSearch.Xam.Controls
 
             _searchButton.Clicked += SearchButtonOnClicked;
 
-            _entry.TapFocused += SelfShow;
+            _entry.GentlyFocused += SelfShow;
             _entry.Unfocused += EntryOnUnfocused;
         }
 
@@ -165,7 +166,7 @@ namespace LeninSearch.Xam.Controls
                     _entry.SelectionLength = Settings.Query.Token.Length;
                 });
             }
-            else if (paste == "переключ")
+            else if (paste == "прклч")
             {
                 if (string.IsNullOrEmpty(_entry.Text)) return;
 
@@ -174,7 +175,7 @@ namespace LeninSearch.Xam.Controls
                 _entry.Focus();
 
                 var offset = _entry.CursorPosition + _entry.SelectionLength + 1;
-                var asteriskIndex = offset >= _entry.Text.Length ? - 1 : _entry.Text.IndexOf('*', offset);
+                var asteriskIndex = offset >= _entry.Text.Length ? -1 : _entry.Text.IndexOf('*', offset);
                 if (asteriskIndex < 0)
                 {
                     asteriskIndex = _entry.Text.IndexOf('*');

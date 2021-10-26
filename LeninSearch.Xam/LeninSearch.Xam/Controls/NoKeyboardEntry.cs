@@ -13,7 +13,7 @@ namespace LeninSearch.Xam.Controls
             InputTransparent = true;
         }
 
-        public event Action TapFocused;
+        public event Action GentlyFocused;
 
         protected override void OnParentSet()
         {
@@ -26,11 +26,7 @@ namespace LeninSearch.Xam.Controls
                     {
                         if (IsFocused) return;
 
-                        var originalText = Text ?? "";
-                        var newText = originalText.EndsWith(" ") ? originalText.TrimEnd(' ') : originalText + " ";
-                        Text = newText;
-                        CursorPosition = newText.Length;
-                        TapFocused?.Invoke();
+                        GentlyFocus();
                     })
                 };
                 parent.GestureRecognizers.Add(searchEntryTapRecognizer);
@@ -47,6 +43,15 @@ namespace LeninSearch.Xam.Controls
         private void HideDamnKeyboard(object sender, EventArgs args)
         {
             DependencyService.Get<IKeyboardHelper>().HideKeyboard();
+        }
+
+        public void GentlyFocus()
+        {
+            var originalText = Text ?? "";
+            var newText = originalText.EndsWith(" ") ? originalText.TrimEnd(' ') : originalText + " ";
+            Text = newText;
+            CursorPosition = newText.Length;
+            GentlyFocused?.Invoke();
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 
 namespace LeninSearch.Xam.Core
 {
@@ -17,10 +16,10 @@ namespace LeninSearch.Xam.Core
         {
             var text = $"{When.ToLocalTime():dd-MM-yyyy} {CorpusItemName} {BookName}";
 
-            if (!string.IsNullOrEmpty(ParagraphText))
-            {
-                text = $"{text} {new string(ParagraphText.Take(20).ToArray())}";
-            }
+            //if (!string.IsNullOrEmpty(ParagraphText))
+            //{
+            //    text = $"{text} {new string(ParagraphText.Take(20).ToArray())}";
+            //}
 
             return text;
         }

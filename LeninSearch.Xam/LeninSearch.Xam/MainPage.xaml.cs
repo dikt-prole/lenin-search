@@ -41,14 +41,13 @@ namespace LeninSearch.Xam
             InitializeComponent();
 
             // corpus button
-            CorpusButton.Pressed += (sender, args) => DisplayCorpus();
+            CorpusButton.Pressed += (sender, args) => DisplayInitialTabs();
 
             // search entry
             SearchEntry.FontSize = Settings.MainFontSize;
             SearchEntry.Focused += (sender, args) =>
             {
                 HideTextMenu();
-                CorpusButton.IsVisible = false;
             };
 
             // keyboard
@@ -77,6 +76,8 @@ namespace LeninSearch.Xam
             BookmarkButton.Clicked += BookmarkButtonOnClicked;
             ShareButton.Clicked += ShareButtonOnClicked;
             HideSearchResultBar();
+
+            PopulateInitialTabs();
         }
         public void SetState(State state)
         {
@@ -102,7 +103,7 @@ namespace LeninSearch.Xam
             }
             else
             {
-                Device.InvokeOnMainThreadAsync(DisplayCorpus);
+                Device.InvokeOnMainThreadAsync(DisplayInitialTabs);
             }
         }
 
@@ -140,6 +141,7 @@ namespace LeninSearch.Xam
             };
 
             BookmarkRepo.Add(bookmark);
+            PopulateBookmarksTab();
 
             _selectionDecorator.ClearSelection();
         }
@@ -192,37 +194,33 @@ namespace LeninSearch.Xam
             }
         }
 
-        private async void DisplayCorpus()
+        private void PopulateCorpusTab()
         {
-            _state.ReadingFile = null;
-
-            HideSearchResultBar();
-
-            await RebuildScroll(false);
-
-            ResultStack.Children.Add(new Label
-            {
-                Text = "КОРПУС",
-                HorizontalOptions = LayoutOptions.Center,
-                TextColor = Color.Black,
-                FontSize = Settings.SummaryFontSize
-            });
-
-            // output corpus
+            CorpusTab.Children.Clear();
             foreach (var ci in State.CorpusItems)
             {
-                var ciText = $"{ci.Name} {ci.Description}";
-                var label = ConstructHyperlink(ciText, new Command(async () =>
+                var booksString = "книг";
+                var fileCountString = ci.Files.Count.ToString();
+                if (fileCountString.EndsWith("1")) booksString = "книга";
+                if (fileCountString.EndsWith("2") || fileCountString.EndsWith("3") || fileCountString.EndsWith("4")) booksString = "книги";
+
+                var ciText = $"{ci.Name} ({ci.Files.Count} {booksString})";
+                var hyperlink = ConstructHyperlink(ciText, new Command(async () =>
                 {
                     _state.CorpusName = ci.Name;
                     await AnimateDisappear(CorpusButton);
                     CorpusButton.Source = _corpusImages[ci.Name];
                     await AnimateAppear(CorpusButton);
-                    await DisplayCorpusBooks();
+                    SearchEntry.GentlyFocus();
+                    //await DisplayCorpusBooks();
                 }), Settings.SummaryFontSize);
-                ResultStack.Children.Add(label);
+                CorpusTab.Children.Add(hyperlink);
             }
+        }
 
+        private void PopulateBookmarksTab()
+        {
+            BookmarkTab.Children.Clear();
             var bookmarks = BookmarkRepo.GetAll().ToList();
             if (bookmarks.Any())
             {
@@ -246,7 +244,12 @@ namespace LeninSearch.Xam
                         Spacing = 0
                     };
 
-                    layout.Children.Add(new Label { Text = bmText, FontSize = Settings.SummaryFontSize, TextColor = Color.Black });
+                    var textLabel = new Label
+                    {
+                        Text = bmText, FontSize = Settings.SummaryFontSize, TextColor = Color.Black, Margin = new Thickness(10, 0, 0, 0)
+                    };
+
+                    layout.Children.Add(textLabel);
 
                     var linkLayout = new StackLayout
                     {
@@ -258,7 +261,10 @@ namespace LeninSearch.Xam
 
                     var readLabel = ConstructHyperlink("читать", new Command(async () =>
                     {
-                        var corpusItem = _state.GetCurrentCorpusItem();
+                        var corpusItem = State.CorpusItems.FirstOrDefault(ci => ci.Files.Any(cfi => cfi.Path == bm.File));
+
+                        if (corpusItem == null) return;
+                        
                         var corpusFileItem = corpusItem.GetFileByPath(bm.File);
 
                         await AnimateDisappear(CorpusButton);
@@ -276,18 +282,42 @@ namespace LeninSearch.Xam
                         BookmarkRepo.Delete(bm.Id);
                         await layout.FadeTo(0, 200, Easing.Linear);
                         layout.HeightRequest = 0;
-
                     }), Settings.SummaryFontSize);
 
                     linkLayout.Children.Add(deleteLabel);
 
                     layout.Children.Add(linkLayout);
 
-                    ResultStack.Children.Add(layout);
+                    BookmarkTab.Children.Add(layout);
                 }
             }
+        }
 
-            await ResultScrollFadeIn();
+        private void PopulateLearningTab()
+        {
+            LearningTab.Children.Clear();
+            var releaseHyperlink = ConstructHyperlink("РЕЛИЗ ТЕКУЩЕЙ ВЕРСИИ", 
+                new Command(async () => await Browser.OpenAsync("https://youtu.be/MJR2DeyPwDg")), 
+                Settings.SummaryFontSize);
+            releaseHyperlink.Margin = new Thickness(20, 0, 0, 0);
+            LearningTab.Children.Add(releaseHyperlink);
+        }
+
+        private void PopulateInitialTabs()
+        {
+            PopulateCorpusTab();
+            PopulateBookmarksTab();
+            PopulateLearningTab();
+        }
+
+        private async void DisplayInitialTabs()
+        {
+            _state.ReadingFile = null;
+            HideSearchResultBar();
+            ScrollWrapper.IsVisible = false;
+            InitialTabs.SelectedIndex = 0;
+            InitialTabs.IsVisible = true;
+            await RebuildScroll(false);
         }
 
         private async Task AnimateDisappear(View view)
@@ -602,6 +632,9 @@ namespace LeninSearch.Xam
         {
             try
             {
+                InitialTabs.IsVisible = false;
+                ScrollWrapper.IsVisible = true;
+
                 _state.PartialParagraphSearchResult = null;
                 _state.ReadingFile = cfi.Path;
                 _state.ReadingParagraphIndex = paragraphIndex;
@@ -729,6 +762,9 @@ namespace LeninSearch.Xam
         private async Task OnSearchButtonPressed()
         {
             if (string.IsNullOrWhiteSpace(SearchEntry.Text)) return;
+
+            InitialTabs.IsVisible = false;
+            ScrollWrapper.IsVisible = true;
 
             var isHeadingSearch = SearchEntry.Text.StartsWith("*");
             var searchText = SearchEntry.Text.TrimStart('*');
