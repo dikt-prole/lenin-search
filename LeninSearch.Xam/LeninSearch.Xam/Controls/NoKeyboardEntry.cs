@@ -50,7 +50,21 @@ namespace LeninSearch.Xam.Controls
             var originalText = Text ?? "";
             var newText = originalText.EndsWith(" ") ? originalText.TrimEnd(' ') : originalText + " ";
             Text = newText;
-            CursorPosition = newText.Length;
+
+            var asteriskIndex = newText.IndexOf('*');
+
+            var textBeforeAsterisk = newText.Substring(0, asteriskIndex);
+            var spaceIndex = textBeforeAsterisk.LastIndexOf(' ');
+
+            var selectionStart = spaceIndex + 1;
+            var selectionLength = asteriskIndex - spaceIndex - 1;
+
+            Device.InvokeOnMainThreadAsync(async () =>
+            {
+                CursorPosition = selectionStart;
+                SelectionLength = selectionLength;
+            });
+
             GentlyFocused?.Invoke();
         }
     }

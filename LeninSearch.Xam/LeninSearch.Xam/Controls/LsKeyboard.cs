@@ -17,6 +17,7 @@ namespace LeninSearch.Xam.Controls
         private SimpleLsKeyButton _type4Button;
         private SimpleLsKeyButton _switchButton;
         private ImageButton _searchButton;
+        private ImageButton _backspaceButton;
         public event Action SearchClick;
         public event Action NonKeyaboardUnfocus;
         private bool _unfocus;
@@ -79,7 +80,19 @@ namespace LeninSearch.Xam.Controls
             Children.Add(_switchButton, 0, 0);
             SetRow(_switchButton, 0);
             SetColumn(_switchButton, 8);
-            SetColumnSpan(_switchButton, 3);
+            SetColumnSpan(_switchButton, 2);
+
+            _backspaceButton = new ImageButton
+            {
+                Source = "backspace.png",
+                BackgroundColor = Settings.MainColor,
+                BorderColor = Color.White,
+                BorderWidth = 1,
+                Padding = new Thickness(6)
+            };
+            Children.Add(_backspaceButton);
+            SetRow(_backspaceButton, 0);
+            SetColumn(_backspaceButton, 10);
 
             var keyRows = new List<List<string>>
             {
@@ -126,13 +139,52 @@ namespace LeninSearch.Xam.Controls
 
             _searchButton.Clicked += SearchButtonOnClicked;
 
+            _backspaceButton.Clicked += BackspaceButtonOnClicked;
+
             _entry.GentlyFocused += SelfShow;
             _entry.Unfocused += EntryOnUnfocused;
         }
 
+        private void BackspaceButtonOnClicked(object sender, EventArgs e)
+        {
+            _unfocus = false;
+
+            var cursorPosition = _entry.CursorPosition + _entry.SelectionLength;
+            var before = _entry.Text.Substring(0, cursorPosition);
+            var after = _entry.Text.Substring(cursorPosition);
+
+            if (cursorPosition == 0 || _entry.Text[cursorPosition - 1] == ' ')
+            {
+                before = before.Length > 1 && before[^2] == ' ' 
+                    ? before[..^1] 
+                    : before + " ";
+            }
+            else
+            {
+                before = before[..^1];
+            }
+
+            cursorPosition = before.Length;
+            _entry.Text = $"{before}{after}";
+            _entry.Focus();
+
+            Device.InvokeOnMainThreadAsync(async () =>
+            {
+                _entry.CursorPosition = cursorPosition;
+                _entry.SelectionLength = 0;
+            });
+        }
+
         private void SearchButtonOnClicked(object sender, EventArgs e)
         {
-            _entry.Text = _entry.Text.Replace($"{Settings.Query.Token}*", "").Replace("  ", " ").TrimEnd('+', ' ');
+            // cleanup
+            _entry.Text = _entry.Text
+                .Replace($"{Settings.Query.Token}*", "")
+                .Replace("  ", " ")
+                .Replace(" *", "")
+                .Replace("  ", " ")
+                .TrimEnd('+', ' ');
+
             _entry.Unfocus();
             SearchClick?.Invoke();
         }

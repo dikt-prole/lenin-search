@@ -44,6 +44,7 @@ namespace LeninSearch.Xam
             CorpusButton.Pressed += (sender, args) => DisplayInitialTabs();
 
             // search entry
+            SearchEntry.Text = Settings.Query.Txt2;
             SearchEntry.FontSize = Settings.MainFontSize;
             SearchEntry.Focused += (sender, args) =>
             {
@@ -296,11 +297,24 @@ namespace LeninSearch.Xam
         private void PopulateLearningTab()
         {
             LearningTab.Children.Clear();
-            var releaseHyperlink = ConstructHyperlink("РЕЛИЗ ТЕКУЩЕЙ ВЕРСИИ", 
-                new Command(async () => await Browser.OpenAsync("https://youtu.be/MJR2DeyPwDg")), 
+
+            var searchHyperlink = ConstructHyperlink("КАК РАБОТАТЬ С ПОИСКОВЫМ ЗАПРОСОМ",
+                new Command(async () => await Browser.OpenAsync("https://youtu.be/gcCWzO8UwNI")),
                 Settings.SummaryFontSize);
-            releaseHyperlink.Margin = new Thickness(20, 0, 0, 0);
-            LearningTab.Children.Add(releaseHyperlink);
+            searchHyperlink.Margin = new Thickness(20, 20, 0, 0);
+            LearningTab.Children.Add(searchHyperlink);
+
+            var bookmarkHyperlink = ConstructHyperlink("КАК РАБОТАТЬ С ЗАКЛАДКАМИ", 
+                new Command(async () => await Browser.OpenAsync("https://youtu.be/p018-wq1wlI")), 
+                Settings.SummaryFontSize);
+            bookmarkHyperlink.Margin = new Thickness(20, 20, 0, 0);
+            LearningTab.Children.Add(bookmarkHyperlink);
+
+            var headingSearchHyperlink = ConstructHyperlink("КАК ИСКАТЬ ПО ЗАГОЛОВКАМ",
+                new Command(async () => await Browser.OpenAsync("https://youtu.be/sSy70Vf4TLc")),
+                Settings.SummaryFontSize);
+            headingSearchHyperlink.Margin = new Thickness(20, 20, 0, 0);
+            LearningTab.Children.Add(headingSearchHyperlink);
         }
 
         private void PopulateInitialTabs()
