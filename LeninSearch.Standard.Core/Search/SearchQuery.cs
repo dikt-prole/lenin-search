@@ -1,23 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace LeninSearch.Standard.Core.Search
 {
-    public class SearchRequest
+    public class SearchQuery
     {
         public string Text { get; set; }
         public List<SearchToken> Ordered { get; set; }
         public List<SearchToken> NonOrdered { get; set; }
-        public static SearchRequest Construct(string text, string[] dictionary)
+        public SearchQueryType QueryType { get; set; }
+        public static SearchQuery Construct(string text, string[] dictionary)
         {
-            var request = new SearchRequest
+            var request = new SearchQuery
             {
                 Text = text,
                 Ordered = new List<SearchToken>(),
-                NonOrdered = new List<SearchToken>()
+                NonOrdered = new List<SearchToken>(),
+                QueryType = text.StartsWith('*') ? SearchQueryType.Heading : SearchQueryType.Paragraph
             };
+
+            text = text.TrimStart('*', ' ');
 
             var plusIndex = text.IndexOf('+');
             if (plusIndex < 0)
@@ -65,9 +68,9 @@ namespace LeninSearch.Standard.Core.Search
             }
         }
 
-        public SearchRequest Copy()
+        public SearchQuery Copy()
         {
-            return new SearchRequest
+            return new SearchQuery
             {
                 Text = Text,
                 Ordered = Ordered.Select(t => t.Copy()).ToList(),

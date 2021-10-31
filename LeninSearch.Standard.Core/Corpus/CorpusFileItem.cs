@@ -1,4 +1,4 @@
-﻿namespace LeninSearch.Standard.Core
+﻿namespace LeninSearch.Standard.Core.Corpus
 {
     public class CorpusFileItem
     {

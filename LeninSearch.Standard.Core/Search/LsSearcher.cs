@@ -7,27 +7,27 @@ namespace LeninSearch.Standard.Core.Search
 {
     public class LsSearcher
     {
-        public List<ParagraphSearchResult> SearchParagraphs(LsIndexData lsIndexData, SearchRequest request)
+        public List<ParagraphSearchResult> SearchParagraphs(LsIndexData lsIndexData, SearchQuery query)
         {
-            return SearchParagraphData(lsIndexData.WordParagraphData, request);
+            return SearchParagraphData(lsIndexData.WordParagraphData, query);
         }
 
-        public List<ParagraphSearchResult> SearchHeadings(LsIndexData lsIndexData, SearchRequest request)
+        public List<ParagraphSearchResult> SearchHeadings(LsIndexData lsIndexData, SearchQuery query)
         {
             var headingIndexes = lsIndexData.HeadingData.Select(hd => hd.Index).ToHashSet();
 
-            var searchResult = SearchParagraphData(lsIndexData.WordParagraphData, request);
+            var searchResult = SearchParagraphData(lsIndexData.WordParagraphData, query);
 
             searchResult = searchResult.Where(sr => headingIndexes.Contains(sr.ParagraphIndex)).ToList();
 
             return searchResult;
         }
 
-        public List<ParagraphSearchResult> SearchParagraphData(Dictionary<uint, List<LsWordParagraphData>> wordParagraphData, SearchRequest request)
+        public List<ParagraphSearchResult> SearchParagraphData(Dictionary<uint, List<LsWordParagraphData>> wordParagraphData, SearchQuery query)
         {
-            request = request.Copy();
+            query = query.Copy();
 
-            var allTokens = request.Ordered.Concat(request.NonOrdered).ToList();
+            var allTokens = query.Ordered.Concat(query.NonOrdered).ToList();
             foreach (var token in allTokens)
             {
                 token.WordIndexes = token.WordIndexes.Where(wordParagraphData.ContainsKey).ToList();
@@ -57,7 +57,7 @@ namespace LeninSearch.Standard.Core.Search
             }
 
             var searchResults = new List<ParagraphSearchResult>();
-            var orderedCount = request.Ordered.Count;
+            var orderedCount = query.Ordered.Count;
             if (orderedCount > 0)
             {
                 foreach (var chain in candidateParagraphIndexes.Keys)

@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using LeninSearch.Standard.Core;
+using LeninSearch.Standard.Core.Corpus;
 using LeninSearch.Standard.Core.OldShit;
 using LeninSearch.Standard.Core.Optimized;
 using LeninSearch.Standard.Core.Search;

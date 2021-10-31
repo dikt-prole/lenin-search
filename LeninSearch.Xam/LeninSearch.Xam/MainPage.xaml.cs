@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using LeninSearch.Standard.Core;
+using LeninSearch.Standard.Core.Corpus;
 using LeninSearch.Standard.Core.Optimized;
 using LeninSearch.Standard.Core.Search;
 using LeninSearch.Xam.Controls;
@@ -183,7 +184,7 @@ namespace LeninSearch.Xam
             var isLastSearchResult = _state.CurrentParagraphResultIndex == _state.PartialParagraphSearchResult.SearchResults.Count - 1;
             if (!isSearchComplete && isLastSearchResult)
             {
-                await StartParagraphSearch(_state.SearchRequest);
+                await StartParagraphSearch(_state.SearchQuery);
             }
             else
             {
@@ -782,8 +783,8 @@ namespace LeninSearch.Xam
 
             var isHeadingSearch = SearchEntry.Text.StartsWith("*");
             var searchText = SearchEntry.Text.TrimStart('*');
-            var searchRequest = SearchRequest.Construct(searchText, LsDictionary.Instance.Words);
-            _state.SearchRequest = searchRequest;
+            var searchRequest = SearchQuery.Construct(searchText, LsDictionary.Instance.Words);
+            _state.SearchQuery = searchRequest;
             _state.PartialParagraphSearchResult = null;
 
             if (isHeadingSearch)
@@ -796,7 +797,7 @@ namespace LeninSearch.Xam
             }
         }
 
-        private async Task StartHeadingSearch(SearchRequest searchRequest)
+        private async Task StartHeadingSearch(SearchQuery searchQuery)
         {
             await BeforeSearch();
 
@@ -808,7 +809,7 @@ namespace LeninSearch.Xam
             {
                 foreach (var fileItem in corpusItem.Files)
                 {
-                    var results = SearchCorpusFileItem(fileItem, searchRequest, true);
+                    var results = SearchCorpusFileItem(fileItem, searchQuery, true);
                     searchResults.AddRange(results);
                 }
             }
@@ -817,7 +818,7 @@ namespace LeninSearch.Xam
                 for (var i = 0; i < corpusItem.Files.Count; i += ConcurrentOptions.LsToLsiBatchSize)
                 {
                     var tasks = corpusItem.Files.Skip(i).Take(ConcurrentOptions.LsToLsiBatchSize)
-                        .Select(cfi => Task.Run(() => SearchCorpusFileItem(cfi, searchRequest, true)));
+                        .Select(cfi => Task.Run(() => SearchCorpusFileItem(cfi, searchQuery, true)));
 
                     var resultsList = Task.WhenAll(tasks).Result;
 
@@ -828,7 +829,7 @@ namespace LeninSearch.Xam
             await AfterHeadingSearch(searchResults);
         }
 
-        private async Task StartParagraphSearch(SearchRequest searchRequest)
+        private async Task StartParagraphSearch(SearchQuery searchQuery)
         {
             if (_state.PartialParagraphSearchResult?.IsSearchComplete == true) return;
 
@@ -843,7 +844,7 @@ namespace LeninSearch.Xam
                 beforeSearchCount = _state.PartialParagraphSearchResult.SearchResults.Count;
             }
 
-            var partialResult = DoPartialParagraphSearch(corpusItem, lastCorpusFile, searchRequest);
+            var partialResult = DoPartialParagraphSearch(corpusItem, lastCorpusFile, searchQuery);
 
             _state.PartialParagraphSearchResult ??= new PartialParagraphSearchResult();
 
@@ -923,7 +924,7 @@ namespace LeninSearch.Xam
             }
         }
 
-        private PartialParagraphSearchResult DoPartialParagraphSearch(CorpusItem corpusItem, string lastSearchedFile, SearchRequest searchRequest)
+        private PartialParagraphSearchResult DoPartialParagraphSearch(CorpusItem corpusItem, string lastSearchedFile, SearchQuery searchQuery)
         {
             var partialResult = new PartialParagraphSearchResult
             {
@@ -939,7 +940,7 @@ namespace LeninSearch.Xam
             {
                 foreach (var fileItem in corpusFileItems)
                 {
-                    var results = SearchCorpusFileItem(fileItem, searchRequest);
+                    var results = SearchCorpusFileItem(fileItem, searchQuery);
                     if (results.Count > 0)
                     {
                         partialResult.SearchResults.AddRange(results);
@@ -953,7 +954,7 @@ namespace LeninSearch.Xam
                 for (var i = 0; i < corpusFileItems.Count; i += ConcurrentOptions.LsToLsiBatchSize)
                 {
                     var cfiBatch = corpusFileItems.Skip(i).Take(ConcurrentOptions.LsToLsiBatchSize).ToList();
-                    var tasks = cfiBatch.Select(cfi => Task.Run(() => SearchCorpusFileItem(cfi, searchRequest)));
+                    var tasks = cfiBatch.Select(cfi => Task.Run(() => SearchCorpusFileItem(cfi, searchQuery)));
 
                     var results = Task.WhenAll(tasks).Result.SelectMany(r => r).ToList();
 
@@ -973,13 +974,13 @@ namespace LeninSearch.Xam
             return partialResult;
         }
 
-        private List<ParagraphSearchResult> SearchCorpusFileItem(CorpusFileItem cfi, SearchRequest searchRequest, bool isHeadingSearch = false)
+        private List<ParagraphSearchResult> SearchCorpusFileItem(CorpusFileItem cfi, SearchQuery searchQuery, bool isHeadingSearch = false)
         {
             var lsiData = LsIndexDataSource.Get(cfi.Path);
 
             var results = isHeadingSearch
-                ? _searcher.SearchHeadings(lsiData, searchRequest)
-                : _searcher.SearchParagraphs(lsiData, searchRequest);
+                ? _searcher.SearchHeadings(lsiData, searchQuery)
+                : _searcher.SearchParagraphs(lsiData, searchQuery);
 
             foreach (var r in results)
             {

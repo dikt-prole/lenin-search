@@ -80,7 +80,7 @@ namespace LeninSearch.Xam
                 {
                     state.PartialParagraphSearchResult = null;
                     state.CurrentParagraphResultIndex = -1;
-                    state.SearchRequest = null;
+                    state.SearchQuery = null;
                     state.ReadingFile = null;
                 }
 
@@ -98,7 +98,7 @@ namespace LeninSearch.Xam
                 CorpusName = corpusItem.Name,
                 CurrentParagraphResultIndex = -1,
                 ReadingFile = null,
-                SearchRequest = null
+                SearchQuery = null
             };
         }
     }

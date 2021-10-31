@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
+using LeninSearch.Standard.Core.Corpus;
 
 namespace LeninSearch.Standard.Core
 {
