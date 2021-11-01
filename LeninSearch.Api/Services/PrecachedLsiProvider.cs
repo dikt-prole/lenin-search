@@ -30,19 +30,20 @@ namespace LeninSearch.Api.Services
         {
             foreach (var corpusVersion in _corpusVersions)
             {
-                var folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + $"\\corpus\\v{corpusVersion}";
-                var mainJson = File.ReadAllText($"{folder}\\main.json");
+                var executingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                var folder = Path.Combine(executingDirectory, "corpus", $"v{corpusVersion}");
+                var mainJson = File.ReadAllText(Path.Combine(folder, "main.json"));
                 var main = JsonConvert.DeserializeObject<Corpus>(mainJson);
                 _mains.Add(corpusVersion, main);
 
-                var dictionary = File.ReadAllText($"{folder}\\corpus.dic").Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                var dictionary = File.ReadAllText(Path.Combine(folder, "corpus.dic")).Split('\n', StringSplitOptions.RemoveEmptyEntries);
                 _dictionaries.Add(corpusVersion, dictionary);
 
                 foreach (var ci in main.Items)
                 {
                     foreach (var cfi in ci.Files)
                     {
-                        var lsiBytes = File.ReadAllBytes($"{folder}\\{cfi.Path}");
+                        var lsiBytes = File.ReadAllBytes(Path.Combine(folder, cfi.Path));
                         var lsi = LsIndexUtil.FromLsIndexBytes(lsiBytes);
                         var key = Key(cfi.Path, corpusVersion);
                         _lsIndexData.Add(key, lsi);

@@ -6,12 +6,14 @@
 
   <ItemGroup>
     <None Remove="corpus\v1\v1.txt" />
+    <None Remove="how-to-deploy.txt" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="corpus\v1\v1.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Compile>
+    <Compile Include="how-to-deploy.txt" />
   </ItemGroup>
 
   <ItemGroup>

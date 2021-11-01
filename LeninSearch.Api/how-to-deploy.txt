@@ -1,0 +1,9 @@
+﻿/*
+1. publish to local directory using linux-x64 configuration
+2. copy corpus files
+3. copy to remote ubuntu via WinSCP
+4. run Putty
+5. chmod 777 ./LeninSearch.Api
+6. ./LeninSearch.Api --urls http://151.248.121.154:5000
+7. enjoy
+*/
