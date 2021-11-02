@@ -4,14 +4,20 @@ using System.Linq;
 using LeninSearch.Standard.Core.Optimized;
 using LeninSearch.Standard.Core.Search;
 using LeninSearch.Xam.Controls;
-using LeninSearch.Xam.Core;
 using Xamarin.Forms;
 
 namespace LeninSearch.Xam.ParagraphAdder
 {
     public class StdParagraphViewBuilder : IParagraphViewBuilder
     {
-        public View Build(LsParagraph p, State state)
+        private readonly ILsiProvider _lsiProvider;
+
+        public StdParagraphViewBuilder(ILsiProvider lsiProvider)
+        {
+            _lsiProvider = lsiProvider;
+        }
+
+        public View Build(LsParagraph p, State state, string[] words)
         {
             ParagraphSearchResult paragraphResult = null;
             var paragraphResults = state.PartialParagraphSearchResult?.SearchResults;
@@ -25,19 +31,19 @@ namespace LeninSearch.Xam.ParagraphAdder
             {
                 return new ExtendedLabel
                 {
-                    Text = p.GetText(LsDictionary.Instance.Words), TextColor = Color.Black, JustifyText = true, Margin = new Thickness(0, 5, 0, 0),
+                    Text = p.GetText(words), TextColor = Color.Black, JustifyText = true, Margin = new Thickness(0, 5, 0, 0),
                     TabIndex = p.Index
                 };
             }
 
-            var pText = p.GetText(LsDictionary.Instance.Words);
+            var pText = p.GetText(words);
             var chain = paragraphResult.WordIndexChains[0];
 
-            var selection = chain.WordIndexes.Select(wi => LsDictionary.Instance.Words[wi].ToLower()).ToArray();
+            var selection = chain.WordIndexes.Select(wi => words[wi].ToLower()).ToArray();
 
             var fString = new FormattedString();
 
-            fString.Spans.Add(GetHeadingSpan(state));
+            fString.Spans.Add(GetHeadingSpan(state, words));
 
             fString.Spans.Add(new Span { Text = Environment.NewLine });
 
@@ -90,12 +96,12 @@ namespace LeninSearch.Xam.ParagraphAdder
             }
         }
 
-        private Span GetHeadingSpan(State state)
+        private Span GetHeadingSpan(State state, string[] words)
         {
             var corpusFileItem = state.GetReadingCorpusFileItem();
             var searchParagraphResult = state.GetCurrentSearchParagraphResult();
 
-            var lsiData = LsIndexDataSource.Get(corpusFileItem.Path);
+            var lsiData = _lsiProvider.GetLsiData(Settings.CorpusVersion, corpusFileItem.Path);
 
             var headings = lsiData.LsData.GetHeadingsDownToZero(searchParagraphResult.ParagraphIndex);
             var page = lsiData.LsData.GetClosestPage(searchParagraphResult.ParagraphIndex);
@@ -104,7 +110,7 @@ namespace LeninSearch.Xam.ParagraphAdder
             if (page != null || headings.Any())
             {
                 var headingText = headings.Count > 0
-                    ? string.Join(" - ", headings.Select(h => h.GetText(LsDictionary.Instance.Words)))
+                    ? string.Join(" - ", headings.Select(h => h.GetText(words)))
                     : null;
 
                 spanText = page == null

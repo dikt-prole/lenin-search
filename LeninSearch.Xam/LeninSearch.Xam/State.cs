@@ -1,11 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using LeninSearch.Standard.Core;
 using LeninSearch.Standard.Core.Corpus;
 using LeninSearch.Standard.Core.Search;
-using Newtonsoft.Json;
-using Corpus = LeninSearch.Xam.Core.Corpus;
 
 namespace LeninSearch.Xam
 {
@@ -26,7 +23,7 @@ namespace LeninSearch.Xam
 
         public string CorpusName { get; set; }
         public string ReadingFile { get; set; }
-        public SearchQuery SearchQuery { get; set; }
+        public string SearchQuery { get; set; }
         public int CurrentParagraphResultIndex { get; set; }
         public ushort ReadingParagraphIndex { get; set; }
 

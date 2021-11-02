@@ -13,9 +13,9 @@ namespace LeninSearch.Xam.ParagraphAdder
             _fontSize = fontSize;
         }
 
-        public View Build(LsParagraph p, State state)
+        public View Build(LsParagraph p, State state, string[] words)
         {
-            var view = _builder.Build(p, state);
+            var view = _builder.Build(p, state, words);
 
             if (view is FlexLayout flex)
             {

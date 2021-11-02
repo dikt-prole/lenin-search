@@ -19,5 +19,16 @@ namespace LeninSearch.Standard.Core.Api
                 WordIndexChains = searchResult.WordIndexChains.Select(wic => wic.WordIndexes).ToList()
             };
         }
+
+        public ParagraphSearchResult ToParagraphSearchResult()
+        {
+            var result = new ParagraphSearchResult(ParagraphIndex)
+            {
+                File = File,
+                WordIndexChains = WordIndexChains.Select(wic => new WordIndexChain {WordIndexes = wic}).ToList()
+            };
+
+            return result;;
+        }
     }
 }

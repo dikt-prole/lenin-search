@@ -1,11 +1,30 @@
-﻿using System.Collections.Generic;
-using LeninSearch.Xam.Core;
+﻿using System.IO;
 using Xamarin.Forms;
 
 namespace LeninSearch.Xam
 {
     public static class Settings
     {
+        // paths
+        public const int CorpusVersion = 1;
+        public static string CorpusFolder => Path.Combine(Path.GetTempPath(), $"LeninSearch_Corpus_{CorpusVersion}");
+        public static string BookmarkFolder => Path.Combine(Path.GetTempPath(), $"LeninSearch_Bookmarks");
+        public static string StateFolder => Path.Combine(Path.GetTempPath(), $"LeninSearch_State");
+
+        // concurrent
+        public const int BatchSize = 8;
+        public static bool OneByOne { get; set; }
+        public static int? EffectiveBatchSize => OneByOne ? (int?)BatchSize : null;
+
+        // online search
+        public static class OnlineSearch
+        {
+            public const string Host = "151.248.121.154";
+            public const int Port = 5000;
+            public const int TimeoutMs = 2000;
+        }
+
+        // ui
         public const double MainFontSize = 17;
 
         public const double SummaryFontSize = 17;
@@ -31,10 +50,15 @@ namespace LeninSearch.Xam
         public static class Query
         {
             public const string Token = "__";
+
             public static readonly string InitialQuery = "дикт* проле* + науч* латин*";
+
             public static readonly string Txt1 = $"{Token}* + {Token}*";
+
             public static readonly string Txt2 = $"{Token}* {Token}* + {Token}* {Token}*";
+
             public static readonly string Txt3 = $"{Token}* {Token}* {Token}* + {Token}* {Token}* {Token}*";
+
             public static readonly string Title1 = $"* {Token}* + {Token}*";
         }
     }

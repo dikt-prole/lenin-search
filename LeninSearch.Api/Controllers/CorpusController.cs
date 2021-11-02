@@ -34,7 +34,7 @@ namespace LeninSearch.Api.Controllers
 
             var dictionary = _lsiProvider.GetDictionary(request.CorpusVersion);
 
-            var searchQuery = SearchQuery.Construct(request.Query, dictionary);
+            var searchQuery = SearchQuery.Construct(request.Query, dictionary.Words);
 
             var tasks = corpusItem.Files.Select(cfi => Task.Run(() =>
             {

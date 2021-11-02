@@ -27,7 +27,7 @@ namespace LeninSearch.Xam.Controls
                 yield return "ТКСТ-2";
                 yield return "ТКСТ-3";
                 yield return "ЗГЛВК";
-                yield return "ПРКЛЧ";
+                yield return "ПРКЛ";
                 yield return "<";
 
                 yield return "Й";

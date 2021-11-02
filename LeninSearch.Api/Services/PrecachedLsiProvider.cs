@@ -5,6 +5,7 @@ using System.Reflection;
 using LeninSearch.Standard.Core;
 using LeninSearch.Standard.Core.Corpus;
 using LeninSearch.Standard.Core.Optimized;
+using LeninSearch.Standard.Core.Search;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
@@ -19,7 +20,7 @@ namespace LeninSearch.Api.Services
 
         private readonly Dictionary<int, Corpus> _mains = new Dictionary<int, Corpus>();
 
-        private readonly Dictionary<int, string[]> _dictionaries = new Dictionary<int, string[]>();
+        private readonly Dictionary<int, LsDictionary> _dictionaries = new Dictionary<int, LsDictionary>();
 
         public PrecachedLsiProvider(params int[] corpusVersions)
         {
@@ -36,7 +37,8 @@ namespace LeninSearch.Api.Services
                 var main = JsonConvert.DeserializeObject<Corpus>(mainJson);
                 _mains.Add(corpusVersion, main);
 
-                var dictionary = File.ReadAllText(Path.Combine(folder, "corpus.dic")).Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                var words = File.ReadAllText(Path.Combine(folder, "corpus.dic")).Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                var dictionary = new LsDictionary(words);
                 _dictionaries.Add(corpusVersion, dictionary);
 
                 foreach (var ci in main.Items)
@@ -61,7 +63,7 @@ namespace LeninSearch.Api.Services
             return _lsIndexData[key];
         }
 
-        public string[] GetDictionary(int corpusVersion)
+        public LsDictionary GetDictionary(int corpusVersion)
         {
             return _dictionaries[corpusVersion];
         }

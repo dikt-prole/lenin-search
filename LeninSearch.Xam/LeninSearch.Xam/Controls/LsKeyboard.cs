@@ -134,6 +134,7 @@ namespace LeninSearch.Xam.Controls
             _entry = entry;
             foreach (var keyButton in Children.OfType<SimpleLsKeyButton>())
             {
+                keyButton.FontSize = keyButton.FontSize * 0.8;
                 keyButton.Clicked += KeyButtonOnClicked;
             }
 
@@ -218,7 +219,7 @@ namespace LeninSearch.Xam.Controls
                     _entry.SelectionLength = Settings.Query.Token.Length;
                 });
             }
-            else if (paste == "прклч")
+            else if (paste == "пркл")
             {
                 if (string.IsNullOrEmpty(_entry.Text)) return;
 

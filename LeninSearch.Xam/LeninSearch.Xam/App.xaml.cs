@@ -38,8 +38,7 @@ namespace LeninSearch.Xam
         protected override void OnSleep()
         {
             Debug.WriteLine($"OnSleep");
-            LsIndexDataSource.Clear();
-            LsDictionary.Clear();
+            (MainPage as MainPage)?.CleanCache();
             SaveState(_state);
         }
 
@@ -55,11 +54,11 @@ namespace LeninSearch.Xam
 
         private static void SaveState(State state)
         {
-            var stateFilePath = $"{FileUtil.StateFolder}/state.json";
+            var stateFilePath = Path.Combine(Settings.StateFolder, "state.json");
 
             if (File.Exists(stateFilePath)) File.Delete(stateFilePath);
 
-            if (!Directory.Exists(FileUtil.StateFolder)) Directory.CreateDirectory(FileUtil.StateFolder);
+            if (!Directory.Exists(Settings.StateFolder)) Directory.CreateDirectory(Settings.StateFolder);
 
             var json = JsonConvert.SerializeObject(state);
 
@@ -68,7 +67,7 @@ namespace LeninSearch.Xam
 
         private static State LoadState(bool leaveOnlyCorpusSelection = false)
         {
-            var stateFilePath = $"{FileUtil.StateFolder}/state.json";
+            var stateFilePath = Path.Combine(Settings.StateFolder, "state.json");
 
             if (File.Exists(stateFilePath))
             {

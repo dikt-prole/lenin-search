@@ -14,6 +14,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Views;
+using LeninSearch.Standard.Core.Corpus;
 using Xamarin.Forms;
 using Application = Android.App.Application;
 
@@ -33,7 +34,7 @@ namespace LeninSearch.Xam.Droid
             SetContentView(Resource.Layout.Splash);
             _progressTextView = FindViewById<TextView>(Resource.Id.txtAppVersion);
             _progressTextView.Text = "";
-            ConcurrentOptions.OneByOne = Build.VERSION.SdkInt == BuildVersionCodes.LollipopMr1;
+            Settings.OneByOne = Build.VERSION.SdkInt == BuildVersionCodes.LollipopMr1;
 
             Task.Run(() => Startup());
         }
@@ -102,7 +103,7 @@ namespace LeninSearch.Xam.Droid
                 var corpus = JsonConvert.DeserializeObject<Corpus>(response);
                 State.AddCorpus(corpus);
 
-                var targetCorpusFile = $"{FileUtil.CorpusFolder}/main.json";
+                var targetCorpusFile = $"{Settings.CorpusFolder}/main.json";
 
                 var needUnzip = true;
                 if (File.Exists(targetCorpusFile))
@@ -115,18 +116,18 @@ namespace LeninSearch.Xam.Droid
                 {
                     SetProgressText("распаковка");
                     // 1. unzip
-                    if (Directory.Exists(FileUtil.CorpusFolder))
+                    if (Directory.Exists(Settings.CorpusFolder))
                     {
-                        Directory.Delete(FileUtil.CorpusFolder, true);
+                        Directory.Delete(Settings.CorpusFolder, true);
                     }
-                    UnzipAsset("main.zip", FileUtil.CorpusFolder);                    
+                    UnzipAsset("main.zip", Settings.CorpusFolder);                    
                 }
 
                 // 2. index
-                var lsFiles = Directory.GetFiles(FileUtil.CorpusFolder, "*.ls");
+                var lsFiles = Directory.GetFiles(Settings.CorpusFolder, "*.ls");
                 if (lsFiles.Length > 0)
                 {
-                    if (ConcurrentOptions.OneByOne)
+                    if (Settings.OneByOne)
                     {
                         for (var i = 0; i < lsFiles.Length; i++)
                         {
@@ -137,10 +138,10 @@ namespace LeninSearch.Xam.Droid
                     }
                     else
                     {
-                        for (var i = 0; i < lsFiles.Length; i += ConcurrentOptions.LsToLsiBatchSize)
+                        for (var i = 0; i < lsFiles.Length; i += Settings.BatchSize)
                         {
                             SetProgressText($"индексация {i + 1} из {lsFiles.Length} файлов");
-                            var tasks = lsFiles.Skip(i).Take(ConcurrentOptions.LsToLsiBatchSize).Select(lsFile => Task.Run(() => ConvertLsToLsi(lsFile))).ToArray();
+                            var tasks = lsFiles.Skip(i).Take(Settings.BatchSize).Select(lsFile => Task.Run(() => ConvertLsToLsi(lsFile))).ToArray();
                             Task.WaitAll(tasks);
                         }
                     }

@@ -11,15 +11,15 @@ namespace LeninSearch.Xam
     {
         private static List<Bookmark> _bookmarks;
 
-        private static string FilePath(Guid id) => $"{FileUtil.BookmarkFolder}/{id}.json";
+        private static string FilePath(Guid id) => $"{Settings.BookmarkFolder}/{id}.json";
 
         private static void LoadBookmarks()
         {
             if (_bookmarks == null)
             {
-                if (Directory.Exists(FileUtil.BookmarkFolder))
+                if (Directory.Exists(Settings.BookmarkFolder))
                 {
-                    var jsonFiles = Directory.GetFiles(FileUtil.BookmarkFolder, "*.json");
+                    var jsonFiles = Directory.GetFiles(Settings.BookmarkFolder, "*.json");
                     _bookmarks = jsonFiles.Select(jf => JsonConvert.DeserializeObject<Bookmark>(File.ReadAllText(jf)))
                         .ToList();
                 }
@@ -32,12 +32,12 @@ namespace LeninSearch.Xam
 
         private static void WriteBookmark(Bookmark bm)
         {
-            if (!Directory.Exists(FileUtil.BookmarkFolder))
+            if (!Directory.Exists(Settings.BookmarkFolder))
             {
-                Directory.CreateDirectory(FileUtil.BookmarkFolder);
+                Directory.CreateDirectory(Settings.BookmarkFolder);
             }
 
-            var filePath = $"{FileUtil.BookmarkFolder}/{bm.Id}.json";
+            var filePath = $"{Settings.BookmarkFolder}/{bm.Id}.json";
             var json = JsonConvert.SerializeObject(bm);
             File.WriteAllText(filePath, json);
         }
