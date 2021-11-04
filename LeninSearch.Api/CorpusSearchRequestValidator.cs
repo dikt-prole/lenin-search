@@ -14,7 +14,7 @@ namespace LeninSearch.Api
 
             if (string.IsNullOrEmpty(query)) return "Query should not be empty";
 
-            if (query.Any(c => !char.IsLetterOrDigit(c) && !AllowedChars.Contains(c)))
+            if (query.Any(c => !char.IsLetter(c) && !AllowedChars.Contains(c)))
                 return "Query contains not allowed chars";
 
             if (query.Count(c => c == '+') > 1)
