@@ -107,26 +107,5 @@ namespace LeninSearch.Standard.Core.Tests
             // Assert
             Assert.That(searchResult.Select(r => r.ParagraphIndex).Distinct().Count(), Is.EqualTo(searchResult.Count));
         }
-
-        [TestCase("lenin-t01.ls", "до* обм* прод* + явл* тов*")]
-        public void HandlesPainInTheAssInReasonableTime(string lsFile, string query)
-        {
-            // Arrange
-            var request = SearchQuery.Construct(query, _dictionary);
-            var lsPath = $"{ConstantData.LsFolder}\\{lsFile}";
-            var lsBytes = File.ReadAllBytes(lsPath);
-            var ofd = LsUtil.LoadOptimized(lsBytes, CancellationToken.None);
-            var lsiBytes = LsIndexUtil.ToLsIndexBytes(ofd);
-            var lsiData = LsIndexUtil.FromLsIndexBytes(lsiBytes);
-
-            // Act
-            var newSw = new Stopwatch(); newSw.Start();
-            var newResult = _lsSearcher.SearchParagraphs(lsiData, request);
-            newSw.Stop();
-
-            // Assert
-            
-            Assert.Pass($"Finised in {newSw.ElapsedMilliseconds} ms");
-        }
     }
 }

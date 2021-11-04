@@ -112,16 +112,17 @@ namespace LeninSearch.Standard.Core.Tests
         public void HandlesPainInTheAssInReasonableTime(string lsFile, string query)
         {
             // Arrange
-            var request = SearchQuery.Construct(query, _dictionary);
+            var searchQuery = SearchQuery.Construct(query, _dictionary);
             var lsPath = $"{ConstantData.LsFolder}\\{lsFile}";
             var lsBytes = File.ReadAllBytes(lsPath);
             var ofd = LsUtil.LoadOptimized(lsBytes, CancellationToken.None);
             var lsiBytes = LsIndexUtil.ToLsIndexBytes(ofd);
             var lsiData = LsIndexUtil.FromLsIndexBytes(lsiBytes);
+            _lsSearcher = new LsSearcher(500);
 
             // Act
             var newSw = new Stopwatch(); newSw.Start();
-            var newResult = _lsSearcher.SearchParagraphs(lsiData, request);
+            var newResult = _lsSearcher.SearchParagraphs(lsiData, searchQuery);
             newSw.Stop();
 
             // Assert
