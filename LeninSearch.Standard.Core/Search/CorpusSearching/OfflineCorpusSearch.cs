@@ -12,11 +12,11 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
         private readonly LsSearcher _searcher;
 
         private Dictionary<string, SearchQuery> _queryCache = new Dictionary<string, SearchQuery>();
-        public OfflineCorpusSearch(ILsiProvider lsiProvider, int? batchSize)
+        public OfflineCorpusSearch(ILsiProvider lsiProvider, int? batchSize, int tokenIndexCountCutoff = int.MaxValue, int resultCountCutoff = int.MaxValue)
         {
             _lsiProvider = lsiProvider;
             _batchSize = batchSize;
-            _searcher = new LsSearcher();
+            _searcher = new LsSearcher(tokenIndexCountCutoff, resultCountCutoff);
         }
 
         public Task<PartialParagraphSearchResult> SearchAsync(string corpusName, int corpusVersion, string query, string lastSearchedFilePath)

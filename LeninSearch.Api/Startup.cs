@@ -2,6 +2,7 @@ using LeninSearch.Api.Services;
 using LeninSearch.Standard.Core.Search;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -20,11 +21,12 @@ namespace LeninSearch.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson();
 
             // precached
             var lsIndexDataProvider = new PrecachedLsiProvider(1).Load();
             services.AddSingleton<ILsiProvider>(sp => lsIndexDataProvider);
+            services.AddSingleton<IMemoryCache, MemoryCache>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

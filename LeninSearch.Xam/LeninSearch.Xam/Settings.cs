@@ -13,17 +13,21 @@ namespace LeninSearch.Xam
         public static string BookmarkFolder => Path.Combine(Path.GetTempPath(), $"LeninSearch_Bookmarks");
         public static string StateFolder => Path.Combine(Path.GetTempPath(), $"LeninSearch_State");
 
-        // concurrent
+        // search options
         public const int BatchSize = 8;
         public static bool OneByOne { get; set; }
         public static int? EffectiveBatchSize => OneByOne ? (int?)BatchSize : null;
+
+        public const int TokenIndexCountCutoff = int.MaxValue;
+
+        public const int ResultCountCutoff = 50;
 
         // online search
         public static class OnlineSearch
         {
             public const string Host = "151.248.121.154";
             public const int Port = 5000;
-            public const int TimeoutMs = 2000;
+            public const int TimeoutMs = 8000;
         }
 
         // ui

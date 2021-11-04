@@ -5,6 +5,8 @@ namespace LeninSearch.Standard.Core.Search
 {
     public class ParagraphSearchResult
     {
+        public ParagraphSearchResult() {}
+
         public ParagraphSearchResult(ushort paragraphIndex)
         {
             ParagraphIndex = paragraphIndex;

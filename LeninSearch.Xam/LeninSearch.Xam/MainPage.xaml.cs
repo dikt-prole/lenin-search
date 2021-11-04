@@ -44,7 +44,8 @@ namespace LeninSearch.Xam
 
             _lsiProvider = new CachedLsiProvider();
             _corpusSearch = new SwitchCorpusSearch(_lsiProvider, Settings.EffectiveBatchSize,
-                Settings.OnlineSearch.Host, Settings.OnlineSearch.Port, Settings.OnlineSearch.TimeoutMs);
+                Settings.OnlineSearch.Host, Settings.OnlineSearch.Port, Settings.OnlineSearch.TimeoutMs,
+                Settings.TokenIndexCountCutoff, Settings.ResultCountCutoff);
 
             // corpus button
             CorpusButton.Pressed += (sender, args) => DisplayInitialTabs();
@@ -961,7 +962,11 @@ namespace LeninSearch.Xam
 
             ResultStack.Children.Add(_paragraphViewBuilder.Build(paragraph, _state, _lsiProvider.Words()));
             var prevParagraph = lsData.GetPrevParagraph(paragraph.Index);
-            ResultStack.Children.Insert(0, _paragraphViewBuilder.Build(prevParagraph, _state, _lsiProvider.Words()));
+            if (prevParagraph != null)
+            {
+                ResultStack.Children.Insert(0, _paragraphViewBuilder.Build(prevParagraph, _state, _lsiProvider.Words()));
+            }
+            
             var maxIndex = paragraph.Index;
             while (!IsResultScrollReady())
             {

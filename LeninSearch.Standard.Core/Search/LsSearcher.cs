@@ -9,10 +9,12 @@ namespace LeninSearch.Standard.Core.Search
     public class LsSearcher
     {
         private readonly int _tokenIndexCountCutoff;
+        private readonly int _resultCountCutoff;
 
-        public LsSearcher(int tokenIndexCountCutoff = int.MaxValue)
+        public LsSearcher(int tokenIndexCountCutoff = int.MaxValue, int resultCountCutoff = int.MaxValue)
         {
             _tokenIndexCountCutoff = tokenIndexCountCutoff;
+            _resultCountCutoff = resultCountCutoff;
         }
 
         public List<ParagraphSearchResult> SearchParagraphs(LsIndexData lsIndexData, SearchQuery query)
@@ -136,6 +138,8 @@ namespace LeninSearch.Standard.Core.Search
                 var searchResult = new ParagraphSearchResult(paragraphIndex, wordChains[paragraphIndex]);
                 result.Add(searchResult);
             }
+
+            result = result.Take(_resultCountCutoff).ToList();
 
             return result;
         }
