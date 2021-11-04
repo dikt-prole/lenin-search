@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using Xamarin.Forms;
 
 namespace LeninSearch.Xam
@@ -61,5 +63,13 @@ namespace LeninSearch.Xam
 
             public static readonly string Title1 = $"* {Token}* + {Token}*";
         }
+
+        public static readonly List<Tuple<string, string>> Learning = new List<Tuple<string, string>>
+        {
+            new Tuple<string, string>("КАК РАБОТАТЬ С ПОИСКОВЫМ ЗАПРОСОМ", "https://youtu.be/gcCWzO8UwNI"),
+            new Tuple<string, string>("КАК РАБОТАТЬ С ЗАКЛАДКАМИ", "https://youtu.be/p018-wq1wlI"),
+            new Tuple<string, string>("КАК ИСКАТЬ ПО ЗАГОЛОВКАМ", "https://youtu.be/sSy70Vf4TLc"),
+            new Tuple<string, string>("РЕЛИЗ ТЕКУЩЕЙ ВЕРСИИ", "https://youtu.be/V0mBI9Bh2T4")
+        };
     }
 }

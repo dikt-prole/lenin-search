@@ -9,6 +9,12 @@ namespace LeninSearch.Standard.Core.Search
         public SearchTokenType TokenType { get; set; }
         public List<uint> WordIndexes { get; set; }
         public int Order { get; set; }
+        public string Text { get; set; }
+
+        public override string ToString()
+        {
+            return Text;
+        }
 
         public static SearchToken NonOrdered(string text, string[] dictionary)
         {
@@ -44,7 +50,8 @@ namespace LeninSearch.Standard.Core.Search
             return new SearchToken
             {
                 WordIndexes = indexes,
-                TokenType = SearchTokenType.NonOrdered
+                TokenType = SearchTokenType.NonOrdered,
+                Text = text
             };
         }
 
@@ -63,7 +70,8 @@ namespace LeninSearch.Standard.Core.Search
             {
                 WordIndexes = new List<uint>(WordIndexes),
                 Order = Order,
-                TokenType = TokenType
+                TokenType = TokenType,
+                Text = Text
             };
         }
     }

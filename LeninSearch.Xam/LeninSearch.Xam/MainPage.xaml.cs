@@ -311,23 +311,14 @@ namespace LeninSearch.Xam
         {
             LearningTab.Children.Clear();
 
-            var searchHyperlink = ConstructHyperlink("КАК РАБОТАТЬ С ПОИСКОВЫМ ЗАПРОСОМ",
-                new Command(async () => await Browser.OpenAsync("https://youtu.be/gcCWzO8UwNI")),
-                Settings.SummaryFontSize);
-            searchHyperlink.Margin = new Thickness(20, 20, 0, 0);
-            LearningTab.Children.Add(searchHyperlink);
-
-            var bookmarkHyperlink = ConstructHyperlink("КАК РАБОТАТЬ С ЗАКЛАДКАМИ", 
-                new Command(async () => await Browser.OpenAsync("https://youtu.be/p018-wq1wlI")), 
-                Settings.SummaryFontSize);
-            bookmarkHyperlink.Margin = new Thickness(20, 20, 0, 0);
-            LearningTab.Children.Add(bookmarkHyperlink);
-
-            var headingSearchHyperlink = ConstructHyperlink("КАК ИСКАТЬ ПО ЗАГОЛОВКАМ",
-                new Command(async () => await Browser.OpenAsync("https://youtu.be/sSy70Vf4TLc")),
-                Settings.SummaryFontSize);
-            headingSearchHyperlink.Margin = new Thickness(20, 20, 0, 0);
-            LearningTab.Children.Add(headingSearchHyperlink);
+            foreach (var video in Settings.Learning)
+            {
+                var hyperlink = ConstructHyperlink(video.Item1,
+                    new Command(async () => await Browser.OpenAsync(video.Item2)),
+                    Settings.SummaryFontSize);
+                hyperlink.Margin = new Thickness(20, 20, 0, 0);
+                LearningTab.Children.Add(hyperlink);
+            }
         }
 
         private void PopulateInitialTabs()

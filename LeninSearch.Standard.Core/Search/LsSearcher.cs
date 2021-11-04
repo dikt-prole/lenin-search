@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using LeninSearch.Standard.Core.Optimized;
 
 namespace LeninSearch.Standard.Core.Search
@@ -25,6 +26,8 @@ namespace LeninSearch.Standard.Core.Search
 
         public List<ParagraphSearchResult> SearchParagraphData(Dictionary<uint, List<LsWordParagraphData>> wordParagraphData, SearchQuery query)
         {
+            var result = new List<ParagraphSearchResult>();
+
             query = query.Copy();
 
             var allTokens = query.Ordered.Concat(query.NonOrdered).ToList();
@@ -33,119 +36,126 @@ namespace LeninSearch.Standard.Core.Search
                 token.WordIndexes = token.WordIndexes.Where(wordParagraphData.ContainsKey).ToList();
                 if (token.WordIndexes.Count == 0)
                 {
-                    return new List<ParagraphSearchResult>();
+                    return result;
                 }
             }
 
-            var chains = GetWordIndexChains(allTokens);
-
-            var candidateParagraphIndexes = new Dictionary<WordIndexChain, List<ushort>>();
-
-            foreach (var chain in chains)
+            var tokenParagraphWordDatas = new Dictionary<SearchToken, Dictionary<ushort, List<WordData>>>();
+            foreach (var searchToken in allTokens)
             {
-                var currentParagraphIndexList = wordParagraphData[chain.WordIndexes[0]].Select(wpd => wpd.ParagraphIndex).ToList();
-                for (var i = 1; i < chain.WordIndexes.Count; i++)
+                var wordDatas = searchToken.WordIndexes.SelectMany(
+                    wordIndex => wordParagraphData[wordIndex].Select(wpd =>
+                        new WordData(wordIndex, wpd.ParagraphIndex, wpd.WordPosition)));
+
+                var paragraphWordGroups = wordDatas.GroupBy(wd => wd.ParagraphIndex);
+
+                var paragraphWordDatas = new Dictionary<ushort, List<WordData>>();
+                foreach (var pwd in paragraphWordGroups)
                 {
-                    var paragraphIndexList = wordParagraphData[chain.WordIndexes[i]].Select(wpd => wpd.ParagraphIndex).ToList();
-                    currentParagraphIndexList = currentParagraphIndexList.Intersect(paragraphIndexList).ToList();
+                    paragraphWordDatas.Add(pwd.Key, pwd.ToList());
                 }
 
-                if (currentParagraphIndexList.Count > 0)
-                {
-                    candidateParagraphIndexes.Add(chain, currentParagraphIndexList);
-                }
+                tokenParagraphWordDatas.Add(searchToken, paragraphWordDatas);
             }
 
-            var searchResults = new List<ParagraphSearchResult>();
-            var orderedCount = query.Ordered.Count;
-            if (orderedCount > 0)
+            var orderedParagraphLists = new List<List<ushort>>();
+            foreach (var searchToken in tokenParagraphWordDatas.Keys)
             {
-                foreach (var chain in candidateParagraphIndexes.Keys)
+                orderedParagraphLists.Add(tokenParagraphWordDatas[searchToken].Keys.OrderBy(i => i).ToList());
+            }
+
+            var intersectingParagraphs = IntersectionUtil.IntersectStd(orderedParagraphLists).Distinct().ToList();
+
+            if (intersectingParagraphs.Count == 0) return result;
+
+            var wordChains = new Dictionary<ushort, List<WordData>>();
+
+            if (query.Ordered.Count > 0)
+            {
+                foreach (var paragraphIndex in intersectingParagraphs)
                 {
-                    var orderedWords = chain.WordIndexes.Take(orderedCount).ToList();
-                    var paragraphIndexes = candidateParagraphIndexes[chain];
-                    foreach (var paragraphIndex in paragraphIndexes)
-                    {
-                        var currentParagraphDatas = wordParagraphData[orderedWords[0]].Where(wpd => wpd.ParagraphIndex == paragraphIndex).ToList();
-                        for (var i = 1; i < orderedWords.Count; i++)
-                        {
-                            var nextParagraphDatas = wordParagraphData[orderedWords[i]].Where(wpd => wpd.ParagraphIndex == paragraphIndex).ToList();
-                            foreach (var cpd in currentParagraphDatas)
-                            {
-                                foreach (var npd in nextParagraphDatas)
-                                {
-                                    if (npd.WordPosition - cpd.WordPosition == 1)
-                                    {
-                                        goto LocalParagraphMatch;
-                                    }
-                                }
-                            }
+                    var wordCombos = GetWordCombos(tokenParagraphWordDatas, query.Ordered, paragraphIndex);
 
-                            goto ParagraphMismatch;
+                    var wordCombo = wordCombos.FirstOrDefault(IsOrderedCombo);
 
-                            LocalParagraphMatch:
-                            currentParagraphDatas = nextParagraphDatas;
-                        }
+                    if (wordCombo == null) continue;
 
-                        var searchResult = searchResults.FirstOrDefault(r => r.ParagraphIndex == paragraphIndex);
-                        if (searchResult == null)
-                        {
-                            searchResult = new ParagraphSearchResult(paragraphIndex);                            
-                            searchResults.Add(searchResult);
-                        }
-
-                        searchResult.AddChain(chain);
-
-                    ParagraphMismatch:;
-                    }
+                    wordChains.Add(paragraphIndex, wordCombo);
                 }
             }
             else
             {
-                foreach (var chain in candidateParagraphIndexes.Keys)
+                foreach (var paragraphIndex in intersectingParagraphs)
                 {
-                    var paragraphIndexes = candidateParagraphIndexes[chain];
-                    foreach (var paragraphIndex in paragraphIndexes)
-                    {
-                        var searchResult = searchResults.FirstOrDefault(r => r.ParagraphIndex == paragraphIndex);
-                        if (searchResult == null)
-                        {
-                            searchResult = new ParagraphSearchResult(paragraphIndex);
-                            searchResults.Add(searchResult);
-                        }
-
-                        searchResult.AddChain(chain);
-                    }
+                    wordChains.Add(paragraphIndex, new List<WordData>());
                 }
             }
 
-            return searchResults;
+            foreach (var token in query.NonOrdered)
+            {
+                foreach (var paragraphIndex in wordChains.Keys)
+                {
+                    wordChains[paragraphIndex].Add(tokenParagraphWordDatas[token][paragraphIndex][0]);
+                }
+            }
+
+            foreach (var paragraphIndex in wordChains.Keys)
+            {
+                var searchResult = new ParagraphSearchResult(paragraphIndex, wordChains[paragraphIndex]);
+                result.Add(searchResult);
+            }
+
+            return result;
         }
 
-        private List<WordIndexChain> GetWordIndexChains(List<SearchToken> tokens)
+        private bool IsOrderedCombo(List<WordData> wordDatas)
         {
-            var chains = tokens[0].WordIndexes.Select(wi => new WordIndexChain(wi)).ToList();
+            if (wordDatas.Count == 1) return true;
 
-            for (var i = 1; i < tokens.Count; i++)
+            for (var i = 1; i < wordDatas.Count; i++)
             {
-                var token = tokens[i];
-                var chainsTemplate = chains.Select(c => c.Copy()).ToList();
-                foreach (var chain in chains)
-                {
-                    chain.WordIndexes.Add(token.WordIndexes[0]);
-                }
-                for (var j = 1; j < token.WordIndexes.Count; j++)
-                {
-                    var addChains = chainsTemplate.Select(c => c.Copy()).ToList();
-                    foreach (var chain in addChains)
-                    {
-                        chain.WordIndexes.Add(token.WordIndexes[j]);
-                    }
-                    chains.AddRange(addChains);
-                }
+                if (wordDatas[i].WordPosition <= wordDatas[i - 1].WordPosition) return false;
             }
 
-            return chains;
+            return true;
+        }
+
+        private IEnumerable<List<WordData>> GetWordCombos(Dictionary<SearchToken, Dictionary<ushort, List<WordData>>> tokenParagraphWordDatas,
+            List<SearchToken> orderedTokens, ushort paragraphIndex)
+        {
+            var wordDataLists = orderedTokens.Select(t => tokenParagraphWordDatas[t][paragraphIndex]).ToList();
+
+            var wordCombos = GetWordCombos(wordDataLists);
+
+            return wordCombos;
+        }
+
+        private IEnumerable<List<WordData>> GetWordCombos(List<List<WordData>> wordDataLists)
+        {
+            if (wordDataLists.Count == 0) yield break;
+
+            var firstWordDataList = wordDataLists[0];
+
+            var reducedWordDataLists = wordDataLists.Skip(1).ToList();
+
+            var reducedCombos = GetWordCombos(reducedWordDataLists).ToList();
+
+            foreach (var wordData in firstWordDataList)
+            {
+                var firstWordCombo = new List<WordData> {wordData};
+
+                if (reducedCombos.Any())
+                {
+                    foreach (var reducedWordCombo in reducedCombos)
+                    {
+                        yield return firstWordCombo.Concat(reducedWordCombo).ToList();
+                    }
+                }
+                else
+                {
+                    yield return firstWordCombo;
+                }
+            }
         }
     }
 }

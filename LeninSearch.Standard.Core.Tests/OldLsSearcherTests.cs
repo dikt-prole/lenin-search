@@ -7,18 +7,19 @@ using System.Text;
 using LeninSearch.Standard.Core.Search;
 using NUnit.Framework;
 using System.Diagnostics;
+using LeninSearch.Standard.Core.Search.OldSearch;
 
 namespace LeninSearch.Standard.Core.Tests
 {
-    public class LsSearcherTests
+    public class OldLsSearcherTests
     {
-        private LsSearcher _lsSearcher;
+        private OldLsSearcher _lsSearcher;
         private string[] _dictionary;
 
         [SetUp]
         public void Setup()
         {
-            _lsSearcher = new LsSearcher();
+            _lsSearcher = new OldLsSearcher();
             var dictionaryPath = $"{ConstantData.LsFolder}\\corpus.dic";
             _dictionary = File.ReadAllLines(dictionaryPath, Encoding.UTF8);
         }
@@ -108,7 +109,6 @@ namespace LeninSearch.Standard.Core.Tests
         }
 
         [TestCase("lenin-t01.ls", "до* обм* прод* + явл* тов*")]
-        [TestCase("lenin-t01.ls", "+ 123*")]
         public void HandlesPainInTheAssInReasonableTime(string lsFile, string query)
         {
             // Arrange
@@ -125,7 +125,7 @@ namespace LeninSearch.Standard.Core.Tests
             newSw.Stop();
 
             // Assert
-
+            
             Assert.Pass($"Finised in {newSw.ElapsedMilliseconds} ms");
         }
     }

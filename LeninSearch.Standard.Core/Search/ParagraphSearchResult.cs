@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace LeninSearch.Standard.Core.Search
 {
@@ -9,6 +10,19 @@ namespace LeninSearch.Standard.Core.Search
             ParagraphIndex = paragraphIndex;
             WordIndexChains = new List<WordIndexChain>();
         }
+
+        public ParagraphSearchResult(ushort paragraphIndex, List<WordData> wordDatas)
+        {
+            ParagraphIndex = paragraphIndex;
+            WordIndexChains = new List<WordIndexChain>
+            {
+                new WordIndexChain
+                {
+                    WordIndexes = wordDatas.Select(w => w.WordIndex).ToList()
+                }
+            };
+        }
+
         public void AddChain(WordIndexChain chain)
         {
             WordIndexChains.Add(chain);
