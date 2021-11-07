@@ -11,6 +11,8 @@
 
 [Презентация приложения (Android) на Len.Ru](https://www.youtube.com/watch?v=FdG1vtNNu8E)
 
+[Канал проекта на Youtube](https://www.youtube.com/channel/UCrBhNzDc9R-fsqaZZcLpbVQ)
+
 Просим сообщать об обнаруженных ошибках в разделе **Issues** (вверху страницы)
 
 ### Инструкция:
