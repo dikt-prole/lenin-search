@@ -74,6 +74,10 @@ namespace LeninSearch.Api.Controllers
                     foreach (var searchResult in searchResults)
                     {
                         searchResult.File = cfi.Path;
+                        if (searchQuery.QueryType == SearchQueryType.Heading)
+                        {
+                            searchResult.Text = lsi.LsData.Paragraphs[searchResult.ParagraphIndex].GetText(dictionary.Words);
+                        }
                     }
 
                     return searchResults;

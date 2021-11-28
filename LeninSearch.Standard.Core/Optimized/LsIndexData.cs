@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Reflection;
 
 namespace LeninSearch.Standard.Core.Optimized
 {
@@ -10,18 +9,7 @@ namespace LeninSearch.Standard.Core.Optimized
         public List<LsPageData> PageData { get; set; }
 
         private LsData _lsData;
-        public LsData LsData
-        {
-            get
-            {
-                if (_lsData == null)
-                {
-                    _lsData = ToLsData();
-                }
-
-                return _lsData;
-            }
-        }
+        public LsData LsData => _lsData ??= ToLsData();
 
         public LsData ToLsData()
         {
@@ -56,6 +44,10 @@ namespace LeninSearch.Standard.Core.Optimized
             foreach (var pageData in PageData)
             {
                 lsData.Pages.Add(pageData.Index, pageData.Number);
+                if (!lsData.Paragraphs.ContainsKey(pageData.Index))
+                {
+                    lsData.Paragraphs.Add(pageData.Index, new LsParagraph(pageData.Index));
+                }
                 lsData.Paragraphs[pageData.Index].IsPageNumber = true;
                 lsData.Paragraphs[pageData.Index].PageNumber = pageData.Number;
             }

@@ -17,6 +17,9 @@ namespace LeninSearch.Standard.Core.Api
         [JsonProperty(PropertyName = "fi")]
         public int FileIndex { get; set; }
 
+        [JsonProperty(PropertyName = "txt")]
+        public string Text { get; set; }
+
         public static ParagraphSearchResponse From(ParagraphSearchResult searchResult, CorpusItem corpusItem)
         {
             var corpusFileItemPaths = corpusItem.Files.Select(cfi => cfi.Path).ToList();
@@ -25,7 +28,8 @@ namespace LeninSearch.Standard.Core.Api
             {
                 ParagraphIndex = searchResult.ParagraphIndex,
                 FileIndex = corpusFileItemPaths.IndexOf(searchResult.File),
-                WordIndexChains = searchResult.WordIndexChains.Select(wic => wic.WordIndexes).ToList()
+                WordIndexChains = searchResult.WordIndexChains.Select(wic => wic.WordIndexes).ToList(),
+                Text = searchResult.Text
             };
         }
 
@@ -34,7 +38,8 @@ namespace LeninSearch.Standard.Core.Api
             var result = new ParagraphSearchResult(ParagraphIndex)
             {
                 File = corpusItem.Files[FileIndex].Path,
-                WordIndexChains = WordIndexChains.Select(wic => new WordIndexChain {WordIndexes = wic}).ToList()
+                WordIndexChains = WordIndexChains.Select(wic => new WordIndexChain {WordIndexes = wic}).ToList(),
+                Text = Text
             };
 
             return result;;

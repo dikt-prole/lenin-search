@@ -187,6 +187,7 @@ namespace LeninSearch.Xam.Controls
                 .TrimEnd('+', ' ');
 
             _entry.Unfocus();
+            SelfHide();
             SearchClick?.Invoke();
         }
 
@@ -282,7 +283,7 @@ namespace LeninSearch.Xam.Controls
         {
             IsVisible = true;
         }
-        private void SelfHide()
+        public void SelfHide()
         {
             IsVisible = false;
         }

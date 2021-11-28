@@ -24,7 +24,7 @@ namespace LeninSearch.Standard.Core.Search
 
         public List<ParagraphSearchResult> SearchHeadings(LsIndexData lsIndexData, SearchQuery query)
         {
-            var headingIndexes = lsIndexData.HeadingData.Select(hd => hd.Index).ToHashSet();
+            var headingIndexes = lsIndexData.HeadingData.Where(h => h.Level == 0).Select(hd => hd.Index).ToHashSet();
 
             var searchResult = SearchParagraphData(lsIndexData.WordParagraphData, query);
 
