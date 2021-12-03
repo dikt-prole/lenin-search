@@ -13,6 +13,8 @@ namespace LeninSearch.Xam
         public static string BookmarkFolder => Path.Combine(Path.GetTempPath(), $"LeninSearch_Bookmarks");
         public static string StateFolder => Path.Combine(Path.GetTempPath(), $"LeninSearch_State");
 
+        public static string HistoryFile = Path.Combine(Path.GetTempPath(), "history.json");
+
         // search options
         public const int BatchSize = 8;
         public static bool OneByOne { get; set; }
@@ -36,6 +38,8 @@ namespace LeninSearch.Xam
         public const double SummaryFontSize = 17;
         public static Color MainColor => Color.FromRgb(214, 24, 31);
         public static bool OldAndroidJustification { get; set; }
+
+        public const int MaxHistoryLength = 10;
 
         public const int MaxParagraphCount = 200;
 

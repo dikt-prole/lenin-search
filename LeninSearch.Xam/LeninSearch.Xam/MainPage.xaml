@@ -53,6 +53,12 @@
             </views:TabViewItem>
 
             <views:TabViewItem
+                Text="ИСТОРИЯ"
+                TextColor="Black">
+                <StackLayout Orientation="Vertical" x:Name="HistoryTab"></StackLayout>
+            </views:TabViewItem>
+
+            <views:TabViewItem
                 Text="ОБУЧЕНИЕ"
                 TextColor="Black">
                 <StackLayout Orientation="Vertical" x:Name="LearningTab"></StackLayout>

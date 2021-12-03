@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using LeninSearch.Standard.Core;
 using LeninSearch.Standard.Core.Corpus;
 using LeninSearch.Standard.Core.Optimized;
 using LeninSearch.Standard.Core.Search;
@@ -322,11 +321,33 @@ namespace LeninSearch.Xam
             }
         }
 
+        private void PopulateHistoryTab()
+        {
+            HistoryTab.Children.Clear();
+
+            var history = HistoryRepo.GetHistory();
+
+            foreach (var historyItem in history)
+            {
+                var hyperlink = ConstructHyperlink($"{historyItem.Query} ({historyItem.Corpus})",
+                    new Command(() =>
+                    {
+                        _state.CorpusName = historyItem.Corpus;
+                        CorpusButton.Source = _corpusImages[historyItem.Corpus];
+                        SearchEntry.Text = historyItem.Query;
+                    }),
+                    Settings.SummaryFontSize);
+                hyperlink.Margin = new Thickness(20, 20, 0, 0);
+                HistoryTab.Children.Add(hyperlink);
+            }
+        }
+
         private void PopulateInitialTabs()
         {
             PopulateCorpusTab();
             PopulateBookmarksTab();
             PopulateLearningTab();
+            PopulateHistoryTab();
         }
 
         private async void DisplayInitialTabs()
@@ -784,14 +805,24 @@ namespace LeninSearch.Xam
         {
             if (string.IsNullOrWhiteSpace(SearchEntry.Text)) return;
 
+            // 1. Initial stuff
             InitialTabs.IsVisible = false;
             ScrollWrapper.IsVisible = true;
-
             _state.SearchQuery = SearchEntry.Text;
             _state.PartialParagraphSearchResult = null;
 
-            var isHeadingSearch = SearchEntry.Text.StartsWith('*');
+            // 2. Save history
+            var historyItem = new HistoryItem
+            {
+                Corpus = _state.CorpusName,
+                Query = SearchEntry.Text,
+                QueryDateUtc = DateTime.UtcNow
+            };
+            HistoryRepo.AddHistory(historyItem);
+            PopulateHistoryTab();
 
+            // 3. Do search
+            var isHeadingSearch = SearchEntry.Text.StartsWith('*');
             if (isHeadingSearch)
             {
                 await StartHeadingSearch(SearchEntry.Text);
