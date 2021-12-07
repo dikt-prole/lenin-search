@@ -17,7 +17,7 @@ namespace LeninSearch.Xam.ParagraphAdder
             _lsiProvider = lsiProvider;
         }
 
-        public View Build(LsParagraph p, State state, string[] words)
+        public View Build(LsParagraph p, State state, string[] dictionaryWords)
         {
             ParagraphSearchResult paragraphResult = null;
             var paragraphResults = state.PartialParagraphSearchResult?.SearchResults;
@@ -31,19 +31,19 @@ namespace LeninSearch.Xam.ParagraphAdder
             {
                 return new ExtendedLabel
                 {
-                    Text = p.GetText(words), TextColor = Color.Black, JustifyText = true, Margin = new Thickness(0, 5, 0, 0),
+                    Text = p.GetText(dictionaryWords), TextColor = Color.Black, JustifyText = true, Margin = new Thickness(0, 5, 0, 0),
                     TabIndex = p.Index
                 };
             }
 
-            var pText = p.GetText(words);
+            var pText = p.GetText(dictionaryWords);
             var chain = paragraphResult.WordIndexChains[0];
 
-            var selection = chain.WordIndexes.Select(wi => words[wi].ToLower()).ToArray();
+            var selection = chain.WordIndexes.Select(wi => dictionaryWords[wi].ToLower()).ToArray();
 
             var fString = new FormattedString();
 
-            fString.Spans.Add(GetHeadingSpan(state, words));
+            fString.Spans.Add(GetHeadingSpan(state, dictionaryWords));
 
             fString.Spans.Add(new Span { Text = Environment.NewLine });
 

@@ -21,9 +21,9 @@ namespace LeninSearch.Xam.ParagraphAdder
             _builder = builder;
         }
 
-        public View Build(LsParagraph p, State state, string[] words)
+        public View Build(LsParagraph p, State state, string[] dictionaryWords)
         {
-            var view = _builder.Build(p, state, words);
+            var view = _builder.Build(p, state, dictionaryWords);
             AttachTapGesture(view);
             return view;
         }

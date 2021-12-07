@@ -13,7 +13,7 @@ namespace LeninSearch.Xam.ParagraphAdder
             _builder = builder;
         }
 
-        public View Build(LsParagraph p, State state, string[] words)
+        public View Build(LsParagraph p, State state, string[] dictionaryWords)
         {
             if (p.IsPageNumber)
             {
@@ -24,13 +24,13 @@ namespace LeninSearch.Xam.ParagraphAdder
 
             if (p.IsHeading)
             {
-                var headingText = p.GetText(words);
+                var headingText = p.GetText(dictionaryWords);
                 var pLabel = new Label { Text = headingText, TextColor = Color.Black, HorizontalOptions = LayoutOptions.Center, FontAttributes = FontAttributes.Bold };
                 pLabel.TabIndex = p.Index;
                 return pLabel;
             }
 
-            return _builder.Build(p, state, words);
+            return _builder.Build(p, state, dictionaryWords);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using LeninSearch.Standard.Core;
 using LeninSearch.Standard.Core.Corpus;
 using LeninSearch.Standard.Core.Optimized;
@@ -41,7 +42,7 @@ namespace LeninSearch.Xam
             {
                 var corpusDicPath = Path.Combine(Settings.CorpusFolder, "main.dic");
                 var text = File.ReadAllText(corpusDicPath);
-                var words = text.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                var words = text.Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(w => w.Trim('\r')).ToArray();
                 _dictionary = new LsDictionary(words);
             }
 
