@@ -6,5 +6,7 @@
         public bool Centered { get; set; }
         public int LeftIndent { get; set; }
         public bool Bold { get; set; }
+        public ushort OffsetSeconds { get; set; }
+        public ParagraphType ParagraphType { get; set; }
     }
 }
