@@ -23,7 +23,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeninSearch.Api", "LeninSea
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeninSearch.Api.Health", "LeninSearch.Api.Health\LeninSearch.Api.Health.csproj", "{0AD79AE5-B3E1-400E-BA22-017B1ABC3ED0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeninSearch.YtEditor", "LeninSearch.YtEditor\LeninSearch.YtEditor.csproj", "{7355617E-AF44-4D1A-9287-DDE0410DF568}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeninSearch.YtEditor", "LeninSearch.YtEditor\LeninSearch.YtEditor.csproj", "{7355617E-AF44-4D1A-9287-DDE0410DF568}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeninSearch.Script", "LeninSearch.Script\LeninSearch.Script.csproj", "{4835BB6E-1FEC-437F-9464-3D2EB175C921}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -101,6 +103,14 @@ Global
 		{7355617E-AF44-4D1A-9287-DDE0410DF568}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7355617E-AF44-4D1A-9287-DDE0410DF568}.Release|x86.ActiveCfg = Release|Any CPU
 		{7355617E-AF44-4D1A-9287-DDE0410DF568}.Release|x86.Build.0 = Release|Any CPU
+		{4835BB6E-1FEC-437F-9464-3D2EB175C921}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4835BB6E-1FEC-437F-9464-3D2EB175C921}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4835BB6E-1FEC-437F-9464-3D2EB175C921}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4835BB6E-1FEC-437F-9464-3D2EB175C921}.Debug|x86.Build.0 = Debug|Any CPU
+		{4835BB6E-1FEC-437F-9464-3D2EB175C921}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4835BB6E-1FEC-437F-9464-3D2EB175C921}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4835BB6E-1FEC-437F-9464-3D2EB175C921}.Release|x86.ActiveCfg = Release|Any CPU
+		{4835BB6E-1FEC-437F-9464-3D2EB175C921}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

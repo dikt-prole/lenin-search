@@ -18,15 +18,15 @@ namespace LeninSearch.Standard.Core.Tests
             _dictionary = File.ReadAllLines(dictionaryPath, Encoding.UTF8);
         }
 
-        [TestCase("lenin-t39.lsi", 114)]
-        [TestCase("marxengels-t23.lsi", 45)]
-        [TestCase("stalin-t12.lsi", 26)]
-        [TestCase("hegel-objective-logic.lsi", 203)]
+        [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\v1\\lenin-t39.lsi", 114)]
+        [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\v1\\marxengels-t23.lsi", 45)]
+        [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\v1\\stalin-t12.lsi", 26)]
+        [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\v1\\hegel-objective-logic.lsi", 203)]
+        [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\klgd\\v1\\yt0j8q2xiULRM.lsi", 0)]
         public void HeadingCountIsFine(string lsiFile, int headingCount)
         {
             // Arrange
-            var lsiPath = $"{ConstantData.LsIndexFolder}\\{lsiFile}";
-            var lsiBytes = File.ReadAllBytes(lsiPath);
+            var lsiBytes = File.ReadAllBytes(lsiFile);
 
             // Act
             var lsiData = LsIndexUtil.FromLsIndexBytes(lsiBytes);
@@ -35,14 +35,14 @@ namespace LeninSearch.Standard.Core.Tests
             Assert.That(lsiData.HeadingData.Count, Is.EqualTo(headingCount));
         }
 
-        [TestCase("lenin-t39.lsi", 487)]
-        [TestCase("marxengels-t23.lsi", 885)]
-        [TestCase("hegel-objective-logic.lsi", 510)]
+        [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\v1\\lenin-t39.lsi", 487)]
+        [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\v1\\marxengels-t23.lsi", 885)]
+        [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\v1\\hegel-objective-logic.lsi", 510)]
+        [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\klgd\\v1\\yt0j8q2xiULRM.lsi", 0)]
         public void PageCountIsFine(string lsiFile, int pageCount)
         {
             // Arrange
-            var lsiPath = $"{ConstantData.LsIndexFolder}\\{lsiFile}";
-            var lsiBytes = File.ReadAllBytes(lsiPath);
+            var lsiBytes = File.ReadAllBytes(lsiFile);
 
             // Act
             var lsiData = LsIndexUtil.FromLsIndexBytes(lsiBytes);
@@ -52,15 +52,15 @@ namespace LeninSearch.Standard.Core.Tests
             Assert.That(lsiData.PageData.All(pd => pd.Number < 1000));
         }
 
-        [TestCase("lenin-t39.lsi", 200)]
-        [TestCase("marxengels-t23.lsi", 200)]
-        [TestCase("stalin-t12.lsi", 200)]
-        [TestCase("hegel-objective-logic.lsi", 200)]
+        [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\v1\\lenin-t39.lsi", 200)]
+        [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\v1\\marxengels-t23.lsi", 200)]
+        [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\v1\\stalin-t12.lsi", 200)]
+        [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\v1\\hegel-objective-logic.lsi", 200)]
+        [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\klgd\\v1\\yt0j8q2xiULRM.lsi", 200)]
         public void ToLsDataWorksInReasonableTime(string lsiFile, int timeMs)
         {
             // Arrange
-            var lsiPath = $"{ConstantData.LsIndexFolder}\\{lsiFile}";
-            var lsiBytes = File.ReadAllBytes(lsiPath);
+            var lsiBytes = File.ReadAllBytes(lsiFile);
             var lsiData = LsIndexUtil.FromLsIndexBytes(lsiBytes);
 
             // Act
@@ -73,10 +73,10 @@ namespace LeninSearch.Standard.Core.Tests
             Assert.That(sw.ElapsedMilliseconds, Is.LessThan(timeMs));
         }
 
-        [TestCase("lenin-t39.lsi", (ushort)1870, "мы не можем их даже приблизительно сравнивать")]        
-        [TestCase("marxengels-t23.lsi", (ushort)1818, "нечто отличное от его собственной потребительной стоимости")]
-        [TestCase("stalin-t12.lsi", (ushort)1924, "В этом же основа")]
-        [TestCase("hegel-objective-logic.lsi", (ushort)1770, "способ проявления указанного единства")]
+        [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\v1\\lenin-t39.lsi", (ushort)1870, "мы не можем их даже приблизительно сравнивать")]        
+        [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\v1\\marxengels-t23.lsi", (ushort)1818, "нечто отличное от его собственной потребительной стоимости")]
+        [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\v1\\stalin-t12.lsi", (ushort)1924, "В этом же основа")]
+        [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\v1\\hegel-objective-logic.lsi", (ushort)1770, "способ проявления указанного единства")]
         public void ToLsDataProducesReasonableText(string lsiFile, ushort paragraphIndex, string stringToken)
         {
             // Arrange

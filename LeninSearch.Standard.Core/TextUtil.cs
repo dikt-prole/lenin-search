@@ -105,35 +105,6 @@ namespace LeninSearch.Standard.Core
 
             return words.Where(w => w != "" && w != " " && w != "\r" && w != "\n").ToList();
         }
-
-        public static IEnumerable<string> GetSpaceSplit(List<string> words)
-        {
-            if (words == null || words.Count == 0) yield break;
-
-            int citationCount = 0;
-            var builder = new StringBuilder();
-            builder.Append(words[0]);
-
-            var prevWord = words[0];
-            for (var i = 1; i < words.Count; i++)
-            {
-                var curWord = words[i];
-
-                if (NeedAppendSpace(prevWord, curWord, ref citationCount))
-                {
-                    builder.Append(" ");
-                    yield return builder.ToString();
-                    builder = new StringBuilder();
-                }
-
-                builder.Append(curWord);
-
-                prevWord = words[i];
-            }
-
-            yield return builder.ToString();
-        }
-
         public static string GetParagraph(List<string> words)
         {
             if (words == null || words.Count == 0) return null;
@@ -195,103 +166,6 @@ namespace LeninSearch.Standard.Core
 
             return true;
         }
-
-        public static List<int> GetNumbers(string text)
-        {
-            if (string.IsNullOrEmpty(text)) return new List<int>();
-
-            text = new string(text.Select(c => char.IsNumber(c) ? c : ' ').ToArray());
-
-            var split = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-            var numbers = new List<int>();
-            foreach (var s in split)
-            {
-                if (int.TryParse(s, out var number))
-                {
-                    numbers.Add(number);
-                }
-            }
-
-            return numbers;
-        }
-
-        
-        public static bool IsHeadingXml(Paragraph p)
-        {
-            var largeIndent = p.LeftIndent > 1000;
-
-            var allCapital = p.Text.Where(char.IsLetter).All(char.IsUpper);
-
-            var result = (largeIndent || p.Centered) && (p.Bold || allCapital);
-
-            return result;
-        }
-
-        private const string LeftIndentToken = "<w:ind w:left=\"";
-        public static int GetLeftIndent(string xml)
-        {
-            var leftIndent = 0;
-            var leftIndentStart = xml.IndexOf(LeftIndentToken);
-            if (leftIndentStart > 0)
-            {
-                var numberChars = xml.Skip(leftIndentStart + LeftIndentToken.Length).TakeWhile(char.IsDigit).ToArray();
-                if (numberChars.Any())
-                {
-                    leftIndent = int.Parse(new string(numberChars));
-                }
-            }
-
-            return leftIndent;
-        }
-
-        public static bool IsCentered(string xml)
-        {
-            return xml.Contains("<w:jc w:val=\"center\" />");
-        }
-
-        public static bool IsBold(string xml)
-        {
-            return xml.Contains("<w:b w:val=\"1\" />");
-        }
-
-        public static bool IsHeadingXmlV2(Paragraph p)
-        {
-            var allCapital = p.Text.Where(char.IsLetter).All(char.IsUpper);
-
-            var result = p.Bold || allCapital;
-
-            return result;
-        }
-
-        public static string GetLettersOnly(string text, bool lower = true)
-        {
-            if (string.IsNullOrEmpty(text)) return text;
-
-            var result = new string(text.Where(char.IsLetter).ToArray());
-
-            if (lower)
-            {
-                result = result.ToLower();
-            }
-
-            return result;
-        }
-
-        public static string GetLettersAndDigitsOnly(string text, bool lower = true)
-        {
-            if (string.IsNullOrEmpty(text)) return text;
-
-            var result = new string(text.Where(c => char.IsLetter(c) || char.IsDigit(c)).ToArray());
-
-            if (lower)
-            {
-                result = result.ToLower();
-            }
-
-            return result;
-        }
-
         private enum SymbolType { Letter = 0, Digit = 1, Other = 2 }
     }
 }
