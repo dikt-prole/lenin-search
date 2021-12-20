@@ -9,15 +9,6 @@ namespace LeninSearch.Standard.Core.Tests
 {
     public class LsIndexDataTests
     {        
-        private string[] _dictionary;
-
-        [SetUp]
-        public void Setup()
-        {
-            var dictionaryPath = $"{ConstantData.LsFolder}\\corpus.dic";
-            _dictionary = File.ReadAllLines(dictionaryPath, Encoding.UTF8);
-        }
-
         [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\main\\v2\\lenin-t39.lsi", 114)]
         [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\main\\v2\\marx-engels-t23.lsi", 45)]
         [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\main\\v2\\stalin-t12.lsi", 26)]
@@ -77,9 +68,12 @@ namespace LeninSearch.Standard.Core.Tests
         [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\main\\v2\\marx-engels-t23.lsi", (ushort)1818, "нечто отличное от его собственной потребительной стоимости")]
         [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\main\\v2\\stalin-t12.lsi", (ushort)1924, "В этом же основа")]
         [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\main\\v2\\hegel-objective-logic.lsi", (ushort)1770, "способ проявления указанного единства")]
+        [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\klgd\\v1\\yt0j8q2xiULRM.lsi", (ushort)1, "уже объективность в другом смысле ориентируясь")]
         public void ToLsDataProducesReasonableText(string lsiFile, ushort paragraphIndex, string stringToken)
         {
             // Arrange
+            var dicFile = Path.Combine(Path.GetDirectoryName(lsiFile), "corpus.dic");
+            var dictionary = File.ReadAllLines(dicFile, Encoding.UTF8);
             var lsiBytes = File.ReadAllBytes(lsiFile);
             var lsiData = LsIndexUtil.FromLsIndexBytes(lsiBytes);
 
@@ -87,7 +81,7 @@ namespace LeninSearch.Standard.Core.Tests
             var lsData = lsiData.ToLsData();
 
             // Assert
-            var paragraphText = lsData.Paragraphs[paragraphIndex].GetText(_dictionary);
+            var paragraphText = lsData.Paragraphs[paragraphIndex].GetText(dictionary);
             Assert.That(paragraphText, Contains.Substring(stringToken));
         }
     }
