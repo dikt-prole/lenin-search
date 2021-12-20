@@ -212,6 +212,8 @@ namespace LeninSearch.Standard.Core
             var pageBytesCount = BitConverter.ToUInt32(lsIndexBytes, cursor); cursor += 4;
             var offsetBytesCount = BitConverter.ToUInt32(lsIndexBytes, cursor); cursor += 4;
 
+            cursor = FileHeaderLength;
+
             var lsIndexData = new LsIndexData
             {
                 WordParagraphData = new Dictionary<uint, List<LsWordParagraphData>>(),
