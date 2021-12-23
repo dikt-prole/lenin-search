@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using LeninSearch.Standard.Core;
@@ -12,60 +11,61 @@ namespace LeninSearch.Xam
 {
     public class CachedLsiProvider : ILsiProvider
     {
-        private LsDictionary _dictionary;
+        private LsDictionary _currentDictionary;
 
-        private readonly Dictionary<int, Corpus> _corpuses = new Dictionary<int, Corpus>();
-
-        private string _currentLsiPath;
+        private string _currentDictionaryId;
 
         private LsIndexData _currentLsi;
 
-        public LsIndexData GetLsiData(int corpusVersion, string filePath)
+        private string _currentLsiKey;
+        private string GetLsiKey(string corpusId, string file) => $"{corpusId}-{file}";
+
+        public LsIndexData GetLsiData(string corpusId, string file)
         {
-            if (_currentLsiPath == filePath && _currentLsi != null)
+            var lsiKey = GetLsiKey(corpusId, file);
+
+            if (_currentLsiKey == lsiKey && _currentLsi != null)
             {
                 return _currentLsi;
             }
 
-            _currentLsiPath = filePath;
+            _currentLsiKey = lsiKey;
 
-            var lsiBytes = File.ReadAllBytes(Path.Combine(Settings.CorpusFolder, filePath));
+            var lsiBytes = File.ReadAllBytes(Path.Combine(Settings.CorpusRoot, corpusId, file));
 
             _currentLsi = LsIndexUtil.FromLsIndexBytes(lsiBytes);
 
             return _currentLsi;
         }
 
-        public LsDictionary GetDictionary(int corpusVersion)
+        public LsDictionary GetDictionary(string corpusId)
         {
-            if (_dictionary == null)
+            if (_currentDictionaryId == corpusId && _currentDictionary != null)
             {
-                var corpusDicPath = Path.Combine(Settings.CorpusFolder, "main.dic");
-                var text = File.ReadAllText(corpusDicPath);
-                var words = text.Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(w => w.Trim('\r')).ToArray();
-                _dictionary = new LsDictionary(words);
+                return _currentDictionary;
             }
 
-            return _dictionary;
+            _currentDictionaryId = corpusId;
+
+            var dictionaryPath = Path.Combine(Settings.CorpusRoot, corpusId, "corpus.dic");
+
+            _currentDictionary = new LsDictionary(File.ReadAllLines(dictionaryPath).Where(s => !string.IsNullOrEmpty(s)).ToArray());
+
+            return _currentDictionary;
         }
 
-        public Corpus GetCorpus(int corpusVersion)
+        public CorpusItem GetCorpusItem(string corpusId)
         {
-            if (!_corpuses.ContainsKey(corpusVersion))
-            {
-                var mainJson = File.ReadAllText(Path.Combine(Settings.CorpusFolder, "main.json"));
-                var corpus = JsonConvert.DeserializeObject<Corpus>(mainJson);
-                _corpuses.Add(corpusVersion, corpus);
-            }
+            var corpusItemPath = Path.Combine(Settings.CorpusRoot, corpusId, "corpus.json");
 
-            return _corpuses[corpusVersion];
+            return JsonConvert.DeserializeObject<CorpusItem>(File.ReadAllText(corpusItemPath));
         }
 
         public void CleanCache()
         {
-            _corpuses.Clear();
-            _dictionary = null;
-            _currentLsiPath = null;
+            _currentDictionary = null;
+            _currentDictionaryId = null;
+            _currentLsiKey = null;
             _currentLsi = null;
         }
     }

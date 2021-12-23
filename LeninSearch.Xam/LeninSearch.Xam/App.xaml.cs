@@ -86,15 +86,15 @@ namespace LeninSearch.Xam
                 return state;
             }
 
-            var corpusItem = State.CorpusItems.FirstOrDefault(ci => ci.Selected);
+            var corpusItem = State.GetCorpusItems().FirstOrDefault(ci => ci.Selected);
             if (corpusItem == null)
             {
-                corpusItem = State.CorpusItems.First();
+                corpusItem = State.GetCorpusItems().First();
             }
 
             return new State
             {
-                CorpusName = corpusItem.Name,
+                CorpusId = corpusItem.Id,
                 CurrentParagraphResultIndex = -1,
                 ReadingFile = null,
                 SearchQuery = null

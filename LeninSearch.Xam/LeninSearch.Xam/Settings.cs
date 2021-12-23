@@ -8,8 +8,10 @@ namespace LeninSearch.Xam
     public static class Settings
     {
         // paths
-        public const int CorpusVersion = 1;
-        public static string CorpusFolder => Path.Combine(Path.GetTempPath(), $"LeninSearch_Corpus_{CorpusVersion}");
+        public const int LsiVersion = 1;
+
+        public static readonly string[] InitialSeries = {"lenin", "stalin", "marx-engels", "hegel"};
+        public static string CorpusRoot => Path.Combine(Path.GetTempPath(), "corpus");
         public static string BookmarkFolder => Path.Combine(Path.GetTempPath(), $"LeninSearch_Bookmarks");
         public static string StateFolder => Path.Combine(Path.GetTempPath(), $"LeninSearch_State");
 

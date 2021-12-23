@@ -1,21 +1,12 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.OS;
-using Android.Util;
 using Android.Widget;
 using AndroidX.AppCompat.App;
-using Java.Util.Zip;
-using LeninSearch.Standard.Core;
 using LeninSearch.Xam.Core;
-using Newtonsoft.Json;
-using System;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using Android.Views;
-using LeninSearch.Standard.Core.Corpus;
-using Xamarin.Forms;
 using Application = Android.App.Application;
 
 namespace LeninSearch.Xam.Droid
@@ -39,119 +30,83 @@ namespace LeninSearch.Xam.Droid
             Task.Run(() => Startup());
         }
 
-        public void UnzipAsset(string assetName, string destPath)
-        {
-            byte[] buffer = new byte[1024];
-            int byteCount;
-
-            var destPathDir = new Java.IO.File(destPath);
-            destPathDir.Mkdirs();
-
-            using (var assetStream = Assets.Open(assetName, Android.Content.Res.Access.Streaming))
-            {
-                using (var zipStream = new ZipInputStream(assetStream))
-                {
-                    ZipEntry zipEntry;
-                    while ((zipEntry = zipStream.NextEntry) != null)
-                    {
-                        if (zipEntry.IsDirectory)
-                        {
-                            var zipDir = new Java.IO.File(Path.Combine(destPath, zipEntry.Name));
-                            zipDir.Mkdirs();
-                            continue;
-                        }
-
-                        using (var fileStream = new FileStream(Path.Combine(destPath, zipEntry.Name), FileMode.CreateNew))
-                        {
-                            while ((byteCount = zipStream.Read(buffer)) != -1)
-                            {
-                                fileStream.Write(buffer, 0, byteCount);
-                            }
-                        }
-                        zipEntry.Dispose();
-                    }
-                }
-            }
-        }
-
-        private static void ConvertLsToLsi(string lsFile)
-        {
-            try
-            {
-                Log.Debug(TAG, $"Converting ls to lsi: {lsFile}");
-                var lsiFileName = lsFile.Replace(".ls", ".lsi");
-                var lsBytes = File.ReadAllBytes(lsFile);
-                var lsData = LsUtil.LoadOptimized(lsBytes, CancellationToken.None);
-                var lsiBytes = LsIndexUtil.ToLsIndexBytes(lsData);
-                File.WriteAllBytes(lsiFileName, lsiBytes);
-                File.Delete(lsFile);
-                Log.Debug(TAG, $"Done converting: {lsFile}");
-            }
-            catch (Exception exc)
-            {
-                Log.Debug(TAG, $"Error: {exc.Message}");
-            }            
-        }
-
         private void Startup()
         {
-            State.ClearCorpusData();
-
-            using (var reader = new StreamReader(Assets.Open("main.json")))
+            if (!Directory.Exists(Settings.CorpusRoot))
             {
-                var response = reader.ReadToEnd();
-                var corpus = JsonConvert.DeserializeObject<Corpus>(response);
-                State.AddCorpus(corpus);
+                Directory.CreateDirectory(Settings.CorpusRoot);
+                return;
+            }
 
-                var targetCorpusFile = $"{Settings.CorpusFolder}/main.json";
+            var corpusFolders = Directory.GetDirectories(Settings.CorpusRoot);
+            var existingCorpusIds = corpusFolders.Select(f => f.Split('\\', '/').Last()).ToList();
+            var apiService = new ApiService();
+            var summaryResult = apiService.GetSummaryAsync(Settings.LsiVersion).Result;
 
-                var needUnzip = true;
-                if (File.Exists(targetCorpusFile))
+            // 1. failed to get summary case
+            if (!summaryResult.Success)
+            {
+                foreach (var series in Settings.InitialSeries)
                 {
-                    var existingCorpus = JsonConvert.DeserializeObject<Corpus>(File.ReadAllText(targetCorpusFile));
-                    needUnzip = existingCorpus.Version != corpus.Version;
+                    var corpusId = existingCorpusIds.FirstOrDefault(id => id.StartsWith(series));
+                    // corpus.json is loaded last. So if the file exists it means corpus was loaded fine.
+                    if (corpusId == null || !File.Exists(Path.Combine(Settings.CorpusRoot, corpusId, "corpus.json")))
+                    {
+                        SetSpalshText($"Ошибка при получении данных корпуса. Ошибка: {summaryResult.Error}. Исправьте ваше подключение к интернету и перезапустите приложение.");
+                        return;
+                    }
                 }
 
-                if (needUnzip)
+                StartActivity(new Intent(Application.Context, typeof(MainActivity)));
+                return;
+            }
+
+            // 2. calculate corpus ids that need to be repaired
+            var summary = summaryResult.Summary;
+            var repairIds = existingCorpusIds.Where(id => !File.Exists(Path.Combine(Settings.CorpusRoot, id, "corpus.json"))).ToList();
+            foreach (var series in Settings.InitialSeries)
+            {
+                if (existingCorpusIds.Any(f => f.StartsWith(series))) continue;
+
+                var corpusId = summary.Where(ci => ci.Series == series).OrderByDescending(ci => ci.CorpusVersion).First().Id;
+
+                repairIds.Add(corpusId);
+            }
+
+            // 3. repair
+            foreach (var corpusId in repairIds)
+            {
+                var corpusFolder = Path.Combine(Settings.CorpusRoot, corpusId);
+                if (!Directory.Exists(corpusFolder))
                 {
-                    SetProgressText("распаковка");
-                    // 1. unzip
-                    if (Directory.Exists(Settings.CorpusFolder))
-                    {
-                        Directory.Delete(Settings.CorpusFolder, true);
-                    }
-                    UnzipAsset("main.zip", Settings.CorpusFolder);                    
+                    Directory.CreateDirectory(corpusFolder);
                 }
 
-                // 2. index
-                var lsFiles = Directory.GetFiles(Settings.CorpusFolder, "*.ls");
-                if (lsFiles.Length > 0)
+                var corpusItem = summary.First(ci => ci.Id == corpusId);
+
+                foreach (var cfi in corpusItem.Files)
                 {
-                    if (Settings.OneByOne)
+                    SetSpalshText($"Скачиваю файл: '{corpusId}/{cfi.Path}'");
+                    var filePath = Path.Combine(corpusFolder, cfi.Path);
+                    if (!File.Exists(filePath))
                     {
-                        for (var i = 0; i < lsFiles.Length; i++)
+                        var fileBytesResult = apiService.GetFileBytesAsync(corpusItem.Id, cfi.Path).Result;
+
+                        if (!fileBytesResult.Success)
                         {
-                            var lsFile = lsFiles[i];
-                            SetProgressText($"индексация {i + 1} из {lsFiles.Length} файлов");
-                            ConvertLsToLsi(lsFile);
+                            SetSpalshText($"Ошибка при получении файла '{corpusItem.Id}/{cfi.Path}'. Ошибка: {fileBytesResult.Error}. Исправьте ваше подключение к интернету и перезапустите приложение.");
+                            return;
                         }
+
+                        File.WriteAllBytes(filePath, fileBytesResult.Bytes);
                     }
-                    else
-                    {
-                        for (var i = 0; i < lsFiles.Length; i += Settings.BatchSize)
-                        {
-                            SetProgressText($"индексация {i + 1} из {lsFiles.Length} файлов");
-                            var tasks = lsFiles.Skip(i).Take(Settings.BatchSize).Select(lsFile => Task.Run(() => ConvertLsToLsi(lsFile))).ToArray();
-                            Task.WaitAll(tasks);
-                        }
-                    }
-                }                
+                }
             }
 
             StartActivity(new Intent(Application.Context, typeof(MainActivity)));
         }
 
-        private void SetProgressText(string text)
+        private void SetSpalshText(string text)
         {
             RunOnUiThread(() => _progressTextView.Text = text);
         }

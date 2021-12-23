@@ -3,25 +3,23 @@ using System.IO;
 using System.Linq;
 using LeninSearch.Standard.Core.Corpus;
 using LeninSearch.Standard.Core.Search;
+using Newtonsoft.Json;
 
 namespace LeninSearch.Xam
 {
     public class State
     {
-        private static List<Corpus> _corpuses = new List<Corpus>();
-        public static void AddCorpus(Corpus corpus)
+        public static IEnumerable<CorpusItem> GetCorpusItems()
         {
-            _corpuses.Add(corpus);
+            var corpusFolders = Directory.GetDirectories(Settings.CorpusRoot);
+            foreach (var corpusFolder in corpusFolders)
+            {
+                var ciJson = File.ReadAllText(Path.Combine(corpusFolder, "corpus.json"));
+                yield return JsonConvert.DeserializeObject<CorpusItem>(ciJson);
+            }
         }
 
-        public static void ClearCorpusData()
-        {
-            _corpuses.Clear();
-        }
-
-        public static IEnumerable<CorpusItem> CorpusItems => _corpuses.SelectMany(c => c.Items);
-
-        public string CorpusName { get; set; }
+        public string CorpusId { get; set; }
         public string ReadingFile { get; set; }
         public string SearchQuery { get; set; }
         public int CurrentParagraphResultIndex { get; set; }
@@ -37,7 +35,7 @@ namespace LeninSearch.Xam
 
         public CorpusItem GetCurrentCorpusItem()
         {
-            return CorpusItems.First(ci => ci.Name == CorpusName);
+            return GetCorpusItems().First(ci => ci.Id == CorpusId);
         }
 
         public bool IsWatchingParagraphSearchResults()

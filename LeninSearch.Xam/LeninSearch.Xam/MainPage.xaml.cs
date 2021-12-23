@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using LeninSearch.Standard.Core.Corpus;
@@ -25,14 +26,6 @@ namespace LeninSearch.Xam
         private ParagraphViewBuilderTapDecorator _selectionDecorator;
         private readonly CachedLsiProvider _lsiProvider;
         private readonly ICorpusSearch _corpusSearch;
-
-        private Dictionary<string, string> _corpusImages = new Dictionary<string, string>
-        {
-            { "Ленин ПСС" , "lenin.png" },
-            { "Сталин ПСС" , "stalin.png" },
-            { "Маркс-Энгельс ПСС" , "marx_engels.png" },
-            { "Гегель Наука Логики" , "hegel.png" }
-        };
 
         private State _state;
 
@@ -95,7 +88,8 @@ namespace LeninSearch.Xam
         public void SetState(State state)
         {
             _state = state;
-            CorpusButton.Source = _corpusImages[_state.GetCurrentCorpusItem().Name];
+            var corpusItem = _state.GetCurrentCorpusItem();
+            CorpusButton.Source = Path.Combine(Settings.CorpusRoot, corpusItem.Id, "icon.png");
             TextMenuStack.WidthRequest = 0;
             SearchActivityIndicator.IsVisible = false;
 
@@ -139,9 +133,9 @@ namespace LeninSearch.Xam
             var corpusFileItem = _state.GetReadingCorpusFileItem();
             if (corpusFileItem == null) return;
 
-            var lsiData = _lsiProvider.GetLsiData(Settings.CorpusVersion, corpusFileItem.Path);
+            var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, corpusFileItem.Path);
             var pIndex = _selectionDecorator.SelectedIndexes.First();
-            var words = _lsiProvider.GetDictionary(Settings.CorpusVersion).Words;
+            var words = _lsiProvider.GetDictionary(corpusItem.Id).Words;
 
             var bookmark = new Bookmark
             {
@@ -211,7 +205,7 @@ namespace LeninSearch.Xam
         private void PopulateCorpusTab()
         {
             CorpusTab.Children.Clear();
-            foreach (var ci in State.CorpusItems)
+            foreach (var ci in State.GetCorpusItems())
             {
                 var booksString = "книг";
                 var fileCountString = ci.Files.Count.ToString();
@@ -221,9 +215,9 @@ namespace LeninSearch.Xam
                 var ciText = $"{ci.Name} ({ci.Files.Count} {booksString})";
                 var hyperlink = ConstructHyperlink(ciText, new Command(async () =>
                 {
-                    _state.CorpusName = ci.Name;
+                    _state.CorpusId = ci.Id;
                     await AnimateDisappear(CorpusButton);
-                    CorpusButton.Source = _corpusImages[ci.Name];
+                    CorpusButton.Source = Path.Combine(Settings.CorpusRoot, ci.Id, "icon.png");
                     await AnimateAppear(CorpusButton);
                     SearchEntry.GentlyFocus();
                     //await DisplayCorpusBooks();
@@ -275,14 +269,14 @@ namespace LeninSearch.Xam
 
                     var readLabel = ConstructHyperlink("читать", new Command(async () =>
                     {
-                        var corpusItem = State.CorpusItems.FirstOrDefault(ci => ci.Files.Any(cfi => cfi.Path == bm.File));
+                        var corpusItem = State.GetCorpusItems().FirstOrDefault(ci => ci.Files.Any(cfi => cfi.Path == bm.File));
 
                         if (corpusItem == null) return;
                         
                         var corpusFileItem = corpusItem.GetFileByPath(bm.File);
 
                         await AnimateDisappear(CorpusButton);
-                        CorpusButton.Source = _corpusImages[corpusItem.Name];
+                        CorpusButton.Source = Path.Combine(Settings.CorpusRoot, corpusItem.Id, "icon.png");
                         await AnimateAppear(CorpusButton);
 
                         await Read(corpusFileItem, bm.ParagraphIndex);
@@ -329,11 +323,11 @@ namespace LeninSearch.Xam
 
             foreach (var historyItem in history)
             {
-                var hyperlink = ConstructHyperlink($"{historyItem.Query} ({historyItem.Corpus})",
+                var hyperlink = ConstructHyperlink($"{historyItem.Query} ({historyItem.CorpusName})",
                     new Command(() =>
                     {
-                        _state.CorpusName = historyItem.Corpus;
-                        CorpusButton.Source = _corpusImages[historyItem.Corpus];
+                        _state.CorpusId = historyItem.CorpusId;
+                        CorpusButton.Source = Path.Combine(Settings.CorpusRoot, historyItem.CorpusName, "icon.png");
                         SearchEntry.Text = historyItem.Query;
                     }),
                     Settings.SummaryFontSize);
@@ -378,10 +372,12 @@ namespace LeninSearch.Xam
 
         private async void ShareButtonOnClicked(object sender, EventArgs e)
         {
-            var lsiData = _lsiProvider.GetLsiData(Settings.CorpusVersion, _state.ReadingFile);
+            var corpusItem = _state.GetCurrentCorpusItem();
+            if (corpusItem == null) return;
+            var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, _state.ReadingFile);
             var indexes = _selectionDecorator.SelectedIndexes;
             var separator = $"{Environment.NewLine}{Environment.NewLine}";
-            var words = _lsiProvider.GetDictionary(Settings.CorpusVersion).Words;
+            var words = _lsiProvider.GetDictionary(corpusItem.Id).Words;
 
             Func<ushort, string> getParagraphTextFunc = i =>
             {
@@ -491,10 +487,11 @@ namespace LeninSearch.Xam
                 }
             }
 
+            var corpusItem = _state.GetCurrentCorpusItem();
             var scrollingSpace = ResultScroll.ContentSize.Height - ResultScroll.Height - 11; // 10 is a margin
             if (e.ScrollY == 0) // reached top
             {
-                var lsData = _lsiProvider.GetLsiData(Settings.CorpusVersion, _state.ReadingFile).LsData;
+                var lsData = _lsiProvider.GetLsiData(corpusItem.Id, _state.ReadingFile).LsData;
 
                 if (ResultStack.Children.Count > Settings.MaxParagraphCount) // run stack cleanup
                 {
@@ -509,7 +506,7 @@ namespace LeninSearch.Xam
                         var readingIndexMin = (ushort)ResultStack.Children[0].TabIndex;
                         var p = lsData.GetPrevParagraph(readingIndexMin);
                         if (p == null) return;
-                        var pView = _paragraphViewBuilder.Build(p, _state, _lsiProvider.Words());
+                        var pView = _paragraphViewBuilder.Build(p, _state, _lsiProvider.Words(corpusItem.Id));
                         ResultStack.Children.Insert(0, pView);
                         scrollToAfter += ResultStack.Children[0].Height;
                         scrollToAfter += ResultStack.Children[0].Margin.Bottom;
@@ -523,7 +520,7 @@ namespace LeninSearch.Xam
             }
             else if (scrollingSpace <= e.ScrollY) // reached bottom
             {
-                var lsData = _lsiProvider.GetLsiData(Settings.CorpusVersion, _state.ReadingFile).LsData;
+                var lsData = _lsiProvider.GetLsiData(corpusItem.Id, _state.ReadingFile).LsData;
 
                 if (ResultStack.Children.Count > Settings.MaxParagraphCount) // run stack cleanup
                 {
@@ -538,7 +535,7 @@ namespace LeninSearch.Xam
                         var readingIndexMax = (ushort)ResultStack.Children.Last().TabIndex;
                         var p = lsData.GetNextParagraph(readingIndexMax);
                         if (p == null) return;
-                        var pView = _paragraphViewBuilder.Build(p, _state, _lsiProvider.Words());
+                        var pView = _paragraphViewBuilder.Build(p, _state, _lsiProvider.Words(corpusItem.Id));
                         ResultStack.Children.Add(pView);
                         var lastChild = ResultStack.Children.Last();
                         addedHeight += lastChild.Height;
@@ -551,12 +548,14 @@ namespace LeninSearch.Xam
 
         private async Task RebuildScroll(LsData lsData, ushort index, double scrollToAfter)
         {
+            var corpusItem = _state.GetCurrentCorpusItem();
+
             await RebuildScroll(false);
             var p = lsData.Paragraphs[index];
             while (!IsResultScrollReady())
             {
                 if (p == null) break;
-                var pView = _paragraphViewBuilder.Build(p, _state, _lsiProvider.Words());
+                var pView = _paragraphViewBuilder.Build(p, _state, _lsiProvider.Words(corpusItem.Id));
                 ResultStack.Children.Add(pView);
                 p = lsData.GetNextParagraph(p.Index);
             }
@@ -570,10 +569,12 @@ namespace LeninSearch.Xam
 
         private async Task RebuildScrollFromTop(LsData lsData)
         {
+            var corpusItem = _state.GetCurrentCorpusItem();
+
             var firstChildIndex = (ushort)ResultStack.Children[0].TabIndex;
             var prevP = lsData.GetPrevParagraph(firstChildIndex);
             if (prevP == null) return;
-            var prevView = _paragraphViewBuilder.Build(prevP, _state, _lsiProvider.Words());
+            var prevView = _paragraphViewBuilder.Build(prevP, _state, _lsiProvider.Words(corpusItem.Id));
             ResultStack.Children.Insert(0, prevView);
             var scrollToAfter = ResultStack.Children[0].Height;
             ResultScroll.Scrolled -= ResultScrollOnScrolled;
@@ -685,7 +686,8 @@ namespace LeninSearch.Xam
                 HideSearchResultBar();
                 await RebuildScroll(true);
 
-                var lsData = _lsiProvider.GetLsiData(Settings.CorpusVersion, cfi.Path).LsData;
+                var corpusItem = _state.GetCurrentCorpusItem();
+                var lsData = _lsiProvider.GetLsiData(corpusItem.Id, cfi.Path).LsData;
                 var paragraph = lsData.GetPrevParagraph(paragraphIndex);
                 if (paragraph == null)
                 {
@@ -697,7 +699,7 @@ namespace LeninSearch.Xam
                 {
                     if (paragraph == null) break;
 
-                    var pView = _paragraphViewBuilder.Build(paragraph, _state, _lsiProvider.Words());
+                    var pView = _paragraphViewBuilder.Build(paragraph, _state, _lsiProvider.Words(corpusItem.Id));
 
                     ResultStack.Children.Add(pView);
 
@@ -732,7 +734,8 @@ namespace LeninSearch.Xam
                 FontSize = Settings.SummaryFontSize
             });
 
-            var lsData = _lsiProvider.GetLsiData(Settings.CorpusVersion, cfi.Path).LsData;
+            var corpusItem = _state.GetCurrentCorpusItem();
+            var lsData = _lsiProvider.GetLsiData(corpusItem.Id, cfi.Path).LsData;
             var headings = lsData.Headings.ToList();
             if (headings?.Any() != true)
             {
@@ -749,7 +752,7 @@ namespace LeninSearch.Xam
             {
                 foreach (var heading in headings)
                 {
-                    var headerText = heading.GetText(_lsiProvider.GetDictionary(Settings.CorpusVersion).Words);
+                    var headerText = heading.GetText(_lsiProvider.GetDictionary(corpusItem.Id).Words);
                     var headerLabel = new Label
                     { Text = headerText, TextColor = Color.Black, FontSize = Settings.SummaryFontSize };
                     ResultStack.Children.Add(headerLabel);
@@ -812,9 +815,11 @@ namespace LeninSearch.Xam
             _state.PartialParagraphSearchResult = null;
 
             // 2. Save history
+            var corpusItem = _state.GetCurrentCorpusItem();
             var historyItem = new HistoryItem
             {
-                Corpus = _state.CorpusName,
+                CorpusName = corpusItem.Name,
+                CorpusId = corpusItem.Id,
                 Query = SearchEntry.Text,
                 QueryDateUtc = DateTime.UtcNow
             };
@@ -839,7 +844,7 @@ namespace LeninSearch.Xam
 
             var corpusItem = _state.GetCurrentCorpusItem();
 
-            var searchResult = await _corpusSearch.SearchAsync(corpusItem.Name, Settings.CorpusVersion, query, null);
+            var searchResult = await _corpusSearch.SearchAsync(corpusItem.Id, query, null);
 
             await AfterHeadingSearch(searchResult.SearchResults);
         }
@@ -860,7 +865,7 @@ namespace LeninSearch.Xam
                 beforeSearchCount = _state.PartialParagraphSearchResult.SearchResults.Count;
             }
 
-            var partialResult = await _corpusSearch.SearchAsync(corpusItem.Name, Settings.CorpusVersion, query, lastCorpusFile);
+            var partialResult = await _corpusSearch.SearchAsync(corpusItem.Id, query, lastCorpusFile);
 
             _state.PartialParagraphSearchResult ??= new PartialParagraphSearchResult();
 
@@ -899,8 +904,7 @@ namespace LeninSearch.Xam
             }
             else
             {
-                var corpusItem = State.CorpusItems.First(ci => ci.Name == _state.CorpusName);
-
+                var corpusItem = _state.GetCurrentCorpusItem();
                 SearchResultTitle.Text = "результаты поиска (полные)";
                 if (!_state.PartialParagraphSearchResult.IsSearchComplete)
                 {
@@ -987,15 +991,16 @@ namespace LeninSearch.Xam
             await RebuildScroll(true);
 
             _state.ReadingFile = paragraphResult.File;
-            var lsData = _lsiProvider.GetLsiData(Settings.CorpusVersion, paragraphResult.File).LsData;
+            var corpusItem = _state.GetCurrentCorpusItem();
+            var lsData = _lsiProvider.GetLsiData(corpusItem.Id, paragraphResult.File).LsData;
 
             var paragraph = lsData.Paragraphs[paragraphResult.ParagraphIndex];
 
-            ResultStack.Children.Add(_paragraphViewBuilder.Build(paragraph, _state, _lsiProvider.Words()));
+            ResultStack.Children.Add(_paragraphViewBuilder.Build(paragraph, _state, _lsiProvider.Words(corpusItem.Id)));
             var prevParagraph = lsData.GetPrevParagraph(paragraph.Index);
             if (prevParagraph != null)
             {
-                ResultStack.Children.Insert(0, _paragraphViewBuilder.Build(prevParagraph, _state, _lsiProvider.Words()));
+                ResultStack.Children.Insert(0, _paragraphViewBuilder.Build(prevParagraph, _state, _lsiProvider.Words(corpusItem.Id)));
             }
             
             var maxIndex = paragraph.Index;
@@ -1004,7 +1009,7 @@ namespace LeninSearch.Xam
                 var nextP = lsData.GetNextParagraph(maxIndex);
                 if (nextP == null) break;
                 maxIndex = nextP.Index;
-                ResultStack.Children.Add(_paragraphViewBuilder.Build(nextP, _state, _lsiProvider.Words()));
+                ResultStack.Children.Add(_paragraphViewBuilder.Build(nextP, _state, _lsiProvider.Words(corpusItem.Id)));
             }
 
             await ResultScroll.ScrollToAsync(0, 20, true);

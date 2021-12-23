@@ -98,10 +98,11 @@ namespace LeninSearch.Xam.ParagraphAdder
 
         private Span GetHeadingSpan(State state, string[] words)
         {
+            var corpusItem = state.GetCurrentCorpusItem();
             var corpusFileItem = state.GetReadingCorpusFileItem();
             var searchParagraphResult = state.GetCurrentSearchParagraphResult();
 
-            var lsiData = _lsiProvider.GetLsiData(Settings.CorpusVersion, corpusFileItem.Path);
+            var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, corpusFileItem.Path);
 
             var headings = lsiData.LsData.GetHeadingsDownToZero(searchParagraphResult.ParagraphIndex);
             var page = lsiData.LsData.GetClosestPage(searchParagraphResult.ParagraphIndex);
