@@ -1,18 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="corpus\v1\v1.txt" />
     <None Remove="how-to-deploy.txt" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="corpus\v1\v1.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Compile>
     <Compile Include="how-to-deploy.txt" />
   </ItemGroup>
 
@@ -27,9 +23,28 @@
     <ProjectReference Include="..\LeninSearch.Standard.Core\LeninSearch.Standard.Core.csproj" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy &quot;$(SolutionDir)corpus\ls_index\v1\*.*&quot; &quot;$(TargetDir)corpus\v1&quot; /K /D /H /Y" />
+  <ItemGroup>
+    <HegelV1 Include="..\corpus\ls_index\hegel-v1\*.*" />
+    <LeninV1 Include="..\corpus\ls_index\lenin-v1\*.*" />
+    <StalinV1 Include="..\corpus\ls_index\stalin-v1\*.*" />
+    <MarxEngelsV1 Include="..\corpus\ls_index\marx-engels-v1\*.*" />
+    <KlgdV1 Include="..\corpus\ls_index\klgd-v1\*.*" />
+  </ItemGroup>
+
+  <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
+    <Copy SourceFiles="@(HegelV1)" DestinationFolder="$(OutDir)\corpus\hegel-v1" />
+    <Copy SourceFiles="@(LeninV1)" DestinationFolder="$(OutDir)\corpus\lenin-v1" />
+    <Copy SourceFiles="@(StalinV1)" DestinationFolder="$(OutDir)\corpus\stalin-v1" />
+    <Copy SourceFiles="@(MarxEngelsV1)" DestinationFolder="$(OutDir)\corpus\marx-engels-v1" />
+    <Copy SourceFiles="@(KlgdV1)" DestinationFolder="$(OutDir)\corpus\klgd-v1" />
   </Target>
 
+  <Target Name="CopyCustomContentOnPublish" AfterTargets="Publish">
+    <Copy SourceFiles="@(HegelV1)" DestinationFolder="$(PublishDir)\corpus\hegel-v1" />
+    <Copy SourceFiles="@(LeninV1)" DestinationFolder="$(PublishDir)\corpus\lenin-v1" />
+    <Copy SourceFiles="@(StalinV1)" DestinationFolder="$(PublishDir)\corpus\stalin-v1" />
+    <Copy SourceFiles="@(MarxEngelsV1)" DestinationFolder="$(PublishDir)\corpus\marx-engels-v1" />
+    <Copy SourceFiles="@(KlgdV1)" DestinationFolder="$(PublishDir)\corpus\klgd-v1" />
+  </Target>
 
 </Project>

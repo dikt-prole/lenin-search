@@ -1,0 +1,30 @@
+{
+  "Id": "hegel-v1",
+  "Series": "hegel",
+  "CorpusVersion": 1,
+  "LsiVersion": 1,
+  "Name": "Гегель Наука Логики",
+  "Description": "Primedia E-launch LLC, 2017",
+  "Files": [
+    {
+      "Name": "dictionary",
+      "Path": "corpus.dic"
+    },
+    {
+      "Name": "icon",
+      "Path": "icon.png"
+    },
+    {
+      "Name": "summary",
+      "Path": "corpus.json"
+    },
+    {
+      "Name": "том 1. Объективная логика",
+      "Path": "hegel-objective-logic.lsi"
+    },
+    {
+      "Name": "том 2. Субъективная логика",
+      "Path": "hegel-subjective-logic.lsi"
+    }
+  ]
+}

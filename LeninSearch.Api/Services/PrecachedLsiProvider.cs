@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using LeninSearch.Standard.Core;
 using LeninSearch.Standard.Core.Corpus;
@@ -13,64 +14,65 @@ namespace LeninSearch.Api.Services
 {
     public class PrecachedLsiProvider : ILsiProvider
     {
-        private readonly int[] _corpusVersions;
-        private string Key(string filePath, int corpusVersion) => $"{filePath}_{corpusVersion}";
-
         private readonly Dictionary<string, LsIndexData> _lsIndexData = new Dictionary<string, LsIndexData>();
 
-        private readonly Dictionary<int, Corpus> _mains = new Dictionary<int, Corpus>();
+        private readonly Dictionary<string, LsDictionary> _dictionaries = new Dictionary<string, LsDictionary>();
 
-        private readonly Dictionary<int, LsDictionary> _dictionaries = new Dictionary<int, LsDictionary>();
+        private readonly Dictionary<string, CorpusItem> _corpusItems = new Dictionary<string, CorpusItem>();
 
-        public PrecachedLsiProvider(params int[] corpusVersions)
+        private string Key(string corpusId, string file) => $"{corpusId}-{file}";
+
+        public PrecachedLsiProvider Load(int cachedPercentage)
         {
-            _corpusVersions = corpusVersions;
-        }
-
-        public PrecachedLsiProvider Load()
-        {
-            foreach (var corpusVersion in _corpusVersions)
+            var executingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var folder = Path.Combine(executingDirectory, "corpus");
+            var jsonFiles = Directory.GetFiles(folder, "corpus.json", SearchOption.AllDirectories);
+            var summary = jsonFiles.Select(f => JsonConvert.DeserializeObject<CorpusItem>(File.ReadAllText(f))).ToList();
+            foreach (var corpusItem in summary)
             {
-                var executingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                var folder = Path.Combine(executingDirectory, "corpus", $"v{corpusVersion}");
-                var mainJson = File.ReadAllText(Path.Combine(folder, "main.json"));
-                var main = JsonConvert.DeserializeObject<Corpus>(mainJson);
-                _mains.Add(corpusVersion, main);
+                _corpusItems.Add(corpusItem.Id, corpusItem);
 
-                var words = File.ReadAllText(Path.Combine(folder, "corpus.dic")).Split('\n', StringSplitOptions.RemoveEmptyEntries);
-                var dictionary = new LsDictionary(words);
-                _dictionaries.Add(corpusVersion, dictionary);
-
-                foreach (var ci in main.Items)
+                var corpusFolder = Path.Combine(folder, corpusItem.Id);
+                var lsiFiles = Directory.GetFiles(corpusFolder, "*.lsi").OrderBy(f => Guid.NewGuid()).ToList();
+                var cached = lsiFiles.Take(lsiFiles.Count * cachedPercentage / 100).ToList();
+                foreach (var lsiFile in cached)
                 {
-                    foreach (var cfi in ci.Files)
-                    {
-                        var lsiBytes = File.ReadAllBytes(Path.Combine(folder, cfi.Path));
-                        var lsi = LsIndexUtil.FromLsIndexBytes(lsiBytes);
-                        var key = Key(cfi.Path, corpusVersion);
-                        _lsIndexData.Add(key, lsi);
-                    }
+                    var lsiBytes = File.ReadAllBytes(lsiFile);
+                    var key = Key(corpusItem.Id, Path.GetFileName(lsiFile));
+                    var lsiData = LsIndexUtil.FromLsIndexBytes(lsiBytes);
+                    _lsIndexData.Add(key, lsiData);
                 }
+
+                var words = File.ReadAllLines(Path.Combine(folder, corpusItem.Id, "corpus.dic")).Where(s => !string.IsNullOrEmpty(s)).ToArray();
+                var dictionary = new LsDictionary(words);
+                _dictionaries.Add(corpusItem.Id, dictionary);
             }
 
             return this;
         }
 
-        public LsIndexData GetLsiData(int corpusVersion, string filePath)
+        public LsIndexData GetLsiData(string corpusId, string file)
         {
-            var key = Key(filePath, corpusVersion);
+            var key = Key(corpusId, file);
+            if (_lsIndexData.ContainsKey(key))
+            {
+                return _lsIndexData[key];
+            }
 
-            return _lsIndexData[key];
+            var executingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var lsiFile = Path.Combine(executingDirectory, "corpus", corpusId, file);
+            var lsiBytes = File.ReadAllBytes(lsiFile);
+            return LsIndexUtil.FromLsIndexBytes(lsiBytes);
         }
 
-        public LsDictionary GetDictionary(int corpusVersion)
+        public LsDictionary GetDictionary(string corpusId)
         {
-            return _dictionaries[corpusVersion];
+            return _dictionaries[corpusId];
         }
 
-        public Corpus GetCorpus(int corpusVersion)
+        public CorpusItem GetCorpusItem(string corpusId)
         {
-            return _mains[corpusVersion];
+            return _corpusItems[corpusId];
         }
     }
 }

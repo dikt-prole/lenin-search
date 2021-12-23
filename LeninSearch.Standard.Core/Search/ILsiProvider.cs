@@ -1,11 +1,12 @@
-﻿using LeninSearch.Standard.Core.Optimized;
+﻿using LeninSearch.Standard.Core.Corpus;
+using LeninSearch.Standard.Core.Optimized;
 
 namespace LeninSearch.Standard.Core.Search
 {
     public interface ILsiProvider
     {
-        LsIndexData GetLsiData(int corpusVersion, string filePath);
-        LsDictionary GetDictionary(int corpusVersion);
-        Corpus.Corpus GetCorpus(int corpusVersion);
+        LsIndexData GetLsiData(string corpusId, string file);
+        LsDictionary GetDictionary(string corpusId);
+        CorpusItem GetCorpusItem(string corpusId);
     }
 }

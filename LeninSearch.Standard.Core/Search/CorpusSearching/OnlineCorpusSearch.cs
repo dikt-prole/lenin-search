@@ -18,16 +18,15 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
         public OnlineCorpusSearch(string host, int port, int timeoutMs, ILsiProvider lsiProvider)
         {
             _lsiProvider = lsiProvider;
-            _searchUrl = $"http://{host}:{port}/corpus/search";
+            _searchUrl = $"http://{host}:{port}/corpus/lssearch";
             _httpClient = new HttpClient {Timeout = TimeSpan.FromMilliseconds(timeoutMs)};
         }
 
-        public async Task<PartialParagraphSearchResult> SearchAsync(string corpusName, int corpusVersion, string query, string lastSearchedFilePath)
+        public async Task<PartialParagraphSearchResult> SearchAsync(string corpusId, string query, string lastSearchedFilePath)
         {
-            var request = new CorpusSearchRequest
+            var request = new CorpusSearchRequestNew
             {
-                CorpusName = corpusName,
-                CorpusVersion = corpusVersion,
+                CorpusId = corpusId,
                 Query = query
             };
 
@@ -38,9 +37,7 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
                 var responseJson = await response.Content.ReadAsStringAsync();
                 var searchResponse = JsonConvert.DeserializeObject<CorpusSearchResponse>(responseJson);
 
-                var corpus = _lsiProvider.GetCorpus(corpusVersion);
-
-                var corpusItem = corpus.Items.First(ci => ci.Name == corpusName);
+                var corpusItem = _lsiProvider.GetCorpusItem(corpusId);
 
                 return new PartialParagraphSearchResult
                 {

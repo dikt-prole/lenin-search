@@ -19,18 +19,16 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
             _searcher = new LsSearcher(tokenIndexCountCutoff, resultCountCutoff);
         }
 
-        public Task<PartialParagraphSearchResult> SearchAsync(string corpusName, int corpusVersion, string query, string lastSearchedFilePath)
+        public Task<PartialParagraphSearchResult> SearchAsync(string corpusId, string query, string lastSearchedFilePath)
         {
-            var corpus = _lsiProvider.GetCorpus(corpusVersion);
-            var dictionary = _lsiProvider.GetDictionary(corpusVersion).Words;
+            var corpusItem = _lsiProvider.GetCorpusItem(corpusId);
+            var dictionary = _lsiProvider.GetDictionary(corpusId).Words;
 
             var searchQuery = _queryCache.ContainsKey(query) ? _queryCache[query] : SearchQuery.Construct(query, dictionary);
             if (!_queryCache.ContainsKey(query))
             {
                 _queryCache.Add(query, searchQuery);
             }
-
-            var corpusItem = corpus.Items.First(ci => ci.Name == corpusName);
 
             var partialResult = new PartialParagraphSearchResult
             {
@@ -46,7 +44,7 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
             {
                 foreach (var fileItem in corpusFileItems)
                 {
-                    var results = SearchCorpusFileItem(fileItem, searchQuery, corpusVersion, dictionary);
+                    var results = SearchCorpusFileItem(corpusId, fileItem, searchQuery, dictionary);
                     if (results.Count > 0)
                     {
                         partialResult.SearchResults.AddRange(results);
@@ -60,7 +58,7 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
                 for (var i = 0; i < corpusFileItems.Count; i += _batchSize.Value)
                 {
                     var cfiBatch = corpusFileItems.Skip(i).Take(_batchSize.Value).ToList();
-                    var tasks = cfiBatch.Select(cfi => Task.Run(() => SearchCorpusFileItem(cfi, searchQuery, corpusVersion, dictionary)));
+                    var tasks = cfiBatch.Select(cfi => Task.Run(() => SearchCorpusFileItem(corpusId, cfi, searchQuery, dictionary)));
 
                     var results = Task.WhenAll(tasks).Result.SelectMany(r => r).ToList();
 
@@ -80,9 +78,9 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
             return Task.FromResult(partialResult);
         }
 
-        private List<ParagraphSearchResult> SearchCorpusFileItem(CorpusFileItem cfi, SearchQuery searchQuery, int corpusVersion, string[] dictionary)
+        private List<ParagraphSearchResult> SearchCorpusFileItem(string corpusId, CorpusFileItem cfi, SearchQuery searchQuery, string[] dictionary)
         {
-            var lsiData = _lsiProvider.GetLsiData(corpusVersion, cfi.Path);
+            var lsiData = _lsiProvider.GetLsiData(corpusId, cfi.Path);
 
             var results = searchQuery.IsHeading
                 ? _searcher.SearchHeadings(lsiData, searchQuery)

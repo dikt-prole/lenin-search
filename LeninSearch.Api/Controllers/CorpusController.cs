@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using LeninSearch.Standard.Core.Api;
+using LeninSearch.Standard.Core.Corpus;
 using LeninSearch.Standard.Core.Search;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
@@ -28,9 +32,8 @@ namespace LeninSearch.Api.Controllers
             _searcher = new LsSearcher(int.MaxValue, 50);
         }
 
-        [ResponseCache(Duration = 24 * 3600)]
-        [HttpPost("search")]
-        public async Task<CorpusSearchResponse> Search([FromBody] CorpusSearchRequest request)
+        [HttpPost("lssearch")]
+        public async Task<CorpusSearchResponse> Search([FromBody] CorpusSearchRequestNew request)
         {
             var requestJson = JsonConvert.SerializeObject(request);
 
@@ -55,17 +58,17 @@ namespace LeninSearch.Api.Controllers
 
             try
             {
-                var corpus = _lsiProvider.GetCorpus(request.CorpusVersion);
+                var corpusItem = _lsiProvider.GetCorpusItem(request.CorpusId);
 
-                var corpusItem = corpus.Items.First(ci => ci.Name == request.CorpusName);
-
-                var dictionary = _lsiProvider.GetDictionary(request.CorpusVersion);
+                var dictionary = _lsiProvider.GetDictionary(request.CorpusId);
 
                 var searchQuery = SearchQuery.Construct(request.Query, dictionary.Words);
 
-                var tasks = corpusItem.Files.Select(cfi => Task.Run(() =>
+                var lsiFiles = corpusItem.Files.Where(f => f.Path.EndsWith(".lsi")).ToList();
+
+                var tasks = lsiFiles.Select(cfi => Task.Run(() =>
                 {
-                    var lsi = _lsiProvider.GetLsiData(request.CorpusVersion, cfi.Path);
+                    var lsi = _lsiProvider.GetLsiData(request.CorpusId, cfi.Path);
 
                     var searchResults = searchQuery.QueryType == SearchQueryType.Heading
                         ? _searcher.SearchHeadings(lsi, searchQuery)
@@ -101,6 +104,55 @@ namespace LeninSearch.Api.Controllers
                 _logger.LogError($"search exception: '{exc}'");
                 throw;
             }
+        }
+
+        [HttpPost("search")]
+        public async Task<CorpusSearchResponse> Search([FromBody] CorpusSearchRequest request)
+        {
+            string corpusId = null;
+            switch (request.CorpusName)
+            {
+                case "Ленин ПСС":
+                    corpusId = "lenin-v1";
+                    break;
+                case "Сталин ПСС":
+                    corpusId = "stalin-v1";
+                    break;
+                case "Маркс-Энгельс ПСС":
+                    corpusId = "marx-engels-v1";
+                    break;
+                case "Гегель Наука Логики":
+                    corpusId = "hegel-v1";
+                    break;
+            }
+
+            var lsRequest = new CorpusSearchRequestNew
+            {
+                CorpusId = corpusId,
+                Query = request.Query
+            };
+
+            return await Search(lsRequest);
+        }
+
+        [HttpGet("summary")]
+        public List<CorpusItem> GetCorpusSummary()
+        {
+            var executingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var folder = Path.Combine(executingDirectory, "corpus");
+            var jsonFiles = Directory.GetFiles(folder, "corpus.json", SearchOption.AllDirectories);
+            var summary = jsonFiles.Select(f => JsonConvert.DeserializeObject<CorpusItem>(System.IO.File.ReadAllText(f))).ToList();
+            return summary;
+        }
+
+        [HttpGet("file")]
+        public async Task<IActionResult> GetCorpusFile(string corpusId, string file)
+        {
+            var executingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var path = Path.Combine(executingDirectory, "corpus", corpusId, file);
+            var content = await System.IO.File.ReadAllBytesAsync(path);
+            var contentType = "APPLICATION/octet-stream";
+            return File(content, contentType, file);
         }
     }
 }

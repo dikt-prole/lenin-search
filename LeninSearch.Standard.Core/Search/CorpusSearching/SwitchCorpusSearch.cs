@@ -14,15 +14,15 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
             _onlineSearch = new OnlineCorpusSearch(host, port, timeoutMs, _lsiProvider);
             _offlineSearch = new OfflineCorpusSearch(lsiProvider, batchSize, tokeIndexCountCutoff, resultCountCutoff);
         }
-        public async Task<PartialParagraphSearchResult> SearchAsync(string corpusName, int corpusVersion, string query, string lastSearchedFilePath)
+        public async Task<PartialParagraphSearchResult> SearchAsync(string corpusId, string query, string lastSearchedFilePath)
         {
-            var onlineResult = await _onlineSearch.SearchAsync(corpusName, corpusVersion, query, lastSearchedFilePath);
+            var onlineResult = await _onlineSearch.SearchAsync(corpusId, query, lastSearchedFilePath);
 
             if (onlineResult.Success)
             {
                 if (lastSearchedFilePath != null)
                 {
-                    var corpusItem = _lsiProvider.GetCorpus(corpusVersion).Items.First(ci => ci.Name == corpusName);
+                    var corpusItem = _lsiProvider.GetCorpusItem(corpusId);
 
                     var corpusFileItems = corpusItem.Files.SkipWhile(cfi => cfi.Path != lastSearchedFilePath).Skip(1).Select(cfi => cfi.Path).ToList();
 
@@ -32,7 +32,7 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
                 return onlineResult;
             }
 
-            var offlineResult = await _offlineSearch.SearchAsync(corpusName, corpusVersion, query, lastSearchedFilePath);
+            var offlineResult = await _offlineSearch.SearchAsync(corpusId, query, lastSearchedFilePath);
 
             return offlineResult;
         }

@@ -8,7 +8,7 @@ namespace LeninSearch.Api
     {
         private static char[] AllowedChars = {' ', '+', '*'};
 
-        public string Validate(CorpusSearchRequest request)
+        public string Validate(CorpusSearchRequestNew request)
         {
             var query = request.Query;
 
