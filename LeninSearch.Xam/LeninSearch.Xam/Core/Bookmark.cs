@@ -5,6 +5,7 @@ namespace LeninSearch.Xam.Core
     public class Bookmark
     {
         public Guid Id { get; set; }
+        public string CorpusItemId { get; set; }
         public string CorpusItemName { get; set; }
         public string File { get; set; }
         public string BookName { get; set; }

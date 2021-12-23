@@ -8,11 +8,11 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
         private readonly ILsiProvider _lsiProvider;
         private readonly OnlineCorpusSearch _onlineSearch;
         private readonly OfflineCorpusSearch _offlineSearch;
-        public SwitchCorpusSearch(ILsiProvider lsiProvider, int? batchSize, string host, int port, int timeoutMs, int tokeIndexCountCutoff = int.MaxValue, int resultCountCutoff = int.MaxValue)
+        public SwitchCorpusSearch(ILsiProvider lsiProvider, string host, int port, int timeoutMs, int tokeIndexCountCutoff = int.MaxValue, int resultCountCutoff = int.MaxValue)
         {
             _lsiProvider = lsiProvider;
             _onlineSearch = new OnlineCorpusSearch(host, port, timeoutMs, _lsiProvider);
-            _offlineSearch = new OfflineCorpusSearch(lsiProvider, batchSize, tokeIndexCountCutoff, resultCountCutoff);
+            _offlineSearch = new OfflineCorpusSearch(lsiProvider, tokeIndexCountCutoff, resultCountCutoff);
         }
         public async Task<PartialParagraphSearchResult> SearchAsync(string corpusId, string query, string lastSearchedFilePath)
         {

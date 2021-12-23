@@ -2,11 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using LeninSearch.Standard.Core.Search;
-using LeninSearch.Xam.Core;
 using Newtonsoft.Json;
-using Xamarin.Forms;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using Application = Xamarin.Forms.Application;

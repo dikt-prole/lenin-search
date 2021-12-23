@@ -35,7 +35,6 @@ namespace LeninSearch.Xam.Droid
             if (!Directory.Exists(Settings.CorpusRoot))
             {
                 Directory.CreateDirectory(Settings.CorpusRoot);
-                return;
             }
 
             var corpusFolders = Directory.GetDirectories(Settings.CorpusRoot);
@@ -52,7 +51,7 @@ namespace LeninSearch.Xam.Droid
                     // corpus.json is loaded last. So if the file exists it means corpus was loaded fine.
                     if (corpusId == null || !File.Exists(Path.Combine(Settings.CorpusRoot, corpusId, "corpus.json")))
                     {
-                        SetSpalshText($"Ошибка при получении данных корпуса. Ошибка: {summaryResult.Error}. Исправьте ваше подключение к интернету и перезапустите приложение.");
+                        SetSpalshText("Ошибка при запросе данных с сервера. Исправьте ваше подключение к интернету и перезапустите приложение.");
                         return;
                     }
                 }
@@ -86,7 +85,7 @@ namespace LeninSearch.Xam.Droid
 
                 foreach (var cfi in corpusItem.Files)
                 {
-                    SetSpalshText($"Скачиваю файл: '{corpusId}/{cfi.Path}'");
+                    SetSpalshText($"Скачиваю: '{cfi.Path}'");
                     var filePath = Path.Combine(corpusFolder, cfi.Path);
                     if (!File.Exists(filePath))
                     {
@@ -94,7 +93,7 @@ namespace LeninSearch.Xam.Droid
 
                         if (!fileBytesResult.Success)
                         {
-                            SetSpalshText($"Ошибка при получении файла '{corpusItem.Id}/{cfi.Path}'. Ошибка: {fileBytesResult.Error}. Исправьте ваше подключение к интернету и перезапустите приложение.");
+                            SetSpalshText("Ошибка при запросе данных с сервера. Исправьте ваше подключение к интернету и перезапустите приложение.");
                             return;
                         }
 

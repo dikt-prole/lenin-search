@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using LeninSearch.Standard.Core;
 using LeninSearch.Standard.Core.Corpus;
 using LeninSearch.Standard.Core.Optimized;
 using LeninSearch.Standard.Core.Search;
@@ -35,7 +36,7 @@ namespace LeninSearch.Xam
             InitializeComponent();
 
             _lsiProvider = new CachedLsiProvider();
-            _corpusSearch = new SwitchCorpusSearch(_lsiProvider, Settings.EffectiveBatchSize,
+            _corpusSearch = new SwitchCorpusSearch(_lsiProvider,
                 Settings.OnlineSearch.Host, Settings.OnlineSearch.Port, Settings.OnlineSearch.TimeoutMs,
                 Settings.TokenIndexCountCutoff, Settings.ResultCountCutoff);
 
@@ -144,6 +145,7 @@ namespace LeninSearch.Xam
                 ParagraphIndex = pIndex,
                 ParagraphText = lsiData.LsData.Paragraphs[pIndex].GetText(words),
                 CorpusItemName = corpusItem.Name,
+                CorpusItemId = corpusItem.Id,
                 Id = Guid.NewGuid(),
                 When = DateTime.UtcNow
             };
@@ -208,11 +210,11 @@ namespace LeninSearch.Xam
             foreach (var ci in State.GetCorpusItems())
             {
                 var booksString = "книг";
-                var fileCountString = ci.Files.Count.ToString();
+                var fileCountString = ci.Files.Count(cfi => cfi.Path.EndsWith(".lsi")).ToString();
                 if (fileCountString.EndsWith("1")) booksString = "книга";
                 if (fileCountString.EndsWith("2") || fileCountString.EndsWith("3") || fileCountString.EndsWith("4")) booksString = "книги";
 
-                var ciText = $"{ci.Name} ({ci.Files.Count} {booksString})";
+                var ciText = $"{ci.Name} ({fileCountString} {booksString})";
                 var hyperlink = ConstructHyperlink(ciText, new Command(async () =>
                 {
                     _state.CorpusId = ci.Id;
@@ -254,7 +256,10 @@ namespace LeninSearch.Xam
 
                     var textLabel = new Label
                     {
-                        Text = bmText, FontSize = Settings.SummaryFontSize, TextColor = Color.Black, Margin = new Thickness(10, 0, 0, 0)
+                        Text = bmText,
+                        FontSize = Settings.SummaryFontSize,
+                        TextColor = Color.Black,
+                        Margin = new Thickness(10, 0, 0, 0)
                     };
 
                     layout.Children.Add(textLabel);
@@ -272,7 +277,7 @@ namespace LeninSearch.Xam
                         var corpusItem = State.GetCorpusItems().FirstOrDefault(ci => ci.Files.Any(cfi => cfi.Path == bm.File));
 
                         if (corpusItem == null) return;
-                        
+
                         var corpusFileItem = corpusItem.GetFileByPath(bm.File);
 
                         await AnimateDisappear(CorpusButton);
@@ -1002,7 +1007,7 @@ namespace LeninSearch.Xam
             {
                 ResultStack.Children.Insert(0, _paragraphViewBuilder.Build(prevParagraph, _state, _lsiProvider.Words(corpusItem.Id)));
             }
-            
+
             var maxIndex = paragraph.Index;
             while (!IsResultScrollReady())
             {

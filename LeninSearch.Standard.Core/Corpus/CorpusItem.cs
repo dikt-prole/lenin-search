@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace LeninSearch.Standard.Core.Corpus
@@ -18,10 +19,14 @@ namespace LeninSearch.Standard.Core.Corpus
         {
             return $"{Name} ({Files?.Count})";
         }
-
         public CorpusFileItem GetFileByPath(string path)
         {
             return Files.FirstOrDefault(f => f.Path == path);
+        }
+
+        public List<CorpusFileItem> LsiFiles()
+        {
+            return Files.Where(f => f.Path.EndsWith(".lsi")).ToList();
         }
     }
 }

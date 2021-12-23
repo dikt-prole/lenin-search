@@ -8,14 +8,12 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
     public class OfflineCorpusSearch : ICorpusSearch
     {
         private readonly ILsiProvider _lsiProvider;
-        private readonly int? _batchSize;
         private readonly LsSearcher _searcher;
 
         private Dictionary<string, SearchQuery> _queryCache = new Dictionary<string, SearchQuery>();
-        public OfflineCorpusSearch(ILsiProvider lsiProvider, int? batchSize, int tokenIndexCountCutoff = int.MaxValue, int resultCountCutoff = int.MaxValue)
+        public OfflineCorpusSearch(ILsiProvider lsiProvider, int tokenIndexCountCutoff = int.MaxValue, int resultCountCutoff = int.MaxValue)
         {
             _lsiProvider = lsiProvider;
-            _batchSize = batchSize;
             _searcher = new LsSearcher(tokenIndexCountCutoff, resultCountCutoff);
         }
 
@@ -36,41 +34,21 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
                 SearchResults = new List<ParagraphSearchResult>()
             };
 
-            var corpusFileItems = lastSearchedFilePath == null
-                ? corpusItem.Files
-                : corpusItem.Files.SkipWhile(cfi => cfi.Path != lastSearchedFilePath).Skip(1).ToList();
+            var corpusFileItems = corpusItem.LsiFiles();
 
-            if (!_batchSize.HasValue)
+            var searchItems = lastSearchedFilePath == null
+                ? corpusFileItems
+                : corpusFileItems.SkipWhile(cfi => cfi.Path != lastSearchedFilePath).Skip(1).ToList();
+
+            foreach (var cfi in searchItems)
             {
-                foreach (var fileItem in corpusFileItems)
+                var results = SearchCorpusFileItem(corpusId, cfi, searchQuery, dictionary);
+                if (results.Count > 0)
                 {
-                    var results = SearchCorpusFileItem(corpusId, fileItem, searchQuery, dictionary);
-                    if (results.Count > 0)
-                    {
-                        partialResult.SearchResults.AddRange(results);
-                        partialResult.LastCorpusFile = fileItem.Path;
-                        return Task.FromResult(partialResult);
-                    }
+                    partialResult.SearchResults.AddRange(results);
+                    partialResult.LastCorpusFile = cfi.Path;
+                    return Task.FromResult(partialResult);
                 }
-            }
-            else
-            {
-                for (var i = 0; i < corpusFileItems.Count; i += _batchSize.Value)
-                {
-                    var cfiBatch = corpusFileItems.Skip(i).Take(_batchSize.Value).ToList();
-                    var tasks = cfiBatch.Select(cfi => Task.Run(() => SearchCorpusFileItem(corpusId, cfi, searchQuery, dictionary)));
-
-                    var results = Task.WhenAll(tasks).Result.SelectMany(r => r).ToList();
-
-                    if (results.Count > 0)
-                    {
-                        partialResult.SearchResults.AddRange(results);
-                        partialResult.LastCorpusFile = cfiBatch.Last().Path;
-                        return Task.FromResult(partialResult);
-                    }
-                }
-
-                partialResult.LastCorpusFile = corpusFileItems.Last().Path;
             }
 
             partialResult.IsSearchComplete = true;

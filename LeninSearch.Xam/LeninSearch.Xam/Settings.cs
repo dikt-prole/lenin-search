@@ -12,10 +12,10 @@ namespace LeninSearch.Xam
 
         public static readonly string[] InitialSeries = {"lenin", "stalin", "marx-engels", "hegel"};
         public static string CorpusRoot => Path.Combine(Path.GetTempPath(), "corpus");
-        public static string BookmarkFolder => Path.Combine(Path.GetTempPath(), $"LeninSearch_Bookmarks");
-        public static string StateFolder => Path.Combine(Path.GetTempPath(), $"LeninSearch_State");
+        public static string BookmarkFolder => Path.Combine(Path.GetTempPath(), "bookmarks");
+        public static string StateFolder => Path.Combine(Path.GetTempPath(), "state");
 
-        public static string HistoryFile = Path.Combine(Path.GetTempPath(), "history.json");
+        public static string HistoryFile = Path.Combine(Path.GetTempPath(), "history", "history.json");
 
         // search options
         public const int BatchSize = 8;

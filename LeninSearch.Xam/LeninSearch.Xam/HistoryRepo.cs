@@ -24,6 +24,12 @@ namespace LeninSearch.Xam
 
             history = history.OrderByDescending(hi => hi.QueryDateUtc).Take(Settings.MaxHistoryLength).ToList();
 
+            var historyFolder = Path.GetDirectoryName(Settings.HistoryFile);
+            if (!Directory.Exists(historyFolder))
+            {
+                Directory.CreateDirectory(historyFolder);
+            }
+
             File.WriteAllText(Settings.HistoryFile, JsonConvert.SerializeObject(history));
         }
     }

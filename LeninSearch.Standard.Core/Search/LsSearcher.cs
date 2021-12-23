@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using LeninSearch.Standard.Core.Optimized;
 
 namespace LeninSearch.Standard.Core.Search
@@ -24,7 +24,7 @@ namespace LeninSearch.Standard.Core.Search
 
         public List<ParagraphSearchResult> SearchHeadings(LsIndexData lsIndexData, SearchQuery query)
         {
-            var headingIndexes = lsIndexData.HeadingData.Where(h => h.Level == 0).Select(hd => hd.Index).ToHashSet();
+            var headingIndexes = lsIndexData.HeadingData.Select(hd => hd.Index).ToHashSet();
 
             var searchResult = SearchParagraphData(lsIndexData.WordParagraphData, query);
 
@@ -35,12 +35,9 @@ namespace LeninSearch.Standard.Core.Search
 
         public List<ParagraphSearchResult> SearchParagraphData(Dictionary<uint, List<LsWordParagraphData>> wordParagraphData, SearchQuery query)
         {
-            var sw = new FancyStopwatch();
             var result = new List<ParagraphSearchResult>();
 
             query = query.Copy();
-
-            sw.Start("token part");
 
             var allTokens = query.Ordered.Concat(query.NonOrdered).ToList();
             foreach (var token in allTokens)
@@ -54,10 +51,6 @@ namespace LeninSearch.Standard.Core.Search
                 }
             }
 
-            sw.StopAndReport();
-
-            sw.Start("token word paragraphs part");
-            
             var tokeWordParagraphPartSw = new Stopwatch(); tokeWordParagraphPartSw.Start();
 
             var tokenParagraphWordDatas = new Dictionary<SearchToken, Dictionary<ushort, List<WordData>>>();
@@ -78,27 +71,15 @@ namespace LeninSearch.Standard.Core.Search
                 tokenParagraphWordDatas.Add(searchToken, paragraphWordDatas);
             }
 
-            sw.StopAndReport();
-
-            sw.Start("paragraph reorder part");
-
             var orderedParagraphLists = new List<List<ushort>>();
             foreach (var searchToken in tokenParagraphWordDatas.Keys)
             {
                 orderedParagraphLists.Add(tokenParagraphWordDatas[searchToken].Keys.OrderBy(i => i).ToList());
             }
 
-            sw.StopAndReport();
-
-            sw.Start("paragraph intersection part");
-
             var intersectingParagraphs = IntersectionUtil.IntersectStd(orderedParagraphLists).Distinct().ToList();
 
-            sw.StopAndReport();
-
             if (intersectingParagraphs.Count == 0) return result;
-
-            sw.Start("word chain part");
 
             var wordChains = new Dictionary<ushort, List<WordData>>();
 
@@ -130,8 +111,6 @@ namespace LeninSearch.Standard.Core.Search
                     wordChains[paragraphIndex].Add(tokenParagraphWordDatas[token][paragraphIndex][0]);
                 }
             }
-
-            sw.StopAndReport();
 
             foreach (var paragraphIndex in wordChains.Keys)
             {
@@ -178,7 +157,7 @@ namespace LeninSearch.Standard.Core.Search
 
             foreach (var wordData in firstWordDataList)
             {
-                var firstWordCombo = new List<WordData> {wordData};
+                var firstWordCombo = new List<WordData> { wordData };
 
                 if (reducedCombos.Any())
                 {
