@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Xamarin.Forms;
 
 namespace LeninSearch.Xam
@@ -34,30 +35,42 @@ namespace LeninSearch.Xam
             public const int TimeoutMs = 8000;
         }
 
-        // ui
-        public const double MainFontSize = 17;
+        public static class UI
+        {
+            public const double MainFontSize = 17;
 
-        public const double SummaryFontSize = 17;
-        public static Color MainColor => Color.FromRgb(214, 24, 31);
-        public static bool OldAndroidJustification { get; set; }
+            public const double SummaryFontSize = 17;
+            public static Color MainColor => Color.FromRgb(214, 24, 31);
+            public static bool OldAndroidJustification { get; set; }
 
-        public const int MaxHistoryLength = 10;
+            public const int MaxHistoryLength = 10;
 
-        public const int MaxParagraphCount = 200;
+            public const int MaxParagraphCount = 200;
 
-        public const int ScreensPulledOnTopScroll = 3;
+            public const int ScreensPulledOnTopScroll = 3;
 
-        public const int ScreensPulledOnBottomScroll = 3;
+            public const int ScreensPulledOnBottomScroll = 3;
 
-        public const int ButtonRotationMs = 300;
+            public const int ButtonRotationMs = 300;
 
-        public const int TextMenuAnimationMs = 250;
+            public const int TextMenuAnimationMs = 250;
 
-        public const int BugMenuAnimationMs = 250;
+            public const int BugMenuAnimationMs = 250;
 
-        public const int AppearMs = 200;
+            public const int AppearMs = 200;
 
-        public const int DisappearMs = 200;
+            public const int DisappearMs = 200;
+
+            public const int ResultScrollFadeMs = 50;
+        }
+
+        public static class Misc
+        {
+
+            public const string SplashApiError = "Ошибка при запросе данных с сервера. Исправьте ваше подключение к интернету и перезапустите приложение.";
+            public const string ApiError = "Ошибка при запросе данных с сервера. Исправьте ваше подключение к интернету.";
+            public const string UpdateCompleteMessage = "Обновление установлено";
+        }
 
         public static class Query
         {
@@ -81,5 +94,26 @@ namespace LeninSearch.Xam
             new Tuple<string, string>("КАК ИСКАТЬ ПО ЗАГОЛОВКАМ", "https://youtu.be/sSy70Vf4TLc"),
             new Tuple<string, string>("РЕЛИЗ ТЕКУЩЕЙ ВЕРСИИ", "https://youtu.be/V0mBI9Bh2T4")
         };
+
+        public static bool CorpusExists(string corpusId)
+        {
+            if (string.IsNullOrEmpty(corpusId)) return false;
+
+            return Directory.Exists(Path.Combine(CorpusRoot, corpusId));
+        }
+
+        public static List<string> GetExistingCorpusIds()
+        {
+            if (!Directory.Exists(CorpusRoot)) return new List<string>();
+
+            var corpusFolders = Directory.GetDirectories(CorpusRoot);
+
+            return corpusFolders.Select(f => f.Split('\\', '/').Last()).ToList();
+        }
+
+        public static string IconFile(string corpusId)
+        {
+            return Path.Combine(CorpusRoot, corpusId, "icon.png");
+        }
     }
 }

@@ -85,7 +85,7 @@ namespace LeninSearch.Xam.Controls
             _backspaceButton = new ImageButton
             {
                 Source = "backspace.png",
-                BackgroundColor = Settings.MainColor,
+                BackgroundColor = Settings.UI.MainColor,
                 BorderColor = Color.White,
                 BorderWidth = 1,
                 Padding = new Thickness(6)
@@ -118,7 +118,7 @@ namespace LeninSearch.Xam.Controls
             _searchButton = new ImageButton
             {
                 Source = "search.png",
-                BackgroundColor = Settings.MainColor,
+                BackgroundColor = Settings.UI.MainColor,
                 BorderColor = Color.White,
                 BorderWidth = 1,
                 Padding = new Thickness(6)

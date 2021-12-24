@@ -84,6 +84,7 @@
   <ItemGroup>
     <Compile Include="CustomGestureListener.cs" />
     <Compile Include="DroidKeyboardHelper.cs" />
+    <Compile Include="MessageAndroid.cs" />
     <Compile Include="Renderers\ExtendedLabelRenderer.cs" />
     <Compile Include="Renderers\GestureScrollRenderer.cs" />
     <Compile Include="MainActivity.cs" />

@@ -124,7 +124,7 @@ namespace LeninSearch.Xam.ParagraphAdder
             return new Span
             {
                 Text = spanText,
-                BackgroundColor = Settings.MainColor,
+                BackgroundColor = Settings.UI.MainColor,
                 TextColor = Color.White
             };
         }

@@ -36,7 +36,7 @@ namespace LeninSearch.Xam.Droid
 
             ReportItem.GlobalDeviceId = Android.Provider.Settings.Secure.GetString(Application.Context.ContentResolver, Android.Provider.Settings.Secure.AndroidId);
 
-            Settings.OldAndroidJustification = Build.VERSION.SdkInt < BuildVersionCodes.O;
+            Settings.UI.OldAndroidJustification = Build.VERSION.SdkInt < BuildVersionCodes.O;
 
             _globalEvents = new GlobalEvents();
             _app = new App(_globalEvents);

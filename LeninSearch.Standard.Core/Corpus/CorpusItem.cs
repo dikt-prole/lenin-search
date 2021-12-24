@@ -17,7 +17,19 @@ namespace LeninSearch.Standard.Core.Corpus
 
         public override string ToString()
         {
-            return $"{Name} ({Files?.Count})";
+            var booksString = "книг";
+            var fileCountString = (Files?.Count(cfi => cfi.Path.EndsWith(".lsi")) ?? 0).ToString();
+            if (fileCountString.EndsWith("1"))
+            {
+                booksString = "книга";
+            }
+
+            if (fileCountString.EndsWith("2") || fileCountString.EndsWith("3") || fileCountString.EndsWith("4"))
+            {
+                booksString = "книги";
+            }
+
+            return $"{Name} v.{CorpusVersion} ({fileCountString} {booksString})";
         }
         public CorpusFileItem GetFileByPath(string path)
         {

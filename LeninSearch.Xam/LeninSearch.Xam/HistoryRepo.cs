@@ -13,7 +13,9 @@ namespace LeninSearch.Xam
         {
             if (!File.Exists(Settings.HistoryFile)) return new List<HistoryItem>();
 
-            return JsonConvert.DeserializeObject<List<HistoryItem>>(File.ReadAllText(Settings.HistoryFile));
+            return JsonConvert.DeserializeObject<List<HistoryItem>>(File.ReadAllText(Settings.HistoryFile))
+                .Where(hi => Settings.CorpusExists(hi.CorpusId))
+                .ToList();
         }
 
         public static void AddHistory(HistoryItem historyItem)
@@ -22,7 +24,7 @@ namespace LeninSearch.Xam
 
             history.Add(historyItem);
 
-            history = history.OrderByDescending(hi => hi.QueryDateUtc).Take(Settings.MaxHistoryLength).ToList();
+            history = history.OrderByDescending(hi => hi.QueryDateUtc).Take(Settings.UI.MaxHistoryLength).ToList();
 
             var historyFolder = Path.GetDirectoryName(Settings.HistoryFile);
             if (!Directory.Exists(historyFolder))

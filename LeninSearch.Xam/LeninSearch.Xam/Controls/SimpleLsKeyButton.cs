@@ -24,7 +24,7 @@ namespace LeninSearch.Xam.Controls
             HorizontalOptions = LayoutOptions.FillAndExpand;
             VerticalOptions = LayoutOptions.FillAndExpand;
             Margin = new Thickness(0);
-            BackgroundColor = Settings.MainColor;
+            BackgroundColor = Settings.UI.MainColor;
             TextColor = Color.White;
             BorderColor = Color.White;
             BorderWidth = 1;

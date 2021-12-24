@@ -37,8 +37,7 @@ namespace LeninSearch.Xam.Droid
                 Directory.CreateDirectory(Settings.CorpusRoot);
             }
 
-            var corpusFolders = Directory.GetDirectories(Settings.CorpusRoot);
-            var existingCorpusIds = corpusFolders.Select(f => f.Split('\\', '/').Last()).ToList();
+            var existingCorpusIds = Settings.GetExistingCorpusIds();
             var apiService = new ApiService();
             var summaryResult = apiService.GetSummaryAsync(Settings.LsiVersion).Result;
 
@@ -51,7 +50,7 @@ namespace LeninSearch.Xam.Droid
                     // corpus.json is loaded last. So if the file exists it means corpus was loaded fine.
                     if (corpusId == null || !File.Exists(Path.Combine(Settings.CorpusRoot, corpusId, "corpus.json")))
                     {
-                        SetSpalshText("Ошибка при запросе данных с сервера. Исправьте ваше подключение к интернету и перезапустите приложение.");
+                        SetSpalshText(Settings.Misc.SplashApiError);
                         return;
                     }
                 }
@@ -93,7 +92,7 @@ namespace LeninSearch.Xam.Droid
 
                         if (!fileBytesResult.Success)
                         {
-                            SetSpalshText("Ошибка при запросе данных с сервера. Исправьте ваше подключение к интернету и перезапустите приложение.");
+                            SetSpalshText(Settings.Misc.SplashApiError);
                             return;
                         }
 

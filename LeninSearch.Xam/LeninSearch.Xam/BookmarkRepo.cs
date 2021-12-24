@@ -21,6 +21,7 @@ namespace LeninSearch.Xam
                 {
                     var jsonFiles = Directory.GetFiles(Settings.BookmarkFolder, "*.json");
                     _bookmarks = jsonFiles.Select(jf => JsonConvert.DeserializeObject<Bookmark>(File.ReadAllText(jf)))
+                        .Where(b => Settings.CorpusExists(b.CorpusItemId))
                         .ToList();
                 }
                 else
