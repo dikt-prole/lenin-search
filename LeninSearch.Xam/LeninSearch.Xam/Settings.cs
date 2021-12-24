@@ -62,6 +62,8 @@ namespace LeninSearch.Xam
             public const int DisappearMs = 200;
 
             public const int ResultScrollFadeMs = 50;
+
+            public const int BrowserViewHeight = 600;
         }
 
         public static class Misc

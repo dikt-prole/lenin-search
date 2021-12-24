@@ -468,7 +468,7 @@ namespace LeninSearch.Xam
                 htmlTemplate = reader.ReadToEnd();
             }
 
-            var height = (int)(600 / DeviceDisplay.MainDisplayInfo.Density);
+            var height = (int)(Settings.UI.BrowserViewHeight / DeviceDisplay.MainDisplayInfo.Density);
             var width = height * 16 / 9;
             var html = htmlTemplate
                 .Replace("[videoId]", videoId)
@@ -477,7 +477,7 @@ namespace LeninSearch.Xam
                 .Replace("[height]", height.ToString());
 
             BrowserView.Source = new HtmlWebViewSource {Html = html};
-            BrowserView.HeightRequest = 600;
+            BrowserView.HeightRequest = Settings.UI.BrowserViewHeight;
         }
 
         private void StopVideoPlay()
