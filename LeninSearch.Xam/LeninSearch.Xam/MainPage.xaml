@@ -18,7 +18,8 @@
             </StackLayout>
         </StackLayout>
         <StackLayout HorizontalOptions="FillAndExpand" HeightRequest="2" BackgroundColor="#D6181F"></StackLayout>
-        <StackLayout x:Name="SearchResultBar" HeightRequest="22" Orientation="Vertical" HorizontalOptions="Fill" Spacing="0">
+        <WebView x:Name="BrowserView" HorizontalOptions="FillAndExpand" HeightRequest="0"></WebView>
+        <StackLayout x:Name="SearchResultBar" HeightRequest="24" Orientation="Vertical" HorizontalOptions="Fill" Spacing="0">
             <StackLayout Orientation="Horizontal" Spacing="0">
                 <StackLayout WidthRequest="48" HeightRequest="24" BackgroundColor="#D6181F" HorizontalOptions="Start" Spacing="0">
                     <Label Margin="0" HorizontalOptions="Center" VerticalOptions="Center" FontSize="Small"  x:Name="PrevLabel" TextColor="White"></Label>
@@ -36,7 +37,6 @@
             TabStripPlacement="Top"
             TabStripBackgroundColor="White"
             TabStripHeight="40"
-
             TabIndicatorColor="#D6181F"
             TabContentBackgroundColor="White">
 

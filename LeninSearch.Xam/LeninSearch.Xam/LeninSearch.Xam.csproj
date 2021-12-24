@@ -18,7 +18,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="blank.html" />
+    <None Remove="youtube.html" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="Fonts\MaterialIcons-Regular.ttf" />
+    <EmbeddedResource Include="blank.html" />
+    <EmbeddedResource Include="youtube.html" />
   </ItemGroup>
 
   <ItemGroup>

@@ -2,13 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using LeninSearch.Standard.Core.Optimized;
+using LeninSearch.Standard.Core.Search;
 using Xamarin.Forms;
 
 namespace LeninSearch.Xam.ParagraphAdder
 {
-    public class ParagraphViewBuilderTapDecorator : IParagraphViewBuilder
+    public class ParagraphViewBuilderTapSelectionDecorator : IParagraphViewBuilder
     {
         private readonly IParagraphViewBuilder _builder;
+        private readonly ILsiProvider _lsiProvider;
 
         private readonly Dictionary<ushort, View> _selectedParagraphs = new Dictionary<ushort, View>();
 
@@ -16,15 +18,16 @@ namespace LeninSearch.Xam.ParagraphAdder
 
         public List<ushort> SelectedIndexes => _selectedParagraphs.Keys.OrderBy(i => i).ToList();
 
-        public ParagraphViewBuilderTapDecorator(IParagraphViewBuilder builder)
+        public ParagraphViewBuilderTapSelectionDecorator(IParagraphViewBuilder builder, ILsiProvider lsiProvider)
         {
             _builder = builder;
+            _lsiProvider = lsiProvider;
         }
 
         public View Build(LsParagraph p, State state, string[] dictionaryWords)
         {
             var view = _builder.Build(p, state, dictionaryWords);
-            AttachTapGesture(view);
+            AttachTapGesture(view, state);
             return view;
         }
 
@@ -40,7 +43,7 @@ namespace LeninSearch.Xam.ParagraphAdder
             handler?.Invoke(this, SelectedIndexes);
         }
 
-        private void AttachTapGesture(View view)
+        private void AttachTapGesture(View view, State state)
         {
             var tapRecognizer = new TapGestureRecognizer();
             tapRecognizer.NumberOfTapsRequired = 1;
@@ -55,9 +58,18 @@ namespace LeninSearch.Xam.ParagraphAdder
                 }
                 else
                 {
+                    var lsiData = _lsiProvider.GetLsiData(state.CorpusId, state.ReadingFile);
+                    if (lsiData.VideoOffsets.ContainsKey(pIndex))
+                    {
+                        foreach (var index in _selectedParagraphs.Keys)
+                        {
+                            _selectedParagraphs[index].BackgroundColor = Color.White;
+                        }
+                        _selectedParagraphs.Clear();
+                    }
                     _selectedParagraphs.Add(pIndex, view);
                     var selectAnimation = new Animation(f => view.BackgroundColor = new Color(1.0, 0, 0, f), 0, 0.25, Easing.SinInOut);
-                    selectAnimation.Commit(view, "deselect", 200);
+                    selectAnimation.Commit(view, "select", 200);
                 }
 
                 var handler = ParagraphSelectionChanged;

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using LeninSearch.Standard.Core.Corpus;
 using LeninSearch.Standard.Core.Optimized;
@@ -23,7 +24,7 @@ namespace LeninSearch.Xam
     {
         private readonly GlobalEvents _globalEvents;
         private IParagraphViewBuilder _paragraphViewBuilder;
-        private ParagraphViewBuilderTapDecorator _selectionDecorator;
+        private ParagraphViewBuilderTapSelectionDecorator _selectionSelectionDecorator;
         private readonly CachedLsiProvider _lsiProvider;
         private readonly ICorpusSearch _corpusSearch;
         private readonly ApiService _apiService = new ApiService();
@@ -61,16 +62,27 @@ namespace LeninSearch.Xam
             _paragraphViewBuilder = new StdParagraphViewBuilder(_lsiProvider);
             _paragraphViewBuilder = new ParagraphViewBuilderPagerHeaderDecorator(_paragraphViewBuilder);
             _paragraphViewBuilder = new PropertyHolderParagraphViewBuilder(_paragraphViewBuilder, Settings.UI.MainFontSize);
-            _selectionDecorator = new ParagraphViewBuilderTapDecorator(_paragraphViewBuilder);
-            _paragraphViewBuilder = _selectionDecorator;
-            _selectionDecorator.ParagraphSelectionChanged += async (sender, indexes) =>
+            _selectionSelectionDecorator = new ParagraphViewBuilderTapSelectionDecorator(_paragraphViewBuilder, _lsiProvider);
+            _paragraphViewBuilder = _selectionSelectionDecorator;
+            _selectionSelectionDecorator.ParagraphSelectionChanged += async (sender, indexes) =>
             {
                 if (indexes.Count > 0)
                 {
-                    await ShowTextMenu(_selectionDecorator.SelectedIndexes.Count == 1);
+                    var singleParagraphSelected = _selectionSelectionDecorator.SelectedIndexes.Count == 1;
+                    await ShowTextMenu(singleParagraphSelected);
+                    var corpusItem = _state.GetCurrentCorpusItem();
+                    var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, _state.ReadingFile);
+                    var paragraphId = _selectionSelectionDecorator.SelectedIndexes[0];
+                    if (lsiData.VideoOffsets.ContainsKey(paragraphId))
+                    {
+                        var offset = lsiData.VideoOffsets[paragraphId];
+                        var videoId = _state.ReadingFile.Substring(2).Replace(".lsi", "");
+                        StartVideoPlay(videoId, offset);
+                    }
                 }
                 else
                 {
+                    StopVideoPlay();
                     await HideTextMenu();
                 }
             };
@@ -80,6 +92,8 @@ namespace LeninSearch.Xam
             ShareButton.Clicked += ShareButtonOnClicked;
             HideSearchResultBar();
 
+            // web view
+            //BrowserView.HeightRequest = (int) Math.Round(DeviceDisplay.MainDisplayInfo.Width * 9 / 16);
             PopulateInitialTabs();
         }
 
@@ -136,7 +150,7 @@ namespace LeninSearch.Xam
             if (corpusFileItem == null) return;
 
             var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, corpusFileItem.Path);
-            var pIndex = _selectionDecorator.SelectedIndexes.First();
+            var pIndex = _selectionSelectionDecorator.SelectedIndexes.First();
             var words = _lsiProvider.GetDictionary(corpusItem.Id).Words;
 
             var bookmark = new Bookmark
@@ -154,7 +168,7 @@ namespace LeninSearch.Xam
             BookmarkRepo.Add(bookmark);
             PopulateBookmarksTab();
 
-            _selectionDecorator.ClearSelection();
+            _selectionSelectionDecorator.ClearSelection();
         }
 
         private async Task ReplaceCorpusWithLoading()
@@ -444,8 +458,44 @@ namespace LeninSearch.Xam
             PopulateHistoryTab();
         }
 
+        private void StartVideoPlay(string videoId, ushort offset)
+        {
+            var assembly = IntrospectionExtensions.GetTypeInfo(typeof(MainPage)).Assembly;
+            var stream = assembly.GetManifestResourceStream("LeninSearch.Xam.youtube.html");
+            var htmlTemplate = "";
+            using (var reader = new StreamReader(stream))
+            {
+                htmlTemplate = reader.ReadToEnd();
+            }
+
+            var height = (int)(600 / DeviceDisplay.MainDisplayInfo.Density);
+            var width = height * 16 / 9;
+            var html = htmlTemplate
+                .Replace("[videoId]", videoId)
+                .Replace("[offset]", offset.ToString())
+                .Replace("[width]", width.ToString())
+                .Replace("[height]", height.ToString());
+
+            BrowserView.Source = new HtmlWebViewSource {Html = html};
+            BrowserView.HeightRequest = 600;
+        }
+
+        private void StopVideoPlay()
+        {
+            var assembly = IntrospectionExtensions.GetTypeInfo(typeof(MainPage)).Assembly;
+            var stream = assembly.GetManifestResourceStream("LeninSearch.Xam.blank.html");
+            var html = "";
+            using (var reader = new StreamReader(stream))
+            {
+                html = reader.ReadToEnd();
+            }
+            BrowserView.Source = new HtmlWebViewSource {Html = html};
+            BrowserView.HeightRequest = 0;
+        }
+
         private async void DisplayInitialTabs()
         {
+            StopVideoPlay();
             PopulateInitialTabs();
             _state.ReadingFile = null;
             HideSearchResultBar();
@@ -476,7 +526,7 @@ namespace LeninSearch.Xam
             var corpusItem = _state.GetCurrentCorpusItem();
             if (corpusItem == null) return;
             var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, _state.ReadingFile);
-            var indexes = _selectionDecorator.SelectedIndexes;
+            var indexes = _selectionSelectionDecorator.SelectedIndexes;
             var separator = $"{Environment.NewLine}{Environment.NewLine}";
             var words = _lsiProvider.GetDictionary(corpusItem.Id).Words;
 
@@ -513,7 +563,7 @@ namespace LeninSearch.Xam
             var shareText = string.Join(separator, pTexts);
             shareText = $"{shareText}{separator}Подготовлено при помощи Lenin Search для Android (доступно в Google Play) за считанные секунды";
 
-            _selectionDecorator.ClearSelection();
+            _selectionSelectionDecorator.ClearSelection();
 
             await Share.RequestAsync(new ShareTextRequest
             {
@@ -533,9 +583,9 @@ namespace LeninSearch.Xam
 
         private void ShowSearchResultBar()
         {
-            if (SearchResultBar.Height == 22) return;
+            if (SearchResultBar.Height == 24) return;
 
-            var animation = new Animation(f => SearchResultBar.HeightRequest = f, SearchResultBar.Height, 22, Easing.SinInOut);
+            var animation = new Animation(f => SearchResultBar.HeightRequest = f, SearchResultBar.Height, 24, Easing.SinInOut);
 
             animation.Commit(SearchResultBar, "showSearchResultBar", 200);
         }
@@ -573,6 +623,8 @@ namespace LeninSearch.Xam
         private async void ResultScrollOnScrolled(object sender, ScrolledEventArgs e)
         {
             if (string.IsNullOrEmpty(_state.ReadingFile)) return;
+
+            //StopVideoPlay();
 
             if (!ResultScroll.IsEnabled) return;
 
@@ -782,7 +834,7 @@ namespace LeninSearch.Xam
                 _state.PartialParagraphSearchResult = null;
                 _state.ReadingFile = cfi.Path;
                 _state.ReadingParagraphIndex = paragraphIndex;
-                _selectionDecorator.ClearSelection();
+                _selectionSelectionDecorator.ClearSelection();
 
                 HideSearchResultBar();
                 await RebuildScroll(true);
@@ -910,6 +962,7 @@ namespace LeninSearch.Xam
             if (string.IsNullOrWhiteSpace(SearchEntry.Text)) return;
 
             // 1. Initial stuff
+            StopVideoPlay();
             InitialTabs.IsVisible = false;
             ScrollWrapper.IsVisible = true;
             _state.SearchQuery = SearchEntry.Text;
@@ -1009,8 +1062,8 @@ namespace LeninSearch.Xam
                 SearchResultTitle.Text = "результаты поиска (полные)";
                 if (!_state.PartialParagraphSearchResult.IsSearchComplete)
                 {
-                    var firstCfiName = corpusItem.Files[0].Name;
-                    var lastCfiName = corpusItem.Files.First(cfi => cfi.Path == _state.PartialParagraphSearchResult.LastCorpusFile).Name;
+                    var firstCfiName = corpusItem.LsiFiles()[0].Name;
+                    var lastCfiName = corpusItem.LsiFiles().First(cfi => cfi.Path == _state.PartialParagraphSearchResult.LastCorpusFile).Name;
                     SearchResultTitle.Text = $"результаты поиска ({firstCfiName} - {lastCfiName})";
                 }
 
@@ -1085,7 +1138,7 @@ namespace LeninSearch.Xam
             PrevLabel.Text = (_state.CurrentParagraphResultIndex + 1).ToString();
             NextLabel.Text = _state.PartialParagraphSearchResult.SearchResults.Count.ToString();
 
-            _selectionDecorator.ClearSelection();
+            _selectionSelectionDecorator.ClearSelection();
 
             HideTextMenu();
 
