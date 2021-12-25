@@ -30,6 +30,7 @@ namespace LeninSearch.Xam
         private readonly ApiService _apiService = new ApiService();
         private readonly IMessage _message = DependencyService.Get<IMessage>();
         private readonly Span _searchResultTitleSpan;
+        private bool _isRunningCorpusUpdate = false;
 
         private State _state;
 
@@ -45,7 +46,11 @@ namespace LeninSearch.Xam
             //_corpusSearch = new OfflineCorpusSearch(_lsiProvider, Settings.TokenIndexCountCutoff, Settings.ResultCountCutoff);
 
             // corpus button
-            CorpusButton.Pressed += (sender, args) => DisplayInitialTabs();
+            CorpusButton.Pressed += (sender, args) =>
+            {
+                if (_isRunningCorpusUpdate) return;
+                DisplayInitialTabs();
+            };
 
             // updates
             CorpusRefreshButton.Clicked += async (sender, args) => await ShowUpdates();
@@ -54,18 +59,22 @@ namespace LeninSearch.Xam
 
             // search entry
             SearchEntry.Text = Settings.Query.Txt2;
-            SearchEntry.FontSize = Settings.UI.MainFontSize;
+            SearchEntry.FontSize = Settings.UI.Font.NormalFontSize;
             SearchEntry.Focused += (sender, args) => { HideTextMenu(); };
 
             // keyboard
             Keyboard.BindToEntry(SearchEntry);
-            Keyboard.SearchClick += async () => await OnSearchButtonPressed();
+            Keyboard.SearchClick += async () =>
+            {
+                if (_isRunningCorpusUpdate) return;
+                await OnSearchButtonPressed();
+            };
             Keyboard.NonKeyaboardUnfocus += () => CorpusButton.IsVisible = true;
 
             // paragraphs
             _paragraphViewBuilder = new StdParagraphViewBuilder(_lsiProvider);
             _paragraphViewBuilder = new ParagraphViewBuilderPagerHeaderDecorator(_paragraphViewBuilder);
-            _paragraphViewBuilder = new PropertyHolderParagraphViewBuilder(_paragraphViewBuilder, Settings.UI.MainFontSize);
+            _paragraphViewBuilder = new PropertyHolderParagraphViewBuilder(_paragraphViewBuilder, Settings.UI.Font.NormalFontSize);
             _selectionSelectionDecorator = new ParagraphViewBuilderTapSelectionDecorator(_paragraphViewBuilder, _lsiProvider);
             _paragraphViewBuilder = _selectionSelectionDecorator;
             _selectionSelectionDecorator.ParagraphSelectionChanged += async (sender, indexes) =>
@@ -76,11 +85,11 @@ namespace LeninSearch.Xam
                     await ShowTextMenu(singleParagraphSelected);
                     var corpusItem = _state.GetCurrentCorpusItem();
                     var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, _state.ReadingFile);
-                    var paragraphId = _selectionSelectionDecorator.SelectedIndexes[0];
-                    if (lsiData.VideoOffsets.ContainsKey(paragraphId))
+                    var paragraphIndex = _selectionSelectionDecorator.SelectedIndexes[0];
+                    var videoId = lsiData.GetVideoId(paragraphIndex);
+                    if (lsiData.VideoOffsets.ContainsKey(paragraphIndex))
                     {
-                        var offset = lsiData.VideoOffsets[paragraphId];
-                        var videoId = _state.ReadingFile.Substring(2).Replace(".lsi", "");
+                        var offset = lsiData.VideoOffsets[paragraphIndex];
                         StartVideoPlay(videoId, offset);
                     }
                 }
@@ -219,7 +228,7 @@ namespace LeninSearch.Xam
             foreach (var ci in State.GetCorpusItems())
             {
                 var ciText = ci.ToString();
-                var hyperlink = ConstructHyperlink(ciText, Settings.UI.SummaryFontSize, new Command(async () =>
+                var hyperlink = ConstructHyperlink(ciText, Settings.UI.Font.NormalFontSize, new Command(async () =>
                 {
                     _state.CorpusId = ci.Id;
                     await AnimateDisappear(CorpusButton);
@@ -272,34 +281,20 @@ namespace LeninSearch.Xam
             ScrollWrapper.IsVisible = true;
             await RebuildScroll(false);
 
-            var titleLabel = new Label
-            {
-                Text = "Обновления корпусов",
-                TextColor = Color.Black,
-                FontSize = Settings.UI.SummaryFontSize,
-                HorizontalOptions = LayoutOptions.Center,
-                Margin = new Thickness(0, 0, 0, 30)
-            };
-
-            ResultStack.Children.Add(titleLabel);
+            var infoLabel = new Label {Text = "Обновления", TextColor = Color.Black, FontSize = Settings.UI.Font.SmallFontSize,
+                HorizontalOptions = LayoutOptions.Center, Margin = new Thickness(0, 0, 0, 0)};
+            ResultStack.Children.Add(infoLabel);
 
             // 2. display updates list
-            if (updates.Count == 0)
-            {
-                ResultStack.Children.Add(new Label
-                {
-                    Text = "Обновлений нет",
-                    TextColor = Settings.UI.MainColor,
-                    FontSize = Settings.UI.SummaryFontSize,
-                    HorizontalOptions = LayoutOptions.Center
-                });
-            }
             foreach (var updateCi in updates)
             {
                 View updateLink = null;
-                updateLink = ConstructHyperlink(updateCi.ToString(), Settings.UI.SummaryFontSize,
+                updateLink = ConstructHyperlink(updateCi.ToString(), Settings.UI.Font.NormalFontSize,
                     new Command(async () =>
                     {
+                        _isRunningCorpusUpdate = true;
+                        await ReplaceCorpusWithLoading();
+
                         var existingCi = existingCorpusItems.FirstOrDefault(ci => ci.Series == updateCi.Series);
                         if (existingCi != null)
                         {
@@ -311,15 +306,18 @@ namespace LeninSearch.Xam
 
                         foreach (var cfi in updateCi.Files)
                         {
-                            _message.ShortAlert($"Скачиваю: {cfi.Path}");
+                            infoLabel.IsVisible = true;
+                            infoLabel.Text = $"Скачиваю: {cfi.Path}";
                             var cfiBytesResult = await _apiService.GetFileBytesAsync(updateCi.Id, cfi.Path);
                             if (!cfiBytesResult.Success)
                             {
                                 _message.LongAlert(Settings.Misc.ApiError);
                                 Directory.Delete(corpusFolder, true);
+                                infoLabel.Text = "Обновления";
+                                _isRunningCorpusUpdate = false;
+                                await ReplaceLoadingWithCorpus();
                                 return;
                             }
-
                             await File.WriteAllBytesAsync(Path.Combine(corpusFolder, cfi.Path), cfiBytesResult.Bytes);
                         }
 
@@ -330,6 +328,10 @@ namespace LeninSearch.Xam
                             _state.CorpusId = updateCi.Id;
                             CorpusButton.Source = Settings.IconFile(updateCi.Id);
                         }
+
+                        await ReplaceLoadingWithCorpus();
+                        infoLabel.Text = "Обновления";
+                        _isRunningCorpusUpdate = false;
                     }));
                 ResultStack.Children.Add(updateLink);
             }
@@ -348,7 +350,7 @@ namespace LeninSearch.Xam
                     Text = "ЗАКЛАДКИ",
                     HorizontalOptions = LayoutOptions.Center,
                     TextColor = Color.Black,
-                    FontSize = Settings.UI.SummaryFontSize
+                    FontSize = Settings.UI.Font.NormalFontSize
                 });
 
                 foreach (var bm in bookmarks)
@@ -366,7 +368,7 @@ namespace LeninSearch.Xam
                     var textLabel = new Label
                     {
                         Text = bmText,
-                        FontSize = Settings.UI.SummaryFontSize,
+                        FontSize = Settings.UI.Font.NormalFontSize,
                         TextColor = Color.Black,
                         Margin = new Thickness(10, 0, 0, 0)
                     };
@@ -381,25 +383,11 @@ namespace LeninSearch.Xam
                         Spacing = 0
                     };
 
-                    var readLabel = ConstructHyperlink("читать", Settings.UI.SummaryFontSize, new Command(async () =>
-                    {
-                        var corpusItem = State.GetCorpusItems().FirstOrDefault(ci => ci.Files.Any(cfi => cfi.Path == bm.File));
-
-                        if (corpusItem == null) return;
-
-                        var corpusFileItem = corpusItem.GetFileByPath(bm.File);
-
-                        await AnimateDisappear(CorpusButton);
-                        CorpusButton.Source = Settings.IconFile(corpusItem.Id);
-                        await AnimateAppear(CorpusButton);
-
-                        await Read(corpusFileItem, bm.ParagraphIndex);
-
-                    }));
+                    var readLabel = ConstructHyperlink("читать", Settings.UI.Font.NormalFontSize, new Command(async () => await ReadBookmark(bm)));
 
                     linkLayout.Children.Add(readLabel);
 
-                    var deleteLabel = ConstructHyperlink("удалить", Settings.UI.SummaryFontSize, new Command(async () =>
+                    var deleteLabel = ConstructHyperlink("удалить", Settings.UI.Font.NormalFontSize, new Command(async () =>
                     {
                         BookmarkRepo.Delete(bm.Id);
                         await layout.FadeTo(0, 200, Easing.Linear);
@@ -415,13 +403,33 @@ namespace LeninSearch.Xam
             }
         }
 
+        private async Task ReadBookmark(Bookmark bm)
+        {
+            try
+            {
+                var corpusItem = State.GetCorpusItems().FirstOrDefault(ci => ci.Files.Any(cfi => cfi.Path == bm.File));
+                if (corpusItem == null) return;
+                _state.CorpusId = corpusItem.Id;
+                var corpusFileItem = corpusItem.GetFileByPath(bm.File);
+                await AnimateDisappear(CorpusButton);
+                CorpusButton.Source = Settings.IconFile(corpusItem.Id);
+                await AnimateAppear(CorpusButton);
+                await Read(corpusFileItem, bm.ParagraphIndex);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+                throw;
+            }
+        }
+
         private void PopulateLearningTab()
         {
             LearningTab.Children.Clear();
 
             foreach (var video in Settings.Learning)
             {
-                var hyperlink = ConstructHyperlink(video.Item1, Settings.UI.SummaryFontSize,
+                var hyperlink = ConstructHyperlink(video.Item1, Settings.UI.Font.NormalFontSize,
                     new Command(async () => await Browser.OpenAsync(video.Item2)));
                 hyperlink.Margin = new Thickness(20, 20, 0, 0);
                 LearningTab.Children.Add(hyperlink);
@@ -436,7 +444,7 @@ namespace LeninSearch.Xam
 
             foreach (var historyItem in history)
             {
-                var hyperlink = ConstructHyperlink($"{historyItem.Query} ({historyItem.CorpusName})", Settings.UI.SummaryFontSize,
+                var hyperlink = ConstructHyperlink($"{historyItem.Query} ({historyItem.CorpusName})", Settings.UI.Font.NormalFontSize,
                     new Command(() =>
                     {
                         _state.CorpusId = historyItem.CorpusId;
@@ -493,14 +501,17 @@ namespace LeninSearch.Xam
 
         private async Task DisplaySearchSummary()
         {
+            if (!_state.IsWatchingParagraphSearchResults()) return;
+
             HideSearchResultBar();
+            StopVideoPlay();
             await RebuildScroll(false);
             var corpusFileItems = _state.PartialParagraphSearchResult.Files().Select(f => _state.GetCurrentCorpusItem().GetFileByPath(f)).ToList();
 
             var totalCount = _state.PartialParagraphSearchResult.SearchResults.Count;
             var titleLabel = _state.PartialParagraphSearchResult.IsSearchComplete
-                ? new Label { Text = $"Поиск окончен, {totalCount} совпадений", TextColor = Color.Black, FontSize = Settings.UI.SummaryFontSize }
-                : ConstructHyperlink($"{totalCount} совпадений, нажмите чтобы продолжить", Settings.UI.SummaryFontSize, new Command(async () => 
+                ? new Label { Text = $"Поиск окончен, {totalCount} совпадений", TextColor = Color.Black, FontSize = Settings.UI.Font.NormalFontSize }
+                : ConstructHyperlink($"{totalCount} совпадений, нажмите чтобы продолжить", Settings.UI.Font.NormalFontSize, new Command(async () => 
                     await StartParagraphSearch(_state.SearchQuery)));
 
             titleLabel.Margin = new Thickness(0, 0, 0, 10);
@@ -519,7 +530,7 @@ namespace LeninSearch.Xam
             {
                 var resultCount = _state.PartialParagraphSearchResult.FileResults(cfi.Path).Count;
                 var text = $"{cfi.Name} ({resultCount})";
-                var link = ConstructHyperlink(text, Settings.UI.SummaryFontSize, new Command(async () =>
+                var link = ConstructHyperlink(text, Settings.UI.Font.NormalFontSize, new Command(async () =>
                 {
                     _state.ReadingFile = cfi.Path;
                     _state.CurrentParagraphResultIndex = 0;
@@ -807,7 +818,7 @@ namespace LeninSearch.Xam
             {
                 Text = $"{currentCorpusItem.Name} - КНИГИ",
                 TextColor = Color.Black,
-                FontSize = Settings.UI.SummaryFontSize,
+                FontSize = Settings.UI.Font.NormalFontSize,
                 HorizontalOptions = LayoutOptions.Center
             });
 
@@ -833,16 +844,16 @@ namespace LeninSearch.Xam
                 {
                     Text = cfi.Name,
                     TextColor = Color.Black,
-                    FontSize = Settings.UI.SummaryFontSize,
+                    FontSize = Settings.UI.Font.NormalFontSize,
                     WidthRequest = 64,
                     Margin = new Thickness(5)
                 });
 
                 // read link
-                cfiLayout.Children.Add(ConstructHyperlink("читать", Settings.UI.SummaryFontSize, new Command(async () => await Read(cfi, 0))));
+                cfiLayout.Children.Add(ConstructHyperlink("читать", Settings.UI.Font.NormalFontSize, new Command(async () => await Read(cfi, 0))));
 
                 // summary link
-                cfiLayout.Children.Add(ConstructHyperlink("содерж.", Settings.UI.SummaryFontSize, new Command(async () => await DisplayHeaders(cfi))));
+                cfiLayout.Children.Add(ConstructHyperlink("содерж.", Settings.UI.Font.NormalFontSize, new Command(async () => await DisplayHeaders(cfi))));
 
                 flex.Children.Add(cfiLayout);
             }
@@ -924,7 +935,7 @@ namespace LeninSearch.Xam
                 Text = summaryTitle,
                 TextColor = Color.Black,
                 HorizontalOptions = LayoutOptions.Center,
-                FontSize = Settings.UI.SummaryFontSize
+                FontSize = Settings.UI.Font.NormalFontSize
             });
 
             var corpusItem = _state.GetCurrentCorpusItem();
@@ -938,7 +949,7 @@ namespace LeninSearch.Xam
                     Margin = new Thickness(10),
                     Text = "работы не найдены",
                     TextColor = Settings.UI.MainColor,
-                    FontSize = Settings.UI.MainFontSize
+                    FontSize = Settings.UI.Font.NormalFontSize
                 });
             }
             else
@@ -947,9 +958,9 @@ namespace LeninSearch.Xam
                 {
                     var headerText = heading.GetText(_lsiProvider.GetDictionary(corpusItem.Id).Words);
                     var headerLabel = new Label
-                    { Text = headerText, TextColor = Color.Black, FontSize = Settings.UI.SummaryFontSize };
+                    { Text = headerText, TextColor = Color.Black, FontSize = Settings.UI.Font.NormalFontSize };
                     ResultStack.Children.Add(headerLabel);
-                    var readLink = ConstructHyperlink("читать", Settings.UI.SummaryFontSize,
+                    var readLink = ConstructHyperlink("читать", Settings.UI.Font.NormalFontSize,
                         new Command(async () => await Read(cfi, heading.Index)));
                     ResultStack.Children.Add(readLink);
                 }
@@ -972,9 +983,9 @@ namespace LeninSearch.Xam
 
                 var headingText = $"{corpusItem.Name}, {corpusItemFile.Name}, {sr.Text}";
                 var headingLabel = new Label
-                { Text = headingText, TextColor = Color.Black, FontSize = Settings.UI.SummaryFontSize };
+                { Text = headingText, TextColor = Color.Black, FontSize = Settings.UI.Font.NormalFontSize };
                 ResultStack.Children.Add(headingLabel);
-                var readLink = ConstructHyperlink("читать", Settings.UI.SummaryFontSize, new Command(async () =>
+                var readLink = ConstructHyperlink("читать", Settings.UI.Font.NormalFontSize, new Command(async () =>
                     await Read(corpusItemFile, sr.ParagraphIndex)));
                 ResultStack.Children.Add(readLink);
             }
@@ -1111,7 +1122,7 @@ namespace LeninSearch.Xam
                     Margin = new Thickness(10),
                     Text = "ничего не найдено",
                     TextColor = Settings.UI.MainColor,
-                    FontSize = Settings.UI.MainFontSize
+                    FontSize = Settings.UI.Font.NormalFontSize
                 });
                 await ResultScrollFadeIn();
             }
@@ -1134,7 +1145,7 @@ namespace LeninSearch.Xam
                     Margin = new Thickness(10),
                     Text = "ничего не найдено",
                     TextColor = Settings.UI.MainColor,
-                    FontSize = Settings.UI.MainFontSize
+                    FontSize = Settings.UI.Font.NormalFontSize
                 });
                 await ResultScrollFadeIn();
             }

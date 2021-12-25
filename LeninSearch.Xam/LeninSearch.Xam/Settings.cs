@@ -11,7 +11,7 @@ namespace LeninSearch.Xam
         // paths
         public const int LsiVersion = 1;
 
-        public static readonly string[] InitialSeries = {"lenin", "stalin", "marx-engels", "hegel"};
+        public static readonly string[] InitialSeries = {"lenin"};
         public static string CorpusRoot => Path.Combine(Path.GetTempPath(), "corpus");
         public static string BookmarkFolder => Path.Combine(Path.GetTempPath(), "bookmarks");
         public static string StateFolder => Path.Combine(Path.GetTempPath(), "state");
@@ -37,9 +37,13 @@ namespace LeninSearch.Xam
 
         public static class UI
         {
-            public const double MainFontSize = 17;
+            public static class Font
+            {
+                public const double SmallFontSize = 12;
+                public const double NormalFontSize = 17;
+                public const double LargeFontSize = 12;
+            }
 
-            public const double SummaryFontSize = 17;
             public static Color MainColor => Color.FromRgb(214, 24, 31);
             public static bool OldAndroidJustification { get; set; }
 

@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using System.Text;
+using LeninSearch.Standard.Core.Corpus;
 using LeninSearch.Standard.Core.OldShit;
 using LeninSearch.Standard.Core.Optimized;
 
@@ -105,6 +106,7 @@ namespace LeninSearch.Standard.Core
             var headings = fd.Headings?.ToList() ?? new List<Heading>();
             var pages = fd.Pages?.ToList() ?? new List<KeyValuePair<ushort, ushort>>();
             var offsets = new List<KeyValuePair<ushort, ushort>>();
+            var videoData = new List<VideoDataItem>();
 
             for (var paragraphIndex = 0; paragraphIndex < paragraphs.Count; paragraphIndex++)
             {
@@ -134,6 +136,17 @@ namespace LeninSearch.Standard.Core
 
                 if (paragraph.ParagraphType == ParagraphType.Youtube)
                 {
+                    var lastVideoItem = videoData.LastOrDefault();
+                    if (lastVideoItem != null && lastVideoItem.VideoId == paragraph.VideoId && paragraphIndex - lastVideoItem.LastParagraphIndex == 1)
+                    {
+                        lastVideoItem.LastParagraphIndex = (ushort)paragraphIndex;
+                    }
+                    else
+                    {
+                        var videoItem = new VideoDataItem(paragraph.VideoId, (ushort)paragraphIndex, (ushort)paragraphIndex);
+                        videoData.Add(videoItem);
+                    }
+
                     offsets.Add(new KeyValuePair<ushort, ushort>((ushort)paragraphIndex, paragraph.OffsetSeconds));
                 }
             }
@@ -182,6 +195,16 @@ namespace LeninSearch.Standard.Core
                 offsetBytes.AddRange(BitConverter.GetBytes(offset.Value));
             }
 
+            // construct video bytes
+            var videoBytes = new List<byte>();
+            foreach (var videoDataItem in videoData)
+            {
+                var videoIdBytes = Encoding.UTF8.GetBytes(videoDataItem.VideoId);
+                videoBytes.Add((byte) videoIdBytes.Length);
+                videoBytes.AddRange(videoIdBytes);
+                videoBytes.AddRange(BitConverter.GetBytes(videoDataItem.FirstParagraphIndex));
+                videoBytes.AddRange(BitConverter.GetBytes(videoDataItem.LastParagraphIndex));
+            }
 
             var lsiBytes = new List<byte>();
 
@@ -189,6 +212,7 @@ namespace LeninSearch.Standard.Core
             lsiBytes.AddRange(BitConverter.GetBytes((uint)wordPositionBytes.Count)); // word position count
             lsiBytes.AddRange(BitConverter.GetBytes((uint)headerBytes.Count)); // header bytes count
             lsiBytes.AddRange(BitConverter.GetBytes((uint)(pageBytes.Count))); // page bytes count
+            lsiBytes.AddRange(BitConverter.GetBytes((uint)(videoBytes.Count))); // video bytes count
             lsiBytes.AddRange(BitConverter.GetBytes((uint)(offsetBytes.Count))); // offset bytes count
             while (lsiBytes.Count < FileHeaderLength)
             {
@@ -198,6 +222,7 @@ namespace LeninSearch.Standard.Core
             lsiBytes.AddRange(wordPositionBytes);
             lsiBytes.AddRange(headerBytes);
             lsiBytes.AddRange(pageBytes);
+            lsiBytes.AddRange(videoBytes);
             lsiBytes.AddRange(offsetBytes);
 
             return lsiBytes.ToArray();
@@ -211,6 +236,7 @@ namespace LeninSearch.Standard.Core
             var wordPositionBytesCount = BitConverter.ToUInt32(lsIndexBytes, cursor); cursor += 4;
             var headingBytesCount = BitConverter.ToUInt32(lsIndexBytes, cursor); cursor += 4;
             var pageBytesCount = BitConverter.ToUInt32(lsIndexBytes, cursor); cursor += 4;
+            var videoBytesCount = BitConverter.ToUInt32(lsIndexBytes, cursor); cursor += 4;
             var offsetBytesCount = BitConverter.ToUInt32(lsIndexBytes, cursor); cursor += 4;
 
             cursor = FileHeaderLength;
@@ -220,7 +246,8 @@ namespace LeninSearch.Standard.Core
                 WordParagraphData = new Dictionary<uint, List<LsWordParagraphData>>(),
                 HeadingData = new List<LsWordHeadingData>(),
                 PageData = new List<LsPageData>(),
-                VideoOffsets = new Dictionary<ushort, ushort>()
+                VideoOffsets = new Dictionary<ushort, ushort>(),
+                VideoData = new List<VideoDataItem>()
             };
 
             // 1. read word positions
@@ -271,7 +298,18 @@ namespace LeninSearch.Standard.Core
                 lsIndexData.PageData.Add(pageData);
             }
 
-            // 4. read offsets
+            // 4. read video data
+            upperMargin += videoBytesCount;
+            while (cursor < upperMargin)
+            {
+                var videoIdLength = lsIndexBytes[cursor]; cursor++;
+                var videoId = Encoding.UTF8.GetString(lsIndexBytes, cursor, videoIdLength); cursor += videoIdLength;
+                var firstParagraphIndex = BitConverter.ToUInt16(lsIndexBytes, cursor); cursor += 2;
+                var lastParagraphIndex = BitConverter.ToUInt16(lsIndexBytes, cursor); cursor += 2;
+                lsIndexData.VideoData.Add(new VideoDataItem(videoId, firstParagraphIndex, lastParagraphIndex));
+            }
+
+            // 5. read offsets
             upperMargin += offsetBytesCount;
             while (cursor < upperMargin)
             {

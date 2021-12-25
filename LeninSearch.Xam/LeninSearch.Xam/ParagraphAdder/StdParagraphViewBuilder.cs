@@ -19,15 +19,15 @@ namespace LeninSearch.Xam.ParagraphAdder
 
         public View Build(LsParagraph p, State state, string[] dictionaryWords)
         {
-            ParagraphSearchResult paragraphResult = null;
-            var paragraphResults = state.PartialParagraphSearchResult.FileResults(state.ReadingFile);
+            ParagraphSearchResult searchResult = null;
+            var searchResults = state.PartialParagraphSearchResult?.FileResults(state.ReadingFile);
 
-            if (paragraphResults?.Any() == true && state.CurrentParagraphResultIndex >= 0)
+            if (searchResults?.Any() == true && state.CurrentParagraphResultIndex >= 0)
             {
-                paragraphResult = paragraphResults[state.CurrentParagraphResultIndex];
+                searchResult = searchResults[state.CurrentParagraphResultIndex];
             }
 
-            if (paragraphResult?.ParagraphIndex != p.Index)
+            if (searchResult?.ParagraphIndex != p.Index)
             {
                 return new ExtendedLabel
                 {
@@ -37,7 +37,7 @@ namespace LeninSearch.Xam.ParagraphAdder
             }
 
             var pText = p.GetText(dictionaryWords);
-            var chain = paragraphResult.WordIndexChains[0];
+            var chain = searchResult.WordIndexChains[0];
 
             var selection = chain.WordIndexes.Select(wi => dictionaryWords[wi].ToLower()).ToArray();
 
@@ -54,7 +54,6 @@ namespace LeninSearch.Xam.ParagraphAdder
             var pLabel = new ExtendedLabel { TextColor = Color.Black, JustifyText = true, FormattedText = fString, Margin = new Thickness(0, 5, 0, 0) };
             pLabel.TabIndex = p.Index;
             return pLabel;
-
         }
 
         private IEnumerable<Span> GetSpans(string text, string[] selection)

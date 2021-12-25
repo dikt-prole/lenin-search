@@ -59,7 +59,8 @@ namespace LeninSearch.Xam.ParagraphAdder
                 else
                 {
                     var lsiData = _lsiProvider.GetLsiData(state.CorpusId, state.ReadingFile);
-                    if (lsiData.VideoOffsets.ContainsKey(pIndex))
+                    var videoId = lsiData.GetVideoId(pIndex);
+                    if (videoId != null)
                     {
                         foreach (var index in _selectedParagraphs.Keys)
                         {

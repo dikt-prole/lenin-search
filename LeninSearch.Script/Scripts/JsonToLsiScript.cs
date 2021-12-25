@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using LeninSearch.Standard.Core;
+using LeninSearch.Standard.Core.Corpus;
 using Newtonsoft.Json;
 
 namespace LeninSearch.Script.Scripts

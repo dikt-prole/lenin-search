@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using LeninSearch.Standard.Core.Corpus;
 
 namespace LeninSearch.Standard.Core.Optimized
 {
@@ -8,6 +10,7 @@ namespace LeninSearch.Standard.Core.Optimized
         public List<LsWordHeadingData> HeadingData { get; set; }
         public List<LsPageData> PageData { get; set; }
         public Dictionary<ushort, ushort> VideoOffsets { get; set; }
+        public List<VideoDataItem> VideoData { get; set; }
 
         private LsData _lsData;
         public LsData LsData => _lsData ??= ToLsData();
@@ -66,5 +69,10 @@ namespace LeninSearch.Standard.Core.Optimized
             paragraphWords[wpData.WordPosition] = wordIndex;
         }
 
+        public string GetVideoId(ushort paragraphIndex)
+        {
+            var videoDataItem = VideoData.FirstOrDefault(vdi => vdi.FirstParagraphIndex <= paragraphIndex && paragraphIndex <= vdi.LastParagraphIndex);
+            return videoDataItem?.VideoId;
+        }
     }
 }
