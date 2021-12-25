@@ -24,13 +24,12 @@ namespace LeninSearch.Xam
         public string SearchQuery { get; set; }
         public int CurrentParagraphResultIndex { get; set; }
         public ushort ReadingParagraphIndex { get; set; }
-
         public PartialParagraphSearchResult PartialParagraphSearchResult { get; set; }
 
         public CorpusFileItem GetReadingCorpusFileItem()
         {
             var ci = GetCurrentCorpusItem();
-            return ci.Files.First(cfi => cfi.Path == ReadingFile);
+            return ci.LsiFiles().First(cfi => cfi.Path == ReadingFile);
         }
 
         public CorpusItem GetCurrentCorpusItem()
@@ -52,13 +51,13 @@ namespace LeninSearch.Xam
         public bool CanGoToNextParagraphSearchResult()
         {
             if (!IsWatchingParagraphSearchResults()) return false;
-            return CurrentParagraphResultIndex  < PartialParagraphSearchResult.SearchResults.Count - 1;
+            return CurrentParagraphResultIndex  < PartialParagraphSearchResult.FileResults(ReadingFile).Count - 1;
         }
 
         public ParagraphSearchResult GetCurrentSearchParagraphResult()
         {
             if (!IsWatchingParagraphSearchResults()) return null;
-            return PartialParagraphSearchResult.SearchResults[CurrentParagraphResultIndex];
+            return PartialParagraphSearchResult.FileResults(ReadingFile)[CurrentParagraphResultIndex];
         }
 
         public bool IsReading()

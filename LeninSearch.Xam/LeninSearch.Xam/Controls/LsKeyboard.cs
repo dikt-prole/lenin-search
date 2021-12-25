@@ -20,6 +20,9 @@ namespace LeninSearch.Xam.Controls
         private ImageButton _backspaceButton;
         public event Action SearchClick;
         public event Action NonKeyaboardUnfocus;
+        public event Action Shown;
+        public event Action Hidden;
+
         private bool _unfocus;
 
         public LsKeyboard()
@@ -282,10 +285,12 @@ namespace LeninSearch.Xam.Controls
         private void SelfShow()
         {
             IsVisible = true;
+            Shown?.Invoke();
         }
         public void SelfHide()
         {
             IsVisible = false;
+            Hidden?.Invoke();
         }
     }
 }

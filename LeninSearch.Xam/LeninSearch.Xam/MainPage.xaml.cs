@@ -29,6 +29,7 @@ namespace LeninSearch.Xam
         private readonly ICorpusSearch _corpusSearch;
         private readonly ApiService _apiService = new ApiService();
         private readonly IMessage _message = DependencyService.Get<IMessage>();
+        private readonly Span _searchResultTitleSpan;
 
         private State _state;
 
@@ -41,17 +42,20 @@ namespace LeninSearch.Xam
             _corpusSearch = new SwitchCorpusSearch(_lsiProvider,
                 Settings.OnlineSearch.Host, Settings.OnlineSearch.Port, Settings.OnlineSearch.TimeoutMs,
                 Settings.TokenIndexCountCutoff, Settings.ResultCountCutoff);
+            //_corpusSearch = new OfflineCorpusSearch(_lsiProvider, Settings.TokenIndexCountCutoff, Settings.ResultCountCutoff);
 
             // corpus button
             CorpusButton.Pressed += (sender, args) => DisplayInitialTabs();
 
+            // updates
+            CorpusRefreshButton.Clicked += async (sender, args) => await ShowUpdates();
+            Keyboard.Shown += () => CorpusRefreshButton.IsVisible = false;
+            Keyboard.Hidden += () => CorpusRefreshButton.IsVisible = true;
+
             // search entry
             SearchEntry.Text = Settings.Query.Txt2;
             SearchEntry.FontSize = Settings.UI.MainFontSize;
-            SearchEntry.Focused += (sender, args) =>
-            {
-                HideTextMenu();
-            };
+            SearchEntry.Focused += (sender, args) => { HideTextMenu(); };
 
             // keyboard
             Keyboard.BindToEntry(SearchEntry);
@@ -92,8 +96,8 @@ namespace LeninSearch.Xam
             ShareButton.Clicked += ShareButtonOnClicked;
             HideSearchResultBar();
 
-            // web view
-            //BrowserView.HeightRequest = (int) Math.Round(DeviceDisplay.MainDisplayInfo.Width * 9 / 16);
+            _searchResultTitleSpan = AttachCommandToLabel(SearchResultTitle, new Command(async () => await DisplaySearchSummary()));
+
             PopulateInitialTabs();
         }
 
@@ -113,8 +117,7 @@ namespace LeninSearch.Xam
             {
                 Device.InvokeOnMainThreadAsync(async () =>
                 {
-                    await OnCurrentParagraphResultIndexChange();
-                    ShowSearchResultBar();
+                    await DisplaySearchSummary();
                 });
             }
             else if (_state.IsReading())
@@ -197,26 +200,17 @@ namespace LeninSearch.Xam
 
             ResultScroll.IsEnabled = false;
             _state.CurrentParagraphResultIndex--;
-            await OnCurrentParagraphResultIndexChange();
+            await OnCurrentParagraphResultIndexChange(_state.ReadingFile);
         }
 
         private async void SwipeLeft(object sender, EventArgs e)
         {
-            // 1. continue search if it is not complete
-            var isSearchComplete = _state.PartialParagraphSearchResult.IsSearchComplete;
-            var isLastSearchResult = _state.CurrentParagraphResultIndex == _state.PartialParagraphSearchResult.SearchResults.Count - 1;
-            if (!isSearchComplete && isLastSearchResult)
-            {
-                await StartParagraphSearch(_state.SearchQuery);
-            }
-            else
-            {
-                // 2. go to next search result
-                if (!_state.CanGoToNextParagraphSearchResult()) return;
-                ResultScroll.IsEnabled = false;
-                _state.CurrentParagraphResultIndex++;
-                await OnCurrentParagraphResultIndexChange();
-            }
+            if (!_state.CanGoToNextParagraphSearchResult()) return;
+
+            ResultScroll.IsEnabled = false;
+            _state.CurrentParagraphResultIndex++;
+            await OnCurrentParagraphResultIndexChange(_state.ReadingFile);
+
         }
 
         private void PopulateCorpusTab()
@@ -236,107 +230,111 @@ namespace LeninSearch.Xam
                 }));
                 CorpusTab.Children.Add(hyperlink);
             }
+        }
 
-            var corpusUpdatesLink = ConstructHyperlink("Обновления", Settings.UI.SummaryFontSize, new Command(async () =>
+        private async Task ShowUpdates()
+        {
+            var summaryResult = await _apiService.GetSummaryAsync(Settings.LsiVersion);
+            if (!summaryResult.Success)
             {
-                InitialTabs.IsVisible = false;
-                ScrollWrapper.IsVisible = true;
-                await RebuildScroll(false);
+                _message.LongAlert(Settings.Misc.ApiError);
+                return;
+            }
 
-                var titleLabel = new Label
+            // 1. calculate updates
+            var summary = summaryResult.Summary;
+            var updates = new List<CorpusItem>();
+            var existingCorpusIds = Settings.GetExistingCorpusIds();
+            var existingCorpusItems = existingCorpusIds.Select(id => summary.FirstOrDefault(ci => ci.Id == id))
+                .Where(ci => ci != null).ToList();
+            foreach (var existingCi in existingCorpusItems)
+            {
+                var ciSeries = summary.Where(ci => ci.Series == existingCi.Series).OrderByDescending(ci => ci.CorpusVersion).ToList();
+                if (ciSeries[0].CorpusVersion > existingCi.CorpusVersion)
                 {
-                    Text = "Обновления корпусов",
-                    TextColor = Color.Black,
+                    updates.Add(ciSeries[0]);
+                }
+            }
+            var nonExistingSeries = summary
+                .Where(ci => existingCorpusItems.All(eci => eci.Series != ci.Series))
+                .OrderByDescending(ci => ci.CorpusVersion)
+                .GroupBy(ci => ci.Series)
+                .Select(g => g.First());
+            updates.AddRange(nonExistingSeries);
+
+            if (updates.Count == 0)
+            {
+                _message.ShortAlert("Обновлений нет");
+                return;
+            }
+
+            InitialTabs.IsVisible = false;
+            ScrollWrapper.IsVisible = true;
+            await RebuildScroll(false);
+
+            var titleLabel = new Label
+            {
+                Text = "Обновления корпусов",
+                TextColor = Color.Black,
+                FontSize = Settings.UI.SummaryFontSize,
+                HorizontalOptions = LayoutOptions.Center,
+                Margin = new Thickness(0, 0, 0, 30)
+            };
+
+            ResultStack.Children.Add(titleLabel);
+
+            // 2. display updates list
+            if (updates.Count == 0)
+            {
+                ResultStack.Children.Add(new Label
+                {
+                    Text = "Обновлений нет",
+                    TextColor = Settings.UI.MainColor,
                     FontSize = Settings.UI.SummaryFontSize,
-                    HorizontalOptions = LayoutOptions.Center,
-                    Margin = new Thickness(0, 0, 0, 30)
-                };
-
-                ResultStack.Children.Add(titleLabel);
-
-                var summaryResult = await _apiService.GetSummaryAsync(Settings.LsiVersion);
-                if (!summaryResult.Success)
-                {
-                    _message.LongAlert(Settings.Misc.ApiError);
-                    return;
-                }
-
-                // 1. calculate updates
-                var summary = summaryResult.Summary;
-                var updates = new List<CorpusItem>();
-                var existingCorpusIds = Settings.GetExistingCorpusIds();
-                var existingCorpusItems = existingCorpusIds.Select(id => summary.FirstOrDefault(ci => ci.Id == id))
-                    .Where(ci => ci != null).ToList();
-                foreach (var existingCi in existingCorpusItems)
-                {
-                    var ciSeries = summary.Where(ci => ci.Series == existingCi.Series).OrderByDescending(ci => ci.CorpusVersion).ToList();
-                    if (ciSeries[0].CorpusVersion > existingCi.CorpusVersion)
+                    HorizontalOptions = LayoutOptions.Center
+                });
+            }
+            foreach (var updateCi in updates)
+            {
+                View updateLink = null;
+                updateLink = ConstructHyperlink(updateCi.ToString(), Settings.UI.SummaryFontSize,
+                    new Command(async () =>
                     {
-                        updates.Add(ciSeries[0]);
-                    }
-                }
-                var nonExistingSeries = summary
-                    .Where(ci => existingCorpusItems.All(eci => eci.Series != ci.Series))
-                    .OrderByDescending(ci => ci.CorpusVersion)
-                    .GroupBy(ci => ci.Series)
-                    .Select(g => g.First());
-                updates.AddRange(nonExistingSeries);
-
-                // 2. display updates list
-                if (updates.Count == 0)
-                {
-                    ResultStack.Children.Add(new Label
-                    {
-                        Text = "Обновлений нет",
-                        TextColor = Settings.UI.MainColor,
-                        FontSize = Settings.UI.SummaryFontSize,
-                        HorizontalOptions = LayoutOptions.Center
-                    });
-                }
-                foreach (var updateCi in updates)
-                {
-                    View updateLink = null;
-                    updateLink = ConstructHyperlink(updateCi.ToString(), Settings.UI.SummaryFontSize,
-                        new Command(async () =>
+                        var existingCi = existingCorpusItems.FirstOrDefault(ci => ci.Series == updateCi.Series);
+                        if (existingCi != null)
                         {
-                            var existingCi = existingCorpusItems.FirstOrDefault(ci => ci.Series == updateCi.Series);
-                            if (existingCi != null)
+                            Directory.Delete(Path.Combine(Settings.CorpusRoot, existingCi.Id), true);
+                        }
+
+                        var corpusFolder = Path.Combine(Settings.CorpusRoot, updateCi.Id);
+                        Directory.CreateDirectory(corpusFolder);
+
+                        foreach (var cfi in updateCi.Files)
+                        {
+                            _message.ShortAlert($"Скачиваю: {cfi.Path}");
+                            var cfiBytesResult = await _apiService.GetFileBytesAsync(updateCi.Id, cfi.Path);
+                            if (!cfiBytesResult.Success)
                             {
-                                Directory.Delete(Path.Combine(Settings.CorpusRoot, existingCi.Id), true);
+                                _message.LongAlert(Settings.Misc.ApiError);
+                                Directory.Delete(corpusFolder, true);
+                                return;
                             }
 
-                            var corpusFolder = Path.Combine(Settings.CorpusRoot, updateCi.Id);
-                            Directory.CreateDirectory(corpusFolder);
+                            await File.WriteAllBytesAsync(Path.Combine(corpusFolder, cfi.Path), cfiBytesResult.Bytes);
+                        }
 
-                            foreach (var cfi in updateCi.Files)
-                            {
-                                _message.ShortAlert($"Скачиваю: {cfi.Path}");
-                                var cfiBytesResult = await _apiService.GetFileBytesAsync(updateCi.Id, cfi.Path);
-                                if (!cfiBytesResult.Success)
-                                {
-                                    _message.LongAlert(Settings.Misc.ApiError);
-                                    Directory.Delete(corpusFolder, true);
-                                    return;
-                                }
+                        _message.LongAlert(Settings.Misc.UpdateCompleteMessage);
+                        ResultStack.Children.Remove(updateLink);
+                        if (existingCi != null && _state.CorpusId == existingCi.Id)
+                        {
+                            _state.CorpusId = updateCi.Id;
+                            CorpusButton.Source = Settings.IconFile(updateCi.Id);
+                        }
+                    }));
+                ResultStack.Children.Add(updateLink);
+            }
 
-                                await File.WriteAllBytesAsync(Path.Combine(corpusFolder, cfi.Path), cfiBytesResult.Bytes);
-                            }
-
-                            _message.LongAlert(Settings.Misc.UpdateCompleteMessage);
-                            ResultStack.Children.Remove(updateLink);
-                            if (existingCi != null && _state.CorpusId == existingCi.Id)
-                            {
-                                _state.CorpusId = updateCi.Id;
-                                CorpusButton.Source = Settings.IconFile(updateCi.Id);
-                            }
-                        }));
-                    ResultStack.Children.Add(updateLink);
-                }
-
-                await ResultScrollFadeIn();
-            }));
-
-            CorpusTab.Children.Add(corpusUpdatesLink);
+            await ResultScrollFadeIn();
         }
 
         private void PopulateBookmarksTab()
@@ -476,7 +474,7 @@ namespace LeninSearch.Xam
                 .Replace("[width]", width.ToString())
                 .Replace("[height]", height.ToString());
 
-            BrowserView.Source = new HtmlWebViewSource {Html = html};
+            BrowserView.Source = new HtmlWebViewSource { Html = html };
             BrowserView.HeightRequest = Settings.UI.BrowserViewHeight;
         }
 
@@ -489,8 +487,48 @@ namespace LeninSearch.Xam
             {
                 html = reader.ReadToEnd();
             }
-            BrowserView.Source = new HtmlWebViewSource {Html = html};
+            BrowserView.Source = new HtmlWebViewSource { Html = html };
             BrowserView.HeightRequest = 0;
+        }
+
+        private async Task DisplaySearchSummary()
+        {
+            HideSearchResultBar();
+            await RebuildScroll(false);
+            var corpusFileItems = _state.PartialParagraphSearchResult.Files().Select(f => _state.GetCurrentCorpusItem().GetFileByPath(f)).ToList();
+
+            var totalCount = _state.PartialParagraphSearchResult.SearchResults.Count;
+            var titleLabel = _state.PartialParagraphSearchResult.IsSearchComplete
+                ? new Label { Text = $"Поиск окончен, {totalCount} совпадений", TextColor = Color.Black, FontSize = Settings.UI.SummaryFontSize }
+                : ConstructHyperlink($"{totalCount} совпадений, нажмите чтобы продолжить", Settings.UI.SummaryFontSize, new Command(async () => 
+                    await StartParagraphSearch(_state.SearchQuery)));
+
+            titleLabel.Margin = new Thickness(0, 0, 0, 10);
+
+            ResultStack.Children.Add(titleLabel);
+
+            var flexLayout = new FlexLayout
+            {
+                JustifyContent = FlexJustify.SpaceAround,
+                Wrap = FlexWrap.Wrap
+            };
+
+            ResultStack.Children.Add(flexLayout);
+
+            foreach (var cfi in corpusFileItems)
+            {
+                var resultCount = _state.PartialParagraphSearchResult.FileResults(cfi.Path).Count;
+                var text = $"{cfi.Name} ({resultCount})";
+                var link = ConstructHyperlink(text, Settings.UI.SummaryFontSize, new Command(async () =>
+                {
+                    _state.ReadingFile = cfi.Path;
+                    _state.CurrentParagraphResultIndex = 0;
+                    await OnCurrentParagraphResultIndexChange(cfi.Path);
+                }));
+                link.HeightRequest = 32;
+                flexLayout.Children.Add(link);
+            }
+            await ResultScrollFadeIn();
         }
 
         private async void DisplayInitialTabs()
@@ -583,6 +621,10 @@ namespace LeninSearch.Xam
 
         private void ShowSearchResultBar()
         {
+            PrevLabel.Text = (_state.CurrentParagraphResultIndex + 1).ToString();
+            NextLabel.Text = _state.PartialParagraphSearchResult.FileResults(_state.ReadingFile).Count.ToString();
+            _searchResultTitleSpan.Text = _state.GetReadingCorpusFileItem().Name;
+
             if (SearchResultBar.Height == 24) return;
 
             var animation = new Animation(f => SearchResultBar.HeightRequest = f, SearchResultBar.Height, 24, Easing.SinInOut);
@@ -623,8 +665,6 @@ namespace LeninSearch.Xam
         private async void ResultScrollOnScrolled(object sender, ScrolledEventArgs e)
         {
             if (string.IsNullOrEmpty(_state.ReadingFile)) return;
-
-            //StopVideoPlay();
 
             if (!ResultScroll.IsEnabled) return;
 
@@ -923,6 +963,7 @@ namespace LeninSearch.Xam
             _state.ReadingFile = null;
 
             HideSearchResultBar();
+            StopVideoPlay();
 
             foreach (var sr in searchResults)
             {
@@ -933,7 +974,7 @@ namespace LeninSearch.Xam
                 var headingLabel = new Label
                 { Text = headingText, TextColor = Color.Black, FontSize = Settings.UI.SummaryFontSize };
                 ResultStack.Children.Add(headingLabel);
-                var readLink = ConstructHyperlink("читать", Settings.UI.SummaryFontSize, new Command(async () => 
+                var readLink = ConstructHyperlink("читать", Settings.UI.SummaryFontSize, new Command(async () =>
                     await Read(corpusItemFile, sr.ParagraphIndex)));
                 ResultStack.Children.Add(readLink);
             }
@@ -955,6 +996,26 @@ namespace LeninSearch.Xam
             var fString = new FormattedString();
             fString.Spans.Add(cfiSpan);
             return new Label { FormattedText = fString, Margin = 5 };
+        }
+
+        private Span AttachCommandToLabel(Label label, Command command)
+        {
+            var gestureRecognizer = new TapGestureRecognizer { Command = command };
+            var cfiSpan = new Span
+            {
+                Text = label.Text,
+                TextColor = label.TextColor,
+                TextDecorations = label.TextDecorations,
+                FontSize = label.FontSize
+            };
+            cfiSpan.GestureRecognizers.Add(gestureRecognizer);
+            var fString = new FormattedString();
+            fString.Spans.Add(cfiSpan);
+
+            label.FormattedText = fString;
+            label.Text = null;
+
+            return cfiSpan;
         }
 
         private async Task OnSearchButtonPressed()
@@ -1012,11 +1073,9 @@ namespace LeninSearch.Xam
             var corpusItem = _state.GetCurrentCorpusItem();
 
             string lastCorpusFile = null;
-            var beforeSearchCount = 0;
             if (_state.PartialParagraphSearchResult != null)
             {
                 lastCorpusFile = _state.PartialParagraphSearchResult.LastCorpusFile;
-                beforeSearchCount = _state.PartialParagraphSearchResult.SearchResults.Count;
             }
 
             var partialResult = await _corpusSearch.SearchAsync(corpusItem.Id, query, lastCorpusFile);
@@ -1027,7 +1086,7 @@ namespace LeninSearch.Xam
             _state.PartialParagraphSearchResult.LastCorpusFile = partialResult.LastCorpusFile;
             _state.PartialParagraphSearchResult.IsSearchComplete = partialResult.IsSearchComplete;
 
-            await AfterParagraphSearch(beforeSearchCount);
+            await AfterParagraphSearch();
         }
 
         private async Task BeforeSearch()
@@ -1039,7 +1098,7 @@ namespace LeninSearch.Xam
             CorpusButton.IsEnabled = false;
         }
 
-        private async Task AfterParagraphSearch(int beforeSearchCount)
+        private async Task AfterParagraphSearch()
         {
             await ReplaceLoadingWithCorpus();
             CorpusButton.IsEnabled = true;
@@ -1058,20 +1117,7 @@ namespace LeninSearch.Xam
             }
             else
             {
-                var corpusItem = _state.GetCurrentCorpusItem();
-                SearchResultTitle.Text = "результаты поиска (полные)";
-                if (!_state.PartialParagraphSearchResult.IsSearchComplete)
-                {
-                    var firstCfiName = corpusItem.LsiFiles()[0].Name;
-                    var lastCfiName = corpusItem.LsiFiles().First(cfi => cfi.Path == _state.PartialParagraphSearchResult.LastCorpusFile).Name;
-                    SearchResultTitle.Text = $"результаты поиска ({firstCfiName} - {lastCfiName})";
-                }
-
-                ShowSearchResultBar();
-                _state.CurrentParagraphResultIndex = _state.PartialParagraphSearchResult.SearchResults.Count > beforeSearchCount
-                    ? beforeSearchCount
-                    : beforeSearchCount - 1;
-                await OnCurrentParagraphResultIndexChange();
+                await DisplaySearchSummary();
             }
         }
 
@@ -1130,33 +1176,27 @@ namespace LeninSearch.Xam
             }
         }
 
-        private async Task OnCurrentParagraphResultIndexChange()
+        private async Task OnCurrentParagraphResultIndexChange(string file)
         {
             if (!_state.IsWatchingParagraphSearchResults()) return;
-            var paragraphResult = _state.GetCurrentSearchParagraphResult();
 
-            PrevLabel.Text = (_state.CurrentParagraphResultIndex + 1).ToString();
-            NextLabel.Text = _state.PartialParagraphSearchResult.SearchResults.Count.ToString();
+            ShowSearchResultBar();
+
+            var corpusItem = _state.GetCurrentCorpusItem();
+            var searchResult = _state.GetCurrentSearchParagraphResult();
 
             _selectionSelectionDecorator.ClearSelection();
-
             HideTextMenu();
-
             await RebuildScroll(true);
 
-            _state.ReadingFile = paragraphResult.File;
-            var corpusItem = _state.GetCurrentCorpusItem();
-            var lsData = _lsiProvider.GetLsiData(corpusItem.Id, paragraphResult.File).LsData;
-
-            var paragraph = lsData.Paragraphs[paragraphResult.ParagraphIndex];
-
+            var lsData = _lsiProvider.GetLsiData(corpusItem.Id, file).LsData;
+            var paragraph = lsData.Paragraphs[searchResult.ParagraphIndex];
             ResultStack.Children.Add(_paragraphViewBuilder.Build(paragraph, _state, _lsiProvider.Words(corpusItem.Id)));
             var prevParagraph = lsData.GetPrevParagraph(paragraph.Index);
             if (prevParagraph != null)
             {
                 ResultStack.Children.Insert(0, _paragraphViewBuilder.Build(prevParagraph, _state, _lsiProvider.Words(corpusItem.Id)));
             }
-
             var maxIndex = paragraph.Index;
             while (!IsResultScrollReady())
             {
@@ -1165,9 +1205,7 @@ namespace LeninSearch.Xam
                 maxIndex = nextP.Index;
                 ResultStack.Children.Add(_paragraphViewBuilder.Build(nextP, _state, _lsiProvider.Words(corpusItem.Id)));
             }
-
             await ResultScroll.ScrollToAsync(0, 20, true);
-
             await ResultScrollFadeIn();
         }
     }

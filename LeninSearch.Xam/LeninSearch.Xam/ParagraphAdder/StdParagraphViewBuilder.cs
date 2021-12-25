@@ -20,7 +20,7 @@ namespace LeninSearch.Xam.ParagraphAdder
         public View Build(LsParagraph p, State state, string[] dictionaryWords)
         {
             ParagraphSearchResult paragraphResult = null;
-            var paragraphResults = state.PartialParagraphSearchResult?.SearchResults;
+            var paragraphResults = state.PartialParagraphSearchResult.FileResults(state.ReadingFile);
 
             if (paragraphResults?.Any() == true && state.CurrentParagraphResultIndex >= 0)
             {
