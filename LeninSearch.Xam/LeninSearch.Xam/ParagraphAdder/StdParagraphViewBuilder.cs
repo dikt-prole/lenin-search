@@ -106,7 +106,7 @@ namespace LeninSearch.Xam.ParagraphAdder
             var headings = lsiData.LsData.GetHeadingsDownToZero(searchParagraphResult.ParagraphIndex);
             var page = lsiData.LsData.GetClosestPage(searchParagraphResult.ParagraphIndex);
 
-            var spanText = corpusFileItem.Name;
+            var spanText = ">";
             if (page != null || headings.Any())
             {
                 var headingText = headings.Count > 0
@@ -116,8 +116,8 @@ namespace LeninSearch.Xam.ParagraphAdder
                 spanText = page == null
                     ? headingText
                     : string.IsNullOrEmpty(headingText)
-                        ? $"{corpusFileItem.Name}, стр. {page}"
-                        : $"{corpusFileItem.Name}, стр. {page}, {headingText}";
+                        ? $"> стр. {page}"
+                        : $"> стр. {page}, {headingText}";
             }
 
             return new Span

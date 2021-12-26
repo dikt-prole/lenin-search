@@ -292,6 +292,10 @@ namespace LeninSearch.Xam
                 updateLink = ConstructHyperlink(updateCi.ToString(), Settings.UI.Font.NormalFontSize,
                     new Command(async () =>
                     {
+                        var answer = await DisplayAlert("Установка обновления", $"Установить '{updateCi.Name}'?", "Да", "Нет");
+
+                        if (!answer) return;
+
                         _isRunningCorpusUpdate = true;
                         await ReplaceCorpusWithLoading();
 
