@@ -113,7 +113,7 @@ namespace LeninSearch.Xam
                 PlayerTitleButton.Source = Settings.IconFile(corpusItem.Id);
                 PlayerTitleLabel.Text = headingText == null
                     ? corpusFileItem.Name
-                    : new string(headingText.Take(40).ToArray());
+                    : new string(headingText.Take(30).ToArray());
 
                 var videoId = lsiData.GetVideoId(paragraphIndex);
                 var offset = lsiData.VideoOffsets[paragraphIndex];
@@ -541,11 +541,12 @@ namespace LeninSearch.Xam
 
             var totalCount = _state.PartialParagraphSearchResult.SearchResults.Count;
             var titleLabel = _state.PartialParagraphSearchResult.IsSearchComplete
-                ? new Label { Text = $"Поиск окончен, {totalCount} совпадений", TextColor = Color.Black, FontSize = Settings.UI.Font.NormalFontSize }
-                : ConstructHyperlink($"{totalCount} совпадений, нажмите чтобы продолжить", Settings.UI.Font.NormalFontSize, new Command(async () =>
+                ? new Label { Text = $"Поиск окончен, {totalCount} совпадений", TextColor = Color.Black, FontSize = Settings.UI.Font.SmallFontSize }
+                : ConstructHyperlink($"{totalCount} совпадений, нажмите чтобы продолжить", Settings.UI.Font.SmallFontSize, new Command(async () =>
                     await StartParagraphSearch(_state.SearchQuery)));
 
-            titleLabel.Margin = new Thickness(0, 0, 0, 10);
+            titleLabel.HorizontalOptions = LayoutOptions.Center;
+            titleLabel.Margin = new Thickness(0, 0, 0, 20);
 
             ResultStack.Children.Add(titleLabel);
 

@@ -7,11 +7,14 @@ using LeninSearch.Xam.Core;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Android.Content.PM;
 using Application = Android.App.Application;
 
 namespace LeninSearch.Xam.Droid
 {
-    [Activity(Theme = "@style/LsTheme.Splash", MainLauncher = true, NoHistory = true)]
+    [Activity(Theme = "@style/LsTheme.Splash", MainLauncher = true, NoHistory = true, 
+        ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation,
+        ScreenOrientation = ScreenOrientation.Portrait)]
     public class SplashActivity : AppCompatActivity
     {
         static readonly string TAG = "[ls]";

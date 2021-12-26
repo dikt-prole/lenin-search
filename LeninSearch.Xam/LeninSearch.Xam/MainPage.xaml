@@ -9,12 +9,12 @@
              x:Class="LeninSearch.Xam.MainPage">
     <StackLayout Orientation="Vertical" Spacing="0">
         <StackLayout Spacing="0" Orientation="Vertical" x:Name="PlayerLayout" VerticalOptions="FillAndExpand" BackgroundColor="Black" IsVisible="False">
-            <StackLayout Orientation="Horizontal" VerticalOptions="Start" BackgroundColor="White">
-                <ImageButton Margin="0" x:Name="PlayerTitleButton" HeightRequest="32" Source="close.png" Padding="0" WidthRequest="32" HorizontalOptions="End" BackgroundColor="White"></ImageButton>
+            <StackLayout Orientation="Horizontal" VerticalOptions="Start" BackgroundColor="#D6181F">
+                <ImageButton Margin="2" x:Name="PlayerTitleButton" HeightRequest="28" Source="close.png" Padding="0" WidthRequest="28" HorizontalOptions="End" BackgroundColor="White"></ImageButton>
                 <StackLayout HorizontalOptions="FillAndExpand">
-                    <Label x:Name="PlayerTitleLabel" TextColor="Black" HorizontalOptions="Center" FontSize="Small" VerticalOptions="Center" Margin="5">заголовок</Label>
+                    <Label x:Name="PlayerTitleLabel" TextColor="White" HorizontalOptions="Center" FontSize="Small" VerticalOptions="Center" Margin="5" BackgroundColor="#D6181F">заголовок</Label>
                 </StackLayout>
-                <ImageButton Margin="0" x:Name="PlayerStopButton" HeightRequest="32" Source="close.png" Padding="0" WidthRequest="32" HorizontalOptions="End" BackgroundColor="White"></ImageButton>
+                <ImageButton Margin="0" x:Name="PlayerStopButton" HeightRequest="32" Source="close.png" Padding="10" WidthRequest="32" HorizontalOptions="End" BackgroundColor="#D6181F"></ImageButton>
             </StackLayout>
             <StackLayout Orientation="Vertical" VerticalOptions="FillAndExpand">
                 <WebView x:Name="PlayerView" HorizontalOptions="CenterAndExpand"></WebView>

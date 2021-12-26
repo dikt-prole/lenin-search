@@ -15,6 +15,7 @@ namespace LeninSearch.Xam.Droid
         Icon = "@drawable/icon", 
         Theme = "@style/MainTheme", 
         ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation,
+        ScreenOrientation = ScreenOrientation.Portrait,
         WindowSoftInputMode = SoftInput.StateAlwaysHidden)]
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
