@@ -81,21 +81,14 @@ namespace LeninSearch.Xam
             {
                 if (indexes.Count > 0)
                 {
-                    var singleParagraphSelected = _selectionSelectionDecorator.SelectedIndexes.Count == 1;
-                    await ShowTextMenu(singleParagraphSelected);
+                    var paragraphIndex = _selectionSelectionDecorator.SelectedIndexes[0];
                     var corpusItem = _state.GetCurrentCorpusItem();
                     var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, _state.ReadingFile);
-                    var paragraphIndex = _selectionSelectionDecorator.SelectedIndexes[0];
-                    var videoId = lsiData.GetVideoId(paragraphIndex);
-                    if (lsiData.VideoOffsets.ContainsKey(paragraphIndex))
-                    {
-                        var offset = lsiData.VideoOffsets[paragraphIndex];
-                        StartVideoPlay(videoId, offset);
-                    }
+                    var buttonCount = lsiData.VideoOffsets.ContainsKey(paragraphIndex) ? 3 : 2;
+                    await ShowTextMenu(buttonCount);
                 }
                 else
                 {
-                    StopVideoPlay();
                     await HideTextMenu();
                 }
             };
@@ -105,7 +98,31 @@ namespace LeninSearch.Xam
             ShareButton.Clicked += ShareButtonOnClicked;
             HideSearchResultBar();
 
+            // player
+            PlayerView.HeightRequest = Settings.UI.BrowserViewHeight;
+            PlayerStopButton.Clicked += (sender, args) => StopVideoPlay();
+            PlayButton.Clicked += (sender, args) =>
+            {
+                var paragraphIndex = _selectionSelectionDecorator.SelectedIndexes[0];
+                var corpusItem = _state.GetCurrentCorpusItem();
+                var corpusFileItem = corpusItem.GetFileByPath(_state.ReadingFile);
+                var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, _state.ReadingFile);
+                var lsData = lsiData.LsData;
+                var headingText = lsData.GetClosestHeadings(paragraphIndex)?.GetText(_lsiProvider.Words(corpusItem.Id));
+
+                PlayerTitleButton.Source = Settings.IconFile(corpusItem.Id);
+                PlayerTitleLabel.Text = headingText == null
+                    ? corpusFileItem.Name
+                    : new string(headingText.Take(40).ToArray());
+
+                var videoId = lsiData.GetVideoId(paragraphIndex);
+                var offset = lsiData.VideoOffsets[paragraphIndex];
+
+                StartVideoPlay(videoId, offset);
+            };
+
             _searchResultTitleSpan = AttachCommandToLabel(SearchResultTitle, new Command(async () => await DisplaySearchSummary()));
+
 
             PopulateInitialTabs();
         }
@@ -281,8 +298,14 @@ namespace LeninSearch.Xam
             ScrollWrapper.IsVisible = true;
             await RebuildScroll(false);
 
-            var infoLabel = new Label {Text = "Обновления", TextColor = Color.Black, FontSize = Settings.UI.Font.SmallFontSize,
-                HorizontalOptions = LayoutOptions.Center, Margin = new Thickness(0, 0, 0, 0)};
+            var infoLabel = new Label
+            {
+                Text = "Обновления",
+                TextColor = Color.Black,
+                FontSize = Settings.UI.Font.SmallFontSize,
+                HorizontalOptions = LayoutOptions.Center,
+                Margin = new Thickness(0, 0, 0, 0)
+            };
             ResultStack.Children.Add(infoLabel);
 
             // 2. display updates list
@@ -470,6 +493,9 @@ namespace LeninSearch.Xam
 
         private void StartVideoPlay(string videoId, ushort offset)
         {
+            SearchLayout.IsVisible = false;
+            PlayerLayout.IsVisible = true;
+
             var assembly = IntrospectionExtensions.GetTypeInfo(typeof(MainPage)).Assembly;
             var stream = assembly.GetManifestResourceStream("LeninSearch.Xam.youtube.html");
             var htmlTemplate = "";
@@ -486,12 +512,14 @@ namespace LeninSearch.Xam
                 .Replace("[width]", width.ToString())
                 .Replace("[height]", height.ToString());
 
-            BrowserView.Source = new HtmlWebViewSource { Html = html };
-            BrowserView.HeightRequest = Settings.UI.BrowserViewHeight;
+            PlayerView.Source = new HtmlWebViewSource { Html = html };
         }
 
         private void StopVideoPlay()
         {
+            SearchLayout.IsVisible = true;
+            PlayerLayout.IsVisible = false;
+
             var assembly = IntrospectionExtensions.GetTypeInfo(typeof(MainPage)).Assembly;
             var stream = assembly.GetManifestResourceStream("LeninSearch.Xam.blank.html");
             var html = "";
@@ -499,8 +527,7 @@ namespace LeninSearch.Xam
             {
                 html = reader.ReadToEnd();
             }
-            BrowserView.Source = new HtmlWebViewSource { Html = html };
-            BrowserView.HeightRequest = 0;
+            PlayerView.Source = new HtmlWebViewSource { Html = html };
         }
 
         private async Task DisplaySearchSummary()
@@ -515,7 +542,7 @@ namespace LeninSearch.Xam
             var totalCount = _state.PartialParagraphSearchResult.SearchResults.Count;
             var titleLabel = _state.PartialParagraphSearchResult.IsSearchComplete
                 ? new Label { Text = $"Поиск окончен, {totalCount} совпадений", TextColor = Color.Black, FontSize = Settings.UI.Font.NormalFontSize }
-                : ConstructHyperlink($"{totalCount} совпадений, нажмите чтобы продолжить", Settings.UI.Font.NormalFontSize, new Command(async () => 
+                : ConstructHyperlink($"{totalCount} совпадений, нажмите чтобы продолжить", Settings.UI.Font.NormalFontSize, new Command(async () =>
                     await StartParagraphSearch(_state.SearchQuery)));
 
             titleLabel.Margin = new Thickness(0, 0, 0, 10);
@@ -655,11 +682,11 @@ namespace LeninSearch.Xam
             menu.WidthRequest = 0;
         }
 
-        private async Task ShowTextMenu(bool showReportButtons)
+        private async Task ShowTextMenu(int buttonCount)
         {
             var menu = TextMenuStack;
             menu.ScaleY = 0;
-            menu.WidthRequest = showReportButtons ? 84 : 42;
+            menu.WidthRequest = 42 * buttonCount;
             await menu.ScaleYTo(1, Settings.UI.TextMenuAnimationMs, Easing.Linear);
         }
 

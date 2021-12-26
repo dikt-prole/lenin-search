@@ -8,31 +8,44 @@
              mc:Ignorable="d"
              x:Class="LeninSearch.Xam.MainPage">
     <StackLayout Orientation="Vertical" Spacing="0">
-        <StackLayout x:Name="TopLayout" Orientation="Horizontal" HorizontalOptions="Fill" Spacing="0" BackgroundColor="White"   Margin="0">
-            <ActivityIndicator x:Name="SearchActivityIndicator" Color="#D6181F" IsRunning="False" VerticalOptions="Start" WidthRequest="32" HeightRequest="32" Margin="8"></ActivityIndicator>
-            <ImageButton Padding="0" x:Name="CorpusButton" WidthRequest="48" HeightRequest="48" Source="lenin.png" BackgroundColor="White" HorizontalOptions="Start" Margin="0"></ImageButton>
-            <controls:NoKeyboardEntry x:Name="SearchEntry" Placeholder="Введите запрос" ReturnType="Search" HorizontalOptions="FillAndExpand" Margin="0" FontSize="Small" TextColor="Black" MinimumWidthRequest="100"></controls:NoKeyboardEntry>
-            <StackLayout x:Name="TextMenuStack" HorizontalOptions="End" WidthRequest="84" BackgroundColor="White" Orientation="Horizontal" Spacing="0" Margin="0">
-                <ImageButton x:Name="ShareButton" Source="share.png" WidthRequest="32" HeightRequest="32" VerticalOptions="Center" Margin="5" BackgroundColor="White" Padding="0"></ImageButton>
-                <ImageButton x:Name="BookmarkButton" Source="bookmark.png" WidthRequest="32" HeightRequest="32" VerticalOptions="Center" Margin="5" Padding="0" BackgroundColor="White"></ImageButton>
+        <StackLayout Spacing="0" Orientation="Vertical" x:Name="PlayerLayout" VerticalOptions="FillAndExpand" BackgroundColor="Black" IsVisible="False">
+            <StackLayout Orientation="Horizontal" VerticalOptions="Start" BackgroundColor="White">
+                <ImageButton Margin="0" x:Name="PlayerTitleButton" HeightRequest="32" Source="close.png" Padding="0" WidthRequest="32" HorizontalOptions="End" BackgroundColor="White"></ImageButton>
+                <StackLayout HorizontalOptions="FillAndExpand">
+                    <Label x:Name="PlayerTitleLabel" TextColor="Black" HorizontalOptions="Center" FontSize="Small" VerticalOptions="Center" Margin="5">заголовок</Label>
+                </StackLayout>
+                <ImageButton Margin="0" x:Name="PlayerStopButton" HeightRequest="32" Source="close.png" Padding="0" WidthRequest="32" HorizontalOptions="End" BackgroundColor="White"></ImageButton>
+            </StackLayout>
+            <StackLayout Orientation="Vertical" VerticalOptions="FillAndExpand">
+                <WebView x:Name="PlayerView" HorizontalOptions="CenterAndExpand"></WebView>
             </StackLayout>
         </StackLayout>
-        <StackLayout HorizontalOptions="FillAndExpand" HeightRequest="2" BackgroundColor="#D6181F"></StackLayout>
-        <WebView x:Name="BrowserView" HorizontalOptions="FillAndExpand" HeightRequest="0"></WebView>
-        <StackLayout x:Name="SearchResultBar" HeightRequest="24" Orientation="Vertical" HorizontalOptions="Fill" Spacing="0">
-            <StackLayout Orientation="Horizontal" Spacing="0">
-                <StackLayout WidthRequest="48" HeightRequest="24" BackgroundColor="#D6181F" HorizontalOptions="Start" Spacing="0">
-                    <Label Margin="0" HorizontalOptions="Center" VerticalOptions="Center" FontSize="Small"  x:Name="PrevLabel" TextColor="White"></Label>
-                </StackLayout>
-                <StackLayout HorizontalOptions="FillAndExpand" BackgroundColor="#D6181F" HeightRequest="24">
-                    <Label Margin="0" HorizontalOptions="Center" VerticalOptions="Center" FontSize="Small" TextColor="White" Text="просмотр результатов поиска" x:Name="SearchResultTitle"></Label>
-                </StackLayout>
-                <StackLayout WidthRequest="48" HeightRequest="24" BackgroundColor="#D6181F" HorizontalOptions="End" Spacing="0">
-                    <Label Margin="0" VerticalOptions="Center" HorizontalOptions="Center" FontSize="Small" x:Name="NextLabel" TextColor="White"></Label>
+        <StackLayout Orientation="Vertical" Spacing="0" x:Name="SearchLayout" VerticalOptions="FillAndExpand">
+            <StackLayout x:Name="TopLayout" Orientation="Horizontal" HorizontalOptions="Fill" Spacing="0" BackgroundColor="White"   Margin="0">
+                <ActivityIndicator x:Name="SearchActivityIndicator" Color="#D6181F" IsRunning="False" VerticalOptions="Start" WidthRequest="32" HeightRequest="32" Margin="8"></ActivityIndicator>
+                <ImageButton Padding="0" x:Name="CorpusButton" WidthRequest="48" HeightRequest="48" Source="lenin.png" BackgroundColor="White" HorizontalOptions="Start" Margin="0"></ImageButton>
+                <controls:NoKeyboardEntry x:Name="SearchEntry" Placeholder="Введите запрос" ReturnType="Search" HorizontalOptions="FillAndExpand" Margin="0" FontSize="Small" TextColor="Black" MinimumWidthRequest="100"></controls:NoKeyboardEntry>
+                <StackLayout x:Name="TextMenuStack" HorizontalOptions="End" WidthRequest="84" BackgroundColor="White" Orientation="Horizontal" Spacing="0" Margin="0">
+                    <ImageButton x:Name="ShareButton" Source="share.png" WidthRequest="32" HeightRequest="32" VerticalOptions="Center" Margin="5" BackgroundColor="White" Padding="0"></ImageButton>
+                    <ImageButton x:Name="BookmarkButton" Source="bookmark.png" WidthRequest="32" HeightRequest="32" VerticalOptions="Center" Margin="5" Padding="0" BackgroundColor="White"></ImageButton>
+                    <ImageButton x:Name="PlayButton" Source="play.png" WidthRequest="32" HeightRequest="32" VerticalOptions="Center" Margin="5" BackgroundColor="White" Padding="0"></ImageButton>
                 </StackLayout>
             </StackLayout>
-        </StackLayout>
-        <views:TabView
+            <StackLayout HorizontalOptions="FillAndExpand" HeightRequest="2" BackgroundColor="#D6181F"></StackLayout>
+            <StackLayout x:Name="SearchResultBar" HeightRequest="24" Orientation="Vertical" HorizontalOptions="Fill" Spacing="0">
+                <StackLayout Orientation="Horizontal" Spacing="0">
+                    <StackLayout WidthRequest="48" HeightRequest="24" BackgroundColor="#D6181F" HorizontalOptions="Start" Spacing="0">
+                        <Label Margin="0" HorizontalOptions="Center" VerticalOptions="Center" FontSize="Small"  x:Name="PrevLabel" TextColor="White"></Label>
+                    </StackLayout>
+                    <StackLayout HorizontalOptions="FillAndExpand" BackgroundColor="#D6181F" HeightRequest="24">
+                        <Label Margin="0" HorizontalOptions="Center" VerticalOptions="Center" FontSize="Small" TextColor="White" Text="просмотр результатов поиска" x:Name="SearchResultTitle"></Label>
+                    </StackLayout>
+                    <StackLayout WidthRequest="48" HeightRequest="24" BackgroundColor="#D6181F" HorizontalOptions="End" Spacing="0">
+                        <Label Margin="0" VerticalOptions="Center" HorizontalOptions="Center" FontSize="Small" x:Name="NextLabel" TextColor="White"></Label>
+                    </StackLayout>
+                </StackLayout>
+            </StackLayout>
+            <views:TabView
             x:Name="InitialTabs"
             TabStripPlacement="Top"
             TabStripBackgroundColor="White"
@@ -40,44 +53,45 @@
             TabIndicatorColor="#D6181F"
             TabContentBackgroundColor="White">
 
-            <views:TabViewItem
+                <views:TabViewItem
                 Text="КОРПУС"
                 TextColor="Black">
-                <StackLayout Orientation="Vertical">
-                    <StackLayout Orientation="Vertical" x:Name="CorpusTab" VerticalOptions="FillAndExpand"></StackLayout>
-                    <StackLayout Orientation="Horizontal">
-                        <StackLayout HorizontalOptions="FillAndExpand"></StackLayout>
-                        <ImageButton Source="refresh.png" x:Name="CorpusRefreshButton" HorizontalOptions="End" HeightRequest="32" WidthRequest="32" BackgroundColor="White"></ImageButton>
+                    <StackLayout Orientation="Vertical">
+                        <StackLayout Orientation="Vertical" x:Name="CorpusTab" VerticalOptions="FillAndExpand"></StackLayout>
+                        <StackLayout Orientation="Horizontal">
+                            <StackLayout HorizontalOptions="FillAndExpand"></StackLayout>
+                            <ImageButton Source="refresh.png" x:Name="CorpusRefreshButton" HorizontalOptions="End" HeightRequest="32" WidthRequest="32" BackgroundColor="White"></ImageButton>
+                        </StackLayout>
                     </StackLayout>
-                </StackLayout>
 
-            </views:TabViewItem>
+                </views:TabViewItem>
 
-            <views:TabViewItem
+                <views:TabViewItem
                 Text="ЗАКЛАДКИ"
                 TextColor="Black">
-                <StackLayout Orientation="Vertical" x:Name="BookmarkTab"></StackLayout>
-            </views:TabViewItem>
+                    <StackLayout Orientation="Vertical" x:Name="BookmarkTab"></StackLayout>
+                </views:TabViewItem>
 
-            <views:TabViewItem
+                <views:TabViewItem
                 Text="ИСТОРИЯ"
                 TextColor="Black">
-                <StackLayout Orientation="Vertical" x:Name="HistoryTab"></StackLayout>
-            </views:TabViewItem>
+                    <StackLayout Orientation="Vertical" x:Name="HistoryTab"></StackLayout>
+                </views:TabViewItem>
 
-            <views:TabViewItem
+                <views:TabViewItem
                 Text="ОБУЧЕНИЕ"
                 TextColor="Black">
-                <StackLayout Orientation="Vertical" x:Name="LearningTab"></StackLayout>
-            </views:TabViewItem>
+                    <StackLayout Orientation="Vertical" x:Name="LearningTab"></StackLayout>
+                </views:TabViewItem>
 
-        </views:TabView>
-        <StackLayout x:Name="ScrollWrapper" VerticalOptions="FillAndExpand"  BackgroundColor="White" Orientation="Horizontal" HorizontalOptions="FillAndExpand">
-            <controls:GestureScrollView VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" x:Name="ResultScroll">
-                <StackLayout Margin="10" Orientation="Vertical" VerticalOptions="Start" x:Name="ResultStack" BackgroundColor="White">
-                </StackLayout>
-            </controls:GestureScrollView>
+            </views:TabView>
+            <StackLayout x:Name="ScrollWrapper" VerticalOptions="FillAndExpand"  BackgroundColor="White" Orientation="Horizontal" HorizontalOptions="FillAndExpand">
+                <controls:GestureScrollView VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" x:Name="ResultScroll">
+                    <StackLayout Margin="10" Orientation="Vertical" VerticalOptions="Start" x:Name="ResultStack" BackgroundColor="White">
+                    </StackLayout>
+                </controls:GestureScrollView>
+            </StackLayout>
+            <controls:LsKeyboard x:Name="Keyboard"></controls:LsKeyboard>
         </StackLayout>
-        <controls:LsKeyboard x:Name="Keyboard"></controls:LsKeyboard>
     </StackLayout>
 </ContentPage>
