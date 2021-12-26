@@ -244,8 +244,7 @@ namespace LeninSearch.Xam
             CorpusTab.Children.Clear();
             foreach (var ci in State.GetCorpusItems())
             {
-                var ciText = ci.ToString();
-                var hyperlink = ConstructHyperlink(ciText, Settings.UI.Font.NormalFontSize, new Command(async () =>
+                var action = new Action(async () =>
                 {
                     _state.CorpusId = ci.Id;
                     await AnimateDisappear(CorpusButton);
@@ -253,8 +252,23 @@ namespace LeninSearch.Xam
                     await AnimateAppear(CorpusButton);
                     SearchEntry.GentlyFocus();
                     //await DisplayCorpusBooks();
-                }));
-                CorpusTab.Children.Add(hyperlink);
+                });
+
+                var ciText = ci.ToString();
+                var stack = new StackLayout {Orientation = StackOrientation.Horizontal};
+                var button = new ImageButton
+                {
+                    WidthRequest = 32,
+                    HeightRequest = 32,
+                    BackgroundColor = Color.White,
+                    Source = Settings.IconFile(ci.Id),
+                    Margin = new Thickness(10, 0, 0, 0)
+                };
+                button.Clicked += (sender, args) => action();
+                stack.Children.Add(button);
+                var label = ConstructHyperlink(ciText, Settings.UI.Font.NormalFontSize, new Command(action));
+                stack.Children.Add(label);
+                CorpusTab.Children.Add(stack);
             }
         }
 
@@ -360,6 +374,7 @@ namespace LeninSearch.Xam
                         infoLabel.Text = "Обновления";
                         _isRunningCorpusUpdate = false;
                     }));
+                updateLink.Margin = new Thickness(10, 10, 10, 20);
                 ResultStack.Children.Add(updateLink);
             }
 
