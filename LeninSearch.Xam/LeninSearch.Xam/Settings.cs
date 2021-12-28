@@ -25,7 +25,7 @@ namespace LeninSearch.Xam
 
         public const int TokenIndexCountCutoff = int.MaxValue;
 
-        public const int ResultCountCutoff = 50;
+        public const int ResultCountCutoff = 100;
 
         // online search
         public static class OnlineSearch
@@ -95,10 +95,10 @@ namespace LeninSearch.Xam
 
         public static readonly List<Tuple<string, string>> Learning = new List<Tuple<string, string>>
         {
-            new Tuple<string, string>("КАК РАБОТАТЬ С ПОИСКОВЫМ ЗАПРОСОМ", "https://youtu.be/gcCWzO8UwNI"),
-            new Tuple<string, string>("КАК РАБОТАТЬ С ЗАКЛАДКАМИ", "https://youtu.be/p018-wq1wlI"),
-            new Tuple<string, string>("КАК ИСКАТЬ ПО ЗАГОЛОВКАМ", "https://youtu.be/sSy70Vf4TLc"),
-            new Tuple<string, string>("РЕЛИЗ ТЕКУЩЕЙ ВЕРСИИ", "https://youtu.be/V0mBI9Bh2T4")
+            new Tuple<string, string>("Работа с обновлениями в Lenin Search Android", "https://youtu.be/Z4jU0jgEKww"),
+            new Tuple<string, string>("Как искать в Lenin Search Android", "https://youtu.be/aN8ACedX1NI"),
+            new Tuple<string, string>("Шаринг, закладки, история поиска в Lenin Search Android", "https://youtu.be/w1LQOU1Wph8"),
+            new Tuple<string, string>("Просмотр видео в Lenin Search Android", "https://youtu.be/PskQR3n6neo")
         };
 
         public static bool CorpusExists(string corpusId)

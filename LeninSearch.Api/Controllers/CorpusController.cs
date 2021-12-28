@@ -29,7 +29,7 @@ namespace LeninSearch.Api.Controllers
             _logger = logger;
             _lsiProvider = lsiProvider;
             _memoryCache = memoryCache;
-            _searcher = new LsSearcher(int.MaxValue, 50);
+            _searcher = new LsSearcher(int.MaxValue, 100);
         }
 
         [HttpPost("lssearch")]

@@ -129,7 +129,7 @@ namespace LeninSearch.Standard.Core.Search
 
             for (var i = 1; i < wordDatas.Count; i++)
             {
-                if (wordDatas[i].WordPosition <= wordDatas[i - 1].WordPosition) return false;
+                if (wordDatas[i].WordPosition - wordDatas[i - 1].WordPosition != 1) return false;
             }
 
             return true;

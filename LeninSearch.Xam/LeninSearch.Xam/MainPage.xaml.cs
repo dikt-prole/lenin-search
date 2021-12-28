@@ -592,6 +592,7 @@ namespace LeninSearch.Xam
         private async void DisplayInitialTabs()
         {
             StopVideoPlay();
+            await HideTextMenu();
             PopulateInitialTabs();
             _state.ReadingFile = null;
             HideSearchResultBar();
