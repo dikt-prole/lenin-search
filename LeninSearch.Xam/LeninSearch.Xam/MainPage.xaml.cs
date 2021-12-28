@@ -163,10 +163,6 @@ namespace LeninSearch.Xam
         {
             if (_state.IsReading())
             {
-                Device.InvokeOnMainThreadAsync(async () =>
-                {
-                    await DisplayHeaders(_state.GetReadingCorpusFileItem());
-                });
             }
         }
 
@@ -244,19 +240,9 @@ namespace LeninSearch.Xam
             CorpusTab.Children.Clear();
             foreach (var ci in State.GetCorpusItems())
             {
-                var action = new Action(async () =>
-                {
-                    _state.CorpusId = ci.Id;
-                    await AnimateDisappear(CorpusButton);
-                    CorpusButton.Source = Settings.IconFile(ci.Id);
-                    await AnimateAppear(CorpusButton);
-                    SearchEntry.GentlyFocus();
-                    //await DisplayCorpusBooks();
-                });
-
                 var ciText = ci.ToString();
-                var stack = new StackLayout {Orientation = StackOrientation.Horizontal};
-                var button = new ImageButton
+                var stack = new StackLayout { Orientation = StackOrientation.Horizontal };
+                var iconButton = new ImageButton
                 {
                     WidthRequest = 32,
                     HeightRequest = 32,
@@ -264,10 +250,17 @@ namespace LeninSearch.Xam
                     Source = Settings.IconFile(ci.Id),
                     Margin = new Thickness(10, 0, 0, 0)
                 };
-                button.Clicked += (sender, args) => action();
-                stack.Children.Add(button);
-                var label = ConstructHyperlink(ciText, Settings.UI.Font.NormalFontSize, new Command(action));
-                stack.Children.Add(label);
+                iconButton.Clicked += async (sender, args) =>
+                {
+                    _state.CorpusId = ci.Id;
+                    await AnimateDisappear(CorpusButton);
+                    CorpusButton.Source = Settings.IconFile(ci.Id);
+                    await AnimateAppear(CorpusButton);
+                    SearchEntry.GentlyFocus();
+                };
+                stack.Children.Add(iconButton);
+                var textButton = ConstructHyperlink(ciText, Settings.UI.Font.NormalFontSize, async () => await DisplayCorpusBooks(ci));
+                stack.Children.Add(textButton);
                 CorpusTab.Children.Add(stack);
             }
         }
@@ -326,54 +319,53 @@ namespace LeninSearch.Xam
             foreach (var updateCi in updates)
             {
                 View updateLink = null;
-                updateLink = ConstructHyperlink(updateCi.ToString(), Settings.UI.Font.NormalFontSize,
-                    new Command(async () =>
-                    {
-                        var answer = await DisplayAlert("Установка обновления", $"Установить '{updateCi.Name}'?", "Да", "Нет");
+                updateLink = ConstructHyperlink(updateCi.ToString(), Settings.UI.Font.NormalFontSize, async () =>
+                     {
+                         var answer = await DisplayAlert("Установка обновления", $"Установить '{updateCi.Name}'?", "Да", "Нет");
 
-                        if (!answer) return;
+                         if (!answer) return;
 
-                        _isRunningCorpusUpdate = true;
-                        await ReplaceCorpusWithLoading();
+                         _isRunningCorpusUpdate = true;
+                         await ReplaceCorpusWithLoading();
 
-                        var existingCi = existingCorpusItems.FirstOrDefault(ci => ci.Series == updateCi.Series);
-                        if (existingCi != null)
-                        {
-                            Directory.Delete(Path.Combine(Settings.CorpusRoot, existingCi.Id), true);
-                        }
+                         var existingCi = existingCorpusItems.FirstOrDefault(ci => ci.Series == updateCi.Series);
+                         if (existingCi != null)
+                         {
+                             Directory.Delete(Path.Combine(Settings.CorpusRoot, existingCi.Id), true);
+                         }
 
-                        var corpusFolder = Path.Combine(Settings.CorpusRoot, updateCi.Id);
-                        Directory.CreateDirectory(corpusFolder);
+                         var corpusFolder = Path.Combine(Settings.CorpusRoot, updateCi.Id);
+                         Directory.CreateDirectory(corpusFolder);
 
-                        foreach (var cfi in updateCi.Files)
-                        {
-                            infoLabel.IsVisible = true;
-                            infoLabel.Text = $"Скачиваю: {cfi.Path}";
-                            var cfiBytesResult = await _apiService.GetFileBytesAsync(updateCi.Id, cfi.Path);
-                            if (!cfiBytesResult.Success)
-                            {
-                                _message.LongAlert(Settings.Misc.ApiError);
-                                Directory.Delete(corpusFolder, true);
-                                infoLabel.Text = "Обновления";
-                                _isRunningCorpusUpdate = false;
-                                await ReplaceLoadingWithCorpus();
-                                return;
-                            }
-                            await File.WriteAllBytesAsync(Path.Combine(corpusFolder, cfi.Path), cfiBytesResult.Bytes);
-                        }
+                         foreach (var cfi in updateCi.Files)
+                         {
+                             infoLabel.IsVisible = true;
+                             infoLabel.Text = $"Скачиваю: {cfi.Path}";
+                             var cfiBytesResult = await _apiService.GetFileBytesAsync(updateCi.Id, cfi.Path);
+                             if (!cfiBytesResult.Success)
+                             {
+                                 _message.LongAlert(Settings.Misc.ApiError);
+                                 Directory.Delete(corpusFolder, true);
+                                 infoLabel.Text = "Обновления";
+                                 _isRunningCorpusUpdate = false;
+                                 await ReplaceLoadingWithCorpus();
+                                 return;
+                             }
+                             await File.WriteAllBytesAsync(Path.Combine(corpusFolder, cfi.Path), cfiBytesResult.Bytes);
+                         }
 
-                        _message.LongAlert(Settings.Misc.UpdateCompleteMessage);
-                        ResultStack.Children.Remove(updateLink);
-                        if (existingCi != null && _state.CorpusId == existingCi.Id)
-                        {
-                            _state.CorpusId = updateCi.Id;
-                            CorpusButton.Source = Settings.IconFile(updateCi.Id);
-                        }
+                         _message.LongAlert(Settings.Misc.UpdateCompleteMessage);
+                         ResultStack.Children.Remove(updateLink);
+                         if (existingCi != null && _state.CorpusId == existingCi.Id)
+                         {
+                             _state.CorpusId = updateCi.Id;
+                             CorpusButton.Source = Settings.IconFile(updateCi.Id);
+                         }
 
-                        await ReplaceLoadingWithCorpus();
-                        infoLabel.Text = "Обновления";
-                        _isRunningCorpusUpdate = false;
-                    }));
+                         await ReplaceLoadingWithCorpus();
+                         infoLabel.Text = "Обновления";
+                         _isRunningCorpusUpdate = false;
+                     });
                 updateLink.Margin = new Thickness(10, 10, 10, 20);
                 ResultStack.Children.Add(updateLink);
             }
@@ -425,16 +417,16 @@ namespace LeninSearch.Xam
                         Spacing = 0
                     };
 
-                    var readLabel = ConstructHyperlink("читать", Settings.UI.Font.NormalFontSize, new Command(async () => await ReadBookmark(bm)));
+                    var readLabel = ConstructHyperlink("читать", Settings.UI.Font.NormalFontSize, async () => await ReadBookmark(bm));
 
                     linkLayout.Children.Add(readLabel);
 
-                    var deleteLabel = ConstructHyperlink("удалить", Settings.UI.Font.NormalFontSize, new Command(async () =>
+                    var deleteLabel = ConstructHyperlink("удалить", Settings.UI.Font.NormalFontSize, async () =>
                     {
                         BookmarkRepo.Delete(bm.Id);
                         await layout.FadeTo(0, 200, Easing.Linear);
                         layout.HeightRequest = 0;
-                    }));
+                    });
 
                     linkLayout.Children.Add(deleteLabel);
 
@@ -472,7 +464,7 @@ namespace LeninSearch.Xam
             foreach (var video in Settings.Learning)
             {
                 var hyperlink = ConstructHyperlink(video.Item1, Settings.UI.Font.NormalFontSize,
-                    new Command(async () => await Browser.OpenAsync(video.Item2)));
+                    async () => await Browser.OpenAsync(video.Item2));
                 hyperlink.Margin = new Thickness(20, 20, 0, 0);
                 LearningTab.Children.Add(hyperlink);
             }
@@ -487,12 +479,12 @@ namespace LeninSearch.Xam
             foreach (var historyItem in history)
             {
                 var hyperlink = ConstructHyperlink($"{historyItem.Query} ({historyItem.CorpusName})", Settings.UI.Font.NormalFontSize,
-                    new Command(() =>
+                    () =>
                     {
                         _state.CorpusId = historyItem.CorpusId;
                         CorpusButton.Source = Settings.IconFile(historyItem.CorpusId);
                         SearchEntry.Text = historyItem.Query;
-                    }));
+                    });
                 hyperlink.Margin = new Thickness(20, 20, 0, 0);
                 HistoryTab.Children.Add(hyperlink);
             }
@@ -555,15 +547,15 @@ namespace LeninSearch.Xam
             var corpusFileItems = _state.PartialParagraphSearchResult.Files().Select(f => _state.GetCurrentCorpusItem().GetFileByPath(f)).ToList();
 
             var totalCount = _state.PartialParagraphSearchResult.SearchResults.Count;
-            var titleLabel = _state.PartialParagraphSearchResult.IsSearchComplete
-                ? new Label { Text = $"Поиск окончен, {totalCount} совпадений", TextColor = Color.Black, FontSize = Settings.UI.Font.SmallFontSize }
-                : ConstructHyperlink($"{totalCount} совпадений, нажмите чтобы продолжить", Settings.UI.Font.SmallFontSize, new Command(async () =>
-                    await StartParagraphSearch(_state.SearchQuery)));
+            var titleView = _state.PartialParagraphSearchResult.IsSearchComplete
+                ? (View)new Label { Text = $"Поиск окончен, {totalCount} совпадений", TextColor = Color.Black, FontSize = Settings.UI.Font.SmallFontSize }
+                : ConstructHyperlink($"{totalCount} совпадений, нажмите чтобы продолжить", Settings.UI.Font.SmallFontSize, async () =>
+                    await StartParagraphSearch(_state.SearchQuery));
 
-            titleLabel.HorizontalOptions = LayoutOptions.Center;
-            titleLabel.Margin = new Thickness(0, 0, 0, 20);
+            titleView.HorizontalOptions = LayoutOptions.Center;
+            titleView.Margin = new Thickness(0, 0, 0, 20);
 
-            ResultStack.Children.Add(titleLabel);
+            ResultStack.Children.Add(titleView);
 
             var flexLayout = new FlexLayout
             {
@@ -577,12 +569,12 @@ namespace LeninSearch.Xam
             {
                 var resultCount = _state.PartialParagraphSearchResult.FileResults(cfi.Path).Count;
                 var text = $"{cfi.Name} ({resultCount})";
-                var link = ConstructHyperlink(text, Settings.UI.Font.NormalFontSize, new Command(async () =>
+                var link = ConstructHyperlink(text, Settings.UI.Font.NormalFontSize, async () =>
                 {
                     _state.ReadingFile = cfi.Path;
                     _state.CurrentParagraphResultIndex = 0;
                     await OnCurrentParagraphResultIndexChange(cfi.Path);
-                }));
+                });
                 link.HeightRequest = 32;
                 flexLayout.Children.Add(link);
             }
@@ -852,61 +844,54 @@ namespace LeninSearch.Xam
             await RebuildScroll(lsData, pIndex, scrollY);
         }
 
-        private async Task DisplayCorpusBooks()
+        private async Task DisplayCorpusBooks(CorpusItem corpusItem)
         {
+            InitialTabs.IsVisible = false;
+            ScrollWrapper.IsVisible = true;
+
+            _state.CorpusId = corpusItem.Id;
+            CorpusButton.Source = Settings.IconFile(corpusItem.Id);
+
             _state.ReadingFile = null;
-
             HideSearchResultBar();
-
             await RebuildScroll(false);
-
-            var currentCorpusItem = _state.GetCurrentCorpusItem();
 
             ResultStack.Children.Add(new Label
             {
-                Text = $"{currentCorpusItem.Name} - КНИГИ",
+                Text = $"{corpusItem.Name} - книги",
                 TextColor = Color.Black,
-                FontSize = Settings.UI.Font.NormalFontSize,
-                HorizontalOptions = LayoutOptions.Center
+                FontSize = Settings.UI.Font.SmallFontSize,
+                HorizontalOptions = LayoutOptions.Center,
+                Margin = new Thickness(0, 0, 0, 20)
             });
 
-            var flex = new FlexLayout
+            var flexLayout = new FlexLayout
             {
-                Direction = FlexDirection.Row,
-                Wrap = FlexWrap.Wrap,
-                VerticalOptions = LayoutOptions.FillAndExpand,
-                HorizontalOptions = LayoutOptions.FillAndExpand
+                JustifyContent = FlexJustify.SpaceAround,
+                Wrap = FlexWrap.Wrap
             };
 
-            foreach (var cfi in currentCorpusItem.Files)
+            foreach (var cfi in corpusItem.LsiFiles())
             {
-                var cfiLayout = new StackLayout
+                var link = ConstructHyperlink(cfi.Name, Settings.UI.Font.NormalFontSize, async () =>
                 {
-                    Orientation = StackOrientation.Horizontal,
-                    Spacing = 0,
-                    Margin = new Thickness(0, 10, 10, 0)
-                };
-
-                // book text
-                cfiLayout.Children.Add(new Label
-                {
-                    Text = cfi.Name,
-                    TextColor = Color.Black,
-                    FontSize = Settings.UI.Font.NormalFontSize,
-                    WidthRequest = 64,
-                    Margin = new Thickness(5)
+                    var lsData = _lsiProvider.GetLsiData(corpusItem.Id, cfi.Path).LsData;
+                    var headings = lsData.Headings?.ToList();
+                    if (headings?.Any() != true)
+                    {
+                        _message.ShortAlert("Заголовки не найдены");
+                    }
+                    else
+                    {
+                        await ReplaceCorpusWithLoading();
+                        await DisplayBookHeadings(corpusItem, cfi, headings);
+                        await ReplaceLoadingWithCorpus();
+                    }
                 });
-
-                // read link
-                cfiLayout.Children.Add(ConstructHyperlink("читать", Settings.UI.Font.NormalFontSize, new Command(async () => await Read(cfi, 0))));
-
-                // summary link
-                cfiLayout.Children.Add(ConstructHyperlink("содерж.", Settings.UI.Font.NormalFontSize, new Command(async () => await DisplayHeaders(cfi))));
-
-                flex.Children.Add(cfiLayout);
+                flexLayout.Children.Add(link);
             }
 
-            ResultStack.Children.Add(flex);
+            ResultStack.Children.Add(flexLayout);
 
             await ResultScrollFadeIn();
         }
@@ -969,49 +954,41 @@ namespace LeninSearch.Xam
             }
         }
 
-        private async Task DisplayHeaders(CorpusFileItem cfi)
+        private async Task DisplayBookHeadings(CorpusItem ci, CorpusFileItem cfi, List<LsHeading> headings)
         {
             _state.ReadingFile = null;
-
             HideSearchResultBar();
-
             await RebuildScroll(false);
 
-            var summaryTitle = $"{cfi.Name} - СОДЕРЖАНИЕ";
+            var summaryTitle = $"{ci.Name} - {cfi.Name} - содержание";
             ResultStack.Children.Add(new Label
             {
                 Text = summaryTitle,
                 TextColor = Color.Black,
                 HorizontalOptions = LayoutOptions.Center,
-                FontSize = Settings.UI.Font.NormalFontSize
+                FontSize = Settings.UI.Font.SmallFontSize,
+                Margin = new Thickness(0, 0, 0, 20)
             });
 
             var corpusItem = _state.GetCurrentCorpusItem();
-            var lsData = _lsiProvider.GetLsiData(corpusItem.Id, cfi.Path).LsData;
-            var headings = lsData.Headings.ToList();
-            if (headings?.Any() != true)
+
+            foreach (var heading in headings)
             {
-                ResultStack.Children.Add(new Label
+                var levelZero = heading.Level == 0;
+                var headerText = heading.GetText(_lsiProvider.GetDictionary(corpusItem.Id).Words);
+                var fontSize = levelZero ? Settings.UI.Font.NormalFontSize : Settings.UI.Font.SmallFontSize;
+
+                var headingLink = ConstructHyperlink(headerText, fontSize, async () =>
+                    await Read(cfi, heading.Index));
+
+                headingLink.HorizontalOptions = LayoutOptions.Start;
+                headingLink.Margin = new Thickness(5 + 8 * heading.Level, 5, 5, 5);
+                if (!levelZero)
                 {
-                    HorizontalOptions = LayoutOptions.Center,
-                    Margin = new Thickness(10),
-                    Text = "работы не найдены",
-                    TextColor = Settings.UI.MainColor,
-                    FontSize = Settings.UI.Font.NormalFontSize
-                });
-            }
-            else
-            {
-                foreach (var heading in headings)
-                {
-                    var headerText = heading.GetText(_lsiProvider.GetDictionary(corpusItem.Id).Words);
-                    var headerLabel = new Label
-                    { Text = headerText, TextColor = Color.Black, FontSize = Settings.UI.Font.NormalFontSize };
-                    ResultStack.Children.Add(headerLabel);
-                    var readLink = ConstructHyperlink("читать", Settings.UI.Font.NormalFontSize,
-                        new Command(async () => await Read(cfi, heading.Index)));
-                    ResultStack.Children.Add(readLink);
+                    headingLink.HeightRequest = 20;
                 }
+
+                ResultStack.Children.Add(headingLink);
             }
 
             await ResultScrollFadeIn();
@@ -1033,28 +1010,43 @@ namespace LeninSearch.Xam
                 var headingLabel = new Label
                 { Text = headingText, TextColor = Color.Black, FontSize = Settings.UI.Font.NormalFontSize };
                 ResultStack.Children.Add(headingLabel);
-                var readLink = ConstructHyperlink("читать", Settings.UI.Font.NormalFontSize, new Command(async () =>
-                    await Read(corpusItemFile, sr.ParagraphIndex)));
+                var readLink = ConstructHyperlink("читать", Settings.UI.Font.NormalFontSize, async () =>
+                    await Read(corpusItemFile, sr.ParagraphIndex));
                 ResultStack.Children.Add(readLink);
             }
 
             await ResultScrollFadeIn();
         }
 
-        private Label ConstructHyperlink(string text, double fontSize, Command command)
+        private Button ConstructHyperlink(string text, double fontSize, Action action)
         {
-            var gestureRecognizer = new TapGestureRecognizer { Command = command };
-            var cfiSpan = new Span
+            var button = new Button
             {
-                Text = text,
+                BackgroundColor = Color.White,
                 TextColor = Settings.UI.MainColor,
-                TextDecorations = TextDecorations.Underline,
-                FontSize = fontSize
+                Text = text,
+                FontSize = fontSize,
+                Padding = 0,
+                Margin = 5,
+                TextTransform = TextTransform.None,
+                HeightRequest = 24
             };
-            cfiSpan.GestureRecognizers.Add(gestureRecognizer);
-            var fString = new FormattedString();
-            fString.Spans.Add(cfiSpan);
-            return new Label { FormattedText = fString, Margin = 5 };
+            button.Clicked += (sender, args) => action();
+
+            return button;
+
+            //var gestureRecognizer = new TapGestureRecognizer { Command = command };
+            //var cfiSpan = new Span
+            //{
+            //    Text = text,
+            //    TextColor = Settings.UI.MainColor,
+            //    TextDecorations = TextDecorations.Underline,
+            //    FontSize = fontSize
+            //};
+            //cfiSpan.GestureRecognizers.Add(gestureRecognizer);
+            //var fString = new FormattedString();
+            //fString.Spans.Add(cfiSpan);
+            //return new Label { FormattedText = fString, Margin = 5 };
         }
 
         private Span AttachCommandToLabel(Label label, Command command)
