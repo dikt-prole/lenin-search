@@ -123,7 +123,6 @@ namespace LeninSearch.Xam
 
             _searchResultTitleSpan = AttachCommandToLabel(SearchResultTitle, new Command(async () => await DisplaySearchSummary()));
 
-
             PopulateInitialTabs();
         }
 
@@ -974,19 +973,14 @@ namespace LeninSearch.Xam
 
             foreach (var heading in headings)
             {
-                var levelZero = heading.Level == 0;
                 var headerText = heading.GetText(_lsiProvider.GetDictionary(corpusItem.Id).Words);
-                var fontSize = levelZero ? Settings.UI.Font.NormalFontSize : Settings.UI.Font.SmallFontSize;
 
-                var headingLink = ConstructHyperlink(headerText, fontSize, async () =>
+                var headingLink = ConstructHyperlink(headerText, Settings.UI.Font.SmallFontSize, async () =>
                     await Read(cfi, heading.Index));
 
                 headingLink.HorizontalOptions = LayoutOptions.Start;
                 headingLink.Margin = new Thickness(5 + 8 * heading.Level, 5, 5, 5);
-                if (!levelZero)
-                {
-                    headingLink.HeightRequest = 20;
-                }
+                headingLink.HeightRequest = 18;
 
                 ResultStack.Children.Add(headingLink);
             }
