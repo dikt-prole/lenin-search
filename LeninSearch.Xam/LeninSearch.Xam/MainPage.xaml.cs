@@ -604,7 +604,7 @@ namespace LeninSearch.Xam
 
             await ReplaceLoadingWithCorpus();
 
-            await Share.RequestAsync(new ShareFileRequest("Lenin Search Fish Report", new ShareFile(fishFile)));
+            await Share.RequestAsync(new ShareFileRequest($"Lenin Search Fish Report - {corpusItem.Name} ({query})", new ShareFile(fishFile)));
         }
 
         private async void DisplayInitialTabs()

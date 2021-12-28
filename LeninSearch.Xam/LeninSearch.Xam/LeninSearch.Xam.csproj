@@ -19,10 +19,12 @@
 
   <ItemGroup>
     <None Remove="blank.html" />
+    <None Remove="fish.html" />
     <None Remove="youtube.html" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="fish.html" />
     <EmbeddedResource Include="Fonts\MaterialIcons-Regular.ttf" />
     <EmbeddedResource Include="blank.html" />
     <EmbeddedResource Include="youtube.html" />

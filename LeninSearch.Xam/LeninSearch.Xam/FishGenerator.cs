@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using LeninSearch.Standard.Core.Corpus;
 using LeninSearch.Standard.Core.Optimized;
 using LeninSearch.Standard.Core.Search;
@@ -14,7 +15,17 @@ namespace LeninSearch.Xam
     {
         public static string GenerateFishHtmlFile(PartialParagraphSearchResult ppsr, CorpusItem ci, string query, ILsiProvider lsiProvider)
         {
+            var assembly = IntrospectionExtensions.GetTypeInfo(typeof(MainPage)).Assembly;
+            var stream = assembly.GetManifestResourceStream("LeninSearch.Xam.fish.html");
+            var fishTemplate = "";
+            using (var reader = new StreamReader(stream))
+            {
+                fishTemplate = reader.ReadToEnd();
+            }
+
             var fishHtml = $"<h1>Lenin Search Fish Report - {ci.Name} ({query})</h1>";
+            var resultIndex = 1;
+
             foreach (var file in ppsr.Files())
             {
                 var cfi = ci.GetFileByPath(file);
@@ -33,7 +44,7 @@ namespace LeninSearch.Xam
                     var paragraphText = string.Join("", textParts);
                     var headings = lsData.GetHeadingsDownToZero(searchResult.ParagraphIndex);
                     var page = lsData.GetClosestPage(searchResult.ParagraphIndex);
-                    var linkText = "";
+                    var linkText = $"";
                     if (page != null || headings.Any())
                     {
                         var headingText = headings.Count > 0
@@ -41,18 +52,22 @@ namespace LeninSearch.Xam
                             : null;
 
                         linkText = page == null
-                            ? headingText
+                            ? $"{resultIndex}. {headingText}"
                             : string.IsNullOrEmpty(headingText)
-                                ? $"> стр. {page}"
-                                : $"> стр. {page}, {headingText}";
+                                ? $"{resultIndex}. стр. {page}"
+                                : $"{resultIndex}. стр. {page}, {headingText}";
                     }
 
                     fishHtml += $"<h3>{linkText}</h3>";
                     fishHtml += $"<p>{paragraphText}</p>";
+                    resultIndex++;
                 }
             }
 
             var fishFile = Path.Combine(Path.GetTempPath(), $"lenin-search-fish-report-{Guid.NewGuid().ToString("N").Substring(0, 8)}.html");
+
+            fishHtml = fishTemplate.Replace("[content]", fishHtml);
+
             File.WriteAllText(fishFile, fishHtml);
 
             return fishFile;
