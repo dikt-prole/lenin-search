@@ -577,7 +577,34 @@ namespace LeninSearch.Xam
                 link.HeightRequest = 32;
                 flexLayout.Children.Add(link);
             }
+
+            var fishButton = new ImageButton
+            {
+                HeightRequest = 32,
+                HorizontalOptions = LayoutOptions.CenterAndExpand,
+                BackgroundColor = Color.White,
+                Source = "fish.png",
+                Padding = 0,
+                Margin = 0
+            };
+            ResultStack.Children.Add(fishButton);
+            fishButton.Clicked += async (sender, args) => await GenerateSearchFish();
+
             await ResultScrollFadeIn();
+        }
+
+        private async Task GenerateSearchFish()
+        {
+            await ReplaceCorpusWithLoading();
+
+            var ppsr = _state.PartialParagraphSearchResult;
+            var corpusItem = _state.GetCurrentCorpusItem();
+            var query = SearchEntry.Text;
+            var fishFile = FishGenerator.GenerateFishHtmlFile(ppsr, corpusItem, query, _lsiProvider);
+
+            await ReplaceLoadingWithCorpus();
+
+            await Share.RequestAsync(new ShareFileRequest("Lenin Search Fish Report", new ShareFile(fishFile)));
         }
 
         private async void DisplayInitialTabs()
