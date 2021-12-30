@@ -22,6 +22,8 @@ namespace LeninSearch.Script.Scripts
 
             foreach (var f in Directory.GetFiles(jsonFolder)) File.Delete(f);
 
+            var images = new List<string>();
+
             var fb2Files = Directory.GetFiles(fb2Folder, "*.fb2");
             foreach (var fb2File in fb2Files)
             {
@@ -70,12 +72,18 @@ namespace LeninSearch.Script.Scripts
                         pText = TrimComments(pText, comments);
                     }
 
-                    var imageFile = isImage ? $"{fileName}{GetParagraphImageFile(pText)}" : null;
+                    if (isImage)
+                    {
+                        var imageFile = $"{fileName}{GetParagraphImageFile(pText)}";
+                        images.Add(imageFile);
+                    }
+
+                    var imageIndex = isImage ? (ushort?)(images.Count - 1) : null;
 
                     var paragraph = new Paragraph
                     {
-                        Text = isImage ? imageFile : pText,
-                        ImageFile = imageFile,
+                        Text = isImage ? $"image{imageIndex}.jpeg" : pText,
+                        ImageIndex = imageIndex,
                         ParagraphType = isImage
                             ? ParagraphType.Illustration
                             : isTitle
@@ -129,10 +137,14 @@ namespace LeninSearch.Script.Scripts
                     var binaryBase64 = binaryText.Substring(binaryText.IndexOf('>') + 1);
                     var binaryBytes = Convert.FromBase64String(binaryBase64);
                     
-                    var tempFile = Path.Combine(Path.GetTempPath(), imageFile);
+                    var tempFile = Path.GetTempFileName() + ".jpeg";
                     File.WriteAllBytes(tempFile, binaryBytes);
 
-                    var binaryFile = Path.Combine(jsonFolder, imageFile);
+                    var imageIndex = images.IndexOf(imageFile);
+
+                    if (imageIndex < 0) continue;
+
+                    var binaryFile = Path.Combine(jsonFolder, $"image{imageIndex}.jpeg");
                     var encoderParams = new EncoderParameters(1);
                     var qualityParam = new EncoderParameter(Encoder.Quality, 10L);
                     var jpegEncoder = ImageCodecInfo.GetImageEncoders().First(e => e.MimeType == "image/jpeg");
