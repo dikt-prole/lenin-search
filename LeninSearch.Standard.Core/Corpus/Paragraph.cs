@@ -1,4 +1,6 @@
-﻿namespace LeninSearch.Standard.Core.Corpus
+﻿using System.Collections.Generic;
+
+namespace LeninSearch.Standard.Core.Corpus
 {
     public class Paragraph
     {
@@ -7,5 +9,7 @@
         public string VideoId { get; set; }
         public ParagraphType ParagraphType { get; set; }
         public string ImageFile { get; set; }
+        public List<CommentData> Comments { get; set; }
+        public List<MarkupData> Markups { get; set; }
     }
 }
