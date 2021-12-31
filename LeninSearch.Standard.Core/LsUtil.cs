@@ -11,13 +11,13 @@ namespace LeninSearch.Standard.Core
 {
     public static class LsUtil
     {
-        public static byte[] ToLsBytes(FileData fileData, Dictionary<string, uint> globalDictionary)
+        public static byte[] ToLsBytes(JsonFileData jsonFileData, Dictionary<string, uint> globalDictionary)
         {
             var localDictionary = new List<uint>();
 
             // construct paragraph bytes
             var paragraphBytes = new List<byte>();
-            foreach (var p in fileData.Pars)
+            foreach (var p in jsonFileData.Pars)
             {
                 var pWords = TextUtil.GetOrderedWords(p.Text).ToList();
                 var paragraphLength = (ushort) pWords.Count;
@@ -49,9 +49,9 @@ namespace LeninSearch.Standard.Core
 
             // construct page bytes
             var pageBytes = new List<byte>();
-            if (fileData.Pages?.Any() == true)
+            if (jsonFileData.Pages?.Any() == true)
             {
-                foreach (var p in fileData.Pages)
+                foreach (var p in jsonFileData.Pages)
                 {
                     pageBytes.AddRange(BitConverter.GetBytes(p.Key));
                     pageBytes.AddRange(BitConverter.GetBytes(p.Value));
@@ -60,9 +60,9 @@ namespace LeninSearch.Standard.Core
 
             // construct header bytes
             var headerBytes = new List<byte>();
-            if (fileData.Headings.Any() == true)
+            if (jsonFileData.Headings.Any() == true)
             {
-                foreach (var h in fileData.Headings)
+                foreach (var h in jsonFileData.Headings)
                 {
                     headerBytes.AddRange(BitConverter.GetBytes(h.Index));
                     headerBytes.Add(h.Level);
@@ -100,9 +100,9 @@ namespace LeninSearch.Standard.Core
             var lsBytes = new List<byte>();
 
             lsBytes.AddRange(BitConverter.GetBytes((ushort)localDictionary.Count)); // word count
-            lsBytes.AddRange(BitConverter.GetBytes((ushort)fileData.Pars.Count)); // paragraph count
-            lsBytes.AddRange(BitConverter.GetBytes((ushort)(fileData.Pages?.Count ?? 0))); // page count
-            lsBytes.AddRange(BitConverter.GetBytes((ushort)(fileData.Headings?.Count ?? 0))); // header count
+            lsBytes.AddRange(BitConverter.GetBytes((ushort)jsonFileData.Pars.Count)); // paragraph count
+            lsBytes.AddRange(BitConverter.GetBytes((ushort)(jsonFileData.Pages?.Count ?? 0))); // page count
+            lsBytes.AddRange(BitConverter.GetBytes((ushort)(jsonFileData.Headings?.Count ?? 0))); // header count
 
             lsBytes.AddRange(wordBytes);
             lsBytes.AddRange(paragraphBytes);

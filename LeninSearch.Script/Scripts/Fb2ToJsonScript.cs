@@ -27,10 +27,10 @@ namespace LeninSearch.Script.Scripts
             var fb2Files = Directory.GetFiles(fb2Folder, "*.fb2");
             foreach (var fb2File in fb2Files)
             {
-                var fileData = new FileData
+                var fileData = new JsonFileData
                 {
-                    Pars = new List<Paragraph>(),
-                    Headings = new List<Heading>(),
+                    Pars = new List<JsonParagraph>(),
+                    Headings = new List<JsonHeading>(),
                     Pages = new Dictionary<ushort, ushort>()
                 };
 
@@ -63,15 +63,6 @@ namespace LeninSearch.Script.Scripts
 
                     var isImage = pText.Contains("<image");
 
-                    var comments = isImage
-                        ? new List<CommentData>()
-                        : GetComments(pText, fb2Xml).ToList();
-
-                    if (comments.Any())
-                    {
-                        pText = TrimComments(pText, comments);
-                    }
-
                     if (isImage)
                     {
                         var imageFile = $"{fileName}{GetParagraphImageFile(pText)}";
@@ -80,22 +71,28 @@ namespace LeninSearch.Script.Scripts
 
                     var imageIndex = isImage ? (ushort?)(images.Count - 1) : null;
 
-                    var paragraph = new Paragraph
+                    var commentData = GetCommentData(pText, fb2Xml);
+
+                    var paragraph = new JsonParagraph
                     {
-                        Text = isImage ? $"image{imageIndex}.jpeg" : pText,
+                        Text = isImage 
+                            ? $"image{imageIndex}.jpeg" 
+                            : commentData.Comments.Any()
+                                ? commentData.Text
+                                : pText,
                         ImageIndex = imageIndex,
                         ParagraphType = isImage
-                            ? ParagraphType.Illustration
+                            ? JsonParagraphType.Illustration
                             : isTitle
-                                ? ParagraphType.Heading0
-                                : ParagraphType.Normal,
-                        Comments = comments,
-                        Markups = new List<MarkupData>()
+                                ? JsonParagraphType.Heading0
+                                : JsonParagraphType.Normal,
+                        Comments = commentData.Comments,
+                        Markups = new List<JsonMarkupData>()
                     };
 
                     if (!isImage)
                     {
-                        var markupResult = GetMarkupData(pText);
+                        var markupResult = GetMarkupData(paragraph.Text);
                         paragraph.Text = markupResult.Text;
                         paragraph.Markups = markupResult.Markups;
                     }
@@ -104,7 +101,7 @@ namespace LeninSearch.Script.Scripts
 
                     if (isTitle)
                     {
-                        var heading = new Heading
+                        var heading = new JsonHeading
                         {
                             Text = pText,
                             Index = pIndex,
@@ -170,22 +167,26 @@ namespace LeninSearch.Script.Scripts
             var end = binaryText.IndexOf('"', start);
             return binaryText.Substring(start, end - start);
         }
-
-        private const string commentStartToken = "<a l:href=\"#";
-        private IEnumerable<CommentData> GetComments(string pText, string fb2Xml)
+        
+        private const string CommentStartToken = "<a l:href=\"#";
+        private (List<JsonCommentData> Comments, string Text) GetCommentData(string pText, string fb2Xml)
         {
-            var commentStart = 0;
+            var comments = new List<JsonCommentData>();
+            var text = pText;
+            byte commentIndex = 0;
+
+            var cStart = 0;
             while (true)
             {
-                commentStart = pText.IndexOf(commentStartToken, commentStart);
+                cStart = text.IndexOf(CommentStartToken, cStart);
 
-                if (commentStart == -1) yield break;
+                if (cStart == -1) break;
 
-                commentStart = commentStart + commentStartToken.Length;
+                cStart = cStart + CommentStartToken.Length;
 
-                var commentEnd = pText.IndexOf('"', commentStart);
+                var cEnd = text.IndexOf('"', cStart);
 
-                var commentId = pText.Substring(commentStart, commentEnd - commentStart);
+                var commentId = text.Substring(cStart, cEnd - cStart);
 
                 var sectionTag = $"<section id=\"{commentId}\">";
 
@@ -199,33 +200,40 @@ namespace LeninSearch.Script.Scripts
 
                 var pEnd = commentSectionText.IndexOf("</p>", pStart);
 
-                var commentText = commentSectionText.Substring(pStart, pEnd - pStart);
+                var commentText = commentSectionText.Substring(pStart, pEnd - pStart)
+                    .Trim(' ', '\t', Convert.ToChar(160), Convert.ToChar(32))
+                    .Trim('\t').Trim(Convert.ToChar(160));
 
-                yield return new CommentData
+                comments.Add(new JsonCommentData
                 {
-                    CommentId = commentId,
+                    CommentIndex = commentIndex,
                     Text = commentText
-                };
+                });
+
+                cStart = cStart - CommentStartToken.Length;
+                cEnd = text.IndexOf("</a>", cEnd) + 4;
+
+                var beforeToken = text.Substring(0, cStart).TrimEnd(' '); ;
+                if (beforeToken.Length > 0 && char.IsLetterOrDigit(beforeToken.Last()))
+                {
+                    beforeToken = $"{beforeToken} ";
+                }
+
+                var afterToken = text.Substring(cEnd).TrimStart(' ');
+                if (afterToken.Length > 0 && char.IsLetterOrDigit(afterToken.First()))
+                {
+                    afterToken = $" {afterToken}";
+                }
+
+                text = $"{beforeToken}c{commentIndex}{afterToken}";
+
+                commentIndex++;
             }
+
+            return (comments, text);
         }
 
-        private string TrimComments(string pText, List<CommentData> comments)
-        {
-            foreach (var cd in comments)
-            {
-                var linkTag = $"<a l:href=\"#{cd.CommentId}\">";
-
-                var linkStart = pText.IndexOf(linkTag);
-
-                var linkEnd = pText.IndexOf("</a>", linkStart) + 4;
-
-                pText = pText.Substring(0, linkStart) + $"[{cd.CommentId}]" + pText.Substring(linkEnd);
-            }
-
-            return pText;
-        }
-
-        private (List<MarkupData> Markups, string Text) GetMarkupData(string pText)
+        private (List<JsonMarkupData> Markups, string Text) GetMarkupData(string pText)
         {
             var markupOptions = new List<(string StartTag, string EndTag, MarkupType MarkupType)>
             {
@@ -235,7 +243,7 @@ namespace LeninSearch.Script.Scripts
                 ("<emphasis>", "</emphasis>", MarkupType.Emphasis)
             };
 
-            var markups = new List<MarkupData>();
+            var markups = new List<JsonMarkupData>();
             var text = pText;
 
             byte markupIndex = 0;
@@ -253,17 +261,29 @@ namespace LeninSearch.Script.Scripts
 
                     var moEnd = text.IndexOf(mo.EndTag, moStart);
 
-                    markups.Add(new MarkupData
+                    markups.Add(new JsonMarkupData
                     {
                         MarkupIndex = markupIndex,
                         MarkupType = mo.MarkupType,
-                        MarkupText = text.Substring(moStart, moEnd - moStart)
+                        MarkupText = text.Substring(moStart, moEnd - moStart).Trim(' ')
                     });
 
                     moStart = moStart - mo.StartTag.Length;
                     moEnd = moEnd + mo.EndTag.Length;
 
-                    text = text.Substring(0, moStart) + $"[m{markupIndex}]" + text.Substring(moEnd);
+                    var beforeToken = text.Substring(0, moStart).TrimEnd(' ');
+                    //if (beforeToken.Length > 0 && char.IsLetterOrDigit(beforeToken.Last()))
+                    {
+                        beforeToken = $"{beforeToken} ";
+                    }
+
+                    var afterToken = text.Substring(moEnd).TrimStart(' ');
+                    if (afterToken.Length > 0 && char.IsLetterOrDigit(afterToken.First()))
+                    {
+                        afterToken = $" {afterToken}";
+                    }
+
+                    text = $"{beforeToken}m{markupIndex}{afterToken}";
 
                     markupIndex++;
                 }

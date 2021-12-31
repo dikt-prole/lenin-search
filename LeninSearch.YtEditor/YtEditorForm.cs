@@ -31,7 +31,7 @@ namespace LeninSearch.YtEditor
 
         private void load_btn_Click(object sender, EventArgs e)
         {
-            var fileData = JsonConvert.DeserializeObject<FileData>(File.ReadAllText(file_tb.Text));
+            var fileData = JsonConvert.DeserializeObject<JsonFileData>(File.ReadAllText(file_tb.Text));
 
             ClearParagaphsFlp();
 
@@ -64,14 +64,14 @@ namespace LeninSearch.YtEditor
         {
             var controls = paragraphs_flp.Controls.OfType<ParagraphControl>().ToList();
 
-            var paragraphs = controls.Select(c => new Paragraph
+            var paragraphs = controls.Select(c => new JsonParagraph
             {
                 Text = c.ParagraphText,
                 OffsetSeconds = c.OffsetSeconds,
-                ParagraphType = ParagraphType.Youtube
+                ParagraphType = JsonParagraphType.Youtube
             }).ToList();
 
-            var fileData = new FileData {Pars = paragraphs};
+            var fileData = new JsonFileData {Pars = paragraphs};
 
             File.WriteAllText(file_tb.Text, JsonConvert.SerializeObject(fileData, Formatting.Indented));
 

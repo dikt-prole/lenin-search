@@ -98,15 +98,15 @@ namespace LeninSearch.Standard.Core
             return lsiBytes.ToArray();
         }
 
-        public static byte[] ToLsIndexBytes(FileData fd, Dictionary<string, uint> globalWords)
+        public static byte[] ToLsIndexBytes(JsonFileData fd, Dictionary<string, uint> globalWords)
         {
             // construct word position dictionary
             var wordPositionDictionary = new Dictionary<uint, List<LsWordParagraphData>>();
             var paragraphs = fd.Pars.ToList();
-            var headings = fd.Headings?.ToList() ?? new List<Heading>();
+            var headings = fd.Headings?.ToList() ?? new List<JsonHeading>();
             var pages = fd.Pages?.ToList() ?? new List<KeyValuePair<ushort, ushort>>();
             var offsets = new List<KeyValuePair<ushort, ushort>>();
-            var videoData = new List<VideoDataItem>();
+            var videoData = new List<LsiVideoDataItem>();
 
             for (var paragraphIndex = 0; paragraphIndex < paragraphs.Count; paragraphIndex++)
             {
@@ -134,7 +134,7 @@ namespace LeninSearch.Standard.Core
                     wordPositionDictionary[words[i]].Add(wordPosition);
                 }
 
-                if (paragraph.ParagraphType == ParagraphType.Youtube)
+                if (paragraph.ParagraphType == JsonParagraphType.Youtube)
                 {
                     var lastVideoItem = videoData.LastOrDefault();
                     if (lastVideoItem != null && lastVideoItem.VideoId == paragraph.VideoId && paragraphIndex - lastVideoItem.LastParagraphIndex == 1)
@@ -143,7 +143,7 @@ namespace LeninSearch.Standard.Core
                     }
                     else
                     {
-                        var videoItem = new VideoDataItem(paragraph.VideoId, (ushort)paragraphIndex, (ushort)paragraphIndex);
+                        var videoItem = new LsiVideoDataItem(paragraph.VideoId, (ushort)paragraphIndex, (ushort)paragraphIndex);
                         videoData.Add(videoItem);
                     }
 
@@ -247,7 +247,7 @@ namespace LeninSearch.Standard.Core
                 HeadingData = new List<LsWordHeadingData>(),
                 PageData = new List<LsPageData>(),
                 VideoOffsets = new Dictionary<ushort, ushort>(),
-                VideoData = new List<VideoDataItem>()
+                VideoData = new List<LsiVideoDataItem>()
             };
 
             // 1. read word positions
@@ -306,7 +306,7 @@ namespace LeninSearch.Standard.Core
                 var videoId = Encoding.UTF8.GetString(lsIndexBytes, cursor, videoIdLength); cursor += videoIdLength;
                 var firstParagraphIndex = BitConverter.ToUInt16(lsIndexBytes, cursor); cursor += 2;
                 var lastParagraphIndex = BitConverter.ToUInt16(lsIndexBytes, cursor); cursor += 2;
-                lsIndexData.VideoData.Add(new VideoDataItem(videoId, firstParagraphIndex, lastParagraphIndex));
+                lsIndexData.VideoData.Add(new LsiVideoDataItem(videoId, firstParagraphIndex, lastParagraphIndex));
             }
 
             // 5. read offsets

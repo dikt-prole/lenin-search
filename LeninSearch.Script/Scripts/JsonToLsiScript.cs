@@ -31,7 +31,7 @@ namespace LeninSearch.Script.Scripts
 
             foreach (var jsonFile in jsonFiles)
             {
-                var fileData = JsonConvert.DeserializeObject<FileData>(File.ReadAllText(jsonFile));
+                var fileData = JsonConvert.DeserializeObject<JsonFileData>(File.ReadAllText(jsonFile));
                 foreach (var paragraph in fileData.Pars)
                 {
                     var words = TextUtil.GetOrderedWords(paragraph.Text);
@@ -73,7 +73,7 @@ namespace LeninSearch.Script.Scripts
         {
             var lsiFile = Path.Combine(lsiFolder, Path.GetFileName(jsonFile).Replace(".json", ".lsi"));
             Console.WriteLine($"Constructing bytes for '{lsiFile}'");
-            var fileData = JsonConvert.DeserializeObject<FileData>(File.ReadAllText(jsonFile));
+            var fileData = JsonConvert.DeserializeObject<JsonFileData>(File.ReadAllText(jsonFile));
             var lsiBytes = LsIndexUtil.ToLsIndexBytes(fileData, globalWords);
             File.WriteAllBytes(lsiFile, lsiBytes);
         }

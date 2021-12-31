@@ -10,7 +10,7 @@ namespace LeninSearch.Standard.Core.Optimized
         public List<LsWordHeadingData> HeadingData { get; set; }
         public List<LsPageData> PageData { get; set; }
         public Dictionary<ushort, ushort> VideoOffsets { get; set; }
-        public List<VideoDataItem> VideoData { get; set; }
+        public List<LsiVideoDataItem> VideoData { get; set; }
 
         private LsData _lsData;
         public LsData LsData => _lsData ??= ToLsData();
