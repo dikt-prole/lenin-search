@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using LeninSearch.Standard.Core.OldShit;
-using LeninSearch.Standard.Core.Optimized;
 
 namespace LeninSearch
 {

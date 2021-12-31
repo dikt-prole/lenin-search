@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using LeninSearch.Standard.Core.Optimized;
+using LeninSearch.Standard.Core.Corpus.Lsi;
 using LeninSearch.Standard.Core.Search;
 using LeninSearch.Xam.Controls;
 using Xamarin.Forms;

@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using LeninSearch.Standard.Core.Api;
 using LeninSearch.Standard.Core.Corpus;
+using LeninSearch.Standard.Core.Corpus.Json;
 using LeninSearch.Standard.Core.Search;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;

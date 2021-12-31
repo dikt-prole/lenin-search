@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using LeninSearch.Standard.Core.Corpus;
+using LeninSearch.Standard.Core.Corpus.Json;
 using LeninSearch.Standard.Core.Search;
 using Newtonsoft.Json;
 

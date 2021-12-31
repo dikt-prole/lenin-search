@@ -1,4 +1,4 @@
-﻿using LeninSearch.Standard.Core.Optimized;
+﻿using LeninSearch.Standard.Core.Corpus.Lsi;
 using LeninSearch.Xam.Core;
 using Xamarin.Forms;
 

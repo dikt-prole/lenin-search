@@ -1,5 +1,6 @@
 ﻿using LeninSearch.Standard.Core.Corpus;
-using LeninSearch.Standard.Core.Optimized;
+using LeninSearch.Standard.Core.Corpus.Json;
+using LeninSearch.Standard.Core.Corpus.Lsi;
 
 namespace LeninSearch.Standard.Core.Search
 {

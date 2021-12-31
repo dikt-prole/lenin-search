@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using LeninSearch.Standard.Core.Optimized;
+using LeninSearch.Standard.Core.Corpus.Lsi;
 
 namespace LeninSearch.Standard.Core.Search
 {

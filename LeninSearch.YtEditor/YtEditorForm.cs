@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using LeninSearch.Standard.Core;
 using LeninSearch.Standard.Core.Corpus;
+using LeninSearch.Standard.Core.Corpus.Json;
 using Newtonsoft.Json;
 
 namespace LeninSearch.YtEditor

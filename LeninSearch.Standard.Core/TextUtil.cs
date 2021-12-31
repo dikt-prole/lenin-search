@@ -44,8 +44,8 @@ namespace LeninSearch.Standard.Core
                     switch (cst)
                     {
                         case SymbolType.Digit:
-                            words.Add(builder.ToString());
-                            builder = new StringBuilder();
+                            //words.Add(builder.ToString());
+                            //builder = new StringBuilder();
                             builder.Append(c);
                             break;
                         case SymbolType.Other:

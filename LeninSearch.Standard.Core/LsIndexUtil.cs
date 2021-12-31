@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using LeninSearch.Standard.Core.Corpus;
+using LeninSearch.Standard.Core.Corpus.Json;
+using LeninSearch.Standard.Core.Corpus.Lsi;
 using LeninSearch.Standard.Core.OldShit;
-using LeninSearch.Standard.Core.Optimized;
 
 namespace LeninSearch.Standard.Core
 {
@@ -12,93 +13,7 @@ namespace LeninSearch.Standard.Core
     {
         public const byte LsiVersion = 1;
         public const int FileHeaderLength = 32;
-
-        public static byte[] ToLsIndexBytes(OptimizedFileData ofd)
-        {
-            // construct word position dictionary
-            var wordPositionDictionary = new Dictionary<uint, List<LsWordParagraphData>>();
-            var paragraphs = ofd.Paragraphs.ToList();
-            var headings = ofd.Headings.ToList();
-            var pages = ofd.Pages;
-
-            var localDictionary = ofd.InversedLocalDictionary.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
-            for (var paragraphIndex = 0; paragraphIndex < paragraphs.Count; paragraphIndex++)
-            {
-                var heading = headings.FirstOrDefault(h => h.Index == paragraphIndex);
-                var paragraph = paragraphs[paragraphIndex];
-                var words = heading == null
-                    ? paragraph.LocalWordIndexes.Select(i => localDictionary[i]).ToList()
-                    : heading.LocalWordIndexes.Select(i => localDictionary[i]).ToList();
-
-                if (words.Count == 0) continue;
-
-                for (ushort i = 0; i < words.Count; i++)
-                {
-                    var wordPosition = new LsWordParagraphData
-                    {
-                        ParagraphIndex = (ushort)paragraphIndex,
-                        WordPosition = i
-                    };
-
-                    if (!wordPositionDictionary.ContainsKey(words[i]))
-                    {
-                        wordPositionDictionary.Add(words[i], new List<LsWordParagraphData>());
-                    }
-
-                    wordPositionDictionary[words[i]].Add(wordPosition);
-                }
-            }
-
-            // construct word position bytes
-            var wordPositionBytes = new List<byte>();
-            foreach (var key in wordPositionDictionary.Keys)
-            {
-                var positionCount = (uint)wordPositionDictionary[key].Count;
-                wordPositionBytes.AddRange(BitConverter.GetBytes(key));
-                wordPositionBytes.AddRange(BitConverter.GetBytes(positionCount));
-                foreach (var wordPosition in wordPositionDictionary[key])
-                {
-                    wordPositionBytes.AddRange(BitConverter.GetBytes(wordPosition.ParagraphIndex));
-                    wordPositionBytes.AddRange(BitConverter.GetBytes(wordPosition.WordPosition));
-                }
-            }
-
-            // construct header bytes
-            var headerBytes = new List<byte>();
-            if (headings.Any())
-            {
-                foreach (var h in headings)
-                {
-                    headerBytes.AddRange(BitConverter.GetBytes(h.Index));
-                    headerBytes.Add(h.Level);
-                }
-            }
-
-            // construct page bytes
-            var pageBytes = new List<byte>();
-            if (pages?.Any() == true)
-            {
-                foreach (var p in pages)
-                {
-                    pageBytes.AddRange(BitConverter.GetBytes(p.Key));
-                    pageBytes.AddRange(BitConverter.GetBytes(p.Value));
-                }
-            }
-
-            var lsiBytes = new List<byte>();
-
-            lsiBytes.AddRange(BitConverter.GetBytes((uint)wordPositionBytes.Count)); // word position count
-            lsiBytes.AddRange(BitConverter.GetBytes((uint)headerBytes.Count)); // header bytes count
-            lsiBytes.AddRange(BitConverter.GetBytes((uint)(pageBytes.Count))); // page bytes count
-
-            lsiBytes.AddRange(wordPositionBytes);
-            lsiBytes.AddRange(headerBytes);
-            lsiBytes.AddRange(pageBytes);
-
-            return lsiBytes.ToArray();
-        }
-
-        public static byte[] ToLsIndexBytes(JsonFileData fd, Dictionary<string, uint> globalWords)
+        public static byte[] ToLsIndexBytes(JsonFileData fd, Dictionary<string, uint> reverseDictionary)
         {
             // construct word position dictionary
             var wordPositionDictionary = new Dictionary<uint, List<LsWordParagraphData>>();
@@ -107,31 +22,72 @@ namespace LeninSearch.Standard.Core
             var pages = fd.Pages?.ToList() ?? new List<KeyValuePair<ushort, ushort>>();
             var offsets = new List<KeyValuePair<ushort, ushort>>();
             var videoData = new List<LsiVideoDataItem>();
+            var markupData = new Dictionary<ushort, List<LsiMarkupData>>();
+            var commentData = new Dictionary<ushort, List<LsiCommentData>>();
+            var imageData = new Dictionary<ushort, ushort>();
 
-            for (var paragraphIndex = 0; paragraphIndex < paragraphs.Count; paragraphIndex++)
+            for (ushort paragraphIndex = 0; paragraphIndex < paragraphs.Count; paragraphIndex++)
             {
                 var heading = headings.FirstOrDefault(h => h.Index == paragraphIndex);
                 var paragraph = paragraphs[paragraphIndex];
+
                 var words = heading == null
-                    ? TextUtil.GetOrderedWords(paragraph.Text).Select(w => globalWords[w]).ToList()
-                    : TextUtil.GetOrderedWords(heading.Text).Select(w => globalWords[w]).ToList();
+                    ? TextUtil.GetOrderedWords(paragraph.Text)
+                    : TextUtil.GetOrderedWords(heading.Text);
 
-                if (words.Count == 0) continue;
+                // processing markup
+                foreach (var markup in paragraph.Markups ?? new List<JsonMarkupData>())
+                {
+                    var markupWords = TextUtil.GetOrderedWords(markup.MarkupText);
+                    var markupTokenIndex = words.IndexOf(markup.MarkupId);
+                    words[markupTokenIndex] = markupWords[0];
+                    words.InsertRange(markupTokenIndex, markupWords.Skip(1));
+                    if (!markupData.ContainsKey(paragraphIndex)) markupData.Add(paragraphIndex, new List<LsiMarkupData>());
+                    markupData[paragraphIndex].Add(new LsiMarkupData
+                    {
+                        MarkupType = markup.MarkupType,
+                        Length = (ushort)markupWords.Count,
+                        WordIndex = (ushort)markupTokenIndex
+                    });
+                }
 
-                for (ushort i = 0; i < words.Count; i++)
+                // processing comments
+                foreach (var comment in paragraph.Comments ?? new List<JsonCommentData>())
+                {
+                    var commentWords = TextUtil.GetOrderedWords(comment.Text);
+                    var commentWordIndexes = commentWords.Select(w => reverseDictionary[w]).ToList();
+                    if (!commentData.ContainsKey(paragraphIndex)) commentData.Add(paragraphIndex, new List<LsiCommentData>());
+                    commentData[paragraphIndex].Add(new LsiCommentData
+                    {
+                        WordIndex = (ushort)words.IndexOf(comment.CommentId),
+                        Words = commentWordIndexes.ToArray()
+                    });
+                }
+
+                // processing images
+                if (paragraph.ImageIndex.HasValue)
+                {
+                    imageData.Add(paragraphIndex, paragraph.ImageIndex.Value);
+                }
+
+                var wordIndexes = words.Select(w => reverseDictionary[w]).ToList();
+
+                if (wordIndexes.Count == 0) continue;
+
+                for (ushort i = 0; i < wordIndexes.Count; i++)
                 {
                     var wordPosition = new LsWordParagraphData
                     {
-                        ParagraphIndex = (ushort)paragraphIndex,
+                        ParagraphIndex = paragraphIndex,
                         WordPosition = i
                     };
 
-                    if (!wordPositionDictionary.ContainsKey(words[i]))
+                    if (!wordPositionDictionary.ContainsKey(wordIndexes[i]))
                     {
-                        wordPositionDictionary.Add(words[i], new List<LsWordParagraphData>());
+                        wordPositionDictionary.Add(wordIndexes[i], new List<LsWordParagraphData>());
                     }
 
-                    wordPositionDictionary[words[i]].Add(wordPosition);
+                    wordPositionDictionary[wordIndexes[i]].Add(wordPosition);
                 }
 
                 if (paragraph.ParagraphType == JsonParagraphType.Youtube)
@@ -139,15 +95,15 @@ namespace LeninSearch.Standard.Core
                     var lastVideoItem = videoData.LastOrDefault();
                     if (lastVideoItem != null && lastVideoItem.VideoId == paragraph.VideoId && paragraphIndex - lastVideoItem.LastParagraphIndex == 1)
                     {
-                        lastVideoItem.LastParagraphIndex = (ushort)paragraphIndex;
+                        lastVideoItem.LastParagraphIndex = paragraphIndex;
                     }
                     else
                     {
-                        var videoItem = new LsiVideoDataItem(paragraph.VideoId, (ushort)paragraphIndex, (ushort)paragraphIndex);
+                        var videoItem = new LsiVideoDataItem(paragraph.VideoId, paragraphIndex, paragraphIndex);
                         videoData.Add(videoItem);
                     }
 
-                    offsets.Add(new KeyValuePair<ushort, ushort>((ushort)paragraphIndex, paragraph.OffsetSeconds));
+                    offsets.Add(new KeyValuePair<ushort, ushort>(paragraphIndex, paragraph.OffsetSeconds));
                 }
             }
 
@@ -200,10 +156,46 @@ namespace LeninSearch.Standard.Core
             foreach (var videoDataItem in videoData)
             {
                 var videoIdBytes = Encoding.UTF8.GetBytes(videoDataItem.VideoId);
-                videoBytes.Add((byte) videoIdBytes.Length);
+                videoBytes.Add((byte)videoIdBytes.Length);
                 videoBytes.AddRange(videoIdBytes);
                 videoBytes.AddRange(BitConverter.GetBytes(videoDataItem.FirstParagraphIndex));
                 videoBytes.AddRange(BitConverter.GetBytes(videoDataItem.LastParagraphIndex));
+            }
+
+            var imageBytes = new List<byte>();
+            foreach (ushort paragraphIndex in imageData.Keys)
+            {
+                imageBytes.AddRange(BitConverter.GetBytes(paragraphIndex));
+                imageBytes.AddRange(BitConverter.GetBytes(imageData[paragraphIndex]));
+            }
+
+            if (imageBytes.Count >= ushort.MaxValue) throw new Exception("Too many images!");
+
+            var markupBytes = new List<byte>();
+            foreach (ushort paragraphIndex in markupData.Keys)
+            {
+                foreach (var markup in markupData[paragraphIndex])
+                {
+                    markupBytes.AddRange(BitConverter.GetBytes(paragraphIndex));
+                    markupBytes.AddRange(BitConverter.GetBytes(markup.WordIndex));
+                    markupBytes.AddRange(BitConverter.GetBytes(markup.Length));
+                    markupBytes.Add((byte) markup.MarkupType);
+                }
+            }
+
+            var commentBytes = new List<byte>();
+            foreach (ushort paragraphIndex in commentData.Keys)
+            {
+                foreach (var comment in commentData[paragraphIndex])
+                {
+                    commentBytes.AddRange(BitConverter.GetBytes(paragraphIndex));
+                    commentBytes.AddRange(BitConverter.GetBytes(comment.WordIndex));
+                    commentBytes.AddRange(BitConverter.GetBytes((ushort)comment.Words.Length));
+                    foreach (var word in comment.Words)
+                    {
+                        commentBytes.AddRange(BitConverter.GetBytes(word));
+                    }
+                }
             }
 
             var lsiBytes = new List<byte>();
@@ -214,6 +206,9 @@ namespace LeninSearch.Standard.Core
             lsiBytes.AddRange(BitConverter.GetBytes((uint)(pageBytes.Count))); // page bytes count
             lsiBytes.AddRange(BitConverter.GetBytes((uint)(videoBytes.Count))); // video bytes count
             lsiBytes.AddRange(BitConverter.GetBytes((uint)(offsetBytes.Count))); // offset bytes count
+            lsiBytes.AddRange(BitConverter.GetBytes((ushort)(imageBytes.Count))); // image bytes count
+            lsiBytes.AddRange(BitConverter.GetBytes((uint)(markupBytes.Count))); // markup bytes count
+            lsiBytes.AddRange(BitConverter.GetBytes((uint)(commentBytes.Count))); // comment bytes count
             while (lsiBytes.Count < FileHeaderLength)
             {
                 lsiBytes.Add(0);
@@ -224,6 +219,9 @@ namespace LeninSearch.Standard.Core
             lsiBytes.AddRange(pageBytes);
             lsiBytes.AddRange(videoBytes);
             lsiBytes.AddRange(offsetBytes);
+            lsiBytes.AddRange(imageBytes);
+            lsiBytes.AddRange(markupBytes);
+            lsiBytes.AddRange(commentBytes);
 
             return lsiBytes.ToArray();
         }
@@ -238,6 +236,9 @@ namespace LeninSearch.Standard.Core
             var pageBytesCount = BitConverter.ToUInt32(lsIndexBytes, cursor); cursor += 4;
             var videoBytesCount = BitConverter.ToUInt32(lsIndexBytes, cursor); cursor += 4;
             var offsetBytesCount = BitConverter.ToUInt32(lsIndexBytes, cursor); cursor += 4;
+            var imageBytesCount = BitConverter.ToUInt16(lsIndexBytes, cursor); cursor += 2;
+            var markupBytesCount = BitConverter.ToUInt32(lsIndexBytes, cursor); cursor += 4;
+            var commentBytesCount = BitConverter.ToUInt32(lsIndexBytes, cursor); cursor += 4;
 
             cursor = FileHeaderLength;
 
@@ -247,7 +248,10 @@ namespace LeninSearch.Standard.Core
                 HeadingData = new List<LsWordHeadingData>(),
                 PageData = new List<LsPageData>(),
                 VideoOffsets = new Dictionary<ushort, ushort>(),
-                VideoData = new List<LsiVideoDataItem>()
+                VideoData = new List<LsiVideoDataItem>(),
+                ImageData = new Dictionary<ushort, ushort>(),
+                Markups = new Dictionary<ushort, List<LsiMarkupData>>(),
+                Comments = new Dictionary<ushort, List<LsiCommentData>>()
             };
 
             // 1. read word positions
@@ -316,6 +320,59 @@ namespace LeninSearch.Standard.Core
                 var offsetIndex = BitConverter.ToUInt16(lsIndexBytes, cursor); cursor += 2;
                 var offsetValue = BitConverter.ToUInt16(lsIndexBytes, cursor); cursor += 2;
                 lsIndexData.VideoOffsets.Add(offsetIndex, offsetValue);
+            }
+
+            // 6. read images
+            upperMargin += imageBytesCount;
+            while (cursor < upperMargin)
+            {
+                var paragraphIndex = BitConverter.ToUInt16(lsIndexBytes, cursor); cursor += 2;
+                var imageIndex = BitConverter.ToUInt16(lsIndexBytes, cursor); cursor += 2;
+                lsIndexData.ImageData.Add(paragraphIndex, imageIndex);
+            }
+
+            // 7. read markups
+            upperMargin += markupBytesCount;
+            while (cursor < upperMargin)
+            {
+                var paragraphIndex = BitConverter.ToUInt16(lsIndexBytes, cursor); cursor += 2;
+                var wordIndex = BitConverter.ToUInt16(lsIndexBytes, cursor); cursor += 2;
+                var length = BitConverter.ToUInt16(lsIndexBytes, cursor); cursor += 2;
+                var markupType = (MarkupType) lsIndexBytes[cursor]; cursor += 1;
+                if (!lsIndexData.Markups.ContainsKey(paragraphIndex))
+                {
+                    lsIndexData.Markups.Add(paragraphIndex, new List<LsiMarkupData>());
+                }
+                lsIndexData.Markups[paragraphIndex].Add(new LsiMarkupData
+                {
+                    WordIndex = wordIndex,
+                    Length = length,
+                    MarkupType = markupType
+                });
+            }
+
+            // 8. read comments
+            upperMargin += commentBytesCount;
+            while (cursor < upperMargin)
+            {
+                var paragraphIndex = BitConverter.ToUInt16(lsIndexBytes, cursor); cursor += 2;
+                var wordIndex = BitConverter.ToUInt16(lsIndexBytes, cursor); cursor += 2;
+                var length = BitConverter.ToUInt16(lsIndexBytes, cursor); cursor += 2;
+                var words = new List<uint>();
+                for (var i = 0; i < length; i++)
+                {
+                    var word = BitConverter.ToUInt32(lsIndexBytes, cursor); cursor += 4;
+                    words.Add(word);
+                }
+                if (!lsIndexData.Comments.ContainsKey(paragraphIndex))
+                {
+                    lsIndexData.Comments.Add(paragraphIndex, new List<LsiCommentData>());
+                }
+                lsIndexData.Comments[paragraphIndex].Add(new LsiCommentData
+                {
+                    WordIndex = wordIndex,
+                    Words = words.ToArray()
+                });
             }
 
             return lsIndexData;

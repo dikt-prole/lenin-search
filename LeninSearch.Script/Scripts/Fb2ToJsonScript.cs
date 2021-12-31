@@ -7,8 +7,14 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using LeninSearch.Standard.Core.Corpus;
+using LeninSearch.Standard.Core.Corpus.Json;
 using Newtonsoft.Json;
 using Formatting = Newtonsoft.Json.Formatting;
+using JsonCommentData = LeninSearch.Standard.Core.Corpus.Json.JsonCommentData;
+using JsonFileData = LeninSearch.Standard.Core.Corpus.Json.JsonFileData;
+using JsonHeading = LeninSearch.Standard.Core.Corpus.Json.JsonHeading;
+using JsonMarkupData = LeninSearch.Standard.Core.Corpus.Json.JsonMarkupData;
+using JsonParagraph = LeninSearch.Standard.Core.Corpus.Json.JsonParagraph;
 
 namespace LeninSearch.Script.Scripts
 {
@@ -235,7 +241,7 @@ namespace LeninSearch.Script.Scripts
 
         private (List<JsonMarkupData> Markups, string Text) GetMarkupData(string pText)
         {
-            var markupOptions = new List<(string StartTag, string EndTag, MarkupType MarkupType)>
+            var markupOptions = new List<(string StartTag, string EndTag, Standard.Core.Corpus.Json.MarkupType MarkupType)>
             {
                 ("<strong><emphasis>", "</emphasis></strong>", MarkupType.StrongEmphasis),
                 ("<emphasis><strong>", "</strong></emphasis>", MarkupType.StrongEmphasis),

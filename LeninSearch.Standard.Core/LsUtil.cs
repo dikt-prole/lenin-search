@@ -4,8 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using LeninSearch.Standard.Core.Corpus;
+using LeninSearch.Standard.Core.Corpus.Json;
 using LeninSearch.Standard.Core.OldShit;
-using LeninSearch.Standard.Core.Optimized;
 
 namespace LeninSearch.Standard.Core
 {

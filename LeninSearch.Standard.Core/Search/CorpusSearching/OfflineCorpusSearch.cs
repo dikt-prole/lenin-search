@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using LeninSearch.Standard.Core.Corpus;
+using LeninSearch.Standard.Core.Corpus.Json;
 
 namespace LeninSearch.Standard.Core.Search.CorpusSearching
 {
