@@ -2,6 +2,7 @@
 {
     public class LsiCommentData
     {
+        public ushort CommentIndex { get; set; }
         public ushort WordPosition { get; set; }
         public uint[] Words { get; set; }
     }

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using LeninSearch.Standard.Core;
 using LeninSearch.Standard.Core.Corpus;
 using LeninSearch.Standard.Core.Corpus.Json;
+using LeninSearch.Standard.Core.LsiUtil;
 using Newtonsoft.Json;
 using Encoder = System.Drawing.Imaging.Encoder;
 
@@ -18,12 +19,21 @@ namespace LeninSearch.Script.Scripts
     {
         private static readonly Random Random = new Random();
         public string Id => "json-to-lsi";
+
+        private ILsiUtil _lsiUtil;
+
+        public JsonToLsiScript()
+        {
+            _lsiUtil = new V2LsiUtil();
+        }
+
         public void Execute(params string[] input)
         {
             var jsonFolder = input[0];
             var lsiFolder = input[1];
             var jpegQuality = input.Length == 3 ? long.Parse(input[2]) : -1;
             var dicFile = Path.Combine(lsiFolder, "corpus.dic");
+
             if (File.Exists(dicFile)) File.Delete(dicFile);
 
             Console.WriteLine($"Json Folder: {jsonFolder}");
@@ -130,7 +140,7 @@ namespace LeninSearch.Script.Scripts
                 Series = string.Join("-", lsiFolderNameSplit.Take(lsiFolderNameSplit.Length - 1)),
                 CorpusVersion = int.Parse(new string(lsiFolderNameSplit.Last().Where(char.IsNumber).ToArray())),
                 Files = corpusFileItems,
-                LsiVersion = LsIndexUtil.LsiVersion
+                LsiVersion = 2
             };
 
             var corpusJsonFile = Path.Combine(lsiFolder, "corpus.json");
@@ -147,7 +157,7 @@ namespace LeninSearch.Script.Scripts
             {
                 var lsiFileName = Path.GetFileName(lsiFile);
                 Console.WriteLine($"Verifying {lsiFileName}");
-                var lsiData = LsIndexUtil.FromLsIndexBytes(File.ReadAllBytes(lsiFile));
+                var lsiData = _lsiUtil.FromLsIndexBytes(File.ReadAllBytes(lsiFile));
                 var lsData = lsiData.LsData;
                 var jsonFile = Path.Combine(jsonFolder, Path.GetFileName(lsiFile).Replace(".lsi", ".json"));
                 var jsonData = JsonConvert.DeserializeObject<JsonFileData>(File.ReadAllText(jsonFile));
@@ -166,7 +176,7 @@ namespace LeninSearch.Script.Scripts
                     Console.WriteLine($"{lsiHeadingCount} vs {jsonHeadingCount} json headings");
                 }
 
-                var lsiImageCount = lsiData.ImageData.Count;
+                var lsiImageCount = lsiData.Images.Count;
                 var jsonImageCount = jsonData.Pars.Count(p => p.ImageIndex.HasValue);
                 if (lsiImageCount != jsonImageCount)
                 {
@@ -174,14 +184,14 @@ namespace LeninSearch.Script.Scripts
                 }
 
                 var lsiMarkupCount = lsiData.Markups.SelectMany(m => m.Value).Count();
-                var jsonMarkupCount = jsonData.Pars.SelectMany(p => p.Markups).Count();
+                var jsonMarkupCount = jsonData.Pars.Where(p => p.Markups != null).SelectMany(p => p.Markups).Count();
                 if (lsiMarkupCount != jsonMarkupCount)
                 {
                     Console.WriteLine($"{lsiMarkupCount} vs {jsonMarkupCount} json images");
                 }
 
                 var lsiCommentCount = lsiData.Comments.SelectMany(c => c.Value).Count();
-                var jsonCommentCount = jsonData.Pars.SelectMany(p => p.Comments).Count();
+                var jsonCommentCount = jsonData.Pars.Where(p => p.Comments != null).SelectMany(p => p.Comments).Count();
                 if (lsiMarkupCount != jsonMarkupCount)
                 {
                     Console.WriteLine($"{lsiCommentCount} vs {jsonCommentCount} json images");
@@ -196,14 +206,14 @@ namespace LeninSearch.Script.Scripts
             }
         }
 
-        private static void WriteLsiFile(string jsonFile, string lsiFolder, Dictionary<string, uint> globalWords)
+        private void WriteLsiFile( string jsonFile, string lsiFolder, Dictionary<string, uint> globalWords)
         {
             try
             {
                 var lsiFile = Path.Combine(lsiFolder, Path.GetFileName(jsonFile).Replace(".json", ".lsi"));
                 Console.WriteLine($"Constructing bytes for '{lsiFile}'");
                 var fileData = JsonConvert.DeserializeObject<JsonFileData>(File.ReadAllText(jsonFile));
-                var lsiBytes = LsIndexUtil.ToLsIndexBytes(fileData, globalWords);
+                var lsiBytes = _lsiUtil.ToLsIndexBytes(fileData, globalWords);
                 File.WriteAllBytes(lsiFile, lsiBytes);
             }
             catch (Exception exc)

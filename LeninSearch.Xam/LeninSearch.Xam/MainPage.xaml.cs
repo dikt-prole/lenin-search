@@ -85,7 +85,7 @@ namespace LeninSearch.Xam
                     var paragraphIndex = _selectionSelectionDecorator.SelectedIndexes[0];
                     var corpusItem = _state.GetCurrentCorpusItem();
                     var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, _state.ReadingFile);
-                    var buttonCount = lsiData.VideoOffsets.ContainsKey(paragraphIndex) ? 3 : 2;
+                    var buttonCount = lsiData.Offsets.ContainsKey(paragraphIndex) ? 3 : 2;
                     await ShowTextMenu(buttonCount);
                 }
                 else
@@ -117,7 +117,7 @@ namespace LeninSearch.Xam
                     : new string(headingText.Take(30).ToArray());
 
                 var videoId = lsiData.GetVideoId(paragraphIndex);
-                var offset = lsiData.VideoOffsets[paragraphIndex];
+                var offset = lsiData.Offsets[paragraphIndex];
 
                 StartVideoPlay(videoId, offset);
             };

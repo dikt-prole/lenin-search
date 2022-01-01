@@ -8,49 +8,59 @@ namespace LeninSearch.Script
 {
     public static class XmlToJsonUtil
     {
-        public static JsonParagraph GetImageParagraph(XmlNode node, List<string> images, Func<string, string> imageIdFunc)
+        public static JsonParagraph GetImageParagraph(XmlNode node, List<string> imageIds, Func<string, string> imageIdFunc)
         {
             var lhref = node.Attributes["lhref"].InnerText;
             var imageId = imageIdFunc(lhref.Replace("#", ""));
-            images.Add(imageId);
+            imageIds.Add(imageId);
             return new JsonParagraph
             {
-                Text = $"image{images.Count - 1}",
+                Text = $"image{imageIds.Count - 1}",
                 ParagraphType = JsonParagraphType.Illustration,
-                ImageIndex = (ushort)(images.Count - 1)
+                ImageIndex = (ushort)(imageIds.Count - 1)
             };
         }
 
-        public static JsonParagraph GetNormalParagraph(XmlNode node, List<string> commentIds)
+        public static JsonParagraph GetNormalParagraph(XmlNode node, List<string> commentIds, List<string> imageIds, Func<string, string> imageIdFunc)
         {
-            var xmlTextData = GetXmlTextData(node.InnerXml, commentIds);
+            var xmlTextData = GetXmlTextData(node.InnerXml, commentIds, imageIds, imageIdFunc);
             return new JsonParagraph
             {
                 Text = xmlTextData.Text,
                 Comments = xmlTextData.Comments,
                 Markups = xmlTextData.Markups,
-                ParagraphType = JsonParagraphType.Normal
+                ParagraphType = JsonParagraphType.Normal,
+                InlineImages  = xmlTextData.Images
             };
         }
 
-        public static JsonParagraph GetTitleParagraph(XmlNode node, List<string> commentIds)
+        public static JsonParagraph GetTitleParagraph(XmlNode node, List<string> commentIds, List<string> imageIds, Func<string, string> imageIdFunc)
         {
             var xml = node.InnerXml.Replace("<p>", "").Replace("</p>", " ").TrimEnd(' ');
-            var xmlTextData = GetXmlTextData(xml, commentIds);
+            while (xml.Contains("<p"))
+            {
+                var pStartIndex = xml.IndexOf("<p");
+                var pEndIndex = xml.IndexOf(">", pStartIndex) + 1;
+                xml = xml.Substring(0, pStartIndex) + xml.Substring(pEndIndex);
+            }
+
+            var xmlTextData = GetXmlTextData(xml, commentIds, imageIds, imageIdFunc);
             return new JsonParagraph
             {
                 Text = xmlTextData.Text,
                 Comments = xmlTextData.Comments,
                 Markups = xmlTextData.Markups,
-                ParagraphType = JsonParagraphType.Heading0
+                ParagraphType = JsonParagraphType.Heading0,
+                InlineImages = xmlTextData.Images
             };
         }
 
-        private static (List<JsonMarkupData> Markups, List<JsonCommentData> Comments, string Text) GetXmlTextData(string xml, List<string> commentIds)
+        private static (List<JsonMarkupData> Markups, List<JsonCommentData> Comments, List<JsonInlineImageData> Images, string Text) GetXmlTextData(string xml, List<string> commentIds, List<string> imageIds, Func<string, string> imageIdFunc)
         {
             var text = xml;
             var markups = new List<JsonMarkupData>();
             var comments = new List<JsonCommentData>();
+            var images = new List<JsonInlineImageData>();
 
             while (true)
             {
@@ -58,7 +68,8 @@ namespace LeninSearch.Script
                 {
                     ("<strong>", "</strong>", text.IndexOf("<strong>")),
                     ("<emphasis>","</emphasis>", text.IndexOf("<emphasis>")),
-                    ("<a ","</a>", text.IndexOf("<a "))
+                    ("<a ","</a>", text.IndexOf("<a ")),
+                    ("<image ", "/>", text.IndexOf("<image "))
                 }
                     .Where(ti => ti.Index != -1)
                     .OrderBy(ti => ti.Index)
@@ -86,16 +97,33 @@ namespace LeninSearch.Script
                     markups.Add(JsonMarkupData.Emphasis((ushort)tagStart, (ushort)tagText.Length));
                     text = text.Substring(0, tagStart) + tagText + text.Substring(tagEnd);
                 }
-                else
+                else if (tagNode.Name == "a")
                 {
                     var commentId = tagNode.Attributes["lhref"].Value.Replace("#", "");
                     commentIds.Add(commentId);
                     comments.Add(new JsonCommentData(commentId, (ushort)(commentIds.Count - 1), (ushort)tagStart));
                     text = text.Substring(0, tagStart) + text.Substring(tagEnd);
                 }
+                else // inline image
+                {
+                    var imageId = tagNode.Attributes["lhref"].Value.Replace("#", "");
+
+                    var before = text.Substring(0, tagStart);
+                    if (!before.EndsWith(" ")) before = $"{before} ";
+
+                    var after = text.Substring(tagEnd);
+                    if (!after.StartsWith(" ")) after = $" {after}";
+                    
+                    imageId = imageIdFunc(imageId);
+                    imageIds.Add(imageId);
+                    var imageIndex = (ushort)(imageIds.Count - 1);
+                    var inlineImage = new JsonInlineImageData(imageIndex, (ushort) before.Length);
+                    images.Add(inlineImage);
+                    text = before + inlineImage.ImageToken + after;
+                }
             }
 
-            return (markups, comments, text);
+            return (markups, comments, images, text);
         }
     }
 }

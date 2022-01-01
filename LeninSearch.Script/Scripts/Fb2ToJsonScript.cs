@@ -22,12 +22,10 @@ namespace LeninSearch.Script.Scripts
             var fb2Folder = input[0];
             var jsonFolder = input[1];
             var jpegQuality = input.Length == 3 ? long.Parse(input[2]) : -1;
-
             foreach (var f in Directory.GetFiles(jsonFolder)) File.Delete(f);
 
-            var images = new List<string>();
-
             var fb2Files = Directory.GetFiles(fb2Folder, "*.fb2");
+            var imageIds = new List<string>();
             foreach (var fb2File in fb2Files)
             {
                 var jsonFileData = new JsonFileData
@@ -66,15 +64,16 @@ namespace LeninSearch.Script.Scripts
                 bodyDoc.LoadXml(bodyXml);
                 var bodyRoot = bodyDoc.DocumentElement;
                 var commentIds = new List<string>();
+                
                 foreach (XmlNode node in bodyRoot.ChildNodes)
                 {
                     switch (node.Name)
                     {
                         case "image":
-                            jsonFileData.Pars.Add(XmlToJsonUtil.GetImageParagraph(node, images, id => $"{fileName}{id}"));
+                            jsonFileData.Pars.Add(XmlToJsonUtil.GetImageParagraph(node, imageIds, id => $"{fileName}{id}"));
                             break;
                         case "title":
-                            var titleParagraph = XmlToJsonUtil.GetTitleParagraph(node, commentIds);
+                            var titleParagraph = XmlToJsonUtil.GetTitleParagraph(node, commentIds, imageIds, id => $"{fileName}{id}");
                             jsonFileData.Pars.Add(titleParagraph);
                             jsonFileData.Headings.Add(new JsonHeading
                             {
@@ -87,11 +86,11 @@ namespace LeninSearch.Script.Scripts
                         case "p":
                             if (node.ChildNodes.Count > 0 && node.ChildNodes[0].Name == "image")
                             {
-                                jsonFileData.Pars.Add(XmlToJsonUtil.GetImageParagraph(node.ChildNodes[0], images, id => $"{fileName}{id}"));
+                                jsonFileData.Pars.Add(XmlToJsonUtil.GetImageParagraph(node.ChildNodes[0], imageIds, id => $"{fileName}{id}"));
                             }
                             else
                             {
-                                jsonFileData.Pars.Add(XmlToJsonUtil.GetNormalParagraph(node, commentIds));
+                                jsonFileData.Pars.Add(XmlToJsonUtil.GetNormalParagraph(node, commentIds, imageIds, id => $"{fileName}{id}"));
                             }
                             break;
                     }
@@ -102,13 +101,19 @@ namespace LeninSearch.Script.Scripts
                 //var binaryXml = $"<fb2>{fb2Xml.Substring(binaryStartIndex, binaryEndIndex - binaryStartIndex)}</fb2>";
                 var fb2Doc = new XmlDocument();
                 fb2Doc.LoadXml(fb2Xml);
-                var comments = jsonFileData.Pars.SelectMany(p => p.Comments ?? new List<JsonCommentData>()).ToDictionary(c => c.CommentId, c => c);
+
+                var comments = new Dictionary<string, JsonCommentData>();
+                foreach (var cd in jsonFileData.Pars.SelectMany(p => p.Comments ?? new List<JsonCommentData>()))
+                {
+                    if (comments.ContainsKey(cd.CommentId)) continue;
+                    comments.Add(cd.CommentId, cd);
+                }
                 foreach (XmlNode node in fb2Doc.DocumentElement.ChildNodes)
                 {
                     if (node.Name == "binary")
                     {
                         var imageId = $"{fileName}{node.Attributes["id"].Value}";
-                        var imageIndex = images.IndexOf(imageId);
+                        var imageIndex = imageIds.IndexOf(imageId);
                         if (imageIndex > 0)
                         {
                             var imageBase64 = node.InnerText;

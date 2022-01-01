@@ -6,13 +6,14 @@ namespace LeninSearch.Standard.Core.Corpus.Lsi
     public class LsIndexData
     {
         public Dictionary<uint, List<LsWordParagraphData>> WordParagraphData { get; set; }
-        public List<LsWordHeadingData> HeadingData { get; set; }
-        public List<LsPageData> PageData { get; set; }
-        public Dictionary<ushort, ushort> VideoOffsets { get; set; }
-        public List<LsiVideoDataItem> VideoData { get; set; }
-        public Dictionary<ushort, ushort> ImageData { get; set; }
+        public List<LsWordHeadingData> Headings { get; set; }
+        public List<LsPageData> Pages { get; set; }
+        public Dictionary<ushort, ushort> Offsets { get; set; }
+        public List<LsiVideoDataItem> Videos { get; set; }
+        public Dictionary<ushort, ushort> Images { get; set; }
         public Dictionary<ushort, List<LsiMarkupData>> Markups { get; set; }
         public Dictionary<ushort, List<LsiCommentData>> Comments { get; set; }
+        public Dictionary<ushort, List<LsiInlineImageData>> InlineImages { get; set; }
 
         private LsData _lsData;
         public LsData LsData => _lsData ??= ToLsData();
@@ -38,7 +39,7 @@ namespace LeninSearch.Standard.Core.Corpus.Lsi
                 }
             }
 
-            foreach (var headingData in HeadingData)
+            foreach (var headingData in Headings)
             {
                 var paragraph = lsData.Paragraphs[headingData.Index];
                 var lsHeading = LsHeading.FromLsParagraph(paragraph, headingData.Level);
@@ -46,7 +47,7 @@ namespace LeninSearch.Standard.Core.Corpus.Lsi
                 lsData.Paragraphs[headingData.Index].IsHeading = true;
             }
 
-            foreach (var pageData in PageData)
+            foreach (var pageData in Pages)
             {
                 lsData.Pages.Add(pageData.Index, pageData.Number);
                 if (!lsData.Paragraphs.ContainsKey(pageData.Index))
@@ -72,7 +73,7 @@ namespace LeninSearch.Standard.Core.Corpus.Lsi
 
         public string GetVideoId(ushort paragraphIndex)
         {
-            var videoDataItem = VideoData.FirstOrDefault(vdi => vdi.FirstParagraphIndex <= paragraphIndex && paragraphIndex <= vdi.LastParagraphIndex);
+            var videoDataItem = Videos.FirstOrDefault(vdi => vdi.FirstParagraphIndex <= paragraphIndex && paragraphIndex <= vdi.LastParagraphIndex);
             return videoDataItem?.VideoId;
         }
     }

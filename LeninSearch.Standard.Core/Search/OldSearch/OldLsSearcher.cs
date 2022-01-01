@@ -13,7 +13,7 @@ namespace LeninSearch.Standard.Core.Search.OldSearch
 
         public List<ParagraphSearchResult> SearchHeadings(LsIndexData lsIndexData, SearchQuery query)
         {
-            var headingIndexes = lsIndexData.HeadingData.Select(hd => hd.Index).ToHashSet();
+            var headingIndexes = lsIndexData.Headings.Select(hd => hd.Index).ToHashSet();
 
             var searchResult = SearchParagraphData(lsIndexData.WordParagraphData, query);
 

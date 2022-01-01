@@ -11,5 +11,6 @@ namespace LeninSearch.Standard.Core.Corpus.Json
         public ushort? ImageIndex { get; set; }
         public List<JsonCommentData> Comments { get; set; }
         public List<JsonMarkupData> Markups { get; set; }
+        public List<JsonInlineImageData> InlineImages { get; set; }
     }
 }
