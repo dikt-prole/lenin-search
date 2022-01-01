@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using LeninSearch.Standard.Core;
 using Newtonsoft.Json;
 using Formatting = Newtonsoft.Json.Formatting;
 using JsonCommentData = LeninSearch.Standard.Core.Corpus.Json.JsonCommentData;
@@ -57,9 +58,10 @@ namespace LeninSearch.Script.Scripts
 
                 var bodyStart = fb2Xml.IndexOf("<body");
                 var bodyEnd = fb2Xml.IndexOf("</body>");
-                var bodyXml = fb2Xml.Substring(bodyStart, bodyEnd - bodyStart + 7)
-                    .Replace("<section>", "")
-                    .Replace("</section>", "");
+                var bodyXml = fb2Xml.Substring(bodyStart, bodyEnd - bodyStart + 7);
+                bodyXml = TextUtil.Trim(bodyXml, "<section", ">");
+                bodyXml = TextUtil.Trim(bodyXml, "</section", ">");
+
                 var bodyDoc = new XmlDocument();
                 bodyDoc.LoadXml(bodyXml);
                 var bodyRoot = bodyDoc.DocumentElement;

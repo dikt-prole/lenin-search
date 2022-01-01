@@ -167,5 +167,17 @@ namespace LeninSearch.Standard.Core
             return true;
         }
         private enum SymbolType { Letter = 0, Digit = 1, Other = 2 }
+
+        public static string Trim(string text, string startToken, string endToken)
+        {
+            while (text.Contains(startToken))
+            {
+                var startIndex = text.IndexOf(startToken);
+                var endIndex = text.IndexOf(endToken, startIndex) + endToken.Length;
+                text = text.Substring(0, startIndex) + text.Substring(endIndex);
+            }
+
+            return text;
+        }
     }
 }

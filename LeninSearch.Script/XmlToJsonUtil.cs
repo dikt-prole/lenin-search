@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
+using LeninSearch.Standard.Core;
 using LeninSearch.Standard.Core.Corpus.Json;
 
 namespace LeninSearch.Script
@@ -37,12 +38,7 @@ namespace LeninSearch.Script
         public static JsonParagraph GetTitleParagraph(XmlNode node, List<string> commentIds, List<string> imageIds, Func<string, string> imageIdFunc)
         {
             var xml = node.InnerXml.Replace("<p>", "").Replace("</p>", " ").TrimEnd(' ');
-            while (xml.Contains("<p"))
-            {
-                var pStartIndex = xml.IndexOf("<p");
-                var pEndIndex = xml.IndexOf(">", pStartIndex) + 1;
-                xml = xml.Substring(0, pStartIndex) + xml.Substring(pEndIndex);
-            }
+            xml = TextUtil.Trim(xml, "<p", ">");
 
             var xmlTextData = GetXmlTextData(xml, commentIds, imageIds, imageIdFunc);
             return new JsonParagraph
