@@ -77,6 +77,9 @@ namespace LeninSearch.Script
                 var tagEnd = text.IndexOf(tagIndexes[0].CloseTag, tagStart) + tagIndexes[0].CloseTag.Length;
                 var tagXml = text.Substring(tagStart, tagEnd - tagStart);
 
+                //todo: <emphasis>Подпись (<emphasis>или отметка</emphasis>) рабочего</emphasis>
+
+
                 var tagDoc = new XmlDocument();
                 tagDoc.LoadXml($"<wrap>{tagXml}</wrap>");
                 var tagNode = tagDoc.DocumentElement.ChildNodes[0];
