@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using LeninSearch.Standard.Core;
 using LeninSearch.Standard.Core.Corpus;
 using LeninSearch.Standard.Core.Corpus.Json;
 using Newtonsoft.Json;
+using Encoder = System.Drawing.Imaging.Encoder;
 
 namespace LeninSearch.Script.Scripts
 {
@@ -20,6 +22,7 @@ namespace LeninSearch.Script.Scripts
         {
             var jsonFolder = input[0];
             var lsiFolder = input[1];
+            var jpegQuality = input.Length == 3 ? long.Parse(input[2]) : -1;
             var dicFile = Path.Combine(lsiFolder, "corpus.dic");
             if (File.Exists(dicFile)) File.Delete(dicFile);
 
@@ -46,15 +49,6 @@ namespace LeninSearch.Script.Scripts
                     {
                         var commentWords = TextUtil.GetOrderedWords(comment.Text);
                         foreach (var word in commentWords)
-                        {
-                            if (!globalWords.Contains(word)) globalWords.Add(word);
-                        }
-                    }
-
-                    foreach (var markup in paragraph.Markups ?? new List<JsonMarkupData>())
-                    {
-                        var markupWords = TextUtil.GetOrderedWords(markup.MarkupText);
-                        foreach (var word in markupWords)
                         {
                             if (!globalWords.Contains(word)) globalWords.Add(word);
                         }
@@ -89,12 +83,25 @@ namespace LeninSearch.Script.Scripts
             Task.WhenAll(tasks).Wait();
 
             Console.WriteLine("Copying images");
-            var imageFiles = Directory.GetFiles(jsonFolder, "*.jpeg");
-            foreach (var file in imageFiles)
+            var jsonImageFiles = Directory.GetFiles(jsonFolder, "*.jpeg");
+            foreach (var jsonImageFile in jsonImageFiles)
             {
-                var lsiImageFile = Path.Combine(lsiFolder, Path.GetFileName(file));
-                var imageBytes = File.ReadAllBytes(file);
-                File.WriteAllBytes(lsiImageFile, imageBytes);
+                using (var jsonImage = Image.FromFile(jsonImageFile))
+                {
+                    var lsiImageFile = Path.Combine(lsiFolder, Path.GetFileName(jsonImageFile));
+                    if (jpegQuality > 0)
+                    {
+                        var encoderParams = new EncoderParameters(1);
+                        var qualityParam = new EncoderParameter(Encoder.Quality, jpegQuality);
+                        var jpegEncoder = ImageCodecInfo.GetImageEncoders().First(e => e.MimeType == "image/jpeg");
+                        encoderParams.Param[0] = qualityParam;
+                        jsonImage.Save(lsiImageFile, jpegEncoder, encoderParams);
+                    }
+                    else
+                    {
+                        jsonImage.Save(lsiImageFile, ImageFormat.Jpeg);
+                    }
+                }
             }
 
             Console.WriteLine("Construct corpus.json");

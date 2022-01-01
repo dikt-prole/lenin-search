@@ -1,19 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Xml;
-using LeninSearch.Standard.Core.Corpus;
-using LeninSearch.Standard.Core.Corpus.Json;
 using Newtonsoft.Json;
 using Formatting = Newtonsoft.Json.Formatting;
 using JsonCommentData = LeninSearch.Standard.Core.Corpus.Json.JsonCommentData;
 using JsonFileData = LeninSearch.Standard.Core.Corpus.Json.JsonFileData;
 using JsonHeading = LeninSearch.Standard.Core.Corpus.Json.JsonHeading;
-using JsonMarkupData = LeninSearch.Standard.Core.Corpus.Json.JsonMarkupData;
 using JsonParagraph = LeninSearch.Standard.Core.Corpus.Json.JsonParagraph;
 
 namespace LeninSearch.Script.Scripts
@@ -25,6 +21,7 @@ namespace LeninSearch.Script.Scripts
         {
             var fb2Folder = input[0];
             var jsonFolder = input[1];
+            var jpegQuality = input.Length == 3 ? long.Parse(input[2]) : -1;
 
             foreach (var f in Directory.GetFiles(jsonFolder)) File.Delete(f);
 
@@ -33,7 +30,7 @@ namespace LeninSearch.Script.Scripts
             var fb2Files = Directory.GetFiles(fb2Folder, "*.fb2");
             foreach (var fb2File in fb2Files)
             {
-                var fileData = new JsonFileData
+                var jsonFileData = new JsonFileData
                 {
                     Pars = new List<JsonParagraph>(),
                     Headings = new List<JsonHeading>(),
@@ -41,261 +38,117 @@ namespace LeninSearch.Script.Scripts
                 };
 
                 var fileName = Path.GetFileName(fb2File).Replace(".fb2", "");
-                var fileDataFile = Path.Combine(jsonFolder, $"{fileName}.json");
-                Console.WriteLine($"Generate: {fileDataFile}");
+                var jsonFile = Path.Combine(jsonFolder, $"{fileName}.json");
+                Console.WriteLine($"Generate: {jsonFile}");
 
-                var fb2Xml = File.ReadAllText(fb2File).Replace("\r", "").Replace("\n", "").Replace("  ", " ").Replace("> ", ">");
+                var fb2Xml = File.ReadAllText(fb2File)
+                    .Replace("l:href", "lhref")
+                    .Replace("xlink:href", "lhref")
+                    .Replace("\r", "")
+                    .Replace("\n", "")
+                    .Replace("  ", " ")
+                    .Replace("> ", ">");
+                while (fb2Xml.Contains("<emphasis><emphasis>"))
+                    fb2Xml = fb2Xml.Replace("<emphasis><emphasis>", "<emphasis>");
+                while (fb2Xml.Contains("</emphasis></emphasis>"))
+                    fb2Xml = fb2Xml.Replace("</emphasis></emphasis>", "</emphasis>");
+                while (fb2Xml.Contains("<strong><strong>"))
+                    fb2Xml = fb2Xml.Replace("<strong><strong>", "<strong>");
+                while (fb2Xml.Contains("</strong></strong>"))
+                    fb2Xml = fb2Xml.Replace("</strong></strong>", "</strong>");
+
                 var bodyStart = fb2Xml.IndexOf("<body");
-                var bodyEnd = fb2Xml.IndexOf("</body");
-
-                // 1. construct paragraphs and headings
-                var pStartIndex = bodyStart;
-                ushort pIndex = 0;
-                while (true)
+                var bodyEnd = fb2Xml.IndexOf("</body>");
+                var bodyXml = fb2Xml.Substring(bodyStart, bodyEnd - bodyStart + 7)
+                    .Replace("<section>", "")
+                    .Replace("</section>", "");
+                var bodyDoc = new XmlDocument();
+                bodyDoc.LoadXml(bodyXml);
+                var bodyRoot = bodyDoc.DocumentElement;
+                var commentIds = new List<string>();
+                foreach (XmlNode node in bodyRoot.ChildNodes)
                 {
-                    pStartIndex = fb2Xml.IndexOf("<p>", pStartIndex) + 3;
-
-                    if (pStartIndex == -1 || pStartIndex > bodyEnd) break;
-
-                    var pEndIndex = fb2Xml.IndexOf("</p>", pStartIndex);
-
-                    if (pEndIndex == -1 || pEndIndex > bodyEnd) break;
-
-                    var pText = fb2Xml.Substring(pStartIndex, pEndIndex - pStartIndex);
-
-                    var pBefore = fb2Xml.Substring(pStartIndex - 13, 10);
-
-                    var isTitle = pBefore.Contains("<title>");
-
-                    var isImage = pText.Contains("<image");
-
-                    if (isImage)
+                    switch (node.Name)
                     {
-                        var imageFile = $"{fileName}{GetParagraphImageFile(pText)}";
-                        images.Add(imageFile);
+                        case "image":
+                            jsonFileData.Pars.Add(XmlToJsonUtil.GetImageParagraph(node, images, id => $"{fileName}{id}"));
+                            break;
+                        case "title":
+                            var titleParagraph = XmlToJsonUtil.GetTitleParagraph(node, commentIds);
+                            jsonFileData.Pars.Add(titleParagraph);
+                            jsonFileData.Headings.Add(new JsonHeading
+                            {
+                                Index = (ushort)(jsonFileData.Pars.Count - 1),
+                                Level = 0,
+                                Text = titleParagraph.Text
+                            });
+                            break;
+                        case "cite":
+                        case "p":
+                            if (node.ChildNodes.Count > 0 && node.ChildNodes[0].Name == "image")
+                            {
+                                jsonFileData.Pars.Add(XmlToJsonUtil.GetImageParagraph(node.ChildNodes[0], images, id => $"{fileName}{id}"));
+                            }
+                            else
+                            {
+                                jsonFileData.Pars.Add(XmlToJsonUtil.GetNormalParagraph(node, commentIds));
+                            }
+                            break;
                     }
+                }
 
-                    var imageIndex = isImage ? (ushort?)(images.Count - 1) : null;
-
-                    var commentData = GetCommentData(pText, fb2Xml);
-
-                    var paragraph = new JsonParagraph
+                //var binaryStartIndex = fb2Xml.IndexOf("<binary");
+                //var binaryEndIndex = fb2Xml.LastIndexOf("</binary>") + "</binary>".Length;
+                //var binaryXml = $"<fb2>{fb2Xml.Substring(binaryStartIndex, binaryEndIndex - binaryStartIndex)}</fb2>";
+                var fb2Doc = new XmlDocument();
+                fb2Doc.LoadXml(fb2Xml);
+                var comments = jsonFileData.Pars.SelectMany(p => p.Comments ?? new List<JsonCommentData>()).ToDictionary(c => c.CommentId, c => c);
+                foreach (XmlNode node in fb2Doc.DocumentElement.ChildNodes)
+                {
+                    if (node.Name == "binary")
                     {
-                        Text = isImage 
-                            ? $"image{imageIndex}.jpeg" 
-                            : commentData.Comments.Any()
-                                ? commentData.Text
-                                : pText,
-                        ImageIndex = imageIndex,
-                        ParagraphType = isImage
-                            ? JsonParagraphType.Illustration
-                            : isTitle
-                                ? JsonParagraphType.Heading0
-                                : JsonParagraphType.Normal,
-                        Comments = commentData.Comments,
-                        Markups = new List<JsonMarkupData>()
-                    };
-
-                    if (!isImage)
-                    {
-                        var markupResult = GetMarkupData(paragraph.Text);
-                        paragraph.Text = markupResult.Text;
-                        paragraph.Markups = markupResult.Markups;
-                    }
-
-                    fileData.Pars.Add(paragraph);
-
-                    if (isTitle)
-                    {
-                        var heading = new JsonHeading
+                        var imageId = $"{fileName}{node.Attributes["id"].Value}";
+                        var imageIndex = images.IndexOf(imageId);
+                        if (imageIndex > 0)
                         {
-                            Text = pText,
-                            Index = pIndex,
-                            Level = 0
-                        };
-
-                        fileData.Headings.Add(heading);
+                            var imageBase64 = node.InnerText;
+                            var imageBytes = Convert.FromBase64String(imageBase64);
+                            var imageFile = Path.Combine(jsonFolder, $"image{imageIndex}.jpeg");
+                            var tempFile = Path.GetTempFileName() + ".jpeg";
+                            File.WriteAllBytes(tempFile, imageBytes);
+                            using (var image = Image.FromFile(tempFile))
+                            {
+                                if (jpegQuality > 0)
+                                {
+                                    var encoderParams = new EncoderParameters(1);
+                                    var qualityParam = new EncoderParameter(Encoder.Quality, jpegQuality);
+                                    var jpegEncoder = ImageCodecInfo.GetImageEncoders().First(e => e.MimeType == "image/jpeg");
+                                    encoderParams.Param[0] = qualityParam;
+                                    image.Save(imageFile, jpegEncoder, encoderParams);
+                                }
+                                else
+                                {
+                                    image.Save(imageFile, ImageFormat.Jpeg);
+                                }
+                            }
+                        }
                     }
-
-                    pIndex++;
-                }
-
-                var fileDataJson = JsonConvert.SerializeObject(fileData, Formatting.Indented);
-                
-                File.WriteAllText(fileDataFile, fileDataJson);
-
-                // 2. save images
-                var binaryStart = 0;
-                while (true)
-                {
-                    binaryStart = fb2Xml.IndexOf("<binary", binaryStart + 1);
-
-                    if (binaryStart == -1) break;;
-
-                    var binaryEnd = fb2Xml.IndexOf("</binary>", binaryStart);
-                    var binaryText = fb2Xml.Substring(binaryStart, binaryEnd - binaryStart);
-                    var imageFile = $"{fileName}{GetBinaryImageFile(binaryText)}";
-                    Console.WriteLine($"Saving '{imageFile}'");
-
-                    var binaryBase64 = binaryText.Substring(binaryText.IndexOf('>') + 1);
-                    var binaryBytes = Convert.FromBase64String(binaryBase64);
-                    
-                    var tempFile = Path.GetTempFileName() + ".jpeg";
-                    File.WriteAllBytes(tempFile, binaryBytes);
-
-                    var imageIndex = images.IndexOf(imageFile);
-
-                    if (imageIndex < 0) continue;
-
-                    var binaryFile = Path.Combine(jsonFolder, $"image{imageIndex}.jpeg");
-                    var encoderParams = new EncoderParameters(1);
-                    var qualityParam = new EncoderParameter(Encoder.Quality, 10L);
-                    var jpegEncoder = ImageCodecInfo.GetImageEncoders().First(e => e.MimeType == "image/jpeg");
-                    encoderParams.Param[0] = qualityParam;
-                    using (var image = Image.FromFile(tempFile))
+                    else if (node.Name == "body" && node.Attributes["name"]?.Value == "notes")
                     {
-                        image.Save(binaryFile, jpegEncoder, encoderParams);
+                        var noteSections = node.ChildNodes.OfType<XmlNode>().SelectMany(n => new[] { n }.Concat(n.ChildNodes.OfType<XmlNode>())).ToList();
+                        foreach (var noteSection in noteSections)
+                        {
+                            var commentId = noteSection.Attributes["id"]?.Value;
+
+                            if (commentId == null || !comments.ContainsKey(commentId)) continue;
+
+                            comments[commentId].Text = noteSection.InnerText;
+                        }
                     }
                 }
+
+                File.WriteAllText(jsonFile, JsonConvert.SerializeObject(jsonFileData, Formatting.Indented));
             }
-        }
-
-        private string GetParagraphImageFile(string pText)
-        {
-            var start = pText.IndexOf('#') + 1;
-            var end = pText.IndexOf('"', start);
-            return pText.Substring(start, end - start);
-        }
-
-        private string GetBinaryImageFile(string binaryText)
-        {
-            var start = binaryText.IndexOf("id=") + 4;
-            var end = binaryText.IndexOf('"', start);
-            return binaryText.Substring(start, end - start);
-        }
-        
-        private const string CommentStartToken = "<a l:href=\"#";
-        private (List<JsonCommentData> Comments, string Text) GetCommentData(string pText, string fb2Xml)
-        {
-            var comments = new List<JsonCommentData>();
-            var text = pText;
-            byte commentIndex = 0;
-
-            var cStart = 0;
-            while (true)
-            {
-                cStart = text.IndexOf(CommentStartToken, cStart);
-
-                if (cStart == -1) break;
-
-                cStart = cStart + CommentStartToken.Length;
-
-                var cEnd = text.IndexOf('"', cStart);
-
-                var commentId = text.Substring(cStart, cEnd - cStart);
-
-                var sectionTag = $"<section id=\"{commentId}\">";
-
-                var commentSectionStart = fb2Xml.IndexOf(sectionTag);
-
-                var commentSectionEnd = fb2Xml.IndexOf("</section>", commentSectionStart);
-
-                var commentSectionText = fb2Xml.Substring(commentSectionStart, commentSectionEnd - commentSectionStart);
-
-                var pStart = commentSectionText.LastIndexOf("<p>") + 3;
-
-                var pEnd = commentSectionText.IndexOf("</p>", pStart);
-
-                var commentText = commentSectionText.Substring(pStart, pEnd - pStart)
-                    .Trim(' ', '\t', Convert.ToChar(160), Convert.ToChar(32))
-                    .Trim('\t').Trim(Convert.ToChar(160));
-
-                comments.Add(new JsonCommentData
-                {
-                    CommentIndex = commentIndex,
-                    Text = commentText
-                });
-
-                cStart = cStart - CommentStartToken.Length;
-                cEnd = text.IndexOf("</a>", cEnd) + 4;
-
-                var beforeToken = text.Substring(0, cStart).TrimEnd(' '); ;
-                if (beforeToken.Length > 0 && char.IsLetterOrDigit(beforeToken.Last()))
-                {
-                    beforeToken = $"{beforeToken} ";
-                }
-
-                var afterToken = text.Substring(cEnd).TrimStart(' ');
-                if (afterToken.Length > 0 && char.IsLetterOrDigit(afterToken.First()))
-                {
-                    afterToken = $" {afterToken}";
-                }
-
-                text = $"{beforeToken}c{commentIndex}{afterToken}";
-
-                commentIndex++;
-            }
-
-            return (comments, text);
-        }
-
-        private (List<JsonMarkupData> Markups, string Text) GetMarkupData(string pText)
-        {
-            var markupOptions = new List<(string StartTag, string EndTag, Standard.Core.Corpus.Json.MarkupType MarkupType)>
-            {
-                ("<strong><emphasis>", "</emphasis></strong>", MarkupType.StrongEmphasis),
-                ("<emphasis><strong>", "</strong></emphasis>", MarkupType.StrongEmphasis),
-                ("<strong>", "</strong>", MarkupType.Strong),
-                ("<emphasis>", "</emphasis>", MarkupType.Emphasis)
-            };
-
-            var markups = new List<JsonMarkupData>();
-            var text = pText;
-
-            byte markupIndex = 0;
-
-            foreach (var mo in markupOptions)
-            {
-                var moStart = 0;
-                while (true)
-                {
-                    moStart = text.IndexOf(mo.StartTag, moStart);
-
-                    if (moStart == -1) break;
-
-                    moStart = moStart + mo.StartTag.Length;
-
-                    var moEnd = text.IndexOf(mo.EndTag, moStart);
-
-                    markups.Add(new JsonMarkupData
-                    {
-                        MarkupIndex = markupIndex,
-                        MarkupType = mo.MarkupType,
-                        MarkupText = text.Substring(moStart, moEnd - moStart).Trim(' ')
-                    });
-
-                    moStart = moStart - mo.StartTag.Length;
-                    moEnd = moEnd + mo.EndTag.Length;
-
-                    var beforeToken = text.Substring(0, moStart).TrimEnd(' ');
-                    //if (beforeToken.Length > 0 && char.IsLetterOrDigit(beforeToken.Last()))
-                    {
-                        beforeToken = $"{beforeToken} ";
-                    }
-
-                    var afterToken = text.Substring(moEnd).TrimStart(' ');
-                    if (afterToken.Length > 0 && char.IsLetterOrDigit(afterToken.First()))
-                    {
-                        afterToken = $" {afterToken}";
-                    }
-
-                    text = $"{beforeToken}m{markupIndex}{afterToken}";
-
-                    markupIndex++;
-                }
-            }
-
-            return (markups, text);
         }
     }
 }

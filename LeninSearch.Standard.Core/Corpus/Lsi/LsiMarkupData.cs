@@ -4,8 +4,8 @@ namespace LeninSearch.Standard.Core.Corpus.Lsi
 {
     public class LsiMarkupData
     {
-        public ushort WordIndex { get; set; }
-        public ushort Length { get; set; }
+        public ushort WordPosition { get; set; }
+        public ushort WordLength { get; set; }
         public MarkupType MarkupType { get; set; }
     }
 }

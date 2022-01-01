@@ -38,28 +38,30 @@ namespace LeninSearch.Standard.Core
                 // processing markup
                 foreach (var markup in paragraph.Markups ?? new List<JsonMarkupData>())
                 {
-                    var markupWords = TextUtil.GetOrderedWords(markup.MarkupText);
-                    var markupTokenIndex = words.IndexOf(markup.MarkupId);
-                    words[markupTokenIndex] = markupWords[0];
-                    words.InsertRange(markupTokenIndex, markupWords.Skip(1));
+                    var beforeMarkup = paragraph.Text.Substring(0, markup.MarkupSymbolStart);
+                    var beforeMarkupWords = TextUtil.GetOrderedWords(beforeMarkup);
+                    var markupText = paragraph.Text.Substring(markup.MarkupSymbolStart, markup.MarkupSymbolLength);
+                    var markupWords = TextUtil.GetOrderedWords(markupText);
                     if (!markupData.ContainsKey(paragraphIndex)) markupData.Add(paragraphIndex, new List<LsiMarkupData>());
                     markupData[paragraphIndex].Add(new LsiMarkupData
                     {
                         MarkupType = markup.MarkupType,
-                        Length = (ushort)markupWords.Count,
-                        WordIndex = (ushort)markupTokenIndex
+                        WordLength = (ushort)markupWords.Count,
+                        WordPosition = (ushort)beforeMarkupWords.Count
                     });
                 }
 
                 // processing comments
                 foreach (var comment in paragraph.Comments ?? new List<JsonCommentData>())
                 {
+                    var beforeCommentText = paragraph.Text.Substring(0, comment.CommentSymbolStart);
+                    var beforeCommentWords = TextUtil.GetOrderedWords(beforeCommentText);
                     var commentWords = TextUtil.GetOrderedWords(comment.Text);
                     var commentWordIndexes = commentWords.Select(w => reverseDictionary[w]).ToList();
                     if (!commentData.ContainsKey(paragraphIndex)) commentData.Add(paragraphIndex, new List<LsiCommentData>());
                     commentData[paragraphIndex].Add(new LsiCommentData
                     {
-                        WordIndex = (ushort)words.IndexOf(comment.CommentId),
+                        WordPosition = (ushort)beforeCommentWords.Count,
                         Words = commentWordIndexes.ToArray()
                     });
                 }
@@ -177,8 +179,8 @@ namespace LeninSearch.Standard.Core
                 foreach (var markup in markupData[paragraphIndex])
                 {
                     markupBytes.AddRange(BitConverter.GetBytes(paragraphIndex));
-                    markupBytes.AddRange(BitConverter.GetBytes(markup.WordIndex));
-                    markupBytes.AddRange(BitConverter.GetBytes(markup.Length));
+                    markupBytes.AddRange(BitConverter.GetBytes(markup.WordPosition));
+                    markupBytes.AddRange(BitConverter.GetBytes(markup.WordLength));
                     markupBytes.Add((byte) markup.MarkupType);
                 }
             }
@@ -189,7 +191,7 @@ namespace LeninSearch.Standard.Core
                 foreach (var comment in commentData[paragraphIndex])
                 {
                     commentBytes.AddRange(BitConverter.GetBytes(paragraphIndex));
-                    commentBytes.AddRange(BitConverter.GetBytes(comment.WordIndex));
+                    commentBytes.AddRange(BitConverter.GetBytes(comment.WordPosition));
                     commentBytes.AddRange(BitConverter.GetBytes((ushort)comment.Words.Length));
                     foreach (var word in comment.Words)
                     {
@@ -345,8 +347,8 @@ namespace LeninSearch.Standard.Core
                 }
                 lsIndexData.Markups[paragraphIndex].Add(new LsiMarkupData
                 {
-                    WordIndex = wordIndex,
-                    Length = length,
+                    WordPosition = wordIndex,
+                    WordLength = length,
                     MarkupType = markupType
                 });
             }
@@ -370,7 +372,7 @@ namespace LeninSearch.Standard.Core
                 }
                 lsIndexData.Comments[paragraphIndex].Add(new LsiCommentData
                 {
-                    WordIndex = wordIndex,
+                    WordPosition = wordIndex,
                     Words = words.ToArray()
                 });
             }
