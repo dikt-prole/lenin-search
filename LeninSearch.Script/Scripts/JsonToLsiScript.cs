@@ -19,6 +19,7 @@ namespace LeninSearch.Script.Scripts
     {
         private static readonly Random Random = new Random();
         public string Id => "json-to-lsi";
+        public string Arguments => "json_folder, lsi_folder, jpeg_quality?";
 
         private ILsiUtil _lsiUtil;
 
@@ -125,9 +126,16 @@ namespace LeninSearch.Script.Scripts
 
             corpusFileItems.Add(new CorpusFileItem
             {
+                Name = "icon.png",
+                Path = "icon.png",
+                Size = 15 * 1024
+            });
+
+            corpusFileItems.Add(new CorpusFileItem
+            {
                 Name = "corpus.json",
                 Path = "corpus.json",
-                Size = 8000
+                Size = 8 * 1024
             });
 
             var lsiFolderName = Path.GetDirectoryName(lsiFolderFiles[0]).Split('\\').Last();

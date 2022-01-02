@@ -18,6 +18,8 @@ namespace LeninSearch.Script.Scripts
     public class Fb2ToJsonScript : IScript
     {
         public string Id => "fb2-json";
+        public string Arguments => "fb2_folder, json_folder";
+
         public void Execute(params string[] input)
         {
             var fb2Folder = input[0];
@@ -43,6 +45,9 @@ namespace LeninSearch.Script.Scripts
                 var fb2Xml = File.ReadAllText(fb2File)
                     .Replace("l:href", "lhref")
                     .Replace("xlink:href", "lhref")
+                    .Replace("<sup>", "").Replace("</sup>", "")
+                    .Replace("<sub>", "").Replace("</sub>", "")
+                    .Replace("></image>", "/>")
                     .Replace("\r", "")
                     .Replace("\n", "")
                     .Replace("  ", " ");

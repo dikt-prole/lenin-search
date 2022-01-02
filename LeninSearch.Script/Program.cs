@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml;
 using LeninSearch.Script.Scripts;
 
 namespace LeninSearch.Script
@@ -9,34 +11,57 @@ namespace LeninSearch.Script
     {
         static void Main(string[] args)
         {
-            if (args.Length == 0) return;
-
-            var scriptId = args[0];
-
-            var input = args.Skip(1).ToArray();
-
-            Console.OutputEncoding = Encoding.UTF8;
-            Console.WriteLine($"Started script '{scriptId}' at {DateTime.Now}");
-
             var type = typeof(IScript);
             var types = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
                 .Where(p => type.IsAssignableFrom(p) && !p.FullName.Contains("IScript"))
                 .ToList();
-
+            var scripts = new List<IScript>();
             foreach (var t in types)
             {
-                var script = t.Assembly.CreateInstance(t.FullName) as IScript;
-
-                if (script.Id == scriptId)
-                {
-                    script.Execute(input);
-                    break;
-                }
+                scripts.Add(t.Assembly.CreateInstance(t.FullName) as IScript);
             }
 
-            Console.WriteLine($"Script '{scriptId}' done at {DateTime.Now}");
-            Console.ReadLine();
+            while (true)
+            {
+                for (var i = 0; i < scripts.Count; i++)
+                {
+                    Console.WriteLine($"{i}. {scripts[i].Id}");
+                }
+
+                var scriptIndex = -1;
+                while (!int.TryParse(Console.ReadLine(), out scriptIndex) || scripts.Count - 1 < scriptIndex)
+                {
+                    Console.WriteLine("Invalid script index");
+                }
+
+                var script = scripts[scriptIndex];
+
+                Console.WriteLine($"Enter script arguments ({script.Arguments}) or empty line to continue");
+
+                var input = new List<string>();
+                while (true)
+                {
+                    var arg = Console.ReadLine();
+                    if (string.IsNullOrEmpty(arg)) break;
+                    input.Add(arg);
+                }
+
+                Console.OutputEncoding = Encoding.UTF8;
+                Console.WriteLine($"Started script '{script.Id}' at {DateTime.Now}");
+
+                try
+                {
+                    script.Execute(input.ToArray());
+                }
+                catch (Exception exc)
+                {
+                    Console.WriteLine(exc);
+                }
+
+                Console.WriteLine($"Script '{script.Id}' done at {DateTime.Now}");
+                Console.ReadLine();
+            }
         }
     }
 }

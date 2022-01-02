@@ -66,7 +66,7 @@ namespace LeninSearch.Standard.Core.LsiUtil
                 }
 
                 // processing inline images
-                foreach (var jsonInlineImage in paragraph.InlineImages)
+                foreach (var jsonInlineImage in paragraph.InlineImages ?? new List<JsonInlineImageData>())
                 {
                     var beforeImageText = paragraph.Text.Substring(0, jsonInlineImage.ImageSymbolStart);
                     var beforeImageWords = TextUtil.GetOrderedWords(beforeImageText);
@@ -218,14 +218,14 @@ namespace LeninSearch.Standard.Core.LsiUtil
             }
 
             // construct inline image bytes
-            var inlineImagesBytes = new List<byte>();
+            var inlineImageBytes = new List<byte>();
             foreach (ushort paragraphIndex in inlineImages.Keys)
             {
                 foreach (var inlineImage in inlineImages[paragraphIndex])
                 {
-                    inlineImagesBytes.AddRange(BitConverter.GetBytes(paragraphIndex));
-                    inlineImagesBytes.AddRange(BitConverter.GetBytes(inlineImage.ImageIndex));
-                    inlineImagesBytes.AddRange(BitConverter.GetBytes(inlineImage.WordPosition));
+                    inlineImageBytes.AddRange(BitConverter.GetBytes(paragraphIndex));
+                    inlineImageBytes.AddRange(BitConverter.GetBytes(inlineImage.ImageIndex));
+                    inlineImageBytes.AddRange(BitConverter.GetBytes(inlineImage.WordPosition));
                 }
             }
 
@@ -240,7 +240,7 @@ namespace LeninSearch.Standard.Core.LsiUtil
             lsiBytes.AddRange(BitConverter.GetBytes((uint)imageBytes.Count)); // image bytes count
             lsiBytes.AddRange(BitConverter.GetBytes((uint)markupBytes.Count)); // markup bytes count
             lsiBytes.AddRange(BitConverter.GetBytes((uint)commentBytes.Count)); // comment bytes count
-            lsiBytes.AddRange(BitConverter.GetBytes((uint)inlineImages.Count)); // inline image bytes count
+            lsiBytes.AddRange(BitConverter.GetBytes((uint)inlineImageBytes.Count)); // inline image bytes count
             while (lsiBytes.Count < FileHeaderLength)
             {
                 lsiBytes.Add(0);
@@ -254,6 +254,7 @@ namespace LeninSearch.Standard.Core.LsiUtil
             lsiBytes.AddRange(imageBytes);
             lsiBytes.AddRange(markupBytes);
             lsiBytes.AddRange(commentBytes);
+            lsiBytes.AddRange(inlineImageBytes);
 
             return lsiBytes.ToArray();
         }

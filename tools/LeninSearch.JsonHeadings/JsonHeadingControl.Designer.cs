@@ -31,9 +31,9 @@ namespace LeninSearch.JsonHeadings
         {
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.enabled_chb = new System.Windows.Forms.CheckBox();
-            this.level_nud = new System.Windows.Forms.NumericUpDown();
-            this.text_tb = new System.Windows.Forms.TextBox();
             this.insert_btn = new System.Windows.Forms.Button();
+            this.text_tb = new System.Windows.Forms.TextBox();
+            this.level_nud = new System.Windows.Forms.NumericUpDown();
             this.index_nud = new System.Windows.Forms.NumericUpDown();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.level_nud)).BeginInit();
@@ -72,21 +72,6 @@ namespace LeninSearch.JsonHeadings
             this.enabled_chb.TabIndex = 0;
             this.enabled_chb.UseVisualStyleBackColor = true;
             // 
-            // level_nud
-            // 
-            this.level_nud.Location = new System.Drawing.Point(115, 3);
-            this.level_nud.Name = "level_nud";
-            this.level_nud.Size = new System.Drawing.Size(44, 23);
-            this.level_nud.TabIndex = 1;
-            // 
-            // text_tb
-            // 
-            this.text_tb.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.text_tb.Location = new System.Drawing.Point(165, 3);
-            this.text_tb.Name = "text_tb";
-            this.text_tb.Size = new System.Drawing.Size(561, 23);
-            this.text_tb.TabIndex = 2;
-            // 
             // insert_btn
             // 
             this.insert_btn.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -97,6 +82,21 @@ namespace LeninSearch.JsonHeadings
             this.insert_btn.TabIndex = 3;
             this.insert_btn.Text = "+";
             this.insert_btn.UseVisualStyleBackColor = true;
+            // 
+            // text_tb
+            // 
+            this.text_tb.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.text_tb.Location = new System.Drawing.Point(165, 3);
+            this.text_tb.Name = "text_tb";
+            this.text_tb.Size = new System.Drawing.Size(561, 23);
+            this.text_tb.TabIndex = 2;
+            // 
+            // level_nud
+            // 
+            this.level_nud.Location = new System.Drawing.Point(115, 3);
+            this.level_nud.Name = "level_nud";
+            this.level_nud.Size = new System.Drawing.Size(44, 23);
+            this.level_nud.TabIndex = 1;
             // 
             // index_nud
             // 

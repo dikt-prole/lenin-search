@@ -131,8 +131,19 @@ namespace LeninSearch.Script
         {
             var tagStart = text.IndexOf(openTag);
             var tagEnd = text.IndexOf(closeTag, tagStart) + closeTag.Length;
-            while (ContainsUnclosedTags(text.Substring(tagStart, tagEnd - tagStart)))
+
+            while (true)
             {
+                var tagLength = tagEnd - tagStart;
+                if (tagLength < 0)
+                {
+                    throw new Exception($"Invalid tag length: {tagLength}");
+                }
+
+                var containsUnclosed = ContainsUnclosedTags(text.Substring(tagStart, tagLength));
+
+                if (!containsUnclosed) break;
+
                 tagEnd = text.IndexOf(closeTag, tagEnd) + closeTag.Length;
             }
 

@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using LeninSearch.Standard.Core.Corpus;
-using LeninSearch.Standard.Core.Corpus.Json;
 using Newtonsoft.Json;
 
 namespace LeninSearch.Script.Scripts
@@ -14,6 +13,8 @@ namespace LeninSearch.Script.Scripts
     public class CorpusDownloadTestScript : IScript
     {
         public string Id => "corpus-download";
+        public string Arguments => "none";
+
         public void Execute(params string[] input)
         {
             var tasks = Enumerable.Range(0, 5).Select(i => Task.Run(Download));
