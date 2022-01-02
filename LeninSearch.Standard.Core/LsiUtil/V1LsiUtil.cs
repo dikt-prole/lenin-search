@@ -7,7 +7,7 @@ using LeninSearch.Standard.Core.Corpus.Lsi;
 
 namespace LeninSearch.Standard.Core.LsiUtil
 {
-    public class V1LsiUtil
+    public class V1LsiUtil : ILsiUtil
     {
         public const byte LsiVersion = 1;
         public const int FileHeaderLength = 32;

@@ -7,6 +7,7 @@ using LeninSearch.Standard.Core;
 using LeninSearch.Standard.Core.Corpus;
 using LeninSearch.Standard.Core.Corpus.Json;
 using LeninSearch.Standard.Core.Corpus.Lsi;
+using LeninSearch.Standard.Core.LsiUtil;
 using LeninSearch.Standard.Core.Search;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -40,7 +41,10 @@ namespace LeninSearch.Api.Services
                 {
                     var lsiBytes = File.ReadAllBytes(lsiFile);
                     var key = Key(corpusItem.Id, Path.GetFileName(lsiFile));
-                    var lsiData = LsIndexUtil.FromLsIndexBytes(lsiBytes);
+
+                    var lsiUtil = LsiUtilLocator.GetLsiUtil(lsiBytes[0]);
+
+                    var lsiData = lsiUtil.FromLsIndexBytes(lsiBytes);
                     _lsIndexData.Add(key, lsiData);
                 }
 
@@ -63,7 +67,10 @@ namespace LeninSearch.Api.Services
             var executingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var lsiFile = Path.Combine(executingDirectory, "corpus", corpusId, file);
             var lsiBytes = File.ReadAllBytes(lsiFile);
-            return LsIndexUtil.FromLsIndexBytes(lsiBytes);
+
+            var lsiUtil = LsiUtilLocator.GetLsiUtil(lsiBytes[0]);
+
+            return lsiUtil.FromLsIndexBytes(lsiBytes);
         }
 
         public LsDictionary GetDictionary(string corpusId)

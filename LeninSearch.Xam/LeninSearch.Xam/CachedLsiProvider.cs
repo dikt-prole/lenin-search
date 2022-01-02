@@ -5,6 +5,7 @@ using LeninSearch.Standard.Core;
 using LeninSearch.Standard.Core.Corpus;
 using LeninSearch.Standard.Core.Corpus.Json;
 using LeninSearch.Standard.Core.Corpus.Lsi;
+using LeninSearch.Standard.Core.LsiUtil;
 using LeninSearch.Standard.Core.Search;
 using Newtonsoft.Json;
 
@@ -34,7 +35,9 @@ namespace LeninSearch.Xam
 
             var lsiBytes = File.ReadAllBytes(Path.Combine(Settings.CorpusRoot, corpusId, file));
 
-            _currentLsi = LsIndexUtil.FromLsIndexBytes(lsiBytes);
+            var lsiUtil = LsiUtilLocator.GetLsiUtil(lsiBytes[0]);
+
+            _currentLsi = lsiUtil.FromLsIndexBytes(lsiBytes);
 
             return _currentLsi;
         }
