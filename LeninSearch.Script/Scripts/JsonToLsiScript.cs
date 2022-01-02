@@ -94,8 +94,8 @@ namespace LeninSearch.Script.Scripts
             Task.WhenAll(tasks).Wait();
 
             Console.WriteLine("Copying images");
-            var jsonImageFiles = Directory.GetFiles(jsonFolder, "*.jpeg");
-            foreach (var jsonImageFile in jsonImageFiles)
+            var jsonImages = Directory.GetFiles(jsonFolder, "*.jpeg");
+            foreach (var jsonImageFile in jsonImages)
             {
                 using (var jsonImage = Image.FromFile(jsonImageFile))
                 {
@@ -116,13 +116,14 @@ namespace LeninSearch.Script.Scripts
             }
 
             Console.WriteLine("Construct corpus.json");
-            var lsiFolderFiles = Directory.GetFiles(lsiFolder);
-            var corpusFileItems = lsiFolderFiles.Select(f => new CorpusFileItem
+            var corpusFileItems = new List<CorpusFileItem>();
+
+            corpusFileItems.Add(new CorpusFileItem
             {
-                Path = Path.GetFileName(f),
-                Name = Path.GetFileName(f),
-                Size = File.ReadAllBytes(f).Length
-            }).ToList();
+                Name = "corpus.dic",
+                Path = "corpus.dic",
+                Size = File.ReadAllBytes(dicFile).Length
+            });
 
             corpusFileItems.Add(new CorpusFileItem
             {
@@ -131,6 +132,23 @@ namespace LeninSearch.Script.Scripts
                 Size = 15 * 1024
             });
 
+            var lsiFiles = Directory.GetFiles(lsiFolder, "*.lsi");
+            corpusFileItems.AddRange(lsiFiles.Select(f => new CorpusFileItem
+            {
+                Path = Path.GetFileName(f),
+                Name = Path.GetFileName(f),
+                Size = File.ReadAllBytes(f).Length
+            }));
+
+            var lsiImages = Directory.GetFiles(lsiFolder, "*.jpeg")
+                .OrderByDescending(f => int.Parse(new string(f.Where(char.IsNumber).ToArray()))).ToList();
+            corpusFileItems.AddRange(lsiImages.Select(f => new CorpusFileItem
+            {
+                Path = Path.GetFileName(f),
+                Name = Path.GetFileName(f),
+                Size = File.ReadAllBytes(f).Length
+            }));
+
             corpusFileItems.Add(new CorpusFileItem
             {
                 Name = "corpus.json",
@@ -138,7 +156,7 @@ namespace LeninSearch.Script.Scripts
                 Size = 8 * 1024
             });
 
-            var lsiFolderName = Path.GetDirectoryName(lsiFolderFiles[0]).Split('\\').Last();
+            var lsiFolderName = Path.GetDirectoryName(lsiFiles[0]).Split('\\').Last();
             var lsiFolderNameSplit = lsiFolderName.Split('-');
             var corpusItem = new CorpusItem
             {
@@ -160,7 +178,6 @@ namespace LeninSearch.Script.Scripts
             Console.WriteLine($"Corpus size without images: {1.0 * nonImageFiles.Sum(cfi => cfi.Size) / 1024 / 1024:F2}mb");
             Console.WriteLine();
 
-            var lsiFiles = Directory.GetFiles(lsiFolder, "*.lsi");
             foreach (var lsiFile in lsiFiles)
             {
                 var lsiFileName = Path.GetFileName(lsiFile);
