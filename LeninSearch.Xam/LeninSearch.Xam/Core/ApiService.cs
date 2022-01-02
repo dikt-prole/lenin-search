@@ -23,7 +23,7 @@ namespace LeninSearch.Xam.Core
                 var corpusItems = JsonConvert.DeserializeObject<List<CorpusItem>>(summaryJson);
 
                 var resultCorpusItems = corpusItems
-                    .Where(ci => ci.LsiVersion == lsiVersion)
+                    .Where(ci => ci.LsiVersion <= lsiVersion)
                     .ToList();
 
                 return (resultCorpusItems, true, null);

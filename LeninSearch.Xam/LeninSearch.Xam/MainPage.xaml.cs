@@ -259,7 +259,7 @@ namespace LeninSearch.Xam
                     SearchEntry.GentlyFocus();
                 };
                 stack.Children.Add(iconButton);
-                var textButton = ConstructHyperlink(ciText, Settings.UI.Font.NormalFontSize, async () => await DisplayCorpusBooks(ci));
+                var textButton = ConstructHyperlinkButton(ciText, Settings.UI.Font.NormalFontSize, async () => await DisplayCorpusBooks(ci));
                 stack.Children.Add(textButton);
                 CorpusTab.Children.Add(stack);
             }
@@ -319,7 +319,7 @@ namespace LeninSearch.Xam
             foreach (var updateCi in updates)
             {
                 View updateLink = null;
-                updateLink = ConstructHyperlink(updateCi.ToString(), Settings.UI.Font.NormalFontSize, async () =>
+                updateLink = ConstructHyperlinkButton(updateCi.ToString(), Settings.UI.Font.NormalFontSize, async () =>
                      {
                          var answer = await DisplayAlert("Установка обновления", $"Установить '{updateCi.Name}'?", "Да", "Нет");
 
@@ -417,11 +417,11 @@ namespace LeninSearch.Xam
                         Spacing = 0
                     };
 
-                    var readLabel = ConstructHyperlink("читать", Settings.UI.Font.NormalFontSize, async () => await ReadBookmark(bm));
+                    var readLabel = ConstructHyperlinkButton("читать", Settings.UI.Font.NormalFontSize, async () => await ReadBookmark(bm));
 
                     linkLayout.Children.Add(readLabel);
 
-                    var deleteLabel = ConstructHyperlink("удалить", Settings.UI.Font.NormalFontSize, async () =>
+                    var deleteLabel = ConstructHyperlinkButton("удалить", Settings.UI.Font.NormalFontSize, async () =>
                     {
                         BookmarkRepo.Delete(bm.Id);
                         await layout.FadeTo(0, 200, Easing.Linear);
@@ -463,7 +463,7 @@ namespace LeninSearch.Xam
 
             foreach (var video in Settings.Learning)
             {
-                var hyperlink = ConstructHyperlink(video.Item1, Settings.UI.Font.NormalFontSize,
+                var hyperlink = ConstructHyperlinkButton(video.Item1, Settings.UI.Font.NormalFontSize,
                     async () => await Browser.OpenAsync(video.Item2));
                 hyperlink.Margin = new Thickness(20, 20, 0, 0);
                 LearningTab.Children.Add(hyperlink);
@@ -478,7 +478,7 @@ namespace LeninSearch.Xam
 
             foreach (var historyItem in history)
             {
-                var hyperlink = ConstructHyperlink($"{historyItem.Query} ({historyItem.CorpusName})", Settings.UI.Font.NormalFontSize,
+                var hyperlink = ConstructHyperlinkButton($"{historyItem.Query} ({historyItem.CorpusName})", Settings.UI.Font.NormalFontSize,
                     () =>
                     {
                         _state.CorpusId = historyItem.CorpusId;
@@ -549,7 +549,7 @@ namespace LeninSearch.Xam
             var totalCount = _state.PartialParagraphSearchResult.SearchResults.Count;
             var titleView = _state.PartialParagraphSearchResult.IsSearchComplete
                 ? (View)new Label { Text = $"Поиск окончен, {totalCount} совпадений", TextColor = Color.Black, FontSize = Settings.UI.Font.SmallFontSize }
-                : ConstructHyperlink($"{totalCount} совпадений, нажмите чтобы продолжить", Settings.UI.Font.SmallFontSize, async () =>
+                : ConstructHyperlinkButton($"{totalCount} совпадений, нажмите чтобы продолжить", Settings.UI.Font.SmallFontSize, async () =>
                     await StartParagraphSearch(_state.SearchQuery));
 
             titleView.HorizontalOptions = LayoutOptions.Center;
@@ -569,7 +569,7 @@ namespace LeninSearch.Xam
             {
                 var resultCount = _state.PartialParagraphSearchResult.FileResults(cfi.Path).Count;
                 var text = $"{cfi.Name} ({resultCount})";
-                var link = ConstructHyperlink(text, Settings.UI.Font.NormalFontSize, async () =>
+                var link = ConstructHyperlinkButton(text, Settings.UI.Font.NormalFontSize, async () =>
                 {
                     _state.ReadingFile = cfi.Path;
                     _state.CurrentParagraphResultIndex = 0;
@@ -900,7 +900,7 @@ namespace LeninSearch.Xam
 
             foreach (var cfi in corpusItem.LsiFiles())
             {
-                var link = ConstructHyperlink(cfi.Name, Settings.UI.Font.NormalFontSize, async () =>
+                var link = ConstructHyperlinkButton(cfi.Name, Settings.UI.Font.NormalFontSize, async () =>
                 {
                     var lsData = _lsiProvider.GetLsiData(corpusItem.Id, cfi.Path).LsData;
                     var headings = lsData.Headings?.ToList();
@@ -1001,9 +1001,21 @@ namespace LeninSearch.Xam
 
             foreach (var heading in headings)
             {
-                var headerText = heading.GetText(_lsiProvider.GetDictionary(corpusItem.Id).Words);
+                var headingText = heading.GetText(_lsiProvider.GetDictionary(corpusItem.Id).Words);
 
-                var headingLink = ConstructHyperlink(headerText, Settings.UI.Font.SmallFontSize, async () =>
+                // === hack to align summary to the left ===
+                var optimalHeadingLength = Settings.UI.SummaryLineLength;
+                if (headingText.Length < optimalHeadingLength)
+                {
+                    headingText = $"{headingText}{new string(Enumerable.Repeat(' ', optimalHeadingLength - headingText.Length).ToArray())}";
+                }
+                else if (headingText.Length > optimalHeadingLength)
+                {
+                    headingText = headingText.Substring(0, optimalHeadingLength);
+                }
+                // =========================================
+
+                var headingLink = ConstructHyperlinkButton(headingText, Settings.UI.Font.SmallFontSize, async () =>
                     await Read(cfi, heading.Index));
 
                 headingLink.HorizontalOptions = LayoutOptions.Start;
@@ -1032,7 +1044,7 @@ namespace LeninSearch.Xam
                 var headingLabel = new Label
                 { Text = headingText, TextColor = Color.Black, FontSize = Settings.UI.Font.NormalFontSize };
                 ResultStack.Children.Add(headingLabel);
-                var readLink = ConstructHyperlink("читать", Settings.UI.Font.NormalFontSize, async () =>
+                var readLink = ConstructHyperlinkButton("читать", Settings.UI.Font.NormalFontSize, async () =>
                     await Read(corpusItemFile, sr.ParagraphIndex));
                 ResultStack.Children.Add(readLink);
             }
@@ -1040,7 +1052,7 @@ namespace LeninSearch.Xam
             await ResultScrollFadeIn();
         }
 
-        private Button ConstructHyperlink(string text, double fontSize, Action action)
+        private Button ConstructHyperlinkButton(string text, double fontSize, Action action)
         {
             var button = new Button
             {
@@ -1051,7 +1063,8 @@ namespace LeninSearch.Xam
                 Padding = 0,
                 Margin = 5,
                 TextTransform = TextTransform.None,
-                HeightRequest = 24
+                HeightRequest = 24,
+                MinimumWidthRequest = 48
             };
             button.Clicked += (sender, args) => action();
 

@@ -9,7 +9,7 @@ namespace LeninSearch.Xam
     public static class Settings
     {
         // paths
-        public const int LsiVersion = 1;
+        public const int LsiVersion = 2;
 
         public static readonly string[] InitialSeries = {"lenin"};
         public static string CorpusRoot => Path.Combine(Path.GetTempPath(), "corpus");
@@ -46,6 +46,8 @@ namespace LeninSearch.Xam
 
             public static Color MainColor => Color.FromRgb(214, 24, 31);
             public static bool OldAndroidJustification { get; set; }
+
+            public const int SummaryLineLength = 85;
 
             public const int MaxHistoryLength = 10;
 
