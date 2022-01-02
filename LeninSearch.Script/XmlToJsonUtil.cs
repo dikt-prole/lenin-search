@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml;
 using LeninSearch.Standard.Core;
 using LeninSearch.Standard.Core.Corpus.Json;
@@ -73,9 +74,10 @@ namespace LeninSearch.Script
 
                 if (tagIndexes.Count == 0) break;
 
-                var tagStart = tagIndexes[0].Index;
-                var tagEnd = text.IndexOf(tagIndexes[0].CloseTag, tagStart) + tagIndexes[0].CloseTag.Length;
-                var tagXml = text.Substring(tagStart, tagEnd - tagStart);
+                var tagIndex = tagIndexes[0];
+
+                var tagSpan = GetTagSpan(text, tagIndex.OpenTag, tagIndex.CloseTag);
+                var tagXml = text.Substring(tagSpan.TagStart, tagSpan.TagEnd - tagSpan.TagStart);
 
                 //todo: <emphasis>Подпись (<emphasis>или отметка</emphasis>) рабочего</emphasis>
 
@@ -87,30 +89,30 @@ namespace LeninSearch.Script
                 if (tagNode.Name == "strong")
                 {
                     var tagText = tagNode.InnerText;
-                    markups.Add(JsonMarkupData.Strong((ushort)tagStart, (ushort)tagText.Length));
-                    text = text.Substring(0, tagStart) + tagText + text.Substring(tagEnd);
+                    markups.Add(JsonMarkupData.Strong(tagSpan.TagStart, (ushort)tagText.Length));
+                    text = text.Substring(0, tagSpan.TagStart) + tagText + text.Substring(tagSpan.TagEnd);
                 }
                 else if (tagNode.Name == "emphasis")
                 {
                     var tagText = tagNode.InnerText;
-                    markups.Add(JsonMarkupData.Emphasis((ushort)tagStart, (ushort)tagText.Length));
-                    text = text.Substring(0, tagStart) + tagText + text.Substring(tagEnd);
+                    markups.Add(JsonMarkupData.Emphasis(tagSpan.TagStart, (ushort)tagText.Length));
+                    text = text.Substring(0, tagSpan.TagStart) + tagText + text.Substring(tagSpan.TagEnd);
                 }
                 else if (tagNode.Name == "a")
                 {
                     var commentId = tagNode.Attributes["lhref"].Value.Replace("#", "");
                     commentIds.Add(commentId);
-                    comments.Add(new JsonCommentData(commentId, (ushort)(commentIds.Count - 1), (ushort)tagStart));
-                    text = text.Substring(0, tagStart) + text.Substring(tagEnd);
+                    comments.Add(new JsonCommentData(commentId, (ushort)(commentIds.Count - 1), tagSpan.TagStart));
+                    text = text.Substring(0, tagSpan.TagStart) + text.Substring(tagSpan.TagEnd);
                 }
                 else // inline image
                 {
                     var imageId = tagNode.Attributes["lhref"].Value.Replace("#", "");
 
-                    var before = text.Substring(0, tagStart);
+                    var before = text.Substring(0, tagSpan.TagStart);
                     if (!before.EndsWith(" ")) before = $"{before} ";
 
-                    var after = text.Substring(tagEnd);
+                    var after = text.Substring(tagSpan.TagEnd);
                     if (!after.StartsWith(" ")) after = $" {after}";
                     
                     imageId = imageIdFunc(imageId);
@@ -123,6 +125,38 @@ namespace LeninSearch.Script
             }
 
             return (markups, comments, images, text);
+        }
+
+        private static (ushort TagStart, ushort TagEnd) GetTagSpan(string text, string openTag, string closeTag)
+        {
+            var tagStart = text.IndexOf(openTag);
+            var tagEnd = text.IndexOf(closeTag, tagStart) + closeTag.Length;
+            while (ContainsUnclosedTags(text.Substring(tagStart, tagEnd - tagStart)))
+            {
+                tagEnd = text.IndexOf(closeTag, tagEnd) + closeTag.Length;
+            }
+
+            return ((ushort)tagStart, (ushort)tagEnd);
+        }
+
+        private static bool ContainsUnclosedTags(string xml)
+        {
+            var tagOptions = new (string OpenTag, string CloseTag)[]
+            {
+                ("<strong>", "</strong>"),
+                ("<emphasis>", "</emphasis>")
+            };
+
+            foreach (var tagOption in tagOptions)
+            {
+                var openCount = new Regex(tagOption.OpenTag).Matches(xml).Count;
+
+                var closeCount = new Regex(tagOption.CloseTag).Matches(xml).Count;
+
+                if (openCount != closeCount) return true;
+            }
+
+            return false;
         }
     }
 }

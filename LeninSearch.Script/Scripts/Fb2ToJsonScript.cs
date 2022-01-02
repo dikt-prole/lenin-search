@@ -45,16 +45,7 @@ namespace LeninSearch.Script.Scripts
                     .Replace("xlink:href", "lhref")
                     .Replace("\r", "")
                     .Replace("\n", "")
-                    .Replace("  ", " ")
-                    .Replace("> ", ">");
-                while (fb2Xml.Contains("<emphasis><emphasis>"))
-                    fb2Xml = fb2Xml.Replace("<emphasis><emphasis>", "<emphasis>");
-                while (fb2Xml.Contains("</emphasis></emphasis>"))
-                    fb2Xml = fb2Xml.Replace("</emphasis></emphasis>", "</emphasis>");
-                while (fb2Xml.Contains("<strong><strong>"))
-                    fb2Xml = fb2Xml.Replace("<strong><strong>", "<strong>");
-                while (fb2Xml.Contains("</strong></strong>"))
-                    fb2Xml = fb2Xml.Replace("</strong></strong>", "</strong>");
+                    .Replace("  ", " ");
 
                 var bodyStart = fb2Xml.IndexOf("<body");
                 var bodyEnd = fb2Xml.IndexOf("</body>");
@@ -98,9 +89,6 @@ namespace LeninSearch.Script.Scripts
                     }
                 }
 
-                //var binaryStartIndex = fb2Xml.IndexOf("<binary");
-                //var binaryEndIndex = fb2Xml.LastIndexOf("</binary>") + "</binary>".Length;
-                //var binaryXml = $"<fb2>{fb2Xml.Substring(binaryStartIndex, binaryEndIndex - binaryStartIndex)}</fb2>";
                 var fb2Doc = new XmlDocument();
                 fb2Doc.LoadXml(fb2Xml);
 
