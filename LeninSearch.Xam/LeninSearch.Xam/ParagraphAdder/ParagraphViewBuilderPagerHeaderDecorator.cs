@@ -13,7 +13,7 @@ namespace LeninSearch.Xam.ParagraphAdder
             _builder = builder;
         }
 
-        public View Build(LsParagraph p, State state, string[] dictionaryWords)
+        public View Build(LsiParagraph p, State state, string[] dictionaryWords)
         {
             if (p.IsPageNumber)
             {

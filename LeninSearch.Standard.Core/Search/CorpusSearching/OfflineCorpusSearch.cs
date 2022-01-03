@@ -70,7 +70,7 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
                 r.File = cfi.Path;
                 if (searchQuery.IsHeading)
                 {
-                    var heading = lsiData.LsData.Headings.First(h => h.Index == r.ParagraphIndex);
+                    var heading = lsiData.HeadingParagraphs.First(h => h.Index == r.ParagraphIndex);
                     r.Text = heading.GetText(dictionary);
                 }
             }

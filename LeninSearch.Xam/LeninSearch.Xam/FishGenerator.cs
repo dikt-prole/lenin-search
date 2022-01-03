@@ -30,21 +30,21 @@ namespace LeninSearch.Xam
             foreach (var file in ppsr.Files())
             {
                 var cfi = ci.GetFileByPath(file);
-                var lsData = lsiProvider.GetLsiData(ci.Id, file).LsData;
+                var lsiData = lsiProvider.GetLsiData(ci.Id, file);
                 var words = lsiProvider.Words(ci.Id);
 
                 fishHtml += $"<h2>{cfi.Name}</h2>";
                 var fileResults = ppsr.FileResults(file);
                 foreach (var searchResult in fileResults)
                 {
-                    var paragraph = lsData.Paragraphs[searchResult.ParagraphIndex];
+                    var paragraph = lsiData.Paragraphs[searchResult.ParagraphIndex];
 
                     var chain = searchResult.WordIndexChains[0];
                     var selection = chain.WordIndexes.Select(wi => words[wi].ToLower()).ToArray();
                     var textParts = GetTextParts(paragraph.GetText(words), selection).ToList();
                     var paragraphText = string.Join("", textParts);
-                    var headings = lsData.GetHeadingsDownToZero(searchResult.ParagraphIndex);
-                    var page = lsData.GetClosestPage(searchResult.ParagraphIndex);
+                    var headings = lsiData.GetHeadingsDownToZero(searchResult.ParagraphIndex);
+                    var page = lsiData.GetClosestPage(searchResult.ParagraphIndex);
                     var linkText = $"";
                     if (page != null || headings.Any())
                     {

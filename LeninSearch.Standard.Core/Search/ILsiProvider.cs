@@ -6,7 +6,7 @@ namespace LeninSearch.Standard.Core.Search
 {
     public interface ILsiProvider
     {
-        LsIndexData GetLsiData(string corpusId, string file);
+        LsiData GetLsiData(string corpusId, string file);
         LsDictionary GetDictionary(string corpusId);
         CorpusItem GetCorpusItem(string corpusId);
     }

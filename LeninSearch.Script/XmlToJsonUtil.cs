@@ -79,9 +79,6 @@ namespace LeninSearch.Script
                 var tagSpan = GetTagSpan(text, tagIndex.OpenTag, tagIndex.CloseTag);
                 var tagXml = text.Substring(tagSpan.TagStart, tagSpan.TagEnd - tagSpan.TagStart);
 
-                //todo: <emphasis>Подпись (<emphasis>или отметка</emphasis>) рабочего</emphasis>
-
-
                 var tagDoc = new XmlDocument();
                 tagDoc.LoadXml($"<wrap>{tagXml}</wrap>");
                 var tagNode = tagDoc.DocumentElement.ChildNodes[0];
@@ -102,8 +99,10 @@ namespace LeninSearch.Script
                 {
                     var commentId = tagNode.Attributes["lhref"].Value.Replace("#", "");
                     commentIds.Add(commentId);
-                    comments.Add(new JsonCommentData(commentId, (ushort)(commentIds.Count - 1), tagSpan.TagStart));
-                    text = text.Substring(0, tagSpan.TagStart) + text.Substring(tagSpan.TagEnd);
+                    var commentIndex = (ushort) (commentIds.Count - 1);
+                    var comment = new JsonCommentData(commentId, commentIndex, tagSpan.TagStart);
+                    comments.Add(comment);
+                    text = text.Substring(0, tagSpan.TagStart) + $" {comment.Token} " + text.Substring(tagSpan.TagEnd);
                 }
                 else // inline image
                 {
@@ -120,7 +119,7 @@ namespace LeninSearch.Script
                     var imageIndex = (ushort)(imageIds.Count - 1);
                     var inlineImage = new JsonInlineImageData(imageIndex, (ushort) before.Length);
                     images.Add(inlineImage);
-                    text = before + inlineImage.ImageToken + after;
+                    text = before + $" {inlineImage.Token} " + after;
                 }
             }
 

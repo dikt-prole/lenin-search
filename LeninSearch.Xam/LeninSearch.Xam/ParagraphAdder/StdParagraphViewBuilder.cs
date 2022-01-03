@@ -17,114 +17,128 @@ namespace LeninSearch.Xam.ParagraphAdder
             _lsiProvider = lsiProvider;
         }
 
-        public View Build(LsParagraph p, State state, string[] dictionaryWords)
+        public View Build(LsiParagraph p, State state, string[] dictionaryWords)
         {
             ParagraphSearchResult searchResult = null;
             var searchResults = state.PartialParagraphSearchResult?.FileResults(state.ReadingFile);
-
             if (searchResults?.Any() == true && state.CurrentParagraphResultIndex >= 0)
             {
                 searchResult = searchResults[state.CurrentParagraphResultIndex];
             }
 
-            if (searchResult?.ParagraphIndex != p.Index)
+            // 1. the whole paragraph is an image
+            if (p.IsImage) return new Image
+            {
+                Source = Settings.ImageFile(state.CorpusId, p.ImageIndex),
+                HorizontalOptions = LayoutOptions.FillAndExpand,
+                TabIndex = p.Index
+            };
+
+            var lsiSpans = p.GetSpans(searchResult);
+
+            // 2. the whole paragraph is a plain text
+            if (lsiSpans.Count == 1 && lsiSpans[0].Type == LsiSpanType.Plain)
             {
                 return new ExtendedLabel
                 {
-                    Text = p.GetText(dictionaryWords), TextColor = Color.Black, JustifyText = true, Margin = new Thickness(0, 5, 0, 0),
+                    Text = lsiSpans[0].GetText(dictionaryWords),
+                    TextColor = Color.Black,
+                    JustifyText = true,
+                    Margin = new Thickness(0, 5, 0, 0),
                     TabIndex = p.Index
                 };
             }
 
-            var pText = p.GetText(dictionaryWords);
-            var chain = searchResult.WordIndexChains[0];
-
-            var selection = chain.WordIndexes.Select(wi => dictionaryWords[wi].ToLower()).ToArray();
-
-            var fString = new FormattedString();
-
-            fString.Spans.Add(GetHeadingSpan(state, dictionaryWords));
-
-            fString.Spans.Add(new Span { Text = Environment.NewLine });
-
-            var spans = GetSpans(pText, selection).ToList();
-
-            foreach (var span in spans) fString.Spans.Add(span);
-
-            var pLabel = new ExtendedLabel { TextColor = Color.Black, JustifyText = true, FormattedText = fString, Margin = new Thickness(0, 5, 0, 0) };
-            pLabel.TabIndex = p.Index;
-            return pLabel;
-        }
-
-        private IEnumerable<Span> GetSpans(string text, string[] selection)
-        {
-            var lowerText = text.ToLower();
-
-            var selectionIndexes = new List<Tuple<int, string>>();
-            foreach (var token in selection)
+            // 3. paragraph has inline images
+            if (lsiSpans.Any(s => s.Type == LsiSpanType.InlineImage))
             {
-                var selectionIndex = lowerText.IndexOf(token, 0);
-                while (selectionIndex >= 0)
+                var flexLayout = new FlexLayout
                 {
-                    selectionIndexes.Add(new Tuple<int, string>(selectionIndex, token));
-                    selectionIndex = lowerText.IndexOf(token, selectionIndex + token.Length);
-                }
-            }
+                    Direction = FlexDirection.Row,
+                    AlignItems = FlexAlignItems.End,
+                    JustifyContent = FlexJustify.SpaceBetween,
+                    Wrap = FlexWrap.Wrap,
+                    TabIndex = p.Index
+                };
 
-            var startIndex = 0;
-            foreach (var si in selectionIndexes.OrderBy(si => si.Item1))
-            {
-                if (si.Item1 < 0) continue;
-
-                if (si.Item1 > startIndex)
+                foreach (var lsiSpan in lsiSpans)
                 {
-                    var fragment = text.Substring(startIndex, si.Item1 - startIndex);
-                    yield return new Span { Text = fragment };
-                    startIndex = si.Item1;
+                    if (lsiSpan.Type == LsiSpanType.InlineImage)
+                    {
+                        flexLayout.Children.Add(new Image
+                        {
+                            Source = Settings.ImageFile(state.CorpusId, lsiSpan.ImageIndex),
+                            WidthRequest = 24,
+                            HeightRequest = 24
+                        });
+                    }
+                    else if (lsiSpan.Type == LsiSpanType.Comment)
+                    {
+                        flexLayout.Children.Add(new Label
+                        {
+                            Text = lsiSpan.GetText(dictionaryWords),
+                            TextColor = Settings.UI.MainColor
+                        });
+                    }
+                    else if (lsiSpan.Type == LsiSpanType.SearchResult)
+                    {
+                        flexLayout.Children.Add(new Label
+                        {
+                            Text = lsiSpan.GetText(dictionaryWords),
+                            TextColor = Settings.UI.MainColor
+                        });
+                    }
+                    else
+                    {
+                        foreach (var wi in lsiSpan.WordIndexes)
+                        {
+                            flexLayout.Children.Add(new Label
+                            {
+                                Text = dictionaryWords[wi],
+                                TextColor = Color.Black,
+                                FontAttributes = lsiSpan.Type == LsiSpanType.Strong
+                                    ? FontAttributes.Bold
+                                    : lsiSpan.Type == LsiSpanType.Emphasis
+                                        ? FontAttributes.Italic
+                                        : FontAttributes.None
+                            });
+                        }
+                    }
                 }
 
-                var sFragment = text.Substring(startIndex, si.Item2.Length);
-                yield return new Span { Text = sFragment, FontAttributes = FontAttributes.Bold };
-                startIndex = startIndex + sFragment.Length;
+                return flexLayout;
             }
 
-            if (startIndex < text.Length - 1)
+            // 4. paragraph text is a formatted text without inline images
+            var formattedString = new FormattedString();
+            foreach (var lsiSpan in lsiSpans)
             {
-                var fragment = text.Substring(startIndex);
-                yield return new Span { Text = fragment };
-            }
-        }
+                var span = new Span {Text = lsiSpan.GetText(dictionaryWords), TextColor = Color.Black};
 
-        private Span GetHeadingSpan(State state, string[] words)
-        {
-            var corpusItem = state.GetCurrentCorpusItem();
-            var corpusFileItem = state.GetReadingCorpusFileItem();
-            var searchParagraphResult = state.GetCurrentSearchParagraphResult();
+                if (lsiSpan.Type == LsiSpanType.SearchResult || lsiSpan.Type == LsiSpanType.Comment)
+                {
+                    span.TextColor = Settings.UI.MainColor;
+                }
 
-            var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, corpusFileItem.Path);
+                if (lsiSpan.Type == LsiSpanType.Strong)
+                {
+                    span.FontAttributes = FontAttributes.Bold;
+                }
 
-            var headings = lsiData.LsData.GetHeadingsDownToZero(searchParagraphResult.ParagraphIndex);
-            var page = lsiData.LsData.GetClosestPage(searchParagraphResult.ParagraphIndex);
+                if (lsiSpan.Type == LsiSpanType.Emphasis)
+                {
+                    span.FontAttributes = FontAttributes.Italic;
+                }
 
-            var spanText = ">";
-            if (page != null || headings.Any())
-            {
-                var headingText = headings.Count > 0
-                    ? string.Join(" - ", headings.Select(h => h.GetText(words)))
-                    : null;
-
-                spanText = page == null
-                    ? headingText
-                    : string.IsNullOrEmpty(headingText)
-                        ? $"> стр. {page}"
-                        : $"> стр. {page}, {headingText}";
+                formattedString.Spans.Add(span);
             }
 
-            return new Span
+            return new ExtendedLabel
             {
-                Text = spanText,
-                BackgroundColor = Settings.UI.MainColor,
-                TextColor = Color.White
+                JustifyText = true, 
+                FormattedText = formattedString, 
+                Margin = new Thickness(0, 5, 0, 0),
+                TabIndex = p.Index
             };
         }
     }

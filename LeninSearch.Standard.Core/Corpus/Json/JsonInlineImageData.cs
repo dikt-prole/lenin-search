@@ -2,7 +2,7 @@
 {
     public class JsonInlineImageData
     {
-        public string ImageToken => $"img{ImageIndex}";
+        public string Token => $"img{ImageIndex}";
 
         public JsonInlineImageData() {}
 

@@ -17,12 +17,12 @@ namespace LeninSearch.Xam
 
         private string _currentDictionaryId;
 
-        private LsIndexData _currentLsi;
+        private LsiData _currentLsi;
 
         private string _currentLsiKey;
         private string GetLsiKey(string corpusId, string file) => $"{corpusId}-{file}";
 
-        public LsIndexData GetLsiData(string corpusId, string file)
+        public LsiData GetLsiData(string corpusId, string file)
         {
             var lsiKey = GetLsiKey(corpusId, file);
 

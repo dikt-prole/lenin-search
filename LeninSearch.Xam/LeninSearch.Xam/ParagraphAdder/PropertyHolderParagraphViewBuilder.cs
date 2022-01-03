@@ -13,7 +13,7 @@ namespace LeninSearch.Xam.ParagraphAdder
             _fontSize = fontSize;
         }
 
-        public View Build(LsParagraph p, State state, string[] dictionaryWords)
+        public View Build(LsiParagraph p, State state, string[] dictionaryWords)
         {
             var view = _builder.Build(p, state, dictionaryWords);
 

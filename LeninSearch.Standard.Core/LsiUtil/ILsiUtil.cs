@@ -7,6 +7,6 @@ namespace LeninSearch.Standard.Core.LsiUtil
     public interface ILsiUtil
     {
         byte[] ToLsIndexBytes(JsonFileData fd, Dictionary<string, uint> reverseDictionary);
-        LsIndexData FromLsIndexBytes(byte[] lsIndexBytes);
+        LsiData FromLsIndexBytes(byte[] lsIndexBytes);
     }
 }

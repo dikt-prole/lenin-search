@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace LeninSearch.Standard.Core.Corpus.Lsi
 {
-    public class LsHeading
+    public class LsiHeading
     {
         public byte Level { get; set; }
         public ushort Index { get; set; }
@@ -14,9 +14,9 @@ namespace LeninSearch.Standard.Core.Corpus.Lsi
             return TextUtil.GetParagraph(words);
         }
 
-        public static LsHeading FromLsParagraph(LsParagraph paragraph, byte level)
+        public static LsiHeading FromLsParagraph(LsiParagraph paragraph, byte level)
         {
-            var lsHeading = new LsHeading
+            var lsHeading = new LsiHeading
             {
                 Level = level,
                 Index = paragraph.Index,

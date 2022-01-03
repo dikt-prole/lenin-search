@@ -16,7 +16,7 @@ namespace LeninSearch.Api.Services
 {
     public class PrecachedLsiProvider : ILsiProvider
     {
-        private readonly Dictionary<string, LsIndexData> _lsIndexData = new Dictionary<string, LsIndexData>();
+        private readonly Dictionary<string, LsiData> _lsIndexData = new Dictionary<string, LsiData>();
 
         private readonly Dictionary<string, LsDictionary> _dictionaries = new Dictionary<string, LsDictionary>();
 
@@ -56,7 +56,7 @@ namespace LeninSearch.Api.Services
             return this;
         }
 
-        public LsIndexData GetLsiData(string corpusId, string file)
+        public LsiData GetLsiData(string corpusId, string file)
         {
             var key = Key(corpusId, file);
             if (_lsIndexData.ContainsKey(key))

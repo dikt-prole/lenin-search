@@ -5,6 +5,6 @@ namespace LeninSearch.Xam.ParagraphAdder
 {
     public interface IParagraphViewBuilder
     {
-        View Build(LsParagraph p, State state, string[] dictionaryWords);
+        View Build(LsiParagraph p, State state, string[] dictionaryWords);
     }
 }

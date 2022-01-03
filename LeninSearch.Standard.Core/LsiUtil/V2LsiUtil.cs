@@ -259,7 +259,7 @@ namespace LeninSearch.Standard.Core.LsiUtil
             return lsiBytes.ToArray();
         }
 
-        public LsIndexData FromLsIndexBytes(byte[] lsIndexBytes)
+        public LsiData FromLsIndexBytes(byte[] lsIndexBytes)
         {
             var cursor = 0;
 
@@ -276,7 +276,7 @@ namespace LeninSearch.Standard.Core.LsiUtil
 
             cursor = FileHeaderLength;
 
-            var lsIndexData = new LsIndexData
+            var lsIndexData = new LsiData
             {
                 WordParagraphData = new Dictionary<uint, List<LsWordParagraphData>>(),
                 Headings = new List<LsWordHeadingData>(),

@@ -17,16 +17,16 @@ namespace LeninSearch.Standard.Core.Search
             _resultCountCutoff = resultCountCutoff;
         }
 
-        public List<ParagraphSearchResult> SearchParagraphs(LsIndexData lsIndexData, SearchQuery query)
+        public List<ParagraphSearchResult> SearchParagraphs(LsiData lsiData, SearchQuery query)
         {
-            return SearchParagraphData(lsIndexData.WordParagraphData, query);
+            return SearchParagraphData(lsiData.WordParagraphData, query);
         }
 
-        public List<ParagraphSearchResult> SearchHeadings(LsIndexData lsIndexData, SearchQuery query)
+        public List<ParagraphSearchResult> SearchHeadings(LsiData lsiData, SearchQuery query)
         {
-            var headingIndexes = lsIndexData.Headings.Select(hd => hd.Index).ToHashSet();
+            var headingIndexes = lsiData.Headings.Select(hd => hd.Index).ToHashSet();
 
-            var searchResult = SearchParagraphData(lsIndexData.WordParagraphData, query);
+            var searchResult = SearchParagraphData(lsiData.WordParagraphData, query);
 
             searchResult = searchResult.Where(sr => headingIndexes.Contains(sr.ParagraphIndex)).ToList();
 

@@ -123,5 +123,10 @@ namespace LeninSearch.Xam
         {
             return Path.Combine(CorpusRoot, corpusId, "icon.png");
         }
+
+        public static string ImageFile(string corpusId, ushort imageIndex)
+        {
+            return Path.Combine(CorpusRoot, corpusId, $"image{imageIndex}.jpeg");
+        }
     }
 }

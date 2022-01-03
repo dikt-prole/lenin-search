@@ -183,18 +183,17 @@ namespace LeninSearch.Script.Scripts
                 var lsiFileName = Path.GetFileName(lsiFile);
                 Console.WriteLine($"Verifying {lsiFileName}");
                 var lsiData = _lsiUtil.FromLsIndexBytes(File.ReadAllBytes(lsiFile));
-                var lsData = lsiData.LsData;
                 var jsonFile = Path.Combine(jsonFolder, Path.GetFileName(lsiFile).Replace(".lsi", ".json"));
                 var jsonData = JsonConvert.DeserializeObject<JsonFileData>(File.ReadAllText(jsonFile));
 
-                var lsiParagraphCount = lsData.Paragraphs.Count;
+                var lsiParagraphCount = lsiData.Paragraphs.Count;
                 var jsonParagraphCount = jsonData.Pars.Count(p => !string.IsNullOrEmpty(p.Text));
                 if (lsiParagraphCount != jsonParagraphCount)
                 {
                     Console.WriteLine($"{lsiParagraphCount} vs {jsonParagraphCount} json paragraphs");
                 }
 
-                var lsiHeadingCount = lsData.Headings.Count;
+                var lsiHeadingCount = lsiData.Headings.Count;
                 var jsonHeadingCount = jsonData.Headings.Count;
                 if (lsiHeadingCount != jsonHeadingCount)
                 {
@@ -222,9 +221,9 @@ namespace LeninSearch.Script.Scripts
                     Console.WriteLine($"{lsiCommentCount} vs {jsonCommentCount} json images");
                 }
 
-                var paragraphKeys = lsData.Paragraphs.Keys.ToArray();
+                var paragraphKeys = lsiData.Paragraphs.Keys.ToArray();
                 var randomParagraphIndex = paragraphKeys[Random.Next(0, paragraphKeys.Length)];
-                var paragraph = lsData.Paragraphs[randomParagraphIndex];
+                var paragraph = lsiData.Paragraphs[randomParagraphIndex];
                 var paragraphText = paragraph.GetText(globalWordsArray);
                 Console.WriteLine($"Random text ({randomParagraphIndex}): {paragraphText}");
                 Console.WriteLine();
