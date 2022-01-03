@@ -61,7 +61,8 @@ namespace LeninSearch.Standard.Core.LsiUtil
                     commentData[paragraphIndex].Add(new LsiCommentData
                     {
                         WordPosition = (ushort)beforeCommentWords.Count,
-                        Words = commentWordIndexes.ToArray()
+                        CommentIndex = comment.CommentIndex,
+                        WordIndexes = commentWordIndexes.ToArray()
                     });
                 }
 
@@ -209,8 +210,8 @@ namespace LeninSearch.Standard.Core.LsiUtil
                     commentBytes.AddRange(BitConverter.GetBytes(paragraphIndex));
                     commentBytes.AddRange(BitConverter.GetBytes(comment.CommentIndex));
                     commentBytes.AddRange(BitConverter.GetBytes(comment.WordPosition));
-                    commentBytes.AddRange(BitConverter.GetBytes((ushort)comment.Words.Length));
-                    foreach (var word in comment.Words)
+                    commentBytes.AddRange(BitConverter.GetBytes((ushort)comment.WordIndexes.Length));
+                    foreach (var word in comment.WordIndexes)
                     {
                         commentBytes.AddRange(BitConverter.GetBytes(word));
                     }
@@ -408,7 +409,7 @@ namespace LeninSearch.Standard.Core.LsiUtil
                 {
                     CommentIndex = commentIndex,
                     WordPosition = wordIndex,
-                    Words = words.ToArray()
+                    WordIndexes = words.ToArray()
                 });
             }
 

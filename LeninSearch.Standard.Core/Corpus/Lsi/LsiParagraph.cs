@@ -70,7 +70,11 @@ namespace LeninSearch.Standard.Core.Corpus.Lsi
                 }
 
                 var span = ConstructSpan(wordData.SpanType, wordData.CommentIndex, wordData.InlineImageIndex);
-                span.WordIndexes.Add(WordIndexes[wordPosition]);
+                if (span.Type != LsiSpanType.Comment && span.Type != LsiSpanType.InlineImage)
+                {
+                    span.WordIndexes.Add(WordIndexes[wordPosition]);
+                }
+
                 spans.Add(span);
             }
 
@@ -84,7 +88,7 @@ namespace LeninSearch.Standard.Core.Corpus.Lsi
                 return (LsiSpanType.SearchResult, 0, 0);
             }
 
-            var markup = Markups.FirstOrDefault(m => m.WordPosition <= wordPosition && wordPosition < m.WordPosition + m.WordPosition);
+            var markup = Markups.FirstOrDefault(m => m.WordPosition <= wordPosition && wordPosition < m.WordPosition + m.WordLength);
 
             if (markup?.MarkupType == MarkupType.Emphasis) return (LsiSpanType.Emphasis, 0, 0);
 

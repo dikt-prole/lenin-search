@@ -4,6 +4,6 @@
     {
         public ushort CommentIndex { get; set; }
         public ushort WordPosition { get; set; }
-        public uint[] Words { get; set; }
+        public uint[] WordIndexes { get; set; }
     }
 }

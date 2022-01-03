@@ -73,7 +73,7 @@ namespace LeninSearch.Xam
             Keyboard.NonKeyaboardUnfocus += () => CorpusButton.IsVisible = true;
 
             // paragraphs
-            _paragraphViewBuilder = new StdParagraphViewBuilder(_lsiProvider);
+            _paragraphViewBuilder = new StdParagraphViewBuilder(_lsiProvider, s => _message.LongAlert(s));
             _paragraphViewBuilder = new ParagraphViewBuilderPagerHeaderDecorator(_paragraphViewBuilder);
             _paragraphViewBuilder = new PropertyHolderParagraphViewBuilder(_paragraphViewBuilder, Settings.UI.Font.NormalFontSize);
             _selectionSelectionDecorator = new ParagraphViewBuilderTapSelectionDecorator(_paragraphViewBuilder, _lsiProvider);
@@ -901,18 +901,27 @@ namespace LeninSearch.Xam
             {
                 var link = ConstructHyperlinkButton(cfi.Name, Settings.UI.Font.NormalFontSize, async () =>
                 {
-                    var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, cfi.Path);
-                    var headings = lsiData.HeadingParagraphs?.ToList();
-                    if (headings?.Any() != true)
+                    try
                     {
-                        _message.ShortAlert("Заголовки не найдены");
+                        var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, cfi.Path);
+                        var headings = lsiData.HeadingParagraphs?.ToList();
+                        if (headings?.Any() != true)
+                        {
+                            _message.ShortAlert("Заголовки не найдены");
+                        }
+                        else
+                        {
+                            await ReplaceCorpusWithLoading();
+                            await DisplayBookHeadings(corpusItem, cfi, headings);
+                            await ReplaceLoadingWithCorpus();
+                        }
                     }
-                    else
+                    catch (Exception e)
                     {
-                        await ReplaceCorpusWithLoading();
-                        await DisplayBookHeadings(corpusItem, cfi, headings);
-                        await ReplaceLoadingWithCorpus();
+                        Debug.WriteLine(e);
+                        throw;
                     }
+                    
                 });
                 flexLayout.Children.Add(link);
             }
