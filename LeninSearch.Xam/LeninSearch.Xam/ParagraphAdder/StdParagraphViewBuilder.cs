@@ -87,7 +87,8 @@ namespace LeninSearch.Xam.ParagraphAdder
                 Text = lsiSpans[0].GetText(dictionaryWords),
                 TextColor = Color.Black,
                 JustifyText = true,
-                Margin = new Thickness(0, 5, 0, 0)
+                Margin = new Thickness(0, 5, 0, 0),
+                FontFamily = Settings.UI.ReadingFont
             };
         }
 
@@ -96,12 +97,18 @@ namespace LeninSearch.Xam.ParagraphAdder
             var formattedString = new FormattedString();
             foreach (var lsiSpan in lsiSpans)
             {
-                var span = new Span { Text = lsiSpan.GetText(dictionaryWords), TextColor = Color.Black };
+                var span = new Span
+                {
+                    Text = lsiSpan.GetText(dictionaryWords),
+                    TextColor = Color.Black,
+                    FontFamily = Settings.UI.ReadingFont
+                };
 
                 if (lsiSpan.Type == LsiSpanType.SearchResult)
                 {
                     span.TextColor = Settings.UI.MainColor;
                     span.FontAttributes = FontAttributes.Bold;
+                    span.TextDecorations = TextDecorations.Underline;
                 }
 
                 if (lsiSpan.Type == LsiSpanType.Comment)
@@ -121,11 +128,13 @@ namespace LeninSearch.Xam.ParagraphAdder
                 if (lsiSpan.Type == LsiSpanType.Strong)
                 {
                     span.FontAttributes = FontAttributes.Bold;
+                    span.BackgroundColor = Color.Bisque;
                 }
 
                 if (lsiSpan.Type == LsiSpanType.Emphasis)
                 {
                     span.FontAttributes = FontAttributes.Italic;
+                    span.BackgroundColor = Color.Aquamarine;
                 }
 
                 if (lsiSpan.Type != LsiSpanType.Plain)
@@ -170,7 +179,8 @@ namespace LeninSearch.Xam.ParagraphAdder
                     flexLayout.Children.Add(new Label
                     {
                         Text = lsiSpan.GetText(dictionaryWords),
-                        TextColor = Settings.UI.MainColor
+                        TextColor = Settings.UI.MainColor,
+                        FontFamily = Settings.UI.ReadingFont
                     });
                 }
                 else if (lsiSpan.Type == LsiSpanType.SearchResult)
@@ -178,7 +188,8 @@ namespace LeninSearch.Xam.ParagraphAdder
                     flexLayout.Children.Add(new Label
                     {
                         Text = lsiSpan.GetText(dictionaryWords),
-                        TextColor = Settings.UI.MainColor
+                        TextColor = Settings.UI.MainColor,
+                        FontFamily = Settings.UI.ReadingFont
                     });
                 }
                 else
@@ -189,6 +200,7 @@ namespace LeninSearch.Xam.ParagraphAdder
                         {
                             Text = dictionaryWords[wi],
                             TextColor = Color.Black,
+                            FontFamily = Settings.UI.ReadingFont,
                             FontAttributes = lsiSpan.Type == LsiSpanType.Strong
                                 ? FontAttributes.Bold
                                 : lsiSpan.Type == LsiSpanType.Emphasis

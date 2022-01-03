@@ -70,6 +70,8 @@ namespace LeninSearch.Xam
             public const int ResultScrollFadeMs = 50;
 
             public const int BrowserViewHeight = 700;
+
+            public const string ReadingFont = "InterFont";
         }
 
         public static class Misc

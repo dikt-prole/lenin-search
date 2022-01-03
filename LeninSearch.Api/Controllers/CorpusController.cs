@@ -80,7 +80,7 @@ namespace LeninSearch.Api.Controllers
                         searchResult.File = cfi.Path;
                         if (searchQuery.QueryType == SearchQueryType.Heading)
                         {
-                            searchResult.Text = lsi.LsData.Paragraphs[searchResult.ParagraphIndex].GetText(dictionary.Words);
+                            searchResult.Text = lsi.Paragraphs[searchResult.ParagraphIndex].GetText(dictionary.Words);
                         }
                     }
 

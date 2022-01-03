@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <HegelV1 Include="..\corpus\ls_index\hegel-v1\*.*" />
+    <HegelV2 Include="..\corpus\ls_index\hegel-v2\*.*" />
     <LeninV1 Include="..\corpus\ls_index\lenin-v1\*.*" />
     <LeninV2 Include="..\corpus\ls_index\lenin-v2\*.*" />
     <StalinV1 Include="..\corpus\ls_index\stalin-v1\*.*" />
@@ -34,6 +35,7 @@
 
   <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
     <Copy SourceFiles="@(HegelV1)" DestinationFolder="$(OutDir)\corpus\hegel-v1" />
+    <Copy SourceFiles="@(HegelV2)" DestinationFolder="$(OutDir)\corpus\hegel-v2" />
     <Copy SourceFiles="@(LeninV1)" DestinationFolder="$(OutDir)\corpus\lenin-v1" />
     <Copy SourceFiles="@(LeninV2)" DestinationFolder="$(OutDir)\corpus\lenin-v2" />
     <Copy SourceFiles="@(StalinV1)" DestinationFolder="$(OutDir)\corpus\stalin-v1" />
@@ -43,6 +45,7 @@
 
   <Target Name="CopyCustomContentOnPublish" AfterTargets="Publish">
     <Copy SourceFiles="@(HegelV1)" DestinationFolder="$(PublishDir)\corpus\hegel-v1" />
+    <Copy SourceFiles="@(HegelV2)" DestinationFolder="$(PublishDir)\corpus\hegel-v2" />
     <Copy SourceFiles="@(LeninV1)" DestinationFolder="$(PublishDir)\corpus\lenin-v1" />
     <Copy SourceFiles="@(LeninV2)" DestinationFolder="$(PublishDir)\corpus\lenin-v2" />
     <Copy SourceFiles="@(StalinV1)" DestinationFolder="$(PublishDir)\corpus\stalin-v1" />

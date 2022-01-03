@@ -68,17 +68,26 @@ namespace LeninSearch.Standard.Core.Corpus.Lsi
 
                 foreach (var paragraphIndex in InlineImages.Keys)
                 {
-                    _paragraphs[paragraphIndex].InlineImages = InlineImages[paragraphIndex];
+                    if (_paragraphs.ContainsKey(paragraphIndex))
+                    {
+                        _paragraphs[paragraphIndex].InlineImages = InlineImages[paragraphIndex];
+                    }
                 }
 
                 foreach (var paragraphIndex in Markups.Keys)
                 {
-                    _paragraphs[paragraphIndex].Markups = Markups[paragraphIndex];
+                    if (_paragraphs.ContainsKey(paragraphIndex))
+                    {
+                        _paragraphs[paragraphIndex].Markups = Markups[paragraphIndex];
+                    }
                 }
 
                 foreach (var paragraphIndex in Comments.Keys)
                 {
-                    _paragraphs[paragraphIndex].Comments = Comments[paragraphIndex];
+                    if (_paragraphs.ContainsKey(paragraphIndex))
+                    {
+                        _paragraphs[paragraphIndex].Comments = Comments[paragraphIndex];
+                    }
                 }
 
                 return _paragraphs;
