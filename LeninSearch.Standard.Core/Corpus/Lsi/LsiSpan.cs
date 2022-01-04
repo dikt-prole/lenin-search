@@ -12,7 +12,7 @@ namespace LeninSearch.Standard.Core.Corpus.Lsi
 
         public string GetText(string[] dictionary)
         {
-            if (Type == LsiSpanType.Comment) return $"[К{CommentIndex}]";
+            if (Type == LsiSpanType.Comment) return $"[{CommentIndex + 1}]";
 
             var words = WordIndexes.Select(wi => dictionary[wi]).ToList();
 

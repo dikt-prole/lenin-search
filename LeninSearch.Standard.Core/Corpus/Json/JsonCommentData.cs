@@ -15,6 +15,6 @@
         public ushort CommentSymbolStart { get; set; }
         public string CommentId { get; set; }
         public string Text { get; set; }
-        public string Token => $"c{CommentIndex}";
+        public string Token => "COMMENT";
     }
 }

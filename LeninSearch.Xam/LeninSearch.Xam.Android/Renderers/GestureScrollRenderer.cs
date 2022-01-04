@@ -59,10 +59,20 @@ namespace LeninSearch.Xam.Droid.Renderers
             }
         }
 
-        void HandleOnSwipeLeft(object sender, EventArgs e) =>
-            ((GestureScrollView)Element).OnSwipeLeft();
+        void HandleOnSwipeLeft(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"HandleOnSwipeLeft: {sender}");
 
-        void HandleOnSwipeRight(object sender, EventArgs e) =>
+            ((GestureScrollView) Element).OnSwipeLeft();
+        }
+
+
+        void HandleOnSwipeRight(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"HandleOnSwipeRight: {sender}");
+
             ((GestureScrollView)Element).OnSwipeRight();
-    }
+        }
+    
+}
 }

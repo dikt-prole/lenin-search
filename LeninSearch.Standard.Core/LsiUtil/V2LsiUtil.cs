@@ -72,8 +72,8 @@ namespace LeninSearch.Standard.Core.LsiUtil
                     var beforeImageText = paragraph.Text.Substring(0, jsonInlineImage.ImageSymbolStart);
                     var beforeImageWords = TextUtil.GetOrderedWords(beforeImageText);
                     var imageIndex = jsonInlineImage.ImageIndex;
-                    if (!inlineImages.ContainsKey(imageIndex)) inlineImages.Add(imageIndex, new List<LsiInlineImageData>());
-                    inlineImages[imageIndex].Add(new LsiInlineImageData
+                    if (!inlineImages.ContainsKey(paragraphIndex)) inlineImages.Add(paragraphIndex, new List<LsiInlineImageData>());
+                    inlineImages[paragraphIndex].Add(new LsiInlineImageData
                     {
                         ImageIndex = imageIndex,
                         WordPosition = (ushort)beforeImageWords.Count

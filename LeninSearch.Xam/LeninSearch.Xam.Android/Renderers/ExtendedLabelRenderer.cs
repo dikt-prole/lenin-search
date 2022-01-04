@@ -1,5 +1,11 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
+using System.Reflection;
 using Android.Content;
+using Android.Graphics;
+using Android.Text;
+using Android.Text.Style;
+using Java.Lang;
 using LeninSearch.Xam.Controls;
 using LeninSearch.Xam.Droid.Renderers;
 using Xamarin.Forms;
@@ -16,12 +22,17 @@ namespace LeninSearch.Xam.Droid.Renderers
         {
             base.OnElementChanged(e);
 
-            if (Element is ExtendedLabel el && el.JustifyText)
+            if (Element is ExtendedLabel el)
             {
-                if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.O)
+                if (el.JustifyText)
                 {
-                    Control.JustificationMode = Android.Text.JustificationMode.InterWord;
+                    if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.O)
+                    {
+                        Control.JustificationMode = JustificationMode.InterWord;
+                    }
                 }
+
+                UpdateFormattedText();
             }
         }
 
@@ -36,6 +47,32 @@ namespace LeninSearch.Xam.Droid.Renderers
                     Control.JustificationMode = Android.Text.JustificationMode.InterWord;
                 }
             }
+        }
+
+        private void UpdateFormattedText()
+        {
+            if (Element.FormattedText == null) return;
+
+            var extensionType = typeof(FormattedStringExtensions);
+            var type = extensionType.GetNestedType("FontSpan", BindingFlags.NonPublic);
+            var ss = new SpannableString(Control.TextFormatted);
+            var ssText = ss.ToString();
+            var spans = ss.GetSpans(0, ss.ToString().Length, Class.FromType(type));
+            foreach (var span in spans)
+            {
+                var start = ss.GetSpanStart(span);
+                var end = ss.GetSpanEnd(span);
+                var imageFile = ssText.Substring(start, end - start);
+                if (imageFile.EndsWith(".jpeg"))
+                {
+                    var flags = ss.GetSpanFlags(span);
+                    ss.RemoveSpan(span);
+                    var bitmap = BitmapFactory.DecodeFile(imageFile);
+                    var imageSpan = new ImageSpan(Context, bitmap);
+                    ss.SetSpan(imageSpan, start, end, flags);
+                }
+            }
+            Control.TextFormatted = ss;
         }
     }
 }

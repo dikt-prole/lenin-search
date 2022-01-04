@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using LeninSearch.Standard.Core.Corpus;
 using LeninSearch.Standard.Core.Corpus.Json;
@@ -960,6 +961,7 @@ namespace LeninSearch.Xam
 
                 var corpusItem = _state.GetCurrentCorpusItem();
                 var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, cfi.Path);
+
                 var paragraph = lsiData.GetPrevParagraph(paragraphIndex);
                 if (paragraph == null)
                 {

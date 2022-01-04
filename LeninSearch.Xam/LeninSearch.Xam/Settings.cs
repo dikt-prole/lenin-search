@@ -42,6 +42,10 @@ namespace LeninSearch.Xam
                 public const double SmallFontSize = 12;
                 public const double NormalFontSize = 17;
                 public const double LargeFontSize = 12;
+
+                public const string Regular = "InterRegular";
+                public const string Bold = "InterBold";
+                public const string Italic = "InterItalic";
             }
 
             public static Color MainColor => Color.FromRgb(214, 24, 31);
@@ -70,8 +74,6 @@ namespace LeninSearch.Xam
             public const int ResultScrollFadeMs = 50;
 
             public const int BrowserViewHeight = 700;
-
-            public const string ReadingFont = "InterFont";
         }
 
         public static class Misc

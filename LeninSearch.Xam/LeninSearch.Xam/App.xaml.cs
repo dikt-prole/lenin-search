@@ -8,7 +8,9 @@ using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using Application = Xamarin.Forms.Application;
 
-[assembly: ExportFont("Inter.ttf", Alias = "InterFont")]
+[assembly: ExportFont("InterBold.ttf", Alias = "InterBold")]
+[assembly: ExportFont("InterItalic.ttf", Alias = "InterItalic")]
+[assembly: ExportFont("InterRegular.ttf", Alias = "InterRegular")]
 namespace LeninSearch.Xam
 {
     public partial class App : Application

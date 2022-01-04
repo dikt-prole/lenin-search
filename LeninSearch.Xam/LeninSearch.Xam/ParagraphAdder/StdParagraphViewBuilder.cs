@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using LeninSearch.Standard.Core;
 using LeninSearch.Standard.Core.Corpus.Lsi;
 using LeninSearch.Standard.Core.Search;
 using LeninSearch.Xam.Controls;
 using Xamarin.Forms;
+using Xamarin.Forms.Internals;
 
 namespace LeninSearch.Xam.ParagraphAdder
 {
@@ -47,16 +49,10 @@ namespace LeninSearch.Xam.ParagraphAdder
                     view = Build_PlainText(lsiSpans, dictionaryWords);
                 }
 
-                // 3. paragraph has inline images
-                else if (lsiSpans.Any(s => s.Type == LsiSpanType.InlineImage))
-                {
-                    view = Build_InlineImages(lsiSpans, dictionaryWords, state.CorpusId);
-                }
-
-                // 4. paragraph text is a formatted text without inline images
+                // 3. paragraph text is a formatted text (with optional inline images)
                 else
                 {
-                    view = Build_FormattedText(lsiSpans, p, dictionaryWords);
+                    view = Build_FormattedText(lsiSpans, p, dictionaryWords, state);
                 }
 
                 view.TabIndex = p.Index;
@@ -72,12 +68,27 @@ namespace LeninSearch.Xam.ParagraphAdder
 
         private View Build_Image(string corpusId, ushort imageIndex)
         {
-            return new Image
+            //var stackLayout = new StackLayout
+            //{
+            //    HorizontalOptions = LayoutOptions.FillAndExpand,
+            //    HeightRequest = 100
+            //};
+
+            //var image = new ZoomImage
+            //{
+            //    Source = Settings.ImageFile(corpusId, imageIndex),
+            //    Margin = new Thickness(5, 5, 5, 5),
+            //    HorizontalOptions = LayoutOptions.FillAndExpand
+            //};
+
+            //stackLayout.Children.Add(image);
+
+            var imageControl = new ImageControl
             {
-                Source = Settings.ImageFile(corpusId, imageIndex),
-                Margin = new Thickness(5, 5, 5, 5),
-                HorizontalOptions = LayoutOptions.FillAndExpand
+                Source = Settings.ImageFile(corpusId, imageIndex)
             };
+
+            return imageControl;
         }
 
         private View Build_PlainText(List<LsiSpan> lsiSpans, string[] dictionaryWords)
@@ -88,32 +99,27 @@ namespace LeninSearch.Xam.ParagraphAdder
                 TextColor = Color.Black,
                 JustifyText = true,
                 Margin = new Thickness(0, 5, 0, 0),
-                FontFamily = Settings.UI.ReadingFont
+                FontFamily = Settings.UI.Font.Regular
             };
         }
 
-        private View Build_FormattedText(List<LsiSpan> lsiSpans, LsiParagraph paragraph, string[] dictionaryWords)
+        private View Build_FormattedText(List<LsiSpan> lsiSpans, LsiParagraph paragraph, string[] dictionaryWords, State state)
         {
             var formattedString = new FormattedString();
             foreach (var lsiSpan in lsiSpans)
             {
                 var span = new Span
                 {
-                    Text = lsiSpan.GetText(dictionaryWords),
-                    TextColor = Color.Black,
-                    FontFamily = Settings.UI.ReadingFont
+                    Text = lsiSpan.Type == LsiSpanType.InlineImage
+                        ? Settings.ImageFile(state.CorpusId, lsiSpan.ImageIndex)
+                        : lsiSpan.GetText(dictionaryWords),
+                    TextColor = TextColor(lsiSpan.Type),
+                    FontFamily = FontFamily(lsiSpan.Type),
+                    TextDecorations = TextDecorations(lsiSpan.Type)
                 };
-
-                if (lsiSpan.Type == LsiSpanType.SearchResult)
-                {
-                    span.TextColor = Settings.UI.MainColor;
-                    span.FontAttributes = FontAttributes.Bold;
-                    span.TextDecorations = TextDecorations.Underline;
-                }
 
                 if (lsiSpan.Type == LsiSpanType.Comment)
                 {
-                    span.TextColor = Settings.UI.MainColor;
                     var gestureRecognizer = new TapGestureRecognizer { Command = new Command(() =>
                     {
                         var comment = paragraph.Comments.First(c => c.CommentIndex == lsiSpan.CommentIndex);
@@ -125,19 +131,7 @@ namespace LeninSearch.Xam.ParagraphAdder
                     span.GestureRecognizers.Add(gestureRecognizer);
                 }
 
-                if (lsiSpan.Type == LsiSpanType.Strong)
-                {
-                    span.FontAttributes = FontAttributes.Bold;
-                    span.BackgroundColor = Color.Bisque;
-                }
-
-                if (lsiSpan.Type == LsiSpanType.Emphasis)
-                {
-                    span.FontAttributes = FontAttributes.Italic;
-                    span.BackgroundColor = Color.Aquamarine;
-                }
-
-                if (lsiSpan.Type != LsiSpanType.Plain)
+                if (lsiSpan.Type != LsiSpanType.Plain && lsiSpan.Type != LsiSpanType.InlineImage)
                 {
                     span.Text = $" {span.Text} ";
                 }
@@ -152,66 +146,41 @@ namespace LeninSearch.Xam.ParagraphAdder
                 Margin = new Thickness(0, 5, 0, 0)
             };
         }
-
-        private View Build_InlineImages(List<LsiSpan> lsiSpans, string[] dictionaryWords, string corpusId)
+        private string FontFamily(LsiSpanType spanType)
         {
-            var flexLayout = new FlexLayout
+            switch (spanType)
             {
-                Direction = FlexDirection.Row,
-                AlignItems = FlexAlignItems.End,
-                JustifyContent = FlexJustify.SpaceBetween,
-                Wrap = FlexWrap.Wrap
-            };
-
-            foreach (var lsiSpan in lsiSpans)
-            {
-                if (lsiSpan.Type == LsiSpanType.InlineImage)
-                {
-                    flexLayout.Children.Add(new Image
-                    {
-                        Source = Settings.ImageFile(corpusId, lsiSpan.ImageIndex),
-                        WidthRequest = 24,
-                        HeightRequest = 24
-                    });
-                }
-                else if (lsiSpan.Type == LsiSpanType.Comment)
-                {
-                    flexLayout.Children.Add(new Label
-                    {
-                        Text = lsiSpan.GetText(dictionaryWords),
-                        TextColor = Settings.UI.MainColor,
-                        FontFamily = Settings.UI.ReadingFont
-                    });
-                }
-                else if (lsiSpan.Type == LsiSpanType.SearchResult)
-                {
-                    flexLayout.Children.Add(new Label
-                    {
-                        Text = lsiSpan.GetText(dictionaryWords),
-                        TextColor = Settings.UI.MainColor,
-                        FontFamily = Settings.UI.ReadingFont
-                    });
-                }
-                else
-                {
-                    foreach (var wi in lsiSpan.WordIndexes)
-                    {
-                        flexLayout.Children.Add(new Label
-                        {
-                            Text = dictionaryWords[wi],
-                            TextColor = Color.Black,
-                            FontFamily = Settings.UI.ReadingFont,
-                            FontAttributes = lsiSpan.Type == LsiSpanType.Strong
-                                ? FontAttributes.Bold
-                                : lsiSpan.Type == LsiSpanType.Emphasis
-                                    ? FontAttributes.Italic
-                                    : FontAttributes.None
-                        });
-                    }
-                }
+                case LsiSpanType.Plain:
+                case LsiSpanType.Comment:
+                    return Settings.UI.Font.Regular;
+                case LsiSpanType.Strong:
+                case LsiSpanType.SearchResult:
+                    return Settings.UI.Font.Bold;
+                case LsiSpanType.Emphasis:
+                    return Settings.UI.Font.Italic;
             }
 
-            return flexLayout;
+            return Settings.UI.Font.Regular;
+        }
+
+        private Color TextColor(LsiSpanType spanType)
+        {
+            switch (spanType)
+            {
+                
+                case LsiSpanType.SearchResult:
+                case LsiSpanType.Comment:
+                    return Settings.UI.MainColor;
+                default:
+                    return Color.Black;
+            }
+        }
+
+        private TextDecorations TextDecorations(LsiSpanType spanType)
+        {
+            if (spanType == LsiSpanType.SearchResult) return Xamarin.Forms.TextDecorations.Underline;
+
+            return Xamarin.Forms.TextDecorations.None;
         }
     }
 }

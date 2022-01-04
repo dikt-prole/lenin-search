@@ -33,10 +33,10 @@ namespace LeninSearch.Script.Scripts
             var jsonFolder = input[0];
             var lsiFolder = input[1];
             var jpegQuality = input.Length == 3 ? long.Parse(input[2]) : -1;
+
+            foreach (var file in Directory.GetFiles(lsiFolder)) File.Delete(file);
+
             var dicFile = Path.Combine(lsiFolder, "corpus.dic");
-
-            if (File.Exists(dicFile)) File.Delete(dicFile);
-
             Console.WriteLine($"Json Folder: {jsonFolder}");
             Console.WriteLine($"Lsi Folder: {lsiFolder}");
             Console.WriteLine($"Dic File: {dicFile}");
@@ -171,6 +171,9 @@ namespace LeninSearch.Script.Scripts
 
             var corpusJsonFile = Path.Combine(lsiFolder, "corpus.json");
             File.WriteAllText(corpusJsonFile, JsonConvert.SerializeObject(corpusItem, Formatting.Indented));
+            var iconBytes = File.ReadAllBytes($"D:\\Repo\\lenin-search\\corpus\\icons\\{corpusItem.Series}.png");
+            var iconFile = Path.Combine(lsiFolder, "icon.png");
+            File.WriteAllBytes(iconFile, iconBytes);
 
             Console.WriteLine();
             Console.WriteLine($"Corpus size with images: {1.0 * corpusFileItems.Sum(cfi => cfi.Size) / 1024 / 1024:F2}mb");
