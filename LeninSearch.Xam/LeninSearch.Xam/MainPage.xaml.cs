@@ -242,7 +242,7 @@ namespace LeninSearch.Xam
             {
                 var ciText = ci.ToString();
                 var stack = new StackLayout { Orientation = StackOrientation.Horizontal };
-                var iconButton = new ImageButton
+                var iconButton = new Image
                 {
                     WidthRequest = 32,
                     HeightRequest = 32,
@@ -250,14 +250,31 @@ namespace LeninSearch.Xam
                     Source = Settings.IconFile(ci.Id),
                     Margin = new Thickness(10, 0, 0, 0)
                 };
-                iconButton.Clicked += async (sender, args) =>
+
+                var tapRecognizer = new TapGestureRecognizer
                 {
-                    _state.CorpusId = ci.Id;
-                    await AnimateDisappear(CorpusButton);
-                    CorpusButton.Source = Settings.IconFile(ci.Id);
-                    await AnimateAppear(CorpusButton);
-                    SearchEntry.GentlyFocus();
+                    NumberOfTapsRequired = 1,
+                    Command = new Command(async () =>
+                    {
+                        _state.CorpusId = ci.Id;
+                        await AnimateDisappear(CorpusButton);
+                        CorpusButton.Source = Settings.IconFile(ci.Id);
+                        await AnimateAppear(CorpusButton);
+                        SearchEntry.GentlyFocus();
+                    })
                 };
+                iconButton.GestureRecognizers.Add(tapRecognizer);
+
+                var doubleTapRecognizer = new TapGestureRecognizer
+                {
+                    NumberOfTapsRequired = 2,
+                    Command = new Command(() =>
+                    {
+                        _message.LongAlert("Double tap");
+                    })
+                };
+                iconButton.GestureRecognizers.Add(doubleTapRecognizer);
+
                 stack.Children.Add(iconButton);
                 var textButton = ConstructHyperlinkButton(ciText, Settings.UI.Font.NormalFontSize, async () => await DisplayCorpusBooks(ci));
                 stack.Children.Add(textButton);
