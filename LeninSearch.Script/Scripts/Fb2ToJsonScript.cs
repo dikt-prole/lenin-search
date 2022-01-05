@@ -147,8 +147,17 @@ namespace LeninSearch.Script.Scripts
                     }
                 }
 
+                foreach (var commentId in comments.Keys)
+                {
+                    if (string.IsNullOrWhiteSpace(comments[commentId].Text))
+                    {
+                        Console.WriteLine($"Comment '{commentId}' text is empty");
+                    }
+                }
+
                 File.WriteAllText(jsonFile, JsonConvert.SerializeObject(jsonFileData, Formatting.Indented));
             }
+
         }
     }
 }

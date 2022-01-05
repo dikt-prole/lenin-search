@@ -4,52 +4,59 @@ using Xamarin.Forms;
 
 namespace LeninSearch.Xam.Controls
 {
-    public class ImageControl : StackLayout
+    public class ImageControl : ScrollView
     {
         private Image _image;
-        private ImageJoystick _joystick;
+
+        private const double ZoomFactor = 1.5;
 
         public string Source
         {
             get => _image.Source.ToString();
             set => _image.Source = value;
         }
+        public double EffectiveHeightRequest
+        {
+            get => HeightRequest;
+            set
+            {
+                HeightRequest = value;
+                _image.HeightRequest = value;
+            }
+        }
+        public double EffectiveWidthRequest
+        {
+            get => WidthRequest;
+            set
+            {
+                WidthRequest = value;
+                _image.WidthRequest = value;
+            }
+        }
 
         public ImageControl()
         {
-            HorizontalOptions = LayoutOptions.FillAndExpand;
-            Orientation = StackOrientation.Vertical;
-            Spacing = 0;
-            Padding = 0;
-            Margin = 0;
-
-            _image = new Image
-            {
-                HorizontalOptions = LayoutOptions.FillAndExpand,
-            };
-            Children.Add(_image);
-
-            _joystick = new ImageJoystick
-            {
-                HorizontalOptions = LayoutOptions.Center,
-                IsVisible = false
-            };
-            Children.Add(_joystick);
+            _image = new Image();
+            Orientation = ScrollOrientation.Both;
+            Content = _image;
 
             var tap = new TapGestureRecognizer { NumberOfTapsRequired = 2 };
             tap.Tapped += OnTapped;
-            GestureRecognizers.Add(tap);
+            _image.GestureRecognizers.Add(tap);
         }
 
         private void OnTapped(object sender, EventArgs e)
         {
-            _joystick.IsVisible = !_joystick.IsVisible;
-
-            var imageWidth = _image.Width;
-            var imageHeight = _image.Height;
-
-            Debug.WriteLine($"Image: {imageWidth}x{imageHeight}");
-
+            if (_image.WidthRequest > WidthRequest)
+            {
+                _image.WidthRequest = WidthRequest;
+                _image.HeightRequest = HeightRequest;
+            }
+            else
+            {
+                _image.WidthRequest = WidthRequest * ZoomFactor;
+                _image.HeightRequest = HeightRequest * ZoomFactor;
+            }
         }
     }
 }

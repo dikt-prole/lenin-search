@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using LeninSearch.Standard.Core.Corpus;
+using Newtonsoft.Json;
 using Xamarin.Forms;
 
 namespace LeninSearch.Xam
@@ -131,6 +133,15 @@ namespace LeninSearch.Xam
         public static string ImageFile(string corpusId, ushort imageIndex)
         {
             return Path.Combine(CorpusRoot, corpusId, $"image{imageIndex}.jpeg");
+        }
+
+        public static CorpusFileItem GetCorpusFileItem(string corpusId, string path)
+        {
+            var corpusItemJson = File.ReadAllText(Path.Combine(CorpusRoot, corpusId, "corpus.json"));
+
+            var corpusItem = JsonConvert.DeserializeObject<CorpusItem>(corpusItemJson);
+
+            return corpusItem.GetFileByPath(path);
         }
     }
 }

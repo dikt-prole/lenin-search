@@ -16,11 +16,13 @@ namespace LeninSearch.Xam.ParagraphAdder
     {
         private readonly ILsiProvider _lsiProvider;
         private readonly Action<string> _commentAction;
+        private readonly Func<double> _getEffectiveWidthFunc;
 
-        public StdParagraphViewBuilder(ILsiProvider lsiProvider, Action<string> commentAction)
+        public StdParagraphViewBuilder(ILsiProvider lsiProvider, Action<string> commentAction, Func<double> getEffectiveWidthFunc)
         {
             _lsiProvider = lsiProvider;
             _commentAction = commentAction;
+            _getEffectiveWidthFunc = getEffectiveWidthFunc;
         }
 
         public View Build(LsiParagraph p, State state, string[] dictionaryWords)
@@ -68,24 +70,15 @@ namespace LeninSearch.Xam.ParagraphAdder
 
         private View Build_Image(string corpusId, ushort imageIndex)
         {
-            //var stackLayout = new StackLayout
-            //{
-            //    HorizontalOptions = LayoutOptions.FillAndExpand,
-            //    HeightRequest = 100
-            //};
-
-            //var image = new ZoomImage
-            //{
-            //    Source = Settings.ImageFile(corpusId, imageIndex),
-            //    Margin = new Thickness(5, 5, 5, 5),
-            //    HorizontalOptions = LayoutOptions.FillAndExpand
-            //};
-
-            //stackLayout.Children.Add(image);
-
+            var imageFile = Settings.ImageFile(corpusId, imageIndex);
+            var effectiveWidth = _getEffectiveWidthFunc();
+            var imageCfi = Settings.GetCorpusFileItem(corpusId, $"image{imageIndex}.jpeg");
+            var effectiveHeight = imageCfi.ImageHeight * effectiveWidth / imageCfi.ImageWidth;
             var imageControl = new ImageControl
             {
-                Source = Settings.ImageFile(corpusId, imageIndex)
+                Source = imageFile,
+                EffectiveWidthRequest = effectiveWidth,
+                EffectiveHeightRequest = effectiveHeight
             };
 
             return imageControl;

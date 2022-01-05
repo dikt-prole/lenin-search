@@ -140,14 +140,19 @@ namespace LeninSearch.Script.Scripts
                 Size = File.ReadAllBytes(f).Length
             }));
 
-            var lsiImages = Directory.GetFiles(lsiFolder, "*.jpeg")
-                .OrderByDescending(f => int.Parse(new string(f.Where(char.IsNumber).ToArray()))).ToList();
-            corpusFileItems.AddRange(lsiImages.Select(f => new CorpusFileItem
+            var lsiImages = Directory.GetFiles(lsiFolder, "*.jpeg").OrderByDescending(f => int.Parse(new string(f.Where(char.IsNumber).ToArray()))).ToList();
+            foreach (var imageFile in lsiImages)
             {
-                Path = Path.GetFileName(f),
-                Name = Path.GetFileName(f),
-                Size = File.ReadAllBytes(f).Length
-            }));
+                var img = Image.FromFile(imageFile);
+                corpusFileItems.Add(new CorpusFileItem
+                {
+                    Path = Path.GetFileName(imageFile),
+                    Name = Path.GetFileName(imageFile),
+                    Size = File.ReadAllBytes(imageFile).Length,
+                    ImageHeight = img.Height,
+                    ImageWidth = img.Width
+                });
+            }
 
             corpusFileItems.Add(new CorpusFileItem
             {
