@@ -238,10 +238,61 @@ namespace LeninSearch.Xam
         private void PopulateCorpusTab()
         {
             CorpusTab.Children.Clear();
-            foreach (var ci in State.GetCorpusItems())
+
+            var corpusItems = State.GetCorpusItems().ToList();
+
+            foreach (var ci in corpusItems)
             {
                 var ciText = ci.ToString();
-                var stack = new StackLayout { Orientation = StackOrientation.Horizontal };
+
+                // 1. construct menu stack
+                var textIconStack = new StackLayout { Orientation = StackOrientation.Horizontal };
+                var menuStack = new StackLayout
+                {
+                    Orientation = StackOrientation.Horizontal,
+                    BackgroundColor = Settings.UI.MainColor
+                };
+                menuStack.Children.Add(new Label
+                {
+                    TextColor = Color.White,
+                    Margin = 5,
+                    HorizontalOptions = LayoutOptions.FillAndExpand,
+                    Text = $"{ci.Description}. Объем корпуса - {1.0 * ci.Files.Sum(cfi => cfi.Size) / 1024 /1024:F2}мб"
+                });
+                if (!Settings.InitialSeries.Contains(ci.Series))
+                {
+                    var trashButton = new ImageButton
+                    {
+                        WidthRequest = 32,
+                        HeightRequest = 32,
+                        Source = "trash.png",
+                        BackgroundColor = Settings.UI.MainColor,
+                        HorizontalOptions = LayoutOptions.End,
+                        Padding = 5,
+                        Margin = 0
+                    };
+                    trashButton.Clicked += async (sender, args) =>
+                    {
+                        var answer = await DisplayAlert("Удаление корпуса", $"Удалить '{ci.Name}'?", "Да", "Нет");
+
+                        if (!answer) return;
+
+                        if (_state.CorpusId == ci.Id)
+                        {
+                            var switchCorpus = corpusItems.First(sci => Settings.InitialSeries.Contains(sci.Series));
+                            _state.CorpusId = switchCorpus.Id;
+                            CorpusButton.Source = Settings.IconFile(switchCorpus.Id);
+                        }
+                        Directory.Delete(Path.Combine(Settings.CorpusRoot, ci.Id), true);
+                        CorpusTab.Children.Remove(textIconStack);
+                        CorpusTab.Children.Remove(menuStack);
+                    };
+                    menuStack.Children.Add(trashButton);
+                }
+                
+                menuStack.IsVisible = false;
+
+                // 2. construct text icon stack
                 var iconButton = new Image
                 {
                     WidthRequest = 32,
@@ -250,7 +301,6 @@ namespace LeninSearch.Xam
                     Source = Settings.IconFile(ci.Id),
                     Margin = new Thickness(10, 0, 0, 0)
                 };
-
                 var tapRecognizer = new TapGestureRecognizer
                 {
                     NumberOfTapsRequired = 1,
@@ -264,21 +314,18 @@ namespace LeninSearch.Xam
                     })
                 };
                 iconButton.GestureRecognizers.Add(tapRecognizer);
-
                 var doubleTapRecognizer = new TapGestureRecognizer
                 {
                     NumberOfTapsRequired = 2,
-                    Command = new Command(() =>
-                    {
-                        _message.LongAlert("Double tap");
-                    })
+                    Command = new Command(() => menuStack.IsVisible = !menuStack.IsVisible)
                 };
                 iconButton.GestureRecognizers.Add(doubleTapRecognizer);
-
-                stack.Children.Add(iconButton);
+                textIconStack.Children.Add(iconButton);
                 var textButton = ConstructHyperlinkButton(ciText, Settings.UI.Font.NormalFontSize, async () => await DisplayCorpusBooks(ci));
-                stack.Children.Add(textButton);
-                CorpusTab.Children.Add(stack);
+                textIconStack.Children.Add(textButton);
+
+                CorpusTab.Children.Add(textIconStack);
+                CorpusTab.Children.Add(menuStack);
             }
         }
 
