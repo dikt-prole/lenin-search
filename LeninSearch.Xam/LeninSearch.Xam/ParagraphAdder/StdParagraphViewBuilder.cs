@@ -7,6 +7,7 @@ using LeninSearch.Standard.Core;
 using LeninSearch.Standard.Core.Corpus.Lsi;
 using LeninSearch.Standard.Core.Search;
 using LeninSearch.Xam.Controls;
+using LeninSearch.Xam.Core;
 using Xamarin.Forms;
 using Xamarin.Forms.Internals;
 
@@ -98,6 +99,7 @@ namespace LeninSearch.Xam.ParagraphAdder
 
         private View Build_FormattedText(List<LsiSpan> lsiSpans, LsiParagraph paragraph, string[] dictionaryWords, State state)
         {
+            var commentSpans = new Dictionary<LsiSpan, Span>();
             var formattedString = new FormattedString();
             foreach (var lsiSpan in lsiSpans)
             {
@@ -113,15 +115,7 @@ namespace LeninSearch.Xam.ParagraphAdder
 
                 if (lsiSpan.Type == LsiSpanType.Comment)
                 {
-                    var gestureRecognizer = new TapGestureRecognizer { Command = new Command(() =>
-                    {
-                        var comment = paragraph.Comments.First(c => c.CommentIndex == lsiSpan.CommentIndex);
-                        var words = comment.WordIndexes.Select(wi => dictionaryWords[wi]).ToList();
-                        var text = TextUtil.GetParagraph(words);
-                        _commentAction.Invoke(text);
-
-                    })};
-                    span.GestureRecognizers.Add(gestureRecognizer);
+                    commentSpans.Add(lsiSpan, span);
                 }
 
                 if (lsiSpan.Type != LsiSpanType.Plain && lsiSpan.Type != LsiSpanType.InlineImage)
@@ -132,12 +126,77 @@ namespace LeninSearch.Xam.ParagraphAdder
                 formattedString.Spans.Add(span);
             }
 
-            return new ExtendedLabel
+            var paragraphLabel = new ExtendedLabel
             {
                 JustifyText = true,
                 FormattedText = formattedString,
                 Margin = new Thickness(0, 5, 0, 0)
             };
+
+            if (!commentSpans.Any()) return paragraphLabel;
+
+            var wrapperStack = new StackLayout
+            {
+                Orientation = StackOrientation.Vertical,
+            };
+            wrapperStack.Children.Add(paragraphLabel);
+            var commentStack = new StackLayout
+            {
+                Orientation = StackOrientation.Horizontal,
+                BackgroundColor = Settings.UI.MainColor,
+                IsVisible = false,
+                Spacing = 0
+            };
+            wrapperStack.Children.Add(commentStack);
+
+            var commentSummary = "";
+            foreach (var lsiSpan in commentSpans.Keys)
+            {
+                var comment = paragraph.Comments.First(c => c.CommentIndex == lsiSpan.CommentIndex);
+                var words = comment.WordIndexes.Select(wi => dictionaryWords[wi]).ToList();
+                var text = TextUtil.GetParagraph(words);
+                commentSummary += $"[{lsiSpan.CommentIndex + 1}] {text}\n\n";
+            }
+            var commentLabel = new ExtendedLabel
+            {
+                FontFamily = Settings.UI.Font.Regular,
+                FontSize = Settings.UI.Font.SmallFontSize,
+                TextColor = Color.White,
+                HorizontalOptions = LayoutOptions.FillAndExpand,
+                Text = commentSummary,
+                JustifyText = true,
+                Margin = new Thickness(10, 10, 0, 0)
+            };
+            commentStack.Children.Add(commentLabel);
+            var commentButtonStack = new StackLayout
+            {
+                Orientation = StackOrientation.Vertical, 
+                WidthRequest = 24,
+                HorizontalOptions = LayoutOptions.End,
+                Spacing = 0
+            };
+            commentStack.Children.Add(commentButtonStack);
+            var closeButton = new ImageButton
+            {
+                Source = "close.png",
+                WidthRequest = 24,
+                HeightRequest = 24,
+                Padding = 5,
+                VerticalOptions = LayoutOptions.Start,
+                BackgroundColor = Settings.UI.MainColor,
+                Margin = 0
+            };
+            closeButton.Clicked += (sender, args) => { commentStack.IsVisible = false; };
+            commentButtonStack.Children.Add(closeButton);
+            commentStack.Children.Add(new StackLayout{VerticalOptions = LayoutOptions.FillAndExpand});
+
+            foreach (var lsiSpan in commentSpans.Keys)
+            {
+                var gestureRecognizer = new TapGestureRecognizer {Command = new Command(() => { commentStack.IsVisible = true; })};
+                commentSpans[lsiSpan].GestureRecognizers.Add(gestureRecognizer);
+            }
+
+            return wrapperStack;
         }
         private string FontFamily(LsiSpanType spanType)
         {
