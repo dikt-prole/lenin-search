@@ -109,7 +109,7 @@ namespace LeninSearch.Script.Scripts
                     {
                         var imageId = $"{fileName}{node.Attributes["id"].Value}";
                         var imageIndex = imageIds.IndexOf(imageId);
-                        if (imageIndex > 0)
+                        if (imageIndex != -1)
                         {
                             var imageBase64 = node.InnerText;
                             var imageBytes = Convert.FromBase64String(imageBase64);

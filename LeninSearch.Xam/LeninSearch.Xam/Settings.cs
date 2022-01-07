@@ -43,7 +43,8 @@ namespace LeninSearch.Xam
             {
                 public const double SmallFontSize = 12;
                 public const double NormalFontSize = 17;
-                public const double LargeFontSize = 12;
+                public const double LargeFontSize = 22;
+                public const double ReadingFontSize = 17;
 
                 public const string Regular = "InterRegular";
                 public const string Bold = "InterBold";

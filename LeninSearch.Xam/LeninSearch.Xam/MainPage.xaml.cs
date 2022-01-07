@@ -1075,28 +1075,31 @@ namespace LeninSearch.Xam
 
             foreach (var heading in headings)
             {
-                var headingText = heading.GetText(_lsiProvider.GetDictionary(corpusItem.Id).Words);
-
-                // === hack to align summary to the left ===
-                var optimalHeadingLength = Settings.UI.SummaryLineLength;
-                if (headingText.Length < optimalHeadingLength)
+                var headingStack = new StackLayout
                 {
-                    headingText = $"{headingText}{new string(Enumerable.Repeat(' ', optimalHeadingLength - headingText.Length).ToArray())}";
-                }
-                else if (headingText.Length > optimalHeadingLength)
+                    Orientation = StackOrientation.Horizontal,
+                    Spacing = 0
+                };
+                var bulletButton = new ImageButton
                 {
-                    headingText = headingText.Substring(0, optimalHeadingLength);
-                }
-                // =========================================
-
-                var headingLink = ConstructHyperlinkButton(headingText, Settings.UI.Font.SmallFontSize, async () =>
-                    await Read(cfi, heading.Index));
-
-                headingLink.HorizontalOptions = LayoutOptions.Start;
-                headingLink.Margin = new Thickness(5 + 8 * heading.HeadingLevel, 5, 5, 5);
-                headingLink.HeightRequest = 18;
-
-                ResultStack.Children.Add(headingLink);
+                    Source = "bullet.png",
+                    HeightRequest = 24,
+                    WidthRequest = 24,
+                    HorizontalOptions = LayoutOptions.Start,
+                    BackgroundColor = Color.White
+                };
+                headingStack.Children.Add(bulletButton);
+                var textLabel = new Label
+                {
+                    Text = heading.GetText(_lsiProvider.GetDictionary(corpusItem.Id).Words),
+                    FontSize = Settings.UI.Font.SmallFontSize,
+                    TextColor = Color.Black,
+                    Margin = new Thickness(5 + 10 * heading.HeadingLevel, 0, 0, 0),
+                    HorizontalOptions = LayoutOptions.FillAndExpand
+                };
+                headingStack.Children.Add(textLabel);
+                ResultStack.Children.Add(headingStack);
+                bulletButton.Clicked += async (sender, args) => await Read(cfi, heading.Index);
             }
 
             await ResultScrollFadeIn();

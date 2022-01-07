@@ -79,7 +79,8 @@ namespace LeninSearch.Xam.ParagraphAdder
             {
                 Source = imageFile,
                 EffectiveWidthRequest = effectiveWidth,
-                EffectiveHeightRequest = effectiveHeight
+                EffectiveHeightRequest = effectiveHeight,
+                Title = $"Иллюстрация {imageIndex + 1}"
             };
 
             return imageControl;
@@ -93,7 +94,8 @@ namespace LeninSearch.Xam.ParagraphAdder
                 TextColor = Color.Black,
                 JustifyText = true,
                 Margin = new Thickness(0, 5, 0, 0),
-                FontFamily = Settings.UI.Font.Regular
+                FontFamily = Settings.UI.Font.Regular,
+                FontSize = Settings.UI.Font.ReadingFontSize
             };
         }
 
@@ -110,7 +112,8 @@ namespace LeninSearch.Xam.ParagraphAdder
                         : lsiSpan.GetText(dictionaryWords),
                     TextColor = TextColor(lsiSpan.Type),
                     FontFamily = FontFamily(lsiSpan.Type),
-                    TextDecorations = TextDecorations(lsiSpan.Type)
+                    TextDecorations = TextDecorations(lsiSpan.Type),
+                    FontSize = Settings.UI.Font.ReadingFontSize
                 };
 
                 if (lsiSpan.Type == LsiSpanType.Comment)
@@ -142,57 +145,41 @@ namespace LeninSearch.Xam.ParagraphAdder
             wrapperStack.Children.Add(paragraphLabel);
             var commentStack = new StackLayout
             {
-                Orientation = StackOrientation.Horizontal,
-                BackgroundColor = Settings.UI.MainColor,
+                Orientation = StackOrientation.Vertical,
+                BackgroundColor = Color.White,
                 IsVisible = false,
                 Spacing = 0
             };
             wrapperStack.Children.Add(commentStack);
 
-            var commentSummary = "";
+            commentStack.Children.Add(CommentDivider()); // top divider
+
+            var commentTexts = new List<string>();
             foreach (var lsiSpan in commentSpans.Keys)
             {
                 var comment = paragraph.Comments.First(c => c.CommentIndex == lsiSpan.CommentIndex);
                 var words = comment.WordIndexes.Select(wi => dictionaryWords[wi]).ToList();
-                var text = TextUtil.GetParagraph(words);
-                commentSummary += $"[{lsiSpan.CommentIndex + 1}] {text}\n\n";
+                commentTexts.Add($"[{lsiSpan.CommentIndex + 1}] {TextUtil.GetParagraph(words)}");
             }
+            var commentSummary = string.Join("\n\n", commentTexts);
+
             var commentLabel = new ExtendedLabel
             {
                 FontFamily = Settings.UI.Font.Regular,
                 FontSize = Settings.UI.Font.SmallFontSize,
-                TextColor = Color.White,
+                TextColor = Color.Black,
                 HorizontalOptions = LayoutOptions.FillAndExpand,
                 Text = commentSummary,
                 JustifyText = true,
-                Margin = new Thickness(10, 10, 0, 0)
-            };
-            commentStack.Children.Add(commentLabel);
-            var commentButtonStack = new StackLayout
-            {
-                Orientation = StackOrientation.Vertical, 
-                WidthRequest = 24,
-                HorizontalOptions = LayoutOptions.End,
-                Spacing = 0
-            };
-            commentStack.Children.Add(commentButtonStack);
-            var closeButton = new ImageButton
-            {
-                Source = "close.png",
-                WidthRequest = 24,
-                HeightRequest = 24,
-                Padding = 5,
-                VerticalOptions = LayoutOptions.Start,
-                BackgroundColor = Settings.UI.MainColor,
                 Margin = 0
             };
-            closeButton.Clicked += (sender, args) => { commentStack.IsVisible = false; };
-            commentButtonStack.Children.Add(closeButton);
-            commentStack.Children.Add(new StackLayout{VerticalOptions = LayoutOptions.FillAndExpand});
+            commentStack.Children.Add(commentLabel);
+
+            commentStack.Children.Add(CommentDivider()); // bottom divider
 
             foreach (var lsiSpan in commentSpans.Keys)
             {
-                var gestureRecognizer = new TapGestureRecognizer {Command = new Command(() => { commentStack.IsVisible = true; })};
+                var gestureRecognizer = new TapGestureRecognizer {Command = new Command(() => { commentStack.IsVisible = !commentStack.IsVisible; })};
                 commentSpans[lsiSpan].GestureRecognizers.Add(gestureRecognizer);
             }
 
@@ -219,7 +206,6 @@ namespace LeninSearch.Xam.ParagraphAdder
         {
             switch (spanType)
             {
-                
                 case LsiSpanType.SearchResult:
                 case LsiSpanType.Comment:
                     return Settings.UI.MainColor;
@@ -233,6 +219,17 @@ namespace LeninSearch.Xam.ParagraphAdder
             if (spanType == LsiSpanType.SearchResult) return Xamarin.Forms.TextDecorations.Underline;
 
             return Xamarin.Forms.TextDecorations.None;
+        }
+
+        private StackLayout CommentDivider()
+        {
+            return new StackLayout
+            {
+                HorizontalOptions = LayoutOptions.FillAndExpand,
+                BackgroundColor = Settings.UI.MainColor,
+                HeightRequest = 1,
+                Margin = 0
+            };
         }
     }
 }
