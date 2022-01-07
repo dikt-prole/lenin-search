@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using LeninSearch.Standard.Core;
 using LeninSearch.Standard.Core.Corpus.Lsi;
 using LeninSearch.Standard.Core.Search;
 using LeninSearch.Xam.Controls;
-using LeninSearch.Xam.Core;
 using Xamarin.Forms;
-using Xamarin.Forms.Internals;
 
 namespace LeninSearch.Xam.ParagraphAdder
 {
@@ -141,12 +138,13 @@ namespace LeninSearch.Xam.ParagraphAdder
             var wrapperStack = new StackLayout
             {
                 Orientation = StackOrientation.Vertical,
+                BackgroundColor = Color.White
             };
             wrapperStack.Children.Add(paragraphLabel);
             var commentStack = new StackLayout
             {
                 Orientation = StackOrientation.Vertical,
-                BackgroundColor = Color.White,
+                BackgroundColor = Color.Transparent,
                 IsVisible = false,
                 Spacing = 0
             };
@@ -171,7 +169,8 @@ namespace LeninSearch.Xam.ParagraphAdder
                 HorizontalOptions = LayoutOptions.FillAndExpand,
                 Text = commentSummary,
                 JustifyText = true,
-                Margin = 0
+                Margin = 0,
+                BackgroundColor = Color.Transparent
             };
             commentStack.Children.Add(commentLabel);
 

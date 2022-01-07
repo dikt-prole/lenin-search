@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using LeninSearch.Standard.Core.Corpus.Lsi;
 using LeninSearch.Standard.Core.Search;
+using LeninSearch.Xam.Controls;
 using Xamarin.Forms;
 
 namespace LeninSearch.Xam.ParagraphAdder
@@ -27,7 +28,10 @@ namespace LeninSearch.Xam.ParagraphAdder
         public View Build(LsiParagraph p, State state, string[] dictionaryWords)
         {
             var view = _builder.Build(p, state, dictionaryWords);
-            AttachTapGesture(view, state);
+            if (!p.IsImage)
+            {
+                AttachTapGesture(view, state);
+            }
             return view;
         }
 
@@ -45,8 +49,11 @@ namespace LeninSearch.Xam.ParagraphAdder
 
         private void AttachTapGesture(View view, State state)
         {
-            var tapRecognizer = new TapGestureRecognizer();
-            tapRecognizer.NumberOfTapsRequired = 1;
+            var label = FindLabel(view);
+
+            if (label == null) return;
+
+            var tapRecognizer = new TapGestureRecognizer {NumberOfTapsRequired = 1};
             tapRecognizer.Tapped += (s, e) =>
             {
                 var pIndex = (ushort)view.TabIndex;
@@ -54,7 +61,7 @@ namespace LeninSearch.Xam.ParagraphAdder
                 {
                     _selectedParagraphs.Remove(pIndex);
                     var deselectAnimation = new Animation(f => view.BackgroundColor = new Color(1.0, 0, 0, f), 0.25, 0, Easing.SinInOut);
-                    deselectAnimation.Commit(view, "deselect", 200);
+                    deselectAnimation.Commit(view, "deselect", 100);
                 }
                 else
                 {
@@ -70,13 +77,22 @@ namespace LeninSearch.Xam.ParagraphAdder
                     }
                     _selectedParagraphs.Add(pIndex, view);
                     var selectAnimation = new Animation(f => view.BackgroundColor = new Color(1.0, 0, 0, f), 0, 0.25, Easing.SinInOut);
-                    selectAnimation.Commit(view, "select", 200);
+                    selectAnimation.Commit(view, "select", 100);
                 }
 
                 var handler = ParagraphSelectionChanged;
                 handler?.Invoke(this, SelectedIndexes);
             };
-            view.GestureRecognizers.Add(tapRecognizer);
+            label.GestureRecognizers.Add(tapRecognizer);
+        }
+
+        private ExtendedLabel FindLabel(View view)
+        {
+            if (view is ExtendedLabel label) return label;
+
+            if (view is StackLayout stack) return stack.Children[0] as ExtendedLabel;
+
+            return null;
         }
     }
 }
