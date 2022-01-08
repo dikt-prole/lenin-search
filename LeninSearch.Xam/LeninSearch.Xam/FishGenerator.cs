@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using LeninSearch.Standard.Core.Corpus;
-using LeninSearch.Standard.Core.Corpus.Json;
 using LeninSearch.Standard.Core.Corpus.Lsi;
+using LeninSearch.Standard.Core.Reporting.FishReport;
 using LeninSearch.Standard.Core.Search;
 using LeninSearch.Xam.Core;
-using Xamarin.Forms;
 
 namespace LeninSearch.Xam
 {
@@ -16,100 +15,57 @@ namespace LeninSearch.Xam
     {
         public static string GenerateFishHtmlFile(PartialParagraphSearchResult ppsr, CorpusItem ci, string query, ILsiProvider lsiProvider)
         {
-            var assembly = IntrospectionExtensions.GetTypeInfo(typeof(MainPage)).Assembly;
-            var stream = assembly.GetManifestResourceStream("LeninSearch.Xam.fish.html");
-            var fishTemplate = "";
-            using (var reader = new StreamReader(stream))
+            try
             {
-                fishTemplate = reader.ReadToEnd();
-            }
 
-            var fishHtml = $"<h1>Lenin Search Fish Report - {ci.Name} ({query})</h1>";
-            var resultIndex = 1;
 
-            foreach (var file in ppsr.Files())
-            {
-                var cfi = ci.GetFileByPath(file);
-                var lsiData = lsiProvider.GetLsiData(ci.Id, file);
-                var words = lsiProvider.Words(ci.Id);
-
-                fishHtml += $"<h2>{cfi.Name}</h2>";
-                var fileResults = ppsr.FileResults(file);
-                foreach (var searchResult in fileResults)
+                var assembly = IntrospectionExtensions.GetTypeInfo(typeof(MainPage)).Assembly;
+                var stream = assembly.GetManifestResourceStream("LeninSearch.Xam.fish.html");
+                var fishTemplate = "";
+                using (var reader = new StreamReader(stream))
                 {
-                    var paragraph = lsiData.Paragraphs[searchResult.ParagraphIndex];
+                    fishTemplate = reader.ReadToEnd();
+                }
 
-                    var chain = searchResult.WordIndexChains[0];
-                    var selection = chain.WordIndexes.Select(wi => words[wi].ToLower()).ToArray();
-                    var textParts = GetTextParts(paragraph.GetText(words), selection).ToList();
-                    var paragraphText = string.Join("", textParts);
-                    var headings = lsiData.GetHeadingsDownToZero(searchResult.ParagraphIndex);
-                    var page = lsiData.GetClosestPage(searchResult.ParagraphIndex);
-                    var linkText = $"";
-                    if (page != null || headings.Any())
+                var fishHtml = $"<h1>Lenin Search Fish Report - {ci.Name} ({query})</h1>";
+                var resultIndex = 1;
+
+                foreach (var file in ppsr.Files())
+                {
+                    var cfi = ci.GetFileByPath(file);
+                    var lsiData = lsiProvider.GetLsiData(ci.Id, file);
+                    var words = lsiProvider.Words(ci.Id);
+
+                    fishHtml += $"<h2>{cfi.Name}</h2>";
+                    var fileResults = ppsr.FileResults(file);
+                    foreach (var searchResult in fileResults)
                     {
-                        var headingText = headings.Count > 0
-                            ? string.Join(" - ", headings.Select(h => h.GetText(words)))
-                            : null;
+                        var paragraph = lsiData.Paragraphs[searchResult.ParagraphIndex];
+                        var lsiSpans = paragraph.GetSpans(searchResult).Where(s => s.Type != LsiSpanType.Comment);
+                        var spans = lsiSpans.Select(lsis => FishReportSpan.From(lsis, words).ToHtmlSpan()).ToList();
+                        var paragraphText = string.Join(" ", spans);
 
-                        linkText = page == null
-                            ? $"{resultIndex}. {headingText}"
-                            : string.IsNullOrEmpty(headingText)
-                                ? $"{resultIndex}. стр. {page}"
-                                : $"{resultIndex}. стр. {page}, {headingText}";
+                        var headings = lsiData.GetHeadingsDownToZero(searchResult.ParagraphIndex);
+                        var linkText = $"{resultIndex} {string.Join(" - ", headings.Select(h => h.GetText(words)))}";
+                        fishHtml += $"<h3>{linkText}</h3>";
+                        fishHtml += $"<p>{paragraphText}</p>";
+                        fishHtml += "<p style='margin-top: 20px;'>(Aut) -</p>";
+                        resultIndex++;
                     }
-
-                    fishHtml += $"<h3>{linkText}</h3>";
-                    fishHtml += $"<p>{paragraphText}</p>";
-                    resultIndex++;
-                }
-            }
-
-            var fishFile = Path.Combine(Path.GetTempPath(), $"lenin-search-fish-report-{Guid.NewGuid().ToString("N").Substring(0, 8)}.html");
-
-            fishHtml = fishTemplate.Replace("[content]", fishHtml);
-
-            File.WriteAllText(fishFile, fishHtml);
-
-            return fishFile;
-        }
-
-        private static IEnumerable<string> GetTextParts(string text, string[] selection)
-        {
-            var lowerText = text.ToLower();
-
-            var selectionIndexes = new List<Tuple<int, string>>();
-            foreach (var token in selection)
-            {
-                var selectionIndex = lowerText.IndexOf(token, 0);
-                while (selectionIndex >= 0)
-                {
-                    selectionIndexes.Add(new Tuple<int, string>(selectionIndex, token));
-                    selectionIndex = lowerText.IndexOf(token, selectionIndex + token.Length);
-                }
-            }
-
-            var startIndex = 0;
-            foreach (var si in selectionIndexes.OrderBy(si => si.Item1))
-            {
-                if (si.Item1 < 0) continue;
-
-                if (si.Item1 > startIndex)
-                {
-                    var fragment = text.Substring(startIndex, si.Item1 - startIndex);
-                    yield return fragment;
-                    startIndex = si.Item1;
                 }
 
-                var sFragment = text.Substring(startIndex, si.Item2.Length);
-                yield return $"<b>{sFragment}</b>";
-                startIndex = startIndex + sFragment.Length;
-            }
+                var fishFile = Path.Combine(Path.GetTempPath(), $"lenin-search-fish-report-{Guid.NewGuid().ToString("N").Substring(0, 8)}.html");
 
-            if (startIndex < text.Length - 1)
+                fishHtml = fishTemplate.Replace("[content]", fishHtml);
+
+                File.WriteAllText(fishFile, fishHtml);
+
+                return fishFile;
+            }
+            catch (Exception e)
             {
-                var fragment = text.Substring(startIndex);
-                yield return fragment;
+                Debug.WriteLine(e);
+                throw;
             }
         }
     }

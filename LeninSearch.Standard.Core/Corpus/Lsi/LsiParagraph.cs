@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Generic;
 using System.Linq;
 using LeninSearch.Standard.Core.Corpus.Json;
 using LeninSearch.Standard.Core.Search;
@@ -9,7 +7,6 @@ namespace LeninSearch.Standard.Core.Corpus.Lsi
 {
     public class LsiParagraph
     {
-        private string _text = null;
         public LsiParagraph(ushort index)
         {
             Index = index;
@@ -26,13 +23,9 @@ namespace LeninSearch.Standard.Core.Corpus.Lsi
         public List<uint> WordIndexes { get; set; }
         public string GetText(string[] dictionary)
         {
-            if (string.IsNullOrEmpty(_text))
-            {
-                var words = WordIndexes.Select(wi => dictionary[wi]).ToList();
-                _text = TextUtil.GetParagraph(words);
-            }
+            var spans = GetSpans(null).Where(s => s.Type != LsiSpanType.Comment).ToList();
 
-            return _text;
+            return string.Join(" ", spans.Select(s => s.GetText(dictionary)));
         }
         public ushort PageNumber { get; set; }
         public bool IsPageNumber => PageNumber < ushort.MaxValue;

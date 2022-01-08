@@ -61,32 +61,44 @@ namespace LeninSearch.Standard.Core.Corpus.Lsi
                     _paragraphs[pageData.Index].PageNumber = pageData.Number;
                 }
 
-                foreach (var paragraphIndex in Images.Keys)
+                if (Images?.Any() == true)
                 {
-                    _paragraphs[paragraphIndex].ImageIndex = Images[paragraphIndex];
-                }
-
-                foreach (var paragraphIndex in InlineImages.Keys)
-                {
-                    if (_paragraphs.ContainsKey(paragraphIndex))
+                    foreach (var paragraphIndex in Images.Keys)
                     {
-                        _paragraphs[paragraphIndex].InlineImages = InlineImages[paragraphIndex];
+                        _paragraphs[paragraphIndex].ImageIndex = Images[paragraphIndex];
                     }
                 }
 
-                foreach (var paragraphIndex in Markups.Keys)
+                if (InlineImages?.Any() == true)
                 {
-                    if (_paragraphs.ContainsKey(paragraphIndex))
+                    foreach (var paragraphIndex in InlineImages.Keys)
                     {
-                        _paragraphs[paragraphIndex].Markups = Markups[paragraphIndex];
+                        if (_paragraphs.ContainsKey(paragraphIndex))
+                        {
+                            _paragraphs[paragraphIndex].InlineImages = InlineImages[paragraphIndex];
+                        }
                     }
                 }
 
-                foreach (var paragraphIndex in Comments.Keys)
+                if (Markups?.Any() == true)
                 {
-                    if (_paragraphs.ContainsKey(paragraphIndex))
+                    foreach (var paragraphIndex in Markups.Keys)
                     {
-                        _paragraphs[paragraphIndex].Comments = Comments[paragraphIndex];
+                        if (_paragraphs.ContainsKey(paragraphIndex))
+                        {
+                            _paragraphs[paragraphIndex].Markups = Markups[paragraphIndex];
+                        }
+                    }
+                }
+
+                if (Comments?.Any() == true)
+                {
+                    foreach (var paragraphIndex in Comments.Keys)
+                    {
+                        if (_paragraphs.ContainsKey(paragraphIndex))
+                        {
+                            _paragraphs[paragraphIndex].Comments = Comments[paragraphIndex];
+                        }
                     }
                 }
 
