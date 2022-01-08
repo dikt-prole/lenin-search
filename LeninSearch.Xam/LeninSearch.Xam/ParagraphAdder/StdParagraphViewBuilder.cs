@@ -13,13 +13,12 @@ namespace LeninSearch.Xam.ParagraphAdder
     public class StdParagraphViewBuilder : IParagraphViewBuilder
     {
         private readonly ILsiProvider _lsiProvider;
-        private readonly Action<string> _commentAction;
         private readonly Func<double> _getEffectiveWidthFunc;
+        private readonly IMessage _message = DependencyService.Get<IMessage>();
 
-        public StdParagraphViewBuilder(ILsiProvider lsiProvider, Action<string> commentAction, Func<double> getEffectiveWidthFunc)
+        public StdParagraphViewBuilder(ILsiProvider lsiProvider, Func<double> getEffectiveWidthFunc)
         {
             _lsiProvider = lsiProvider;
-            _commentAction = commentAction;
             _getEffectiveWidthFunc = getEffectiveWidthFunc;
         }
 
@@ -46,7 +45,7 @@ namespace LeninSearch.Xam.ParagraphAdder
                 // 2. the whole paragraph is a plain text
                 else if (lsiSpans.Count == 1 && lsiSpans[0].Type == LsiSpanType.Plain)
                 {
-                    view = Build_PlainText(lsiSpans, dictionaryWords);
+                    view = Build_PlainText(lsiSpans, p, dictionaryWords);
                 }
 
                 // 3. paragraph text is a formatted text (with optional inline images)
@@ -83,7 +82,7 @@ namespace LeninSearch.Xam.ParagraphAdder
             return imageControl;
         }
 
-        private View Build_PlainText(List<LsiSpan> lsiSpans, string[] dictionaryWords)
+        private View Build_PlainText(List<LsiSpan> lsiSpans, LsiParagraph paragraph, string[] dictionaryWords)
         {
             return new ExtendedLabel
             {
@@ -91,14 +90,20 @@ namespace LeninSearch.Xam.ParagraphAdder
                 TextColor = Color.Black,
                 JustifyText = true,
                 Margin = new Thickness(0, 5, 0, 0),
-                FontFamily = Settings.UI.Font.Regular,
-                FontSize = Settings.UI.Font.ReadingFontSize
+                FontFamily = paragraph.IsHeading 
+                    ? Settings.UI.Font.Bold 
+                    : Settings.UI.Font.Regular,
+                FontSize = Settings.UI.Font.ReadingFontSize,
+                HorizontalOptions = paragraph.IsHeading
+                    ? LayoutOptions.Center
+                    : LayoutOptions.FillAndExpand
             };
         }
 
         private View Build_FormattedText(List<LsiSpan> lsiSpans, LsiParagraph paragraph, string[] dictionaryWords, State state)
         {
             var commentSpans = new Dictionary<LsiSpan, Span>();
+            var searchResultSpans = new Dictionary<LsiSpan, Span>();
             var formattedString = new FormattedString();
             foreach (var lsiSpan in lsiSpans)
             {
@@ -108,14 +113,21 @@ namespace LeninSearch.Xam.ParagraphAdder
                         ? Settings.ImageFile(state.CorpusId, lsiSpan.ImageIndex)
                         : lsiSpan.GetText(dictionaryWords),
                     TextColor = TextColor(lsiSpan.Type),
-                    FontFamily = FontFamily(lsiSpan.Type),
-                    TextDecorations = TextDecorations(lsiSpan.Type),
+                    FontFamily = paragraph.IsHeading 
+                        ? Settings.UI.Font.Bold 
+                        : FontFamily(lsiSpan.Type),
+                    TextDecorations = Xamarin.Forms.TextDecorations.None,
                     FontSize = Settings.UI.Font.ReadingFontSize
                 };
 
                 if (lsiSpan.Type == LsiSpanType.Comment)
                 {
                     commentSpans.Add(lsiSpan, span);
+                }
+
+                if (lsiSpan.Type == LsiSpanType.SearchResult)
+                {
+                    searchResultSpans.Add(lsiSpan, span);
                 }
 
                 if (lsiSpan.Type != LsiSpanType.Plain && lsiSpan.Type != LsiSpanType.InlineImage)
@@ -130,8 +142,27 @@ namespace LeninSearch.Xam.ParagraphAdder
             {
                 JustifyText = true,
                 FormattedText = formattedString,
-                Margin = new Thickness(0, 5, 0, 0)
+                Margin = new Thickness(0, 5, 0, 0),
+                HorizontalOptions = paragraph.IsHeading
+                    ? LayoutOptions.Center
+                    : LayoutOptions.FillAndExpand
             };
+
+            foreach (var lsiSpan in searchResultSpans.Keys)
+            {
+                var gestureRecognizer = new TapGestureRecognizer
+                {
+                    Command = new Command(() =>
+                    {
+                        var lsiData = _lsiProvider.GetLsiData(state.CorpusId, state.ReadingFile);
+                        var headings = lsiData.GetHeadingsDownToZero(paragraph.Index);
+                        var headingTexts = headings.Select(h => h.GetText(dictionaryWords)).ToList();
+                        var hintText = string.Join(" - ", headingTexts);
+                        _message.LongAlert(hintText);
+                    })
+                };
+                searchResultSpans[lsiSpan].GestureRecognizers.Add(gestureRecognizer);
+            }
 
             if (!commentSpans.Any()) return paragraphLabel;
 
@@ -211,13 +242,6 @@ namespace LeninSearch.Xam.ParagraphAdder
                 default:
                     return Color.Black;
             }
-        }
-
-        private TextDecorations TextDecorations(LsiSpanType spanType)
-        {
-            if (spanType == LsiSpanType.SearchResult) return Xamarin.Forms.TextDecorations.Underline;
-
-            return Xamarin.Forms.TextDecorations.None;
         }
 
         private StackLayout CommentDivider()

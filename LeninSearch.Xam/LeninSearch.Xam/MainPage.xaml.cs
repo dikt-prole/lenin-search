@@ -74,9 +74,9 @@ namespace LeninSearch.Xam
             Keyboard.NonKeyaboardUnfocus += () => CorpusButton.IsVisible = true;
 
             // paragraphs
-            _paragraphViewBuilder = new StdParagraphViewBuilder(_lsiProvider, s => _message.LongAlert(s), () => ScrollWrapper.Width - 20);
-            _paragraphViewBuilder = new ParagraphViewBuilderPagerHeaderDecorator(_paragraphViewBuilder);
-            _paragraphViewBuilder = new PropertyHolderParagraphViewBuilder(_paragraphViewBuilder, Settings.UI.Font.NormalFontSize);
+            _paragraphViewBuilder = new StdParagraphViewBuilder(_lsiProvider, () => ScrollWrapper.Width - 20);
+            //_paragraphViewBuilder = new ParagraphViewBuilderPagerHeaderDecorator(_paragraphViewBuilder);
+            //_paragraphViewBuilder = new PropertyHolderParagraphViewBuilder(_paragraphViewBuilder, Settings.UI.Font.NormalFontSize);
             _selectionSelectionDecorator = new ParagraphViewBuilderTapSelectionDecorator(_paragraphViewBuilder, _lsiProvider);
             _paragraphViewBuilder = _selectionSelectionDecorator;
             _selectionSelectionDecorator.ParagraphSelectionChanged += async (sender, indexes) =>
