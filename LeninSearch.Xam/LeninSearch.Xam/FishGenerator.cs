@@ -17,8 +17,6 @@ namespace LeninSearch.Xam
         {
             try
             {
-
-
                 var assembly = IntrospectionExtensions.GetTypeInfo(typeof(MainPage)).Assembly;
                 var stream = assembly.GetManifestResourceStream("LeninSearch.Xam.fish.html");
                 var fishTemplate = "";
