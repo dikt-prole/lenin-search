@@ -133,7 +133,7 @@ namespace LeninSearch.Script.Scripts
                             }
                         }
                     }
-                    else if (node.Name == "body" && node.Attributes["name"]?.Value == "notes")
+                    else if (node.Name == "body" && new[] { "notes", "comments" }.Contains(node.Attributes["name"]?.Value))
                     {
                         var noteSections = node.ChildNodes.OfType<XmlNode>().SelectMany(n => new[] { n }.Concat(n.ChildNodes.OfType<XmlNode>())).ToList();
                         foreach (var noteSection in noteSections)
