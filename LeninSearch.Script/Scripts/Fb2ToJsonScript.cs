@@ -82,6 +82,8 @@ namespace LeninSearch.Script.Scripts
                             break;
                         case "cite":
                         case "p":
+                            if (node.Attributes["id"]?.Value != null) continue;
+
                             if (node.ChildNodes.Count > 0 && node.ChildNodes[0].Name == "image")
                             {
                                 jsonFileData.Pars.Add(XmlToJsonUtil.GetImageParagraph(node.ChildNodes[0], imageIds, id => $"{fileName}{id}"));
@@ -90,15 +92,16 @@ namespace LeninSearch.Script.Scripts
                             {
                                 jsonFileData.Pars.Add(XmlToJsonUtil.GetNormalParagraph(node, commentIds, imageIds, id => $"{fileName}{id}"));
                             }
+
                             break;
                     }
                 }
 
+                var comments = new Dictionary<string, JsonCommentData>();
                 var fb2Doc = new XmlDocument();
                 fb2Doc.LoadXml(fb2Xml);
-
-                var comments = new Dictionary<string, JsonCommentData>();
-                foreach (var cd in jsonFileData.Pars.SelectMany(p => p.Comments ?? new List<JsonCommentData>()))
+                var parComments = jsonFileData.Pars.SelectMany(p => p.Comments ?? new List<JsonCommentData>()).ToList();
+                foreach (var cd in parComments)
                 {
                     if (comments.ContainsKey(cd.CommentId)) continue;
                     comments.Add(cd.CommentId, cd);
@@ -133,16 +136,39 @@ namespace LeninSearch.Script.Scripts
                             }
                         }
                     }
-                    else if (node.Name == "body" && new[] { "notes", "comments" }.Contains(node.Attributes["name"]?.Value))
+                    else if (node.Name == "body")
                     {
-                        var noteSections = node.ChildNodes.OfType<XmlNode>().SelectMany(n => new[] { n }.Concat(n.ChildNodes.OfType<XmlNode>())).ToList();
-                        foreach (var noteSection in noteSections)
+                        var commentBodyNames = new[] {"notes", "comments"};
+                        if (commentBodyNames.Contains(node.Attributes["name"]?.Value))
                         {
-                            var commentId = noteSection.Attributes["id"]?.Value;
+                            var noteSections = node.ChildNodes.OfType<XmlNode>()
+                                .SelectMany(n => new[] {n}.Concat(n.ChildNodes.OfType<XmlNode>())).ToList();
+                            foreach (var noteSection in noteSections)
+                            {
+                                var commentId = noteSection.Attributes["id"]?.Value;
 
-                            if (commentId == null || !comments.ContainsKey(commentId)) continue;
+                                if (commentId == null || !comments.ContainsKey(commentId)) continue;
 
-                            comments[commentId].Text = noteSection.InnerText;
+                                comments[commentId].Text = noteSection.InnerText;
+                            }
+                        }
+                        else
+                        {
+                            var sections = node.ChildNodes.OfType<XmlNode>().Where(n => n.Name == "section").ToList();
+                            foreach (var section in sections)
+                            {
+                                var commentPs = section.OfType<XmlNode>()
+                                    .Where(n => n.Attributes != null && n.Name == "p" && n.Attributes["id"] != null)
+                                    .ToList();
+                                foreach (var commentP in commentPs)
+                                {
+                                    var commentId = commentP.Attributes["id"].Value;
+                                    if (comments.ContainsKey(commentId))
+                                    {
+                                        comments[commentId].Text = commentP.InnerText;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
