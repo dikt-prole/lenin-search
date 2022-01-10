@@ -29,8 +29,11 @@
     <LeninV1 Include="..\corpus\ls_index\lenin-v1\*.*" />
     <LeninV2 Include="..\corpus\ls_index\lenin-v2\*.*" />
     <StalinV1 Include="..\corpus\ls_index\stalin-v1\*.*" />
+    <StalinV2 Include="..\corpus\ls_index\stalin-v2\*.*" />
     <MarxEngelsV1 Include="..\corpus\ls_index\marx-engels-v1\*.*" />
+    <MarxEngelsV2 Include="..\corpus\ls_index\marx-engels-v2\*.*" />
     <KlgdV1 Include="..\corpus\ls_index\klgd-v1\*.*" />
+    <PopovV1 Include="..\corpus\ls_index\popov-v1\*.*" />
   </ItemGroup>
 
   <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
@@ -39,8 +42,11 @@
     <Copy SourceFiles="@(LeninV1)" DestinationFolder="$(OutDir)\corpus\lenin-v1" />
     <Copy SourceFiles="@(LeninV2)" DestinationFolder="$(OutDir)\corpus\lenin-v2" />
     <Copy SourceFiles="@(StalinV1)" DestinationFolder="$(OutDir)\corpus\stalin-v1" />
+    <Copy SourceFiles="@(StalinV2)" DestinationFolder="$(OutDir)\corpus\stalin-v2" />
     <Copy SourceFiles="@(MarxEngelsV1)" DestinationFolder="$(OutDir)\corpus\marx-engels-v1" />
+    <Copy SourceFiles="@(MarxEngelsV2)" DestinationFolder="$(OutDir)\corpus\marx-engels-v2" />
     <Copy SourceFiles="@(KlgdV1)" DestinationFolder="$(OutDir)\corpus\klgd-v1" />
+    <Copy SourceFiles="@(PopovV1)" DestinationFolder="$(OutDir)\corpus\popov-v1" />
   </Target>
 
   <Target Name="CopyCustomContentOnPublish" AfterTargets="Publish">
@@ -49,8 +55,11 @@
     <Copy SourceFiles="@(LeninV1)" DestinationFolder="$(PublishDir)\corpus\lenin-v1" />
     <Copy SourceFiles="@(LeninV2)" DestinationFolder="$(PublishDir)\corpus\lenin-v2" />
     <Copy SourceFiles="@(StalinV1)" DestinationFolder="$(PublishDir)\corpus\stalin-v1" />
+    <Copy SourceFiles="@(StalinV2)" DestinationFolder="$(PublishDir)\corpus\stalin-v2" />
     <Copy SourceFiles="@(MarxEngelsV1)" DestinationFolder="$(PublishDir)\corpus\marx-engels-v1" />
+    <Copy SourceFiles="@(MarxEngelsV2)" DestinationFolder="$(PublishDir)\corpus\marx-engels-v2" />
     <Copy SourceFiles="@(KlgdV1)" DestinationFolder="$(PublishDir)\corpus\klgd-v1" />
+    <Copy SourceFiles="@(PopovV1)" DestinationFolder="$(PublishDir)\corpus\popov-v1" />
   </Target>
 
 </Project>
