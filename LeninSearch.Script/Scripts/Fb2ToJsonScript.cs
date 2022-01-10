@@ -152,24 +152,6 @@ namespace LeninSearch.Script.Scripts
                                 comments[commentId].Text = noteSection.InnerText;
                             }
                         }
-                        else
-                        {
-                            var sections = node.ChildNodes.OfType<XmlNode>().Where(n => n.Name == "section").ToList();
-                            foreach (var section in sections)
-                            {
-                                var commentPs = section.OfType<XmlNode>()
-                                    .Where(n => n.Attributes != null && n.Name == "p" && n.Attributes["id"] != null)
-                                    .ToList();
-                                foreach (var commentP in commentPs)
-                                {
-                                    var commentId = commentP.Attributes["id"].Value;
-                                    if (comments.ContainsKey(commentId))
-                                    {
-                                        comments[commentId].Text = commentP.InnerText;
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
 
