@@ -45,6 +45,7 @@ namespace LeninSearch.Script.Scripts
             var globalWords = new HashSet<string>();
 
             Console.WriteLine("Constructing .dic file");
+            var inlineImageIndexes = new List<ushort>();
             foreach (var jsonFile in jsonFiles)
             {
                 var fileData = JsonConvert.DeserializeObject<JsonFileData>(File.ReadAllText(jsonFile));
@@ -63,6 +64,11 @@ namespace LeninSearch.Script.Scripts
                         {
                             if (!globalWords.Contains(word)) globalWords.Add(word);
                         }
+                    }
+
+                    if (paragraph.InlineImages != null)
+                    {
+                        inlineImageIndexes.AddRange(paragraph.InlineImages.Select(i => i.ImageIndex));
                     }
                 }
 
@@ -95,8 +101,16 @@ namespace LeninSearch.Script.Scripts
 
             Console.WriteLine("Copying images");
             var jsonImages = Directory.GetFiles(jsonFolder, "*.jpeg");
+            var inlineBitmaps = new Dictionary<ushort, Bitmap>();
             foreach (var jsonImageFile in jsonImages)
             {
+                var inlineImageIndex = inlineImageIndexes.Where(i => $"image{i}.jpeg" == Path.GetFileName(jsonImageFile)).ToList();
+                if (inlineImageIndex.Count > 0)
+                {
+                    inlineBitmaps.Add(inlineImageIndex[0], (Bitmap)Image.FromFile(jsonImageFile));
+                    continue;
+                }
+
                 using (var jsonImage = Image.FromFile(jsonImageFile))
                 {
                     var lsiImageFile = Path.Combine(lsiFolder, Path.GetFileName(jsonImageFile));
@@ -112,6 +126,26 @@ namespace LeninSearch.Script.Scripts
                     {
                         jsonImage.Save(lsiImageFile, ImageFormat.Jpeg);
                     }
+                }
+            }
+
+            if (inlineBitmaps.Any())
+            {
+                Console.WriteLine($"Handling inline images ({inlineBitmaps.Count})");
+                var maxHeight = inlineBitmaps.Max(bm => bm.Value.Height);
+                foreach (var imageIndex in inlineBitmaps.Keys)
+                {
+                    var initialBitmap = inlineBitmaps[imageIndex];
+                    var resultBitmap = new Bitmap(initialBitmap.Width + 10, maxHeight);
+                    using (var g = Graphics.FromImage(resultBitmap))
+                    {
+                        g.FillRectangle(Brushes.White, 0, 0, resultBitmap.Width, resultBitmap.Height);
+                        var point = new Point(5, maxHeight - initialBitmap.Height);
+                        g.DrawImage(initialBitmap, point);
+                    }
+
+                    var lsiImageFile = Path.Combine(lsiFolder, $"image{imageIndex}.jpeg");
+                    resultBitmap.Save(lsiImageFile, ImageFormat.Jpeg);
                 }
             }
 
