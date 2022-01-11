@@ -969,15 +969,14 @@ namespace LeninSearch.Xam
                     try
                     {
                         var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, cfi.Path);
-                        var headings = lsiData.HeadingParagraphs?.ToList();
-                        if (headings?.Any() != true)
+                        if (lsiData.Headings?.Any() != true)
                         {
                             _message.ShortAlert("Заголовки не найдены");
                         }
                         else
                         {
                             await ReplaceCorpusWithLoading();
-                            await DisplayBookHeadings(corpusItem, cfi, headings);
+                            await DisplayBookHeadings(corpusItem, cfi, lsiData);
                             await ReplaceLoadingWithCorpus();
                         }
                     }
@@ -1055,7 +1054,7 @@ namespace LeninSearch.Xam
             }
         }
 
-        private async Task DisplayBookHeadings(CorpusItem ci, CorpusFileItem cfi, List<LsiParagraph> headings)
+        private async Task DisplayBookHeadings(CorpusItem ci, CorpusFileItem cfi, LsiData lsiData)
         {
             _state.ReadingFile = null;
             HideSearchResultBar();
@@ -1071,35 +1070,11 @@ namespace LeninSearch.Xam
                 Margin = new Thickness(0, 0, 0, 20)
             });
 
-            var corpusItem = _state.GetCurrentCorpusItem();
-
-            foreach (var heading in headings)
+            var dictionaryWords = _lsiProvider.GetDictionary(ci.Id).Words;
+            foreach (var headingLeaf in lsiData.HeadingTree.Children)
             {
-                var headingStack = new StackLayout
-                {
-                    Orientation = StackOrientation.Horizontal,
-                    Spacing = 0
-                };
-                var bulletButton = new ImageButton
-                {
-                    Source = "bullet.png",
-                    HeightRequest = 24,
-                    WidthRequest = 24,
-                    HorizontalOptions = LayoutOptions.Start,
-                    BackgroundColor = Color.White
-                };
-                headingStack.Children.Add(bulletButton);
-                var textLabel = new Label
-                {
-                    Text = heading.GetText(_lsiProvider.GetDictionary(corpusItem.Id).Words),
-                    FontSize = Settings.UI.Font.SmallFontSize,
-                    TextColor = Color.Black,
-                    Margin = new Thickness(5 + 10 * heading.HeadingLevel, 0, 0, 0),
-                    HorizontalOptions = LayoutOptions.FillAndExpand
-                };
-                headingStack.Children.Add(textLabel);
-                ResultStack.Children.Add(headingStack);
-                bulletButton.Clicked += async (sender, args) => await Read(cfi, heading.Index);
+                var hlView = ViewFactory.ConstructHeadingView(headingLeaf, dictionaryWords, async hl => await Read(cfi, hl.Index));
+                ResultStack.Children.Add(hlView);
             }
 
             await ResultScrollFadeIn();

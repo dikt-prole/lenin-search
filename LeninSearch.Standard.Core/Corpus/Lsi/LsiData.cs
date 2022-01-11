@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace LeninSearch.Standard.Core.Corpus.Lsi
 {
@@ -120,6 +121,32 @@ namespace LeninSearch.Standard.Core.Corpus.Lsi
         {
             var videoDataItem = Videos.FirstOrDefault(vdi => vdi.FirstParagraphIndex <= paragraphIndex && paragraphIndex <= vdi.LastParagraphIndex);
             return videoDataItem?.VideoId;
+        }
+
+        private LsiHeadingTree _headingTree;
+        public LsiHeadingTree HeadingTree
+        {
+            get
+            {
+                if (_headingTree != null) return _headingTree;
+
+                _headingTree = new LsiHeadingTree {Children = new List<LsiHeadingLeaf>()};
+
+                var headingParagraphs = HeadingParagraphs.OrderByDescending(hp => hp.Index);
+
+                var leafs = new List<LsiHeadingLeaf>();
+
+                foreach (var hp in headingParagraphs)
+                {
+                    var lowerLeafs = leafs.Where(l => l.HeadingLevel > hp.HeadingLevel).OrderBy(l => l.Index).ToList();
+                    leafs = leafs.Except(lowerLeafs).ToList();
+                    leafs.Add(new LsiHeadingLeaf(hp) {Children = lowerLeafs});
+                }
+
+                _headingTree.Children = leafs.OrderBy(l => l.Index).ToList();
+
+                return _headingTree;
+            }
         }
     }
 }
