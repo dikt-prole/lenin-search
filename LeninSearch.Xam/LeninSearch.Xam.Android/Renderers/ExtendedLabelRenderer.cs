@@ -63,12 +63,25 @@ namespace LeninSearch.Xam.Droid.Renderers
                 var start = ss.GetSpanStart(span);
                 var end = ss.GetSpanEnd(span);
                 var imageFile = ssText.Substring(start, end - start);
+                
                 if (imageFile.EndsWith(".jpeg"))
                 {
                     var flags = ss.GetSpanFlags(span);
                     ss.RemoveSpan(span);
                     var bitmap = BitmapFactory.DecodeFile(imageFile);
-                    var imageSpan = new ImageSpan(Context, bitmap);
+
+                    var width = bitmap.Width;
+                    var height = bitmap.Height;
+                    var newHeight = 2 * Settings.UI.Font.ReadingFontSize * Settings.UI.ScreenDensity;
+                    var newWidth = newHeight * width / height;
+                    var scaleWidth = (float)newWidth / width;
+                    var scaleHeight = (float)newHeight / height;
+                    var matrix = new Matrix();
+                    matrix.PostScale(scaleWidth, scaleHeight);
+                    var resized = Bitmap.CreateBitmap(bitmap, 0, 0, width, height, matrix, false);
+                    bitmap.Recycle();
+
+                    var imageSpan = new ImageSpan(Context, resized, SpanAlign.Baseline);
                     ss.SetSpan(imageSpan, start, end, flags);
                 }
             }

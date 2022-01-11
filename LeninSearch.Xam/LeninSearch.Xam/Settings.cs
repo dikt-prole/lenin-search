@@ -77,6 +77,8 @@ namespace LeninSearch.Xam
             public const int ResultScrollFadeMs = 50;
 
             public const int BrowserViewHeight = 700;
+
+            public static readonly double ScreenDensity = Xamarin.Essentials.DeviceDisplay.MainDisplayInfo.Density;
         }
 
         public static class Misc
