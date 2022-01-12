@@ -31,6 +31,7 @@ namespace LeninSearch.Xam
         private readonly ICorpusSearch _corpusSearch;
         private readonly ApiService _apiService = new ApiService();
         private readonly IMessage _message = DependencyService.Get<IMessage>();
+        private readonly ITextMeasure _textMeasure = DependencyService.Get<ITextMeasure>();
         private readonly Span _searchResultTitleSpan;
         private bool _isRunningCorpusUpdate = false;
 
@@ -1106,6 +1107,7 @@ namespace LeninSearch.Xam
 
         private Button ConstructHyperlinkButton(string text, double fontSize, Action action)
         {
+            var textWidth = _textMeasure.Width(text, null, (float) fontSize);
             var button = new Button
             {
                 BackgroundColor = Color.White,
@@ -1116,24 +1118,11 @@ namespace LeninSearch.Xam
                 Margin = 5,
                 TextTransform = TextTransform.None,
                 HeightRequest = 24,
-                MinimumWidthRequest = 48
+                WidthRequest = 24 + textWidth
             };
             button.Clicked += (sender, args) => action();
 
             return button;
-
-            //var gestureRecognizer = new TapGestureRecognizer { Command = command };
-            //var cfiSpan = new Span
-            //{
-            //    Text = text,
-            //    TextColor = Settings.UI.MainColor,
-            //    TextDecorations = TextDecorations.Underline,
-            //    FontSize = fontSize
-            //};
-            //cfiSpan.GestureRecognizers.Add(gestureRecognizer);
-            //var fString = new FormattedString();
-            //fString.Spans.Add(cfiSpan);
-            //return new Label { FormattedText = fString, Margin = 5 };
         }
 
         private Span AttachCommandToLabel(Label label, Command command)
