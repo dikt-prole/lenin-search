@@ -63,15 +63,17 @@ namespace LeninSearch.Xam.Controls
             bottomDivider.Margin = new Thickness(0, 10, 0, 0);
             Children.Add(bottomDivider);
 
+            var horizontalStack = new StackLayout {Orientation = StackOrientation.Horizontal};
+            horizontalStack.Children.Add(new StackLayout{HorizontalOptions = LayoutOptions.FillAndExpand});
             _label = new Label
             {
-                HorizontalOptions = LayoutOptions.CenterAndExpand,
-                HorizontalTextAlignment = TextAlignment.End,
+                HorizontalOptions = LayoutOptions.End,
                 FontSize = Settings.UI.Font.SmallFontSize,
                 TextColor = Color.Black,
                 FontAttributes = FontAttributes.Italic
             };
-            Children.Add(_label);
+            horizontalStack.Children.Add(_label);
+            Children.Add(horizontalStack);
 
             var tap = new TapGestureRecognizer { NumberOfTapsRequired = 2 };
             tap.Tapped += OnTapped;

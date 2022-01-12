@@ -76,7 +76,7 @@ namespace LeninSearch.Xam.ParagraphAdder
                 Source = imageFile,
                 EffectiveWidthRequest = effectiveWidth,
                 EffectiveHeightRequest = effectiveHeight,
-                Title = $"иллюстрация {imageIndex + 1}"
+                Title = $"илл. {imageIndex + 1}"
             };
 
             return imageControl;
