@@ -47,6 +47,22 @@ namespace LeninSearch.Xam.Controls
             Orientation = StackOrientation.Vertical;
             Spacing = 0;
 
+            var topDivider = Divider();
+            topDivider.Margin = new Thickness(0, 0, 0, 10);
+            Children.Add(topDivider);
+
+            _image = new Image();
+            _scroll = new ScrollView
+            {
+                Orientation = ScrollOrientation.Both,
+                Content = _image
+            };
+            Children.Add(_scroll);
+
+            var bottomDivider = Divider();
+            bottomDivider.Margin = new Thickness(0, 10, 0, 0);
+            Children.Add(bottomDivider);
+
             _label = new Label
             {
                 HorizontalOptions = LayoutOptions.CenterAndExpand,
@@ -56,16 +72,6 @@ namespace LeninSearch.Xam.Controls
                 FontAttributes = FontAttributes.Italic
             };
             Children.Add(_label);
-            Children.Add(Divider());
-
-            _image = new Image();
-            _scroll = new ScrollView
-            {
-                Orientation = ScrollOrientation.Both,
-                Content = _image
-            };
-            Children.Add(_scroll);
-            Children.Add(Divider());
 
             var tap = new TapGestureRecognizer { NumberOfTapsRequired = 2 };
             tap.Tapped += OnTapped;

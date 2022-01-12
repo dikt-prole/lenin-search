@@ -68,21 +68,20 @@ namespace LeninSearch.Xam.Droid.Renderers
                 {
                     var flags = ss.GetSpanFlags(span);
                     ss.RemoveSpan(span);
-                    var bitmap = BitmapFactory.DecodeFile(imageFile);
-
-                    var width = bitmap.Width;
-                    var height = bitmap.Height;
-                    var newHeight = 2 * Settings.UI.Font.ReadingFontSize * Settings.UI.ScreenDensity;
-                    var newWidth = newHeight * width / height;
-                    var scaleWidth = (float)newWidth / width;
-                    var scaleHeight = (float)newHeight / height;
-                    var matrix = new Matrix();
-                    matrix.PostScale(scaleWidth, scaleHeight);
-                    var resized = Bitmap.CreateBitmap(bitmap, 0, 0, width, height, matrix, false);
-                    bitmap.Recycle();
-
-                    var imageSpan = new ImageSpan(Context, resized, SpanAlign.Baseline);
-                    ss.SetSpan(imageSpan, start, end, flags);
+                    using (var bitmap = BitmapFactory.DecodeFile(imageFile))
+                    {
+                        var width = bitmap.Width;
+                        var height = bitmap.Height;
+                        var newHeight = 3 * Settings.UI.Font.ReadingFontSize * Settings.UI.ScreenDensity;
+                        var newWidth = newHeight * width / height;
+                        var scaleWidth = (float)newWidth / width;
+                        var scaleHeight = (float)newHeight / height;
+                        var matrix = new Matrix();
+                        matrix.PostScale(scaleWidth, scaleHeight);
+                        var resized = Bitmap.CreateBitmap(bitmap, 0, 0, width, height, matrix, false);
+                        var imageSpan = new ImageSpan(Context, resized, SpanAlign.Baseline);
+                        ss.SetSpan(imageSpan, start, end, flags);
+                    }
                 }
             }
             Control.TextFormatted = ss;

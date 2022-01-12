@@ -114,17 +114,29 @@ namespace LeninSearch.Script.Scripts
                 using (var jsonImage = Image.FromFile(jsonImageFile))
                 {
                     var lsiImageFile = Path.Combine(lsiFolder, Path.GetFileName(jsonImageFile));
+                    var bitmap = jsonImage;
+                    if (bitmap.Width < 400)
+                    {
+                        var fixedBitmap = new Bitmap(400, bitmap.Height);
+                        using (var g = Graphics.FromImage(fixedBitmap))
+                        {
+                            g.FillRectangle(Brushes.White, 0, 0, fixedBitmap.Width, fixedBitmap.Height);
+                            var leftOffset = (fixedBitmap.Width - bitmap.Width) / 2;
+                            g.DrawImage(bitmap, new Point(leftOffset, 0));
+                            bitmap = fixedBitmap;
+                        }
+                    }
                     if (jpegQuality > 0)
                     {
                         var encoderParams = new EncoderParameters(1);
                         var qualityParam = new EncoderParameter(Encoder.Quality, jpegQuality);
                         var jpegEncoder = ImageCodecInfo.GetImageEncoders().First(e => e.MimeType == "image/jpeg");
                         encoderParams.Param[0] = qualityParam;
-                        jsonImage.Save(lsiImageFile, jpegEncoder, encoderParams);
+                        bitmap.Save(lsiImageFile, jpegEncoder, encoderParams);
                     }
                     else
                     {
-                        jsonImage.Save(lsiImageFile, ImageFormat.Jpeg);
+                        bitmap.Save(lsiImageFile, ImageFormat.Jpeg);
                     }
                 }
             }
