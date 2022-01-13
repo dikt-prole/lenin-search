@@ -76,10 +76,7 @@ namespace LeninSearch.Xam
 
             // paragraphs
             _paragraphViewBuilder = new StdParagraphViewBuilder(_lsiProvider, () => ScrollWrapper.Width - 20);
-            //_paragraphViewBuilder = new ParagraphViewBuilderPagerHeaderDecorator(_paragraphViewBuilder);
-            //_paragraphViewBuilder = new PropertyHolderParagraphViewBuilder(_paragraphViewBuilder, Settings.UI.Font.NormalFontSize);
             _selectionSelectionDecorator = new ParagraphViewBuilderTapSelectionDecorator(_paragraphViewBuilder, _lsiProvider);
-            _paragraphViewBuilder = _selectionSelectionDecorator;
             _selectionSelectionDecorator.ParagraphSelectionChanged += async (sender, indexes) =>
             {
                 if (indexes.Count > 0)
@@ -95,6 +92,8 @@ namespace LeninSearch.Xam
                     await HideTextMenu();
                 }
             };
+            _paragraphViewBuilder = _selectionSelectionDecorator;
+
 
             // text menu
             BookmarkButton.Clicked += BookmarkButtonOnClicked;
@@ -200,21 +199,21 @@ namespace LeninSearch.Xam
         private async Task ReplaceCorpusWithLoading()
         {
             SearchActivityIndicator.Opacity = 0;
-            await CorpusButton.FadeTo(0, 150, Easing.Linear);
+            await CorpusButton.FadeTo(0, 50, Easing.Linear);
             CorpusButton.IsVisible = false;
             SearchActivityIndicator.IsVisible = true;
             SearchActivityIndicator.IsRunning = true;
-            await SearchActivityIndicator.FadeTo(1, 150, Easing.Linear);
+            await SearchActivityIndicator.FadeTo(1, 50, Easing.Linear);
         }
 
         private async Task ReplaceLoadingWithCorpus()
         {
             CorpusButton.Opacity = 0;
-            await SearchActivityIndicator.FadeTo(0, 150, Easing.Linear);
+            await SearchActivityIndicator.FadeTo(0, 50, Easing.Linear);
             SearchActivityIndicator.IsVisible = false;
             CorpusButton.IsVisible = true;
             SearchActivityIndicator.IsRunning = false;
-            await CorpusButton.FadeTo(1, 150, Easing.Linear);
+            await CorpusButton.FadeTo(1, 50, Easing.Linear);
         }
 
         private async void SwipeRight(object sender, EventArgs e)
@@ -606,8 +605,6 @@ namespace LeninSearch.Xam
         {
             if (!_state.IsWatchingParagraphSearchResults()) return;
 
-            await ReplaceCorpusWithLoading();
-
             HideSearchResultBar();
             StopVideoPlay();
             await RebuildScroll(false);
@@ -657,8 +654,6 @@ namespace LeninSearch.Xam
             };
             ResultStack.Children.Add(fishButton);
             fishButton.Clicked += async (sender, args) => await GenerateSearchFish();
-
-            await ReplaceLoadingWithCorpus();
 
             await ResultScrollFadeIn();
         }
@@ -1231,7 +1226,6 @@ namespace LeninSearch.Xam
 
         private async Task AfterParagraphSearch()
         {
-            await ReplaceLoadingWithCorpus();
             CorpusButton.IsEnabled = true;
 
             if (_state.PartialParagraphSearchResult.SearchResults.Count == 0)
@@ -1250,6 +1244,8 @@ namespace LeninSearch.Xam
             {
                 await DisplaySearchSummary();
             }
+
+            await ReplaceLoadingWithCorpus();
         }
 
         private async Task AfterHeadingSearch(List<ParagraphSearchResult> searchResults)
