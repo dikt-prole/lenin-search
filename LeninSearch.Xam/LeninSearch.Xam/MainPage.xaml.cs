@@ -606,6 +606,8 @@ namespace LeninSearch.Xam
         {
             if (!_state.IsWatchingParagraphSearchResults()) return;
 
+            await ReplaceCorpusWithLoading();
+
             HideSearchResultBar();
             StopVideoPlay();
             await RebuildScroll(false);
@@ -655,6 +657,8 @@ namespace LeninSearch.Xam
             };
             ResultStack.Children.Add(fishButton);
             fishButton.Clicked += async (sender, args) => await GenerateSearchFish();
+
+            await ReplaceLoadingWithCorpus();
 
             await ResultScrollFadeIn();
         }

@@ -60,8 +60,8 @@ namespace LeninSearch.Xam.ParagraphAdder
                 if (_selectedParagraphs.ContainsKey(pIndex))
                 {
                     _selectedParagraphs.Remove(pIndex);
-                    var deselectAnimation = new Animation(f => view.BackgroundColor = new Color(1.0, 0, 0, f), 0.25, 0, Easing.SinInOut);
-                    deselectAnimation.Commit(view, "deselect", 100);
+                    var deselectAnimation = new Animation(f => label.BackgroundColor = new Color(1.0, 0, 0, f), 0.25, 0, Easing.SinInOut);
+                    deselectAnimation.Commit(label, "deselect", 100);
                 }
                 else
                 {
@@ -76,8 +76,8 @@ namespace LeninSearch.Xam.ParagraphAdder
                         _selectedParagraphs.Clear();
                     }
                     _selectedParagraphs.Add(pIndex, view);
-                    var selectAnimation = new Animation(f => view.BackgroundColor = new Color(1.0, 0, 0, f), 0, 0.25, Easing.SinInOut);
-                    selectAnimation.Commit(view, "select", 100);
+                    var selectAnimation = new Animation(f => label.BackgroundColor = new Color(1.0, 0, 0, f), 0, 0.25, Easing.SinInOut);
+                    selectAnimation.Commit(label, "select", 100);
                 }
 
                 var handler = ParagraphSelectionChanged;

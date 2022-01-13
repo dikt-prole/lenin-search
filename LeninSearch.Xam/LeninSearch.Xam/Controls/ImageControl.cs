@@ -11,6 +11,8 @@ namespace LeninSearch.Xam.Controls
         private readonly Label _label;
 
         private const double ZoomFactor = 1.5;
+        private double _effectiveWidth, _effectiveHeight;
+
 
         public string Source
         {
@@ -22,6 +24,7 @@ namespace LeninSearch.Xam.Controls
             get => HeightRequest;
             set
             {
+                _effectiveHeight = value;
                 _scroll.HeightRequest = value;
                 _image.HeightRequest = value;
             }
@@ -31,6 +34,7 @@ namespace LeninSearch.Xam.Controls
             get => WidthRequest;
             set
             {
+                _effectiveWidth = value;
                 _scroll.WidthRequest = value;
                 _image.WidthRequest = value;
             }
@@ -75,22 +79,24 @@ namespace LeninSearch.Xam.Controls
             horizontalStack.Children.Add(_label);
             Children.Add(horizontalStack);
 
-            var tap = new TapGestureRecognizer { NumberOfTapsRequired = 2 };
-            tap.Tapped += OnTapped;
-            _image.GestureRecognizers.Add(tap);
+            var doubleTapRecognizer = new TapGestureRecognizer { NumberOfTapsRequired = 2 };
+            doubleTapRecognizer.Tapped += OnTapped;
+            _image.GestureRecognizers.Add(doubleTapRecognizer);
         }
 
         private void OnTapped(object sender, EventArgs e)
         {
-            if (_image.WidthRequest > WidthRequest)
+            if (_image.WidthRequest > _effectiveWidth)
             {
-                _image.WidthRequest = WidthRequest;
-                _image.HeightRequest = HeightRequest;
+                _image.WidthRequest = _effectiveWidth;
+                _image.HeightRequest = _effectiveHeight;
+                _scroll.HeightRequest = _effectiveHeight;
             }
             else
             {
-                _image.WidthRequest = WidthRequest * ZoomFactor;
-                _image.HeightRequest = HeightRequest * ZoomFactor;
+                _image.WidthRequest = _effectiveWidth * ZoomFactor;
+                _image.HeightRequest = _effectiveHeight * ZoomFactor;
+                _scroll.HeightRequest = _effectiveHeight * ZoomFactor;
             }
         }
 
