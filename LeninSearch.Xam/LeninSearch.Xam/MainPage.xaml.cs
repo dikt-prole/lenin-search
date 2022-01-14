@@ -26,7 +26,7 @@ namespace LeninSearch.Xam
     {
         private readonly GlobalEvents _globalEvents;
         private IParagraphViewBuilder _paragraphViewBuilder;
-        private ParagraphViewBuilderTapSelectionDecorator _selectionSelectionDecorator;
+        private ParagraphSelectionDecorator _paragraphSelectionDecorator;
         private readonly CachedLsiProvider _lsiProvider;
         private readonly ICorpusSearch _corpusSearch;
         private readonly ApiService _apiService = new ApiService();
@@ -76,12 +76,12 @@ namespace LeninSearch.Xam
 
             // paragraphs
             _paragraphViewBuilder = new StdParagraphViewBuilder(_lsiProvider, () => ScrollWrapper.Width - 20);
-            _selectionSelectionDecorator = new ParagraphViewBuilderTapSelectionDecorator(_paragraphViewBuilder, _lsiProvider);
-            _selectionSelectionDecorator.ParagraphSelectionChanged += async (sender, indexes) =>
+            _paragraphSelectionDecorator = new ParagraphSelectionDecorator(_paragraphViewBuilder, _lsiProvider);
+            _paragraphSelectionDecorator.ParagraphSelectionChanged += async (sender, indexes) =>
             {
                 if (indexes.Count > 0)
                 {
-                    var paragraphIndex = _selectionSelectionDecorator.SelectedIndexes[0];
+                    var paragraphIndex = _paragraphSelectionDecorator.SelectedIndexes[0];
                     var corpusItem = _state.GetCurrentCorpusItem();
                     var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, _state.ReadingFile);
                     var buttonCount = lsiData.Offsets.ContainsKey(paragraphIndex) ? 3 : 2;
@@ -92,7 +92,7 @@ namespace LeninSearch.Xam
                     await HideTextMenu();
                 }
             };
-            _paragraphViewBuilder = _selectionSelectionDecorator;
+            _paragraphViewBuilder = _paragraphSelectionDecorator;
 
 
             // text menu
@@ -105,7 +105,7 @@ namespace LeninSearch.Xam
             PlayerStopButton.Clicked += (sender, args) => StopVideoPlay();
             PlayButton.Clicked += (sender, args) =>
             {
-                var paragraphIndex = _selectionSelectionDecorator.SelectedIndexes[0];
+                var paragraphIndex = _paragraphSelectionDecorator.SelectedIndexes[0];
                 var corpusItem = _state.GetCurrentCorpusItem();
                 var corpusFileItem = corpusItem.GetFileByPath(_state.ReadingFile);
                 var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, _state.ReadingFile);
@@ -175,7 +175,7 @@ namespace LeninSearch.Xam
             if (corpusFileItem == null) return;
 
             var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, corpusFileItem.Path);
-            var pIndex = _selectionSelectionDecorator.SelectedIndexes.First();
+            var pIndex = _paragraphSelectionDecorator.SelectedIndexes.First();
             var words = _lsiProvider.GetDictionary(corpusItem.Id).Words;
 
             var bookmark = new Bookmark
@@ -193,7 +193,7 @@ namespace LeninSearch.Xam
             BookmarkRepo.Add(bookmark);
             PopulateBookmarksTab();
 
-            _selectionSelectionDecorator.ClearSelection();
+            _paragraphSelectionDecorator.ClearSelection();
         }
 
         private async Task ReplaceCorpusWithLoading()
@@ -706,7 +706,7 @@ namespace LeninSearch.Xam
             var corpusItem = _state.GetCurrentCorpusItem();
             if (corpusItem == null) return;
             var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, _state.ReadingFile);
-            var indexes = _selectionSelectionDecorator.SelectedIndexes;
+            var indexes = _paragraphSelectionDecorator.SelectedIndexes;
             var separator = $"{Environment.NewLine}{Environment.NewLine}";
             var words = _lsiProvider.GetDictionary(corpusItem.Id).Words;
 
@@ -743,7 +743,7 @@ namespace LeninSearch.Xam
             var shareText = string.Join(separator, pTexts);
             shareText = $"{shareText}{separator}Подготовлено при помощи Lenin Search для Android (доступно в Google Play) за считанные секунды";
 
-            _selectionSelectionDecorator.ClearSelection();
+            _paragraphSelectionDecorator.ClearSelection();
 
             await Share.RequestAsync(new ShareTextRequest
             {
@@ -1017,7 +1017,7 @@ namespace LeninSearch.Xam
                 _state.PartialParagraphSearchResult = null;
                 _state.ReadingFile = cfi.Path;
                 _state.ReadingParagraphIndex = paragraphIndex;
-                _selectionSelectionDecorator.ClearSelection();
+                _paragraphSelectionDecorator.ClearSelection();
 
                 HideSearchResultBar();
                 await RebuildScroll(true);
@@ -1312,7 +1312,7 @@ namespace LeninSearch.Xam
             var corpusItem = _state.GetCurrentCorpusItem();
             var searchResult = _state.GetCurrentSearchParagraphResult();
 
-            _selectionSelectionDecorator.ClearSelection();
+            _paragraphSelectionDecorator.ClearSelection();
             HideTextMenu();
             await RebuildScroll(true);
 

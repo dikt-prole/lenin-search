@@ -4,11 +4,12 @@ using System.Linq;
 using LeninSearch.Standard.Core.Corpus.Lsi;
 using LeninSearch.Standard.Core.Search;
 using LeninSearch.Xam.Controls;
+using LeninSearch.Xam.Effects;
 using Xamarin.Forms;
 
 namespace LeninSearch.Xam.ParagraphAdder
 {
-    public class ParagraphViewBuilderTapSelectionDecorator : IParagraphViewBuilder
+    public class ParagraphSelectionDecorator : IParagraphViewBuilder
     {
         private readonly IParagraphViewBuilder _builder;
         private readonly ILsiProvider _lsiProvider;
@@ -19,7 +20,7 @@ namespace LeninSearch.Xam.ParagraphAdder
 
         public List<ushort> SelectedIndexes => _selectedParagraphs.Keys.OrderBy(i => i).ToList();
 
-        public ParagraphViewBuilderTapSelectionDecorator(IParagraphViewBuilder builder, ILsiProvider lsiProvider)
+        public ParagraphSelectionDecorator(IParagraphViewBuilder builder, ILsiProvider lsiProvider)
         {
             _builder = builder;
             _lsiProvider = lsiProvider;
@@ -53,14 +54,14 @@ namespace LeninSearch.Xam.ParagraphAdder
 
             if (label == null) return;
 
-            var tapRecognizer = new TapGestureRecognizer {NumberOfTapsRequired = 1};
-            tapRecognizer.Tapped += (s, e) =>
+            var effect = new LongPressedEffect();
+            LongPressedEffect.SetCommand(label, new Command(() =>
             {
                 var pIndex = (ushort)view.TabIndex;
                 if (_selectedParagraphs.ContainsKey(pIndex))
                 {
                     _selectedParagraphs.Remove(pIndex);
-                    var deselectAnimation = new Animation(f => label.BackgroundColor = new Color(1.0, 0, 0, f), 0.25, 0, Easing.SinInOut);
+                    var deselectAnimation = new Animation(f => label.BackgroundColor = new Color(1.0, 0, 0, f), 0.15, 0, Easing.SinInOut);
                     deselectAnimation.Commit(label, "deselect", 100);
                 }
                 else
@@ -76,14 +77,15 @@ namespace LeninSearch.Xam.ParagraphAdder
                         _selectedParagraphs.Clear();
                     }
                     _selectedParagraphs.Add(pIndex, view);
-                    var selectAnimation = new Animation(f => label.BackgroundColor = new Color(1.0, 0, 0, f), 0, 0.25, Easing.SinInOut);
+                    var selectAnimation = new Animation(f => label.BackgroundColor = new Color(1.0, 0, 0, f), 0, 0.15, Easing.SinInOut);
                     selectAnimation.Commit(label, "select", 100);
                 }
 
                 var handler = ParagraphSelectionChanged;
                 handler?.Invoke(this, SelectedIndexes);
-            };
-            label.GestureRecognizers.Add(tapRecognizer);
+            }));
+
+            label.Effects.Add(effect);
         }
 
         private ExtendedLabel FindLabel(View view)
