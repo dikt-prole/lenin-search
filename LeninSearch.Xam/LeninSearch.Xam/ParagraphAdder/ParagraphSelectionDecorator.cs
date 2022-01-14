@@ -54,8 +54,8 @@ namespace LeninSearch.Xam.ParagraphAdder
 
             if (label == null) return;
 
-            var effect = new LongPressedEffect();
-            LongPressedEffect.SetCommand(label, new Command(() =>
+            var tapRecognizer = new TapGestureRecognizer {NumberOfTapsRequired = 1};
+            tapRecognizer.Tapped += (s, a) =>
             {
                 var pIndex = (ushort)view.TabIndex;
                 if (_selectedParagraphs.ContainsKey(pIndex))
@@ -74,8 +74,10 @@ namespace LeninSearch.Xam.ParagraphAdder
                         {
                             _selectedParagraphs[index].BackgroundColor = Color.White;
                         }
+
                         _selectedParagraphs.Clear();
                     }
+
                     _selectedParagraphs.Add(pIndex, view);
                     var selectAnimation = new Animation(f => label.BackgroundColor = new Color(1.0, 0, 0, f), 0, 0.15, Easing.SinInOut);
                     selectAnimation.Commit(label, "select", 100);
@@ -83,9 +85,9 @@ namespace LeninSearch.Xam.ParagraphAdder
 
                 var handler = ParagraphSelectionChanged;
                 handler?.Invoke(this, SelectedIndexes);
-            }));
+            };
 
-            label.Effects.Add(effect);
+            label.GestureRecognizers.Add(tapRecognizer);
         }
 
         private ExtendedLabel FindLabel(View view)
