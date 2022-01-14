@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using LeninSearch.Standard.Core.Corpus.Lsi;
 using LeninSearch.Standard.Core.Search;
@@ -9,7 +10,7 @@ using Xamarin.Forms;
 
 namespace LeninSearch.Xam.ParagraphAdder
 {
-    public class ParagraphSelectionDecorator : IParagraphViewBuilder
+    public class ParagraphGestureDecorator : IParagraphViewBuilder
     {
         private readonly IParagraphViewBuilder _builder;
         private readonly ILsiProvider _lsiProvider;
@@ -18,9 +19,11 @@ namespace LeninSearch.Xam.ParagraphAdder
 
         public event EventHandler<List<ushort>> ParagraphSelectionChanged;
 
+        public event EventHandler<LsiParagraph> ParagraphDoubleTapped;
+
         public List<ushort> SelectedIndexes => _selectedParagraphs.Keys.OrderBy(i => i).ToList();
 
-        public ParagraphSelectionDecorator(IParagraphViewBuilder builder, ILsiProvider lsiProvider)
+        public ParagraphGestureDecorator(IParagraphViewBuilder builder, ILsiProvider lsiProvider)
         {
             _builder = builder;
             _lsiProvider = lsiProvider;
@@ -31,7 +34,7 @@ namespace LeninSearch.Xam.ParagraphAdder
             var view = _builder.Build(p, state, dictionaryWords);
             if (!p.IsImage)
             {
-                AttachTapGesture(view, state);
+                AttachTapGesture(p, view, state);
             }
             return view;
         }
@@ -48,7 +51,7 @@ namespace LeninSearch.Xam.ParagraphAdder
             handler?.Invoke(this, SelectedIndexes);
         }
 
-        private void AttachTapGesture(View view, State state)
+        private void AttachTapGesture(LsiParagraph p, View view, State state)
         {
             var label = FindLabel(view);
 
@@ -86,8 +89,15 @@ namespace LeninSearch.Xam.ParagraphAdder
                 var handler = ParagraphSelectionChanged;
                 handler?.Invoke(this, SelectedIndexes);
             };
-
             label.GestureRecognizers.Add(tapRecognizer);
+
+            var doubleTapRecognizer = new TapGestureRecognizer {NumberOfTapsRequired = 2};
+            doubleTapRecognizer.Tapped += (sender, args) =>
+            {
+                Debug.WriteLine("Paragraph double tap");
+                ParagraphDoubleTapped?.Invoke(this, p);
+            };
+            label.GestureRecognizers.Add(doubleTapRecognizer);
         }
 
         private ExtendedLabel FindLabel(View view)
