@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using LeninSearch.Standard.Core.Corpus;
 using LeninSearch.Standard.Core.Corpus.Lsi;
+using LeninSearch.Standard.Core.Search;
+using LeninSearch.Xam.Core;
 using Xamarin.Forms;
 
 namespace LeninSearch.Xam
@@ -83,6 +87,74 @@ namespace LeninSearch.Xam
             }
 
             return verticalStack;
+        }
+
+        public static StackLayout ConstructTextMenu(TextActions textActions, LsiParagraph targetParagraph, Func<List<LsiParagraph>> selectedParagraphsFunc,
+            CorpusItem ci, CorpusFileItem cfi, ILsiProvider lsiProvider)
+        {
+            var lsiData = lsiProvider.GetLsiData(ci.Id, cfi.Path);
+            var menuStack = new StackLayout { Orientation = StackOrientation.Horizontal };
+
+            var shareButton = new ImageButton
+            {
+                HeightRequest = 24,
+                WidthRequest = 24,
+                Source = "share.png",
+                Margin = 0,
+                BackgroundColor = Color.White,
+                HorizontalOptions = LayoutOptions.Start
+            };
+            menuStack.Children.Add(shareButton);
+            shareButton.Clicked += (sender, args) =>
+            {
+                var paragraphs = selectedParagraphsFunc();
+                textActions.Share(paragraphs, ci, cfi);
+            };
+
+            var bookmarkButton = new ImageButton
+            {
+                HeightRequest = 24,
+                WidthRequest = 24,
+                Source = "bookmark.png",
+                Margin = 0,
+                BackgroundColor = Color.White,
+                HorizontalOptions = LayoutOptions.Start
+            };
+            menuStack.Children.Add(bookmarkButton);
+            bookmarkButton.Clicked += (sender, args) => { textActions.Bookmark(targetParagraph, ci, cfi); };
+
+            if (lsiData.Offsets.ContainsKey(targetParagraph.Index))
+            {
+                var playVideoButton = new ImageButton
+                {
+                    HeightRequest = 24,
+                    WidthRequest = 24,
+                    Source = "play.png",
+                    Margin = 0,
+                    BackgroundColor = Color.White,
+                    HorizontalOptions = LayoutOptions.Start
+                };
+                menuStack.Children.Add(playVideoButton);
+                playVideoButton.Clicked += (sender, args) => { textActions.PlayVideo(targetParagraph, ci, cfi); };
+            }
+
+            var placeholderStack = new StackLayout
+            {
+                Orientation = StackOrientation.Horizontal,
+                HorizontalOptions = LayoutOptions.FillAndExpand
+            };
+            menuStack.Children.Add(placeholderStack);
+
+            
+            var infoText = $"{targetParagraph.Index + 1} из {lsiData.Paragraphs.Count}";
+            var infoLabel = new Label
+            {
+                Text = infoText,
+                HorizontalOptions = LayoutOptions.End
+            };
+            menuStack.Children.Add(infoLabel);
+
+            return menuStack;
         }
     }
 }

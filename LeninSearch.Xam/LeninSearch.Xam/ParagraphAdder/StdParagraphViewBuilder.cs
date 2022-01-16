@@ -84,20 +84,28 @@ namespace LeninSearch.Xam.ParagraphAdder
 
         private View Build_PlainText(List<LsiSpan> lsiSpans, LsiParagraph paragraph, string[] dictionaryWords)
         {
-            return new ExtendedLabel
+            var paragraphLabel = new ExtendedLabel
             {
                 Text = lsiSpans[0].GetText(dictionaryWords),
                 TextColor = Color.Black,
                 JustifyText = true,
-                Margin = new Thickness(0, 5, 0, 0),
-                FontFamily = paragraph.IsHeading 
-                    ? Settings.UI.Font.Bold 
+                FontFamily = paragraph.IsHeading
+                    ? Settings.UI.Font.Bold
                     : Settings.UI.Font.Regular,
                 FontSize = Settings.UI.Font.ReadingFontSize,
                 HorizontalOptions = paragraph.IsHeading
                     ? LayoutOptions.Center
                     : LayoutOptions.FillAndExpand
             };
+            var wrapperStack = new StackLayout
+            {
+                Orientation = StackOrientation.Vertical,
+                BackgroundColor = Color.White,
+                Margin = new Thickness(0, 5, 0, 0),
+            };
+            wrapperStack.Children.Add(paragraphLabel);
+
+            return wrapperStack;
         }
 
         private View Build_FormattedText(List<LsiSpan> lsiSpans, LsiParagraph paragraph, string[] dictionaryWords, State state)
@@ -142,7 +150,6 @@ namespace LeninSearch.Xam.ParagraphAdder
             {
                 JustifyText = true,
                 FormattedText = formattedString,
-                Margin = new Thickness(0, 5, 0, 0),
                 HorizontalOptions = paragraph.IsHeading
                     ? LayoutOptions.Center
                     : LayoutOptions.FillAndExpand
@@ -164,14 +171,16 @@ namespace LeninSearch.Xam.ParagraphAdder
                 searchResultSpans[lsiSpan].GestureRecognizers.Add(gestureRecognizer);
             }
 
-            if (!commentSpans.Any()) return paragraphLabel;
-
             var wrapperStack = new StackLayout
             {
                 Orientation = StackOrientation.Vertical,
-                BackgroundColor = Color.White
+                BackgroundColor = Color.White,
+                Margin = new Thickness(0, 5, 0, 0)
             };
             wrapperStack.Children.Add(paragraphLabel);
+
+            if (!commentSpans.Any()) return wrapperStack;
+
             var commentStack = new StackLayout
             {
                 Orientation = StackOrientation.Vertical,

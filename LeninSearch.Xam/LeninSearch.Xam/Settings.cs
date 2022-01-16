@@ -51,6 +51,7 @@ namespace LeninSearch.Xam
                 public const string Italic = "InterItalic";
             }
 
+            public const int HeaderStackAutoHideMs = 3000;
             public static Color MainColor => Color.FromRgb(214, 24, 31);
             public static bool OldAndroidJustification { get; set; }
 

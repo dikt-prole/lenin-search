@@ -21,27 +21,24 @@
             </StackLayout>
         </StackLayout>
         <StackLayout Orientation="Vertical" Spacing="0" x:Name="SearchLayout" VerticalOptions="FillAndExpand">
-            <StackLayout x:Name="TopLayout" Orientation="Horizontal" HorizontalOptions="Fill" Spacing="0" BackgroundColor="White"   Margin="0">
-                <ActivityIndicator x:Name="SearchActivityIndicator" Color="#D6181F" IsRunning="False" VerticalOptions="Start" WidthRequest="32" HeightRequest="32" Margin="8"></ActivityIndicator>
-                <ImageButton Padding="0" x:Name="CorpusButton" WidthRequest="48" HeightRequest="48" Source="lenin.png" BackgroundColor="White" HorizontalOptions="Start" Margin="0"></ImageButton>
-                <controls:NoKeyboardEntry x:Name="SearchEntry" Placeholder="Введите запрос" ReturnType="Search" HorizontalOptions="FillAndExpand" Margin="0" FontSize="Small" TextColor="Black" MinimumWidthRequest="100"></controls:NoKeyboardEntry>
-                <StackLayout x:Name="TextMenuStack" HorizontalOptions="End" WidthRequest="84" BackgroundColor="White" Orientation="Horizontal" Spacing="0" Margin="0">
-                    <ImageButton x:Name="ShareButton" Source="share.png" WidthRequest="32" HeightRequest="32" VerticalOptions="Center" Margin="5" BackgroundColor="White" Padding="0"></ImageButton>
-                    <ImageButton x:Name="BookmarkButton" Source="bookmark.png" WidthRequest="32" HeightRequest="32" VerticalOptions="Center" Margin="5" Padding="0" BackgroundColor="White"></ImageButton>
-                    <ImageButton x:Name="PlayButton" Source="play.png" WidthRequest="32" HeightRequest="32" VerticalOptions="Center" Margin="5" BackgroundColor="White" Padding="0"></ImageButton>
+            <StackLayout x:Name="HeaderStack" Orientation="Vertical" HorizontalOptions="FillAndExpand" Margin="0" Padding="0" Spacing="0">
+                <StackLayout x:Name="TopLayout" Orientation="Horizontal" HorizontalOptions="Fill" Spacing="0" BackgroundColor="White"   Margin="0">
+                    <ActivityIndicator x:Name="SearchActivityIndicator" Color="#D6181F" IsRunning="False" VerticalOptions="Start" WidthRequest="32" HeightRequest="32" Margin="8"></ActivityIndicator>
+                    <ImageButton Padding="0" x:Name="CorpusButton" WidthRequest="48" HeightRequest="48" Source="lenin.png" BackgroundColor="White" HorizontalOptions="Start" Margin="0"></ImageButton>
+                    <controls:NoKeyboardEntry x:Name="SearchEntry" Placeholder="Введите запрос" ReturnType="Search" HorizontalOptions="FillAndExpand" Margin="0" FontSize="Small" TextColor="Black" MinimumWidthRequest="100"></controls:NoKeyboardEntry>
                 </StackLayout>
-            </StackLayout>
-            <StackLayout HorizontalOptions="FillAndExpand" HeightRequest="2" BackgroundColor="#D6181F"></StackLayout>
-            <StackLayout x:Name="SearchResultBar" HeightRequest="24" Orientation="Vertical" HorizontalOptions="Fill" Spacing="0">
-                <StackLayout Orientation="Horizontal" Spacing="0">
-                    <StackLayout WidthRequest="48" HeightRequest="24" BackgroundColor="#D6181F" HorizontalOptions="Start" Spacing="0">
-                        <Label Margin="0" HorizontalOptions="Center" VerticalOptions="Center" FontSize="Small"  x:Name="PrevLabel" TextColor="White"></Label>
-                    </StackLayout>
-                    <StackLayout HorizontalOptions="FillAndExpand" BackgroundColor="#D6181F" HeightRequest="24">
-                        <Label Margin="0" HorizontalOptions="Center" VerticalOptions="Center" FontSize="Small" TextColor="White" Text="просмотр результатов поиска" x:Name="SearchResultTitle"></Label>
-                    </StackLayout>
-                    <StackLayout WidthRequest="48" HeightRequest="24" BackgroundColor="#D6181F" HorizontalOptions="End" Spacing="0">
-                        <Label Margin="0" VerticalOptions="Center" HorizontalOptions="Center" FontSize="Small" x:Name="NextLabel" TextColor="White"></Label>
+                <StackLayout HorizontalOptions="FillAndExpand" HeightRequest="2" BackgroundColor="#D6181F"></StackLayout>
+                <StackLayout x:Name="SearchResultBar" HeightRequest="24" Orientation="Vertical" HorizontalOptions="Fill" Spacing="0">
+                    <StackLayout Orientation="Horizontal" Spacing="0">
+                        <StackLayout WidthRequest="48" HeightRequest="24" BackgroundColor="#D6181F" HorizontalOptions="Start" Spacing="0">
+                            <Label Margin="0" HorizontalOptions="Center" VerticalOptions="Center" FontSize="Small"  x:Name="PrevLabel" TextColor="White"></Label>
+                        </StackLayout>
+                        <StackLayout HorizontalOptions="FillAndExpand" BackgroundColor="#D6181F" HeightRequest="24">
+                            <Label Margin="0" HorizontalOptions="Center" VerticalOptions="Center" FontSize="Small" TextColor="White" Text="просмотр результатов поиска" x:Name="SearchResultTitle"></Label>
+                        </StackLayout>
+                        <StackLayout WidthRequest="48" HeightRequest="24" BackgroundColor="#D6181F" HorizontalOptions="End" Spacing="0">
+                            <Label Margin="0" VerticalOptions="Center" HorizontalOptions="Center" FontSize="Small" x:Name="NextLabel" TextColor="White"></Label>
+                        </StackLayout>
                     </StackLayout>
                 </StackLayout>
             </StackLayout>
