@@ -192,7 +192,6 @@ namespace LeninSearch.Script.Scripts
 
                 File.WriteAllText(jsonFile, JsonConvert.SerializeObject(jsonFileData, Formatting.Indented));
             }
-
         }
     }
 }
