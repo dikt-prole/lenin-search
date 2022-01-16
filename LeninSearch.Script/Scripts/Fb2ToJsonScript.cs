@@ -18,13 +18,23 @@ namespace LeninSearch.Script.Scripts
     public class Fb2ToJsonScript : IScript
     {
         public string Id => "fb2-json";
-        public string Arguments => "fb2_folder, json_folder";
+        public string Arguments => "1. fb2_folder, 2. json_folder, 3. keep_headings(opt), 4. jpeg-quality(opt)";
 
         public void Execute(params string[] input)
         {
             var fb2Folder = input[0];
             var jsonFolder = input[1];
-            var jpegQuality = input.Length == 3 ? long.Parse(input[2]) : -1;
+            var keepHeadings = input.Length > 2 && input[2] == "1";
+            var jpegQuality = input.Length > 3 ? long.Parse(input[3]) : -1;
+
+            var existingJsonFiles = Directory.GetFiles(jsonFolder, "*.json");
+            var existingJsonDatas = new Dictionary<string, JsonFileData>();
+            foreach (var jsonFile in existingJsonFiles)
+            {
+                var jsonData = JsonConvert.DeserializeObject<JsonFileData>(File.ReadAllText(jsonFile));
+                existingJsonDatas.Add(jsonFile, jsonData);
+            }
+
             foreach (var f in Directory.GetFiles(jsonFolder)) File.Delete(f);
 
             var fb2Files = Directory.GetFiles(fb2Folder, "*.fb2");
@@ -47,6 +57,7 @@ namespace LeninSearch.Script.Scripts
                     .Replace("xlink:href", "lhref")
                     .Replace("<sup>", "").Replace("</sup>", "")
                     .Replace("<sub>", "").Replace("</sub>", "")
+                    .Replace("<cite>", "").Replace("</cite>", "")
                     .Replace("></image>", "/>")
                     .Replace("\r", "")
                     .Replace("\n", "")
@@ -160,6 +171,22 @@ namespace LeninSearch.Script.Scripts
                     if (string.IsNullOrWhiteSpace(comments[commentId].Text))
                     {
                         Console.WriteLine($"Comment '{commentId}' text is empty");
+                    }
+                }
+
+                if (keepHeadings && existingJsonDatas.ContainsKey(jsonFile))
+                {
+                    var existingJsonData = existingJsonDatas[jsonFile];
+                    foreach (var jsonHeading in jsonFileData.Headings)
+                    {
+                        var existingJsonHeading = existingJsonData.Headings.FirstOrDefault(h => h.Text == jsonHeading.Text);
+                        if (existingJsonHeading == null)
+                        {
+                            Console.WriteLine($"Existing heading not found for '{Path.GetFileName(jsonFile)}':{Environment.NewLine} {jsonHeading.Text}");
+                            continue;
+                        }
+
+                        jsonHeading.Level = existingJsonHeading.Level;
                     }
                 }
 
