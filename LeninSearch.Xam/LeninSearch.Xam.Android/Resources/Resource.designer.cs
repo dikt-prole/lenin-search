@@ -20152,16 +20152,19 @@ namespace LeninSearch.Xam.Droid
 			public const int trash = 2131165350;
 			
 			// aapt resource value: 0x7F0700A7
-			public const int up = 2131165351;
+			public const int trashred = 2131165351;
 			
 			// aapt resource value: 0x7F0700A8
-			public const int xfootnote = 2131165352;
+			public const int up = 2131165352;
 			
 			// aapt resource value: 0x7F0700A9
-			public const int xheader = 2131165353;
+			public const int xfootnote = 2131165353;
 			
 			// aapt resource value: 0x7F0700AA
-			public const int xpage = 2131165354;
+			public const int xheader = 2131165354;
+			
+			// aapt resource value: 0x7F0700AB
+			public const int xpage = 2131165355;
 			
 			static Drawable()
 			{

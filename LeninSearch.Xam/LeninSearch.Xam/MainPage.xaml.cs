@@ -84,17 +84,17 @@ namespace LeninSearch.Xam
             _gestureDecorator.ParagraphDoubleTapped += (sender, paragraph) =>
             {
                 var autoHide = !_state.IsWatchingParagraphSearchResults();
+                ShowTextBar(paragraph);
                 ShowHeaderStack(autoHide);
             };
             _paragraphViewBuilder = _textMenuDecorator;
 
             // text menu
-            HideSearchResultBar();
+            HideTextBar();
 
             // player
             PlayerView.HeightRequest = Settings.UI.BrowserViewHeight;
             PlayerStopButton.Clicked += (sender, args) => StopVideoPlay();
-
             _searchResultTitleSpan = AttachCommandToLabel(SearchResultTitle, new Command(async () => await DisplaySearchSummary()));
 
             PopulateInitialTabs();
@@ -294,11 +294,12 @@ namespace LeninSearch.Xam
                 var ciText = ci.ToString();
 
                 // 1. construct menu stack
-                var textIconStack = new StackLayout { Orientation = StackOrientation.Horizontal };
+                var textIconStack = new StackLayout { Orientation = StackOrientation.Horizontal, Spacing = 0};
                 var menuStack = new StackLayout
                 {
                     Orientation = StackOrientation.Horizontal,
-                    BackgroundColor = Settings.UI.MainColor
+                    BackgroundColor = Settings.UI.MainColor,
+                    Spacing = 0
                 };
                 menuStack.Children.Add(new Label
                 {
@@ -370,6 +371,7 @@ namespace LeninSearch.Xam
                 iconButton.GestureRecognizers.Add(doubleTapRecognizer);
                 textIconStack.Children.Add(iconButton);
                 var textButton = ConstructHyperlinkButton(ciText, Settings.UI.Font.NormalFontSize, async () => await DisplayCorpusBooks(ci));
+                textButton.Margin = new Thickness(0, 5, 0, 5);
                 textIconStack.Children.Add(textButton);
 
                 CorpusTab.Children.Add(textIconStack);
@@ -493,10 +495,10 @@ namespace LeninSearch.Xam
             {
                 ResultStack.Children.Add(new Label
                 {
-                    Text = "ЗАКЛАДКИ",
+                    Text = "Закладки",
                     HorizontalOptions = LayoutOptions.Center,
                     TextColor = Color.Black,
-                    FontSize = Settings.UI.Font.NormalFontSize
+                    FontSize = Settings.UI.Font.SmallFontSize
                 });
 
                 foreach (var bm in bookmarks)
@@ -505,44 +507,53 @@ namespace LeninSearch.Xam
 
                     var layout = new StackLayout
                     {
-                        Orientation = StackOrientation.Vertical,
-                        HorizontalOptions = LayoutOptions.FillAndExpand,
-                        BackgroundColor = Color.White,
-                        Spacing = 0
-                    };
-
-                    var textLabel = new Label
-                    {
-                        Text = bmText,
-                        FontSize = Settings.UI.Font.NormalFontSize,
-                        TextColor = Color.Black,
-                        Margin = new Thickness(10, 0, 0, 0)
-                    };
-
-                    layout.Children.Add(textLabel);
-
-                    var linkLayout = new StackLayout
-                    {
                         Orientation = StackOrientation.Horizontal,
                         HorizontalOptions = LayoutOptions.FillAndExpand,
                         BackgroundColor = Color.White,
                         Spacing = 0
                     };
 
-                    var readLabel = ConstructHyperlinkButton("читать", Settings.UI.Font.NormalFontSize, async () => await ReadBookmark(bm));
+                    var readButton = new ImageButton
+                    {
+                        Source = "bullet.png",
+                        WidthRequest = 32,
+                        HeightRequest = 32,
+                        BackgroundColor = Color.White,
+                        HorizontalOptions = LayoutOptions.Start,
+                        Padding = 5,
+                        Margin = 0
+                    };
+                    layout.Children.Add(readButton);
 
-                    linkLayout.Children.Add(readLabel);
+                    var textLabel = new Label
+                    {
+                        Text = bmText,
+                        FontSize = Settings.UI.Font.NormalFontSize,
+                        TextColor = Color.Black,
+                        Margin = new Thickness(5, 0, 5, 0),
+                        HorizontalOptions = LayoutOptions.FillAndExpand
+                    };
+                    layout.Children.Add(textLabel);
 
-                    var deleteLabel = ConstructHyperlinkButton("удалить", Settings.UI.Font.NormalFontSize, async () =>
+                    var trashButton = new ImageButton
+                    {
+                        Source = "trashred.png",
+                        WidthRequest = 32,
+                        HeightRequest = 32,
+                        BackgroundColor = Color.White,
+                        Padding = 5,
+                        Margin = 0,
+                        HorizontalOptions = LayoutOptions.End
+                    };
+                    layout.Children.Add(trashButton);
+
+                    readButton.Clicked += async (sender, args) => await ReadBookmark(bm);
+                    trashButton.Clicked += async (sender, args) =>
                     {
                         BookmarkRepo.Delete(bm.Id);
                         await layout.FadeTo(0, 200, Easing.Linear);
                         layout.HeightRequest = 0;
-                    });
-
-                    linkLayout.Children.Add(deleteLabel);
-
-                    layout.Children.Add(linkLayout);
+                    };
 
                     BookmarkTab.Children.Add(layout);
                 }
@@ -653,7 +664,7 @@ namespace LeninSearch.Xam
         {
             if (!_state.IsWatchingParagraphSearchResults()) return;
 
-            HideSearchResultBar();
+            HideTextBar();
             StopVideoPlay();
             await RebuildScroll(false);
             var corpusFileItems = _state.PartialParagraphSearchResult.Files().Select(f => _state.GetCurrentCorpusItem().GetFileByPath(f)).ToList();
@@ -725,7 +736,7 @@ namespace LeninSearch.Xam
             StopVideoPlay();
             PopulateInitialTabs();
             _state.ReadingFile = null;
-            HideSearchResultBar();
+            HideTextBar();
             ScrollWrapper.IsVisible = false;
             InitialTabs.SelectedIndex = 0;
             InitialTabs.IsVisible = true;
@@ -742,32 +753,50 @@ namespace LeninSearch.Xam
             await view.FadeTo(1, Settings.UI.AppearMs, Easing.Linear);
         }
 
-        private async Task Rotate360(View view)
+        private void HideTextBar()
         {
-            await view.RotateTo(360, Settings.UI.ButtonRotationMs, Easing.Linear);
-            view.Rotation = 0;
+            if (TextBar.Height == 0) return;
+
+            var animation = new Animation(f => TextBar.HeightRequest = f, TextBar.Height, 0, Easing.SinInOut);
+
+            animation.Commit(TextBar, "hideTextBar", 200);
         }
 
-        private void HideSearchResultBar()
+        private void ShowTextBar(LsiParagraph lsiParagraph)
         {
-            if (SearchResultBar.Height == 0) return;
+            var ci = _state.GetCurrentCorpusItem();
+            var cfi = _state.GetReadingCorpusFileItem();
+            var words = _lsiProvider.Words(ci.Id);
+            var lsiData = _lsiProvider.GetLsiData(ci.Id, cfi.Path);
+            var headings = lsiData.GetHeadingsDownToZero(lsiParagraph.Index);
+            _searchResultTitleSpan.Text = headings.Any()
+                ? $"{cfi.Name} - {headings[0].GetText(words)}"
+                : cfi.Name;
 
-            var animation = new Animation(f => SearchResultBar.HeightRequest = f, SearchResultBar.Height, 0, Easing.SinInOut);
+            if (_state.IsWatchingParagraphSearchResults())
+            {
+                PrevLabel.IsVisible = true;
+                PrevLabel.Text = (_state.CurrentParagraphResultIndex + 1).ToString();
+                NextLabel.IsVisible = true;
+                NextLabel.Text = _state.PartialParagraphSearchResult.FileResults(_state.ReadingFile).Count.ToString();
+                _searchResultTitleSpan.GestureRecognizers.Clear();
+                var tapRecognizer = new TapGestureRecognizer { Command = new Command(async () => await DisplaySearchSummary()) };
+                _searchResultTitleSpan.GestureRecognizers.Add(tapRecognizer);
+            }
+            else
+            {
+                PrevLabel.IsVisible = false;
+                NextLabel.IsVisible = false;
+                _searchResultTitleSpan.GestureRecognizers.Clear();
+                var tapRecognizer = new TapGestureRecognizer { Command = new Command(async () => await DisplayBookHeadings(ci, cfi, lsiData)) };
+                _searchResultTitleSpan.GestureRecognizers.Add(tapRecognizer);
+            }
 
-            animation.Commit(SearchResultBar, "hideSearchResultBar", 200);
-        }
+            if (TextBar.Height == 24) return;
 
-        private void ShowSearchResultBar()
-        {
-            PrevLabel.Text = (_state.CurrentParagraphResultIndex + 1).ToString();
-            NextLabel.Text = _state.PartialParagraphSearchResult.FileResults(_state.ReadingFile).Count.ToString();
-            _searchResultTitleSpan.Text = _state.GetReadingCorpusFileItem().Name;
+            var animation = new Animation(f => TextBar.HeightRequest = f, TextBar.Height, 24, Easing.SinInOut);
 
-            if (SearchResultBar.Height == 24) return;
-
-            var animation = new Animation(f => SearchResultBar.HeightRequest = f, SearchResultBar.Height, 24, Easing.SinInOut);
-
-            animation.Commit(SearchResultBar, "showSearchResultBar", 200);
+            animation.Commit(TextBar, "showTextBar", 200);
         }
 
         private bool IsResultScrollReady()
@@ -924,7 +953,7 @@ namespace LeninSearch.Xam
             CorpusButton.Source = Settings.IconFile(corpusItem.Id);
 
             _state.ReadingFile = null;
-            HideSearchResultBar();
+            HideTextBar();
             await RebuildScroll(false);
 
             ResultStack.Children.Add(new Label
@@ -999,19 +1028,20 @@ namespace LeninSearch.Xam
                 _state.ReadingParagraphIndex = paragraphIndex;
                 _textMenuDecorator.ClearSelection();
 
-                HideSearchResultBar();
+                HideTextBar();
                 await RebuildScroll(true);
 
                 var corpusItem = _state.GetCurrentCorpusItem();
                 var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, cfi.Path);
 
-                var paragraph = lsiData.GetPrevParagraph(paragraphIndex);
-                if (paragraph == null)
+                var initialParagraph = lsiData.GetPrevParagraph(paragraphIndex);
+                if (initialParagraph == null)
                 {
                     paragraphIndex = lsiData.Paragraphs.Min(p => p.Key);
-                    paragraph = lsiData.Paragraphs[paragraphIndex];
+                    initialParagraph = lsiData.Paragraphs[paragraphIndex];
                 }
 
+                var paragraph = initialParagraph;
                 while (!IsResultScrollReady())
                 {
                     if (paragraph == null) break;
@@ -1027,6 +1057,8 @@ namespace LeninSearch.Xam
 
                 await ResultScrollFadeIn();
 
+                ShowTextBar(initialParagraph);
+
                 ShowHeaderStack(true);
             }
             catch (Exception e)
@@ -1039,7 +1071,9 @@ namespace LeninSearch.Xam
         private async Task DisplayBookHeadings(CorpusItem ci, CorpusFileItem cfi, LsiData lsiData)
         {
             _state.ReadingFile = null;
-            HideSearchResultBar();
+            HideTextBar();
+            ShowHeaderStack(false);
+
             await RebuildScroll(false);
 
             var summaryTitle = $"{ci.Name} - {cfi.Name} - содержание";
@@ -1066,7 +1100,7 @@ namespace LeninSearch.Xam
         {
             _state.ReadingFile = null;
 
-            HideSearchResultBar();
+            HideTextBar();
             StopVideoPlay();
 
             foreach (var sr in searchResults)
@@ -1200,7 +1234,7 @@ namespace LeninSearch.Xam
         private async Task BeforeSearch()
         {
             _state.ReadingFile = null;
-            HideSearchResultBar();
+            HideTextBar();
             await RebuildScroll(false);
             await ReplaceCorpusWithLoading();
             CorpusButton.IsEnabled = false;
@@ -1289,16 +1323,17 @@ namespace LeninSearch.Xam
         {
             if (!_state.IsWatchingParagraphSearchResults()) return;
 
-            ShowSearchResultBar();
-
             var corpusItem = _state.GetCurrentCorpusItem();
             var searchResult = _state.GetCurrentSearchParagraphResult();
+            var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, file);
+            var paragraph = lsiData.Paragraphs[searchResult.ParagraphIndex];
+
+            ShowTextBar(paragraph);
 
             _textMenuDecorator.ClearSelection();
             await RebuildScroll(true);
 
-            var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, file);
-            var paragraph = lsiData.Paragraphs[searchResult.ParagraphIndex];
+            
             ResultStack.Children.Add(_paragraphViewBuilder.Build(paragraph, _state, _lsiProvider.Words(corpusItem.Id)));
             var prevParagraph = lsiData.GetPrevParagraph(paragraph.Index);
             if (prevParagraph != null)

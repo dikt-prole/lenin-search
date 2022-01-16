@@ -28,7 +28,7 @@
                     <controls:NoKeyboardEntry x:Name="SearchEntry" Placeholder="Введите запрос" ReturnType="Search" HorizontalOptions="FillAndExpand" Margin="0" FontSize="Small" TextColor="Black" MinimumWidthRequest="100"></controls:NoKeyboardEntry>
                 </StackLayout>
                 <StackLayout HorizontalOptions="FillAndExpand" HeightRequest="2" BackgroundColor="#D6181F"></StackLayout>
-                <StackLayout x:Name="SearchResultBar" HeightRequest="24" Orientation="Vertical" HorizontalOptions="Fill" Spacing="0">
+                <StackLayout x:Name="TextBar" HeightRequest="24" Orientation="Vertical" HorizontalOptions="Fill" Spacing="0">
                     <StackLayout Orientation="Horizontal" Spacing="0">
                         <StackLayout WidthRequest="48" HeightRequest="24" BackgroundColor="#D6181F" HorizontalOptions="Start" Spacing="0">
                             <Label Margin="0" HorizontalOptions="Center" VerticalOptions="Center" FontSize="Small"  x:Name="PrevLabel" TextColor="White"></Label>
