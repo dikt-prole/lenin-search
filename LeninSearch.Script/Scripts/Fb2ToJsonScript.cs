@@ -152,8 +152,7 @@ namespace LeninSearch.Script.Scripts
                         var commentBodyNames = new[] {"notes", "comments"};
                         if (commentBodyNames.Contains(node.Attributes["name"]?.Value))
                         {
-                            var noteSections = node.ChildNodes.OfType<XmlNode>()
-                                .SelectMany(n => new[] {n}.Concat(n.ChildNodes.OfType<XmlNode>())).ToList();
+                            var noteSections = node.ChildNodes.OfType<XmlNode>();
                             foreach (var noteSection in noteSections)
                             {
                                 var commentId = noteSection.Attributes["id"]?.Value;
