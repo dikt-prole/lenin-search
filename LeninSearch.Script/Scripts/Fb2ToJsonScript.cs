@@ -72,45 +72,9 @@ namespace LeninSearch.Script.Scripts
                 bodyDoc.LoadXml(bodyXml);
                 var bodyRoot = bodyDoc.DocumentElement;
                 var commentIds = new List<string>();
-
-                var bodySections = bodyRoot.ChildNodes.OfType<XmlNode>().Where(n => n.Name == "section").ToList();
-                foreach (var node in bodySections)
+                foreach (XmlNode node in bodyRoot.ChildNodes)
                 {
-                    if (node.Attributes["id"]?.Value != null) continue;
-
-                    foreach (XmlNode sectionNode in node.ChildNodes)
-                    {
-                        switch (sectionNode.Name)
-                        {
-                            case "image":
-                                jsonFileData.Pars.Add(XmlToJsonUtil.GetImageParagraph(sectionNode, imageIds, id => $"{fileName}{id}"));
-                                break;
-                            case "title":
-                                var titleParagraph = XmlToJsonUtil.GetTitleParagraph(sectionNode, commentIds, imageIds, id => $"{fileName}{id}");
-                                jsonFileData.Pars.Add(titleParagraph);
-                                jsonFileData.Headings.Add(new JsonHeading
-                                {
-                                    Index = (ushort)(jsonFileData.Pars.Count - 1),
-                                    Level = 0,
-                                    Text = titleParagraph.Text
-                                });
-                                break;
-                            case "cite":
-                            case "p":
-                                if (sectionNode.Attributes["id"]?.Value != null) continue;
-
-                                if (sectionNode.ChildNodes.Count > 0 && sectionNode.ChildNodes[0].Name == "image")
-                                {
-                                    jsonFileData.Pars.Add(XmlToJsonUtil.GetImageParagraph(sectionNode.ChildNodes[0], imageIds, id => $"{fileName}{id}"));
-                                }
-                                else
-                                {
-                                    jsonFileData.Pars.Add(XmlToJsonUtil.GetNormalParagraph(sectionNode, commentIds, imageIds, id => $"{fileName}{id}"));
-                                }
-
-                                break;
-                        }
-                    }
+                    HandleFb2Node(node, jsonFileData, imageIds, commentIds, fileName);
                 }
 
                 // 2. save images
@@ -187,6 +151,48 @@ namespace LeninSearch.Script.Scripts
                 }
 
                 File.WriteAllText(jsonFile, JsonConvert.SerializeObject(jsonFileData, Formatting.Indented));
+            }
+        }
+
+        private void HandleFb2Node(XmlNode node, JsonFileData jsonFileData, List<string> imageIds, List<string> commentIds, string fileName)
+        {
+            var sectionNodeId = node.Attributes["id"]?.Value;
+
+            if (sectionNodeId != null && commentIds.Contains(sectionNodeId)) return;
+
+            switch (node.Name)
+            {
+                case "image":
+                    jsonFileData.Pars.Add(XmlToJsonUtil.GetImageParagraph(node, imageIds, id => $"{fileName}{id}"));
+                    break;
+                case "title":
+                    var titleParagraph = XmlToJsonUtil.GetTitleParagraph(node, commentIds, imageIds, id => $"{fileName}{id}");
+                    jsonFileData.Pars.Add(titleParagraph);
+                    jsonFileData.Headings.Add(new JsonHeading
+                    {
+                        Index = (ushort)(jsonFileData.Pars.Count - 1),
+                        Level = 0,
+                        Text = titleParagraph.Text
+                    });
+                    break;
+                case "p":
+                    if (node.ChildNodes.Count > 0 && node.ChildNodes[0].Name == "image")
+                    {
+                        jsonFileData.Pars.Add(XmlToJsonUtil.GetImageParagraph(node.ChildNodes[0], imageIds, id => $"{fileName}{id}"));
+                    }
+                    else
+                    {
+                        jsonFileData.Pars.Add(XmlToJsonUtil.GetNormalParagraph(node, commentIds, imageIds, id => $"{fileName}{id}"));
+                    }
+
+                    break;
+                case "section":
+                    var childNodes = node.ChildNodes;
+                    foreach (XmlNode childNode in childNodes)
+                    {
+                        HandleFb2Node(childNode, jsonFileData, imageIds, commentIds, fileName);
+                    }
+                    break;
             }
         }
     }
