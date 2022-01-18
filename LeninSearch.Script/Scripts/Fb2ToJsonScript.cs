@@ -61,11 +61,8 @@ namespace LeninSearch.Script.Scripts
                     .Replace("></image>", "/>")
                     .Replace("\r", "")
                     .Replace("\n", "")
-                    .Replace("\t", " ");
-                while (fb2Xml.Contains("  "))
-                {
-                    fb2Xml = fb2Xml.Replace("  ", " ");
-                }
+                    .Replace("  ", " ");
+
 
                 // 1. get json paragraphs
                 var bodyStart = fb2Xml.IndexOf("<body");
