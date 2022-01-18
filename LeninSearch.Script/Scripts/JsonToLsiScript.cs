@@ -19,7 +19,7 @@ namespace LeninSearch.Script.Scripts
     {
         private static readonly Random Random = new Random();
         public string Id => "json-to-lsi";
-        public string Arguments => "json_folder, lsi_folder, jpeg_quality?";
+        public string Arguments => "json_folder, lsi_folder, keep_book_names?, jpeg_quality?";
 
         private ILsiUtil _lsiUtil;
 
@@ -32,7 +32,13 @@ namespace LeninSearch.Script.Scripts
         {
             var jsonFolder = input[0];
             var lsiFolder = input[1];
-            var jpegQuality = input.Length == 3 ? long.Parse(input[2]) : -1;
+            var keepBookNames = input.Length > 2 && input[2] == "1";
+            var jpegQuality = input.Length > 3 ? long.Parse(input[3]) : -1;
+
+            var corpusJsonFile = Path.Combine(lsiFolder, "corpus.json");
+            var existingCorpusItem = File.Exists(corpusJsonFile)
+                ? JsonConvert.DeserializeObject<CorpusItem>(File.ReadAllText(corpusJsonFile))
+                : null;
 
             foreach (var file in Directory.GetFiles(lsiFolder)) File.Delete(file);
 
@@ -220,7 +226,16 @@ namespace LeninSearch.Script.Scripts
                 LsiVersion = 2
             };
 
-            var corpusJsonFile = Path.Combine(lsiFolder, "corpus.json");
+            if (keepBookNames && existingCorpusItem != null)
+            {
+                corpusItem.Name = existingCorpusItem.Name;
+                corpusItem.Description = existingCorpusItem.Description;
+                foreach (var cfi in corpusItem.LsiFiles())
+                {
+                    var existingCfi = existingCorpusItem.Files.FirstOrDefault(f => f.Path == cfi.Path);
+                    cfi.Name = existingCfi.Name;
+                }
+            }
             File.WriteAllText(corpusJsonFile, JsonConvert.SerializeObject(corpusItem, Formatting.Indented));
             var iconBytes = File.ReadAllBytes($"D:\\Repo\\lenin-search\\corpus\\icons\\{corpusItem.Series}.png");
             var iconFile = Path.Combine(lsiFolder, "icon.png");
