@@ -63,60 +63,59 @@ namespace LeninSearch.Script.Scripts
                     .Replace("\n", "")
                     .Replace("  ", " ");
 
+
+                // 1. get json paragraphs
                 var bodyStart = fb2Xml.IndexOf("<body");
                 var bodyEnd = fb2Xml.IndexOf("</body>");
                 var bodyXml = fb2Xml.Substring(bodyStart, bodyEnd - bodyStart + 7);
-                bodyXml = TextUtil.Trim(bodyXml, "<section", ">");
-                bodyXml = TextUtil.Trim(bodyXml, "</section", ">");
-
                 var bodyDoc = new XmlDocument();
                 bodyDoc.LoadXml(bodyXml);
                 var bodyRoot = bodyDoc.DocumentElement;
                 var commentIds = new List<string>();
-                
                 foreach (XmlNode node in bodyRoot.ChildNodes)
                 {
-                    switch (node.Name)
+                    if (node.Name != "section") continue;
+
+                    if (node.Attributes["id"]?.Value != null) continue;
+
+                    foreach (XmlNode sectionNode in node.ChildNodes)
                     {
-                        case "image":
-                            jsonFileData.Pars.Add(XmlToJsonUtil.GetImageParagraph(node, imageIds, id => $"{fileName}{id}"));
-                            break;
-                        case "title":
-                            var titleParagraph = XmlToJsonUtil.GetTitleParagraph(node, commentIds, imageIds, id => $"{fileName}{id}");
-                            jsonFileData.Pars.Add(titleParagraph);
-                            jsonFileData.Headings.Add(new JsonHeading
-                            {
-                                Index = (ushort)(jsonFileData.Pars.Count - 1),
-                                Level = 0,
-                                Text = titleParagraph.Text
-                            });
-                            break;
-                        case "cite":
-                        case "p":
-                            if (node.Attributes["id"]?.Value != null) continue;
+                        switch (sectionNode.Name)
+                        {
+                            case "image":
+                                jsonFileData.Pars.Add(XmlToJsonUtil.GetImageParagraph(sectionNode, imageIds, id => $"{fileName}{id}"));
+                                break;
+                            case "title":
+                                var titleParagraph = XmlToJsonUtil.GetTitleParagraph(sectionNode, commentIds, imageIds, id => $"{fileName}{id}");
+                                jsonFileData.Pars.Add(titleParagraph);
+                                jsonFileData.Headings.Add(new JsonHeading
+                                {
+                                    Index = (ushort)(jsonFileData.Pars.Count - 1),
+                                    Level = 0,
+                                    Text = titleParagraph.Text
+                                });
+                                break;
+                            case "cite":
+                            case "p":
+                                if (sectionNode.Attributes["id"]?.Value != null) continue;
 
-                            if (node.ChildNodes.Count > 0 && node.ChildNodes[0].Name == "image")
-                            {
-                                jsonFileData.Pars.Add(XmlToJsonUtil.GetImageParagraph(node.ChildNodes[0], imageIds, id => $"{fileName}{id}"));
-                            }
-                            else
-                            {
-                                jsonFileData.Pars.Add(XmlToJsonUtil.GetNormalParagraph(node, commentIds, imageIds, id => $"{fileName}{id}"));
-                            }
+                                if (sectionNode.ChildNodes.Count > 0 && sectionNode.ChildNodes[0].Name == "image")
+                                {
+                                    jsonFileData.Pars.Add(XmlToJsonUtil.GetImageParagraph(sectionNode.ChildNodes[0], imageIds, id => $"{fileName}{id}"));
+                                }
+                                else
+                                {
+                                    jsonFileData.Pars.Add(XmlToJsonUtil.GetNormalParagraph(sectionNode, commentIds, imageIds, id => $"{fileName}{id}"));
+                                }
 
-                            break;
+                                break;
+                        }
                     }
                 }
 
-                var comments = new Dictionary<string, JsonCommentData>();
+                // 2. save images
                 var fb2Doc = new XmlDocument();
                 fb2Doc.LoadXml(fb2Xml);
-                var parComments = jsonFileData.Pars.SelectMany(p => p.Comments ?? new List<JsonCommentData>()).ToList();
-                foreach (var cd in parComments)
-                {
-                    if (comments.ContainsKey(cd.CommentId)) continue;
-                    comments.Add(cd.CommentId, cd);
-                }
                 foreach (XmlNode node in fb2Doc.DocumentElement.ChildNodes)
                 {
                     if (node.Name == "binary")
@@ -147,32 +146,30 @@ namespace LeninSearch.Script.Scripts
                             }
                         }
                     }
-                    else if (node.Name == "body")
-                    {
-                        var commentBodyNames = new[] {"notes", "comments"};
-                        if (commentBodyNames.Contains(node.Attributes["name"]?.Value))
-                        {
-                            var noteSections = node.ChildNodes.OfType<XmlNode>();
-                            foreach (var noteSection in noteSections)
-                            {
-                                var commentId = noteSection.Attributes["id"]?.Value;
-
-                                if (commentId == null || !comments.ContainsKey(commentId)) continue;
-
-                                comments[commentId].Text = noteSection.InnerText;
-                            }
-                        }
-                    }
                 }
 
+                // 3. get comment texts
+                var comments = new Dictionary<string, JsonCommentData>();
+                var parComments = jsonFileData.Pars.SelectMany(p => p.Comments ?? new List<JsonCommentData>()).ToList();
+                foreach (var cd in parComments)
+                {
+                    if (comments.ContainsKey(cd.CommentId)) continue;
+                    comments.Add(cd.CommentId, cd);
+                }
                 foreach (var commentId in comments.Keys)
                 {
-                    if (string.IsNullOrWhiteSpace(comments[commentId].Text))
+                    var commentNode = XmlToJsonUtil.GetCommentNode(fb2Xml, commentId);
+
+                    if (commentNode == null)
                     {
-                        Console.WriteLine($"Comment '{commentId}' text is empty");
+                        Console.WriteLine($"Comment '{commentId}' xml node was not found");
+                        continue;
                     }
+
+                    comments[commentId].Text = commentNode.InnerText;
                 }
 
+                // 4. keep headings
                 if (keepHeadings && existingJsonDatas.ContainsKey(jsonFile))
                 {
                     var existingJsonData = existingJsonDatas[jsonFile];
