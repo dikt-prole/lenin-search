@@ -72,10 +72,10 @@ namespace LeninSearch.Script.Scripts
                 bodyDoc.LoadXml(bodyXml);
                 var bodyRoot = bodyDoc.DocumentElement;
                 var commentIds = new List<string>();
-                foreach (XmlNode node in bodyRoot.ChildNodes)
-                {
-                    if (node.Name != "section") continue;
 
+                var bodySections = bodyRoot.ChildNodes.OfType<XmlNode>().Where(n => n.Name == "section").ToList();
+                foreach (var node in bodySections)
+                {
                     if (node.Attributes["id"]?.Value != null) continue;
 
                     foreach (XmlNode sectionNode in node.ChildNodes)
