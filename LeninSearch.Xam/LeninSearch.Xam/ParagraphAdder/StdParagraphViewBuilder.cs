@@ -140,7 +140,9 @@ namespace LeninSearch.Xam.ParagraphAdder
 
                 if (lsiSpan.Type != LsiSpanType.Plain && lsiSpan.Type != LsiSpanType.InlineImage)
                 {
-                    span.Text = $" {span.Text} ";
+                    var beforeSpan = formattedString.Spans.LastOrDefault();
+                    var needSpaceBefore = beforeSpan != null && beforeSpan.Text.Last() != ' ';
+                    span.Text = needSpaceBefore ? $" {span.Text} " : $"{span.Text} ";
                 }
 
                 formattedString.Spans.Add(span);

@@ -28,7 +28,7 @@ namespace LeninSearch.Xam
         protected override void OnStart()
         {
             Debug.WriteLine($"OnStart");
-            _state = LoadState(true);
+            _state = LoadState();
             if (MainPage is MainPage mainPage)
             {
                 mainPage.SetState(_state);

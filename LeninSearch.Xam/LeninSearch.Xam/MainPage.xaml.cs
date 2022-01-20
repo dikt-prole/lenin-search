@@ -1034,13 +1034,7 @@ namespace LeninSearch.Xam
                 var corpusItem = _state.GetCurrentCorpusItem();
                 var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, cfi.Path);
 
-                var initialParagraph = lsiData.GetPrevParagraph(paragraphIndex);
-                if (initialParagraph == null)
-                {
-                    paragraphIndex = lsiData.Paragraphs.Min(p => p.Key);
-                    initialParagraph = lsiData.Paragraphs[paragraphIndex];
-                }
-
+                var initialParagraph = lsiData.Paragraphs[paragraphIndex];
                 var paragraph = initialParagraph;
                 while (!IsResultScrollReady())
                 {
@@ -1327,19 +1321,11 @@ namespace LeninSearch.Xam
             var searchResult = _state.GetCurrentSearchParagraphResult();
             var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, file);
             var paragraph = lsiData.Paragraphs[searchResult.ParagraphIndex];
-
             ShowTextBar(paragraph);
-
             _textMenuDecorator.ClearSelection();
             await RebuildScroll(true);
 
-            
             ResultStack.Children.Add(_paragraphViewBuilder.Build(paragraph, _state, _lsiProvider.Words(corpusItem.Id)));
-            var prevParagraph = lsiData.GetPrevParagraph(paragraph.Index);
-            if (prevParagraph != null)
-            {
-                ResultStack.Children.Insert(0, _paragraphViewBuilder.Build(prevParagraph, _state, _lsiProvider.Words(corpusItem.Id)));
-            }
             var maxIndex = paragraph.Index;
             while (!IsResultScrollReady())
             {
