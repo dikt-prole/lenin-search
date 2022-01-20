@@ -13,19 +13,19 @@ namespace LeninSearch.Xam
 {
     public static class FishGenerator
     {
-        public static string GenerateFishHtmlFile(PartialParagraphSearchResult ppsr, CorpusItem ci, string query, ILsiProvider lsiProvider)
+        public static string GenerateSearchReportHtmlFile(PartialParagraphSearchResult ppsr, CorpusItem ci, string query, ILsiProvider lsiProvider)
         {
             try
             {
                 var assembly = IntrospectionExtensions.GetTypeInfo(typeof(MainPage)).Assembly;
-                var stream = assembly.GetManifestResourceStream("LeninSearch.Xam.fish.html");
+                var stream = assembly.GetManifestResourceStream("LeninSearch.Xam.searchreport.html");
                 var fishTemplate = "";
                 using (var reader = new StreamReader(stream))
                 {
                     fishTemplate = reader.ReadToEnd();
                 }
 
-                var fishHtml = $"<h1>Lenin Search Fish Report - {ci.Name} ({query})</h1>";
+                var fishHtml = $"<h1>Lenin Search Report - {ci.Name} ({query})</h1>";
                 var resultIndex = 1;
 
                 foreach (var file in ppsr.Files())

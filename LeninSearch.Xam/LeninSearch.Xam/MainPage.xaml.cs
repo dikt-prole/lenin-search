@@ -729,33 +729,34 @@ namespace LeninSearch.Xam
                 flexLayout.Children.Add(link);
             }
 
-            var fishButton = new ImageButton
+            var reportButton = new ImageButton
             {
                 HeightRequest = 32,
-                HorizontalOptions = LayoutOptions.CenterAndExpand,
+                WidthRequest = 32,
+                HorizontalOptions = LayoutOptions.End,
                 BackgroundColor = Color.White,
-                Source = "fish.png",
+                Source = "searchreport.png",
                 Padding = 0,
                 Margin = 0
             };
-            ResultStack.Children.Add(fishButton);
-            fishButton.Clicked += async (sender, args) => await GenerateSearchFish();
+            ResultStack.Children.Add(reportButton);
+            reportButton.Clicked += async (sender, args) => await GenerateSearchReport();
 
             await ResultScrollFadeIn();
         }
 
-        private async Task GenerateSearchFish()
+        private async Task GenerateSearchReport()
         {
             await ReplaceCorpusWithLoading();
 
             var ppsr = _state.PartialParagraphSearchResult;
             var corpusItem = _state.GetCurrentCorpusItem();
             var query = SearchEntry.Text;
-            var fishFile = FishGenerator.GenerateFishHtmlFile(ppsr, corpusItem, query, _lsiProvider);
+            var fishFile = FishGenerator.GenerateSearchReportHtmlFile(ppsr, corpusItem, query, _lsiProvider);
 
             await ReplaceLoadingWithCorpus();
 
-            await Share.RequestAsync(new ShareFileRequest($"Lenin Search Fish Report - {corpusItem.Name} ({query})", new ShareFile(fishFile)));
+            await Share.RequestAsync(new ShareFileRequest($"Lenin Search Report - {corpusItem.Name} ({query})", new ShareFile(fishFile)));
         }
 
         private async void DisplayInitialTabs()

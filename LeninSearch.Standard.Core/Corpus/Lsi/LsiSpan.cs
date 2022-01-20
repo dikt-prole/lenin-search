@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace LeninSearch.Standard.Core.Corpus.Lsi
@@ -12,11 +14,21 @@ namespace LeninSearch.Standard.Core.Corpus.Lsi
 
         public string GetText(string[] dictionary)
         {
-            if (Type == LsiSpanType.Comment) return $"[{CommentIndex + 1}]";
+            try
+            {
+                if (Type == LsiSpanType.Comment) return $"[{CommentIndex + 1}]";
 
-            var words = WordIndexes.Select(wi => dictionary[wi]).ToList();
+                if (Type == LsiSpanType.InlineImage) return $"IMAGE{ImageIndex + 1}";
 
-            return TextUtil.GetParagraph(words);
+                var words = WordIndexes.Select(wi => dictionary[wi]).ToList();
+
+                return TextUtil.GetParagraph(words);
+            }
+            catch (Exception exc)
+            {
+                Debug.WriteLine(exc);
+                throw;
+            }
         }
 
         public static LsiSpan Plain()

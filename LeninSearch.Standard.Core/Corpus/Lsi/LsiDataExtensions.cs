@@ -43,6 +43,8 @@ namespace LeninSearch.Standard.Core.Corpus.Lsi
             {
                 beforeHeadings = beforeHeadings.Where(h => h.HeadingLevel < currentLevel).ToList();
 
+                if (!beforeHeadings.Any()) break;
+
                 resultHeadings.Add(beforeHeadings.Last());
 
                 currentLevel = beforeHeadings.Last().HeadingLevel;

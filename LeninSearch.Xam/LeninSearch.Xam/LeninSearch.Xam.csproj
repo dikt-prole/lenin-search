@@ -19,16 +19,16 @@
 
   <ItemGroup>
     <None Remove="blank.html" />
-    <None Remove="fish.html" />
     <None Remove="Fonts\Inter.ttf" />
     <None Remove="Fonts\InterBold.ttf" />
     <None Remove="Fonts\InterItalic.ttf" />
     <None Remove="Fonts\InterRegular.ttf" />
+    <None Remove="searchreport.html" />
     <None Remove="youtube.html" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="fish.html" />
+    <EmbeddedResource Include="searchreport.html" />
     <EmbeddedResource Include="blank.html" />
     <EmbeddedResource Include="Fonts\InterBold.ttf" />
     <EmbeddedResource Include="Fonts\InterItalic.ttf" />
