@@ -432,56 +432,83 @@ namespace LeninSearch.Xam
             // 2. display updates list
             foreach (var updateCi in updates)
             {
-                View updateLink = null;
-                updateLink = ConstructHyperlinkButton(updateCi.ToString(), Settings.UI.Font.NormalFontSize, async () =>
-                     {
-                         var answer = await DisplayAlert("Установка обновления", $"Установить '{updateCi.Name}'?", "Да", "Нет");
+                var ciStack = new StackLayout
+                {
+                    Orientation = StackOrientation.Horizontal,
+                    Spacing = 0,
+                    Margin = new Thickness(0, 10, 0, 0)
+                };
+                ResultStack.Children.Add(ciStack);
 
-                         if (!answer) return;
+                var ciLabel = new Label
+                {
+                    Text = updateCi.ToString(),
+                    TextColor = Color.Black,
+                    FontSize = Settings.UI.Font.SmallFontSize,
+                    HorizontalOptions = LayoutOptions.FillAndExpand,
+                    HorizontalTextAlignment = TextAlignment.Start
+                };
+                ciStack.Children.Add(ciLabel);
 
-                         _isRunningCorpusUpdate = true;
-                         await ReplaceCorpusWithLoading();
+                var ciButton = new ImageButton
+                {
+                    WidthRequest = 24,
+                    HeightRequest = 24,
+                    BackgroundColor = Color.White,
+                    Margin = 0,
+                    Padding = 0,
+                    Source = "download.png",
+                    HorizontalOptions = LayoutOptions.End
+                };
+                ciStack.Children.Add(ciButton);
 
-                         var existingCi = existingCorpusItems.FirstOrDefault(ci => ci.Series == updateCi.Series);
-                         if (existingCi != null)
-                         {
-                             Directory.Delete(Path.Combine(Settings.CorpusRoot, existingCi.Id), true);
-                         }
+                ciButton.Clicked += async (sender, args) =>
+                {
+                    var answer = await DisplayAlert("Установка обновления", $"Установить '{updateCi.Name}'?", "Да", "Нет");
 
-                         var corpusFolder = Path.Combine(Settings.CorpusRoot, updateCi.Id);
-                         Directory.CreateDirectory(corpusFolder);
+                    if (!answer) return;
 
-                         foreach (var cfi in updateCi.Files)
-                         {
-                             infoLabel.IsVisible = true;
-                             infoLabel.Text = $"Скачиваю: {cfi.Path}";
-                             var cfiBytesResult = await _apiService.GetFileBytesAsync(updateCi.Id, cfi.Path);
-                             if (!cfiBytesResult.Success)
-                             {
-                                 _message.LongAlert(Settings.Misc.ApiError);
-                                 Directory.Delete(corpusFolder, true);
-                                 infoLabel.Text = "Обновления";
-                                 _isRunningCorpusUpdate = false;
-                                 await ReplaceLoadingWithCorpus();
-                                 return;
-                             }
-                             await File.WriteAllBytesAsync(Path.Combine(corpusFolder, cfi.Path), cfiBytesResult.Bytes);
-                         }
+                    _isRunningCorpusUpdate = true;
+                    await ReplaceCorpusWithLoading();
 
-                         _message.LongAlert(Settings.Misc.UpdateCompleteMessage);
-                         ResultStack.Children.Remove(updateLink);
-                         if (existingCi != null && _state.CorpusId == existingCi.Id)
-                         {
-                             _state.CorpusId = updateCi.Id;
-                             CorpusButton.Source = Settings.IconFile(updateCi.Id);
-                         }
+                    var existingCi = existingCorpusItems.FirstOrDefault(ci => ci.Series == updateCi.Series);
+                    if (existingCi != null)
+                    {
+                        Directory.Delete(Path.Combine(Settings.CorpusRoot, existingCi.Id), true);
+                    }
 
-                         await ReplaceLoadingWithCorpus();
-                         infoLabel.Text = "Обновления";
-                         _isRunningCorpusUpdate = false;
-                     });
-                updateLink.Margin = new Thickness(10, 10, 10, 20);
-                ResultStack.Children.Add(updateLink);
+                    var corpusFolder = Path.Combine(Settings.CorpusRoot, updateCi.Id);
+                    Directory.CreateDirectory(corpusFolder);
+
+                    foreach (var cfi in updateCi.Files)
+                    {
+                        infoLabel.IsVisible = true;
+                        infoLabel.Text = $"Скачиваю: {cfi.Path}";
+                        var cfiBytesResult = await _apiService.GetFileBytesAsync(updateCi.Id, cfi.Path);
+                        if (!cfiBytesResult.Success)
+                        {
+                            _message.LongAlert(Settings.Misc.ApiError);
+                            Directory.Delete(corpusFolder, true);
+                            infoLabel.Text = "Обновления";
+                            _isRunningCorpusUpdate = false;
+                            await ReplaceLoadingWithCorpus();
+                            return;
+                        }
+                        await File.WriteAllBytesAsync(Path.Combine(corpusFolder, cfi.Path), cfiBytesResult.Bytes);
+                    }
+
+                    _message.LongAlert(Settings.Misc.UpdateCompleteMessage);
+                    ResultStack.Children.Remove(ciStack);
+                    if (existingCi != null && _state.CorpusId == existingCi.Id)
+                    {
+                        _state.CorpusId = updateCi.Id;
+                        CorpusButton.Source = Settings.IconFile(updateCi.Id);
+                    }
+
+                    await ReplaceLoadingWithCorpus();
+                    infoLabel.Text = "Обновления";
+                    _isRunningCorpusUpdate = false;
+                };
             }
 
             await ResultScrollFadeIn();

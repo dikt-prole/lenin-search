@@ -57,7 +57,7 @@
                         <StackLayout Orientation="Vertical" x:Name="CorpusTab" VerticalOptions="FillAndExpand"></StackLayout>
                         <StackLayout Orientation="Horizontal">
                             <StackLayout HorizontalOptions="FillAndExpand"></StackLayout>
-                            <ImageButton Source="refresh.png" x:Name="CorpusRefreshButton" HorizontalOptions="End" HeightRequest="32" WidthRequest="32" BackgroundColor="White"></ImageButton>
+                            <ImageButton Source="download.png" x:Name="CorpusRefreshButton" HorizontalOptions="End" HeightRequest="32" WidthRequest="32" BackgroundColor="White"></ImageButton>
                         </StackLayout>
                     </StackLayout>
 
