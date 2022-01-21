@@ -52,13 +52,13 @@ namespace LeninSearch.Xam
                     }
                 }
 
-                var fishFile = Path.Combine(Path.GetTempPath(), $"lenin-search-fish-report-{Guid.NewGuid().ToString("N").Substring(0, 8)}.html");
+                var reportFile = Path.Combine(Path.GetTempPath(), $"lenin-search-report-{Guid.NewGuid().ToString("N").Substring(0, 8)}.html");
 
                 fishHtml = fishTemplate.Replace("[content]", fishHtml);
 
-                File.WriteAllText(fishFile, fishHtml);
+                File.WriteAllText(reportFile, fishHtml);
 
-                return fishFile;
+                return reportFile;
             }
             catch (Exception e)
             {

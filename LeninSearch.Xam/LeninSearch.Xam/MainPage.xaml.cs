@@ -733,7 +733,7 @@ namespace LeninSearch.Xam
             {
                 HeightRequest = 32,
                 WidthRequest = 32,
-                HorizontalOptions = LayoutOptions.End,
+                HorizontalOptions = LayoutOptions.Center,
                 BackgroundColor = Color.White,
                 Source = "searchreport.png",
                 Padding = 0,

@@ -56,7 +56,7 @@ namespace LeninSearch.Standard.Core.Corpus.Lsi
                 var wordData = GetWordData(wordPosition, searchResult);
                 var lastSpan = spans.Last();
 
-                if (lastSpan.Type == wordData.SpanType)
+                if (lastSpan.Type == wordData.SpanType && lastSpan.WordIndexes != null)
                 {
                     lastSpan.WordIndexes.Add(WordIndexes[wordPosition]);
                     continue;
