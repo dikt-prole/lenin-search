@@ -107,10 +107,12 @@ namespace LeninSearch.Xam
 
         public static readonly List<Tuple<string, string>> Learning = new List<Tuple<string, string>>
         {
-            new Tuple<string, string>("Работа с обновлениями в Lenin Search Android", "https://youtu.be/Z4jU0jgEKww"),
-            new Tuple<string, string>("Как искать в Lenin Search Android", "https://youtu.be/aN8ACedX1NI"),
-            new Tuple<string, string>("Шаринг, закладки, история поиска в Lenin Search Android", "https://youtu.be/w1LQOU1Wph8"),
-            new Tuple<string, string>("Просмотр видео в Lenin Search Android", "https://youtu.be/PskQR3n6neo")
+            new Tuple<string, string>("Чтение и работа с текстом", "https://youtu.be/6WZ8ZEvmMk0"),
+            new Tuple<string, string>("О поисковом отчете", "https://youtu.be/kdfShMJn4As"),
+            new Tuple<string, string>("Работа с обновлениями", "https://youtu.be/kqvR4va6CP0"),
+            new Tuple<string, string>("Поисковой запрос, поиск", "https://youtu.be/aN8ACedX1NI"),
+            new Tuple<string, string>("Шаринг, закладки, история поиска", "https://youtu.be/w1LQOU1Wph8"),
+            new Tuple<string, string>("Просмотр видео", "https://youtu.be/PskQR3n6neo")
         };
 
         public static bool CorpusExists(string corpusId)
