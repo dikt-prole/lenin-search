@@ -81,8 +81,14 @@ namespace LeninSearch.Ocr
 
                         var text = string.Join(" ", line.Words.Select(w => w.Text));
                         var font = new Font(Font.FontFamily, 16, FontStyle.Regular);
-                        var point = line.BoundingBox.Vertices[0].Point();
-                        g.DrawString(text, font, Brushes.Blue, point.X, point.Y - 25);
+                        var textPoint = line.BoundingBox.Vertices[0].Point();
+                        g.DrawString(text, font, Brushes.Blue, textPoint.X, textPoint.Y - 25);
+
+                        var countPoint = line.BoundingBox.Vertices[3].Point();
+                        var lineLength = line.BoundingBox.Vertices[3].Point().X - line.BoundingBox.Vertices[0].Point().X;
+                        var pxs = 1.0 * lineLength / text.Length;
+
+                        g.DrawString(pxs.ToString("F2"), font, Brushes.DarkOrange, countPoint);
                     }
 
                     DrawBoundingBox(g, block.BoundingBox, Color.Red);
