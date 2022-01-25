@@ -22,48 +22,34 @@ namespace LeninSearch.Ocr
         public LabelingForm()
         {
             InitializeComponent();
-            load_btn.Click += Load_btnOnClick;
+            loadBlocks_btn.Click += loadBlocks_btnOnClick;
             saveLabeled_btn.Click += SaveLabeled_btnOnClick;
             saveAll_btn.Click += SaveAll_btnOnClick;
             ocrBlock_lb.SelectedIndexChanged += OcrBlock_lbOnSelectedIndexChanged;
-            garbage_rb.CheckedChanged += LabelRbOnCheckedChanged;
-            paragraph_rb.CheckedChanged += LabelRbOnCheckedChanged;
-            title_rb.CheckedChanged += LabelRbOnCheckedChanged;
-            comment_rb.CheckedChanged += LabelRbOnCheckedChanged;
-            none_rb.CheckedChanged += LabelRbOnCheckedChanged;
             ocrBlock_lb.KeyDown += OcrBlock_lbOnKeyDown;
-        }
 
-        
+            paragraph_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Paragraph);
+            title_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Title);
+            comment_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Comment);
+            grabage_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Garbage);
+            none_panel.BackColor = BlockPalette.GetColor(null);
+        }
 
         private void OcrBlock_lbOnKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.P) paragraph_rb.Checked = true;
-
-            if (e.KeyCode == Keys.C) comment_rb.Checked = true;
-
-            if (e.KeyCode == Keys.T) title_rb.Checked = true;
-
-            if (e.KeyCode == Keys.G) garbage_rb.Checked = true;
-
-            if (e.KeyCode == Keys.N) none_rb.Checked = true;
-        }
-
-        private void LabelRbOnCheckedChanged(object? sender, EventArgs e)
         {
             var row = ocrBlock_lb.SelectedItem as OcrBlockRow;
 
             if (row == null) return;
 
-            if (garbage_rb.Checked) row.Label = OcrBlockLabel.Garbage;
+            if (e.KeyCode == Keys.P) row.Label = OcrBlockLabel.Paragraph;
 
-            if (title_rb.Checked) row.Label = OcrBlockLabel.Title;
+            if (e.KeyCode == Keys.C) row.Label = OcrBlockLabel.Comment;
 
-            if (paragraph_rb.Checked) row.Label = OcrBlockLabel.Paragraph;
+            if (e.KeyCode == Keys.T) row.Label = OcrBlockLabel.Title;
 
-            if (comment_rb.Checked) row.Label = OcrBlockLabel.Comment;
+            if (e.KeyCode == Keys.G) row.Label = OcrBlockLabel.Garbage;
 
-            if (none_rb.Checked) row.Label = null;
+            if (e.KeyCode == Keys.N) row.Label = null;
 
             ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = row;
         }
@@ -109,16 +95,6 @@ namespace LeninSearch.Ocr
             }
 
             pictureBox1.Image = image;
-
-            if (row.Label == null) none_rb.Checked = true;
-
-            if (row.Label == OcrBlockLabel.Comment) comment_rb.Checked = true;
-
-            if (row.Label == OcrBlockLabel.Garbage) garbage_rb.Checked = true;
-
-            if (row.Label == OcrBlockLabel.Paragraph) paragraph_rb.Checked = true;
-
-            if (row.Label == OcrBlockLabel.Title) title_rb.Checked = true;
         }
 
         private void DrawFeatures(Graphics g, BoundingBox box, OcrBlockRow row)
@@ -146,20 +122,11 @@ namespace LeninSearch.Ocr
             g.DrawString(row.PixelsPerSymbol.ToString("F2"), font, Brushes.DeepPink, pixelsPerSymbolX, pixelsPerSymbolY);
         }
 
-
         private Pen GetPen(OcrBlockRow row)
         {
-            if (row.Label == null) return new Pen(Color.Gray, 4);
+            var color = BlockPalette.GetColor(row.Label);
 
-            if (row.Label == OcrBlockLabel.Garbage) return new Pen(Color.Brown, 4);
-
-            if (row.Label == OcrBlockLabel.Paragraph) return new Pen(Color.Green, 4);
-
-            if (row.Label == OcrBlockLabel.Comment) return new Pen(Color.DodgerBlue, 4);
-
-            if (row.Label == OcrBlockLabel.Title) return new Pen(Color.Red, 4);
-
-            return null;
+            return new Pen(color, 4);
         }
 
         private void SaveLabeled_btnOnClick(object? sender, EventArgs e)
@@ -213,7 +180,7 @@ namespace LeninSearch.Ocr
             MessageBox.Show($"Saved {rows.Count} to '{dialog.FileName}'", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        private void Load_btnOnClick(object? sender, EventArgs e)
+        private void loadBlocks_btnOnClick(object? sender, EventArgs e)
         {
             var dialog = new OpenFileDialog
             {
