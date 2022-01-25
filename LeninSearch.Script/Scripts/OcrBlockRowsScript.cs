@@ -59,7 +59,8 @@ namespace LeninSearch.Script.Scripts
                             LeftIndent = topLeft.X,
                             RightIndent = image.Width - topRight.X,
                             TopIndent = topLeft.Y,
-                            BottomIndent = image.Height - bottomLeft.Y
+                            BottomIndent = image.Height - bottomLeft.Y,
+                            SameyCount = page.Blocks.Count(b => b != pageBlock && pageBlock.BoundingBox.IsSamey(b.BoundingBox))
                         });
                     }
                 }

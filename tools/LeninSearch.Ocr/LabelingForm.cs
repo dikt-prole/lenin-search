@@ -221,18 +221,7 @@ namespace LeninSearch.Ocr
 
             if (dialog.ShowDialog() != DialogResult.OK) return;
 
-            var labeledRows = new List<OcrBlockRow>();
-            foreach (OcrBlockRow row in ocrBlock_lb.Items)
-            {
-                if (row.Label != null) labeledRows.Add(row);
-            }
-
-            if (labeledRows.Count == 0)
-            {
-                MessageBox.Show("Rows are not labeled", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
+            var labeledRows = _blockRows.Where(r => r.Label != null).ToList();
             using (var csv = new CsvWriter(new StreamWriter(dialog.FileName), CultureInfo.InvariantCulture))
             {
                 csv.WriteRecords(labeledRows);
@@ -251,17 +240,12 @@ namespace LeninSearch.Ocr
 
             if (dialog.ShowDialog() != DialogResult.OK) return;
 
-            var rows = new List<OcrBlockRow>();
-            foreach (OcrBlockRow row in ocrBlock_lb.Items) rows.Add(row);
-
             using (var csv = new CsvWriter(new StreamWriter(dialog.FileName), CultureInfo.InvariantCulture))
             {
-                csv.WriteRecords(rows);
+                csv.WriteRecords(_blockRows);
             }
 
-            MessageBox.Show($"Saved {rows.Count} to '{dialog.FileName}'", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show($"Saved {_blockRows.Count} to '{dialog.FileName}'", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
-
-        
     }
 }

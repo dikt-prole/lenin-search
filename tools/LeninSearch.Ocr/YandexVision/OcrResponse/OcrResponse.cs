@@ -22,6 +22,21 @@ namespace LeninSearch.Ocr.YandexVision.OcrResponse
         public Vertex BottomLeft => Vertices[1];
         public Vertex BottomRight => Vertices[2];
         public Vertex TopRight => Vertices[3];
+
+        public bool IsSamey(BoundingBox box)
+        {
+            var topLeft = TopLeft.Point();
+            var bottomLeft = BottomLeft.Point();
+
+            var boxTopLeft = box.TopLeft.Point();
+            var boxBottomLeft = box.BottomLeft.Point();
+
+            if (topLeft.Y < boxTopLeft.Y && boxTopLeft.Y < bottomLeft.Y) return true;
+
+            if (topLeft.Y < boxBottomLeft.Y && boxBottomLeft.Y < bottomLeft.Y) return true;
+
+            return false;
+        }
     }
 
     public class Language
