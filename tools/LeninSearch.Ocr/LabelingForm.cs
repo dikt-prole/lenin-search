@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using CsvHelper;
 using LeninSearch.Ocr.Labeling;
@@ -19,10 +16,14 @@ namespace LeninSearch.Ocr
     {
         private List<OcrBlockRow> _blockRows;
 
+        private bool _loadPages;
+
         public LabelingForm()
         {
             InitializeComponent();
-            loadBlocks_btn.Click += loadBlocks_btnOnClick;
+            loadBlocks_btn.Click += LoadBlocks_btnOnClick;
+            loadPages_btn.Click += LoadPages_btnOnClick;
+
             saveLabeled_btn.Click += SaveLabeled_btnOnClick;
             saveAll_btn.Click += SaveAll_btnOnClick;
             ocrBlock_lb.SelectedIndexChanged += OcrBlock_lbOnSelectedIndexChanged;
@@ -35,43 +36,116 @@ namespace LeninSearch.Ocr
             none_panel.BackColor = BlockPalette.GetColor(null);
         }
 
+        private void LoadPages_btnOnClick(object? sender, EventArgs e)
+        {
+            var dialog = new OpenFileDialog
+            {
+                Title = "Load ocr block CSV",
+                Filter = "CSV|*.csv"
+            };
+
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+
+            _loadPages = true;
+
+            csvFile_tb.Text = dialog.FileName;
+
+            using (var csv = new CsvReader(new StreamReader(dialog.FileName), CultureInfo.InvariantCulture))
+            {
+                _blockRows = csv.GetRecords<OcrBlockRow>().ToList();
+            }
+
+            ocrBlock_lb.Items.Clear();
+            var fileNames = _blockRows.Select(r => r.FileName).Distinct().ToList();
+            foreach (var fileName in fileNames)
+            {
+                ocrBlock_lb.Items.Add(fileName);
+            }
+        }
+
+        private void LoadBlocks_btnOnClick(object? sender, EventArgs e)
+        {
+            var dialog = new OpenFileDialog
+            {
+                Title = "Load ocr block CSV",
+                Filter = "CSV|*.csv"
+            };
+
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+
+            _loadPages = false;
+
+            csvFile_tb.Text = dialog.FileName;
+
+            using (var csv = new CsvReader(new StreamReader(dialog.FileName), CultureInfo.InvariantCulture))
+            {
+                _blockRows = csv.GetRecords<OcrBlockRow>().ToList();
+            }
+
+            ocrBlock_lb.Items.Clear();
+            foreach (var blockRow in _blockRows)
+            {
+                ocrBlock_lb.Items.Add(blockRow);
+            }
+        }
+
         private void OcrBlock_lbOnKeyDown(object sender, KeyEventArgs e)
         {
-            var row = ocrBlock_lb.SelectedItem as OcrBlockRow;
+            if (_loadPages)
+            {
+                var fileName = ocrBlock_lb.SelectedItem as string;
 
-            if (row == null) return;
+                if (fileName == null) return;
 
-            if (e.KeyCode == Keys.P) row.Label = OcrBlockLabel.Paragraph;
+                if (e.KeyCode == Keys.N)
+                {
+                    var fileRows = _blockRows.Where(r => r.FileName == fileName).ToList();
+                    foreach (var fileRow in fileRows)
+                    {
+                        fileRow.Label = null;
+                    }
 
-            if (e.KeyCode == Keys.C) row.Label = OcrBlockLabel.Comment;
+                    ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = fileName;
+                }
+            }
+            else
+            {
+                var row = ocrBlock_lb.SelectedItem as OcrBlockRow;
 
-            if (e.KeyCode == Keys.T) row.Label = OcrBlockLabel.Title;
+                if (row == null) return;
 
-            if (e.KeyCode == Keys.G) row.Label = OcrBlockLabel.Garbage;
+                if (e.KeyCode == Keys.P) row.Label = OcrBlockLabel.Paragraph;
 
-            if (e.KeyCode == Keys.N) row.Label = null;
+                if (e.KeyCode == Keys.C) row.Label = OcrBlockLabel.Comment;
 
-            ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = row;
+                if (e.KeyCode == Keys.T) row.Label = OcrBlockLabel.Title;
+
+                if (e.KeyCode == Keys.G) row.Label = OcrBlockLabel.Garbage;
+
+                if (e.KeyCode == Keys.N) row.Label = null;
+
+                ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = row;
+            }
         }
 
         private void OcrBlock_lbOnSelectedIndexChanged(object? sender, EventArgs e)
         {
-            var row = ocrBlock_lb.SelectedItem as OcrBlockRow;
-            
-            if (row == null) return;
-
             var bookFolder = Path.GetDirectoryName(csvFile_tb.Text);
-
             var imageFolder = Path.Combine(bookFolder, "images");
             var jsonFolder = Path.Combine(bookFolder, "json");
+            var fileName = _loadPages
+                ? ocrBlock_lb.SelectedItem as string
+                : (ocrBlock_lb.SelectedItem as OcrBlockRow)?.FileName;
 
-            var imageFile = Directory.GetFiles(imageFolder).FirstOrDefault(f => f.Contains($"{row.FileName}."));
+            if (fileName == null) return;
+
+            var imageFile = Directory.GetFiles(imageFolder).FirstOrDefault(f => f.Contains($"{fileName}."));
             if (imageFile == null)
             {
                 MessageBox.Show("Image file not found", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
-            var jsonFile = Directory.GetFiles(jsonFolder).FirstOrDefault(f => f.Contains($"{row.FileName}."));
+            var jsonFile = Directory.GetFiles(jsonFolder).FirstOrDefault(f => f.Contains($"{fileName}."));
             if (jsonFile == null)
             {
                 MessageBox.Show("Json file not found", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -80,21 +154,29 @@ namespace LeninSearch.Ocr
             var image = new Bitmap(Image.FromFile(imageFile));
             var ocrResponse = JsonConvert.DeserializeObject<OcrResponse>(File.ReadAllText(jsonFile));
             var page = ocrResponse.Results[0].Results[0].TextDetection.Pages[0];
-            var block = page.Blocks[row.BlockIndex];
-            var box = block.BoundingBox;
-            using (var g = Graphics.FromImage(image))
+
+            var drawRows = _loadPages
+                ? _blockRows.Where(r => r.FileName == fileName).ToList()
+                : new List<OcrBlockRow> {ocrBlock_lb.SelectedItem as OcrBlockRow};
+
+            foreach (var row in drawRows)
             {
-                var pen = GetPen(row);
+                var block = page.Blocks[row.BlockIndex];
+                var box = block.BoundingBox;
+                using (var g = Graphics.FromImage(image))
+                {
+                    var pen = GetPen(row);
 
-                g.DrawLine(pen, box.TopLeft.Point(), box.BottomLeft.Point());
-                g.DrawLine(pen, box.BottomLeft.Point(), box.BottomRight.Point());
-                g.DrawLine(pen, box.BottomRight.Point(), box.TopRight.Point());
-                g.DrawLine(pen, box.TopRight.Point(), box.TopLeft.Point());
+                    g.DrawLine(pen, box.TopLeft.Point(), box.BottomLeft.Point());
+                    g.DrawLine(pen, box.BottomLeft.Point(), box.BottomRight.Point());
+                    g.DrawLine(pen, box.BottomRight.Point(), box.TopRight.Point());
+                    g.DrawLine(pen, box.TopRight.Point(), box.TopLeft.Point());
 
-                //DrawFeatures(g, box, row);
+                    //DrawFeatures(g, box, row);
+                }
+
+                pictureBox1.Image = image;
             }
-
-            pictureBox1.Image = image;
         }
 
         private void DrawFeatures(Graphics g, BoundingBox box, OcrBlockRow row)
@@ -180,28 +262,6 @@ namespace LeninSearch.Ocr
             MessageBox.Show($"Saved {rows.Count} to '{dialog.FileName}'", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        private void loadBlocks_btnOnClick(object? sender, EventArgs e)
-        {
-            var dialog = new OpenFileDialog
-            {
-                Title = "Load ocr block CSV",
-                Filter = "CSV|*.csv"
-            };
-
-            if (dialog.ShowDialog() != DialogResult.OK) return;
-
-            csvFile_tb.Text = dialog.FileName;
-
-            using (var csv = new CsvReader(new StreamReader(dialog.FileName), CultureInfo.InvariantCulture))
-            {
-                _blockRows = csv.GetRecords<OcrBlockRow>().ToList();
-            }
-
-            ocrBlock_lb.Items.Clear();
-            foreach (var blockRow in _blockRows)
-            {
-                ocrBlock_lb.Items.Add(blockRow);
-            }
-        }
+        
     }
 }
