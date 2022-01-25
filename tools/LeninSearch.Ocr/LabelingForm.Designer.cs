@@ -33,7 +33,7 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.csvFile_tb = new System.Windows.Forms.TextBox();
             this.load_btn = new System.Windows.Forms.Button();
-            this.save_btn = new System.Windows.Forms.Button();
+            this.saveLabeled_btn = new System.Windows.Forms.Button();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.ocrBlock_lb = new System.Windows.Forms.ListBox();
@@ -43,6 +43,7 @@ namespace LeninSearch.Ocr
             this.title_rb = new System.Windows.Forms.RadioButton();
             this.paragraph_rb = new System.Windows.Forms.RadioButton();
             this.none_rb = new System.Windows.Forms.RadioButton();
+            this.saveAll_btn = new System.Windows.Forms.Button();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.tableLayoutPanel3.SuspendLayout();
@@ -67,13 +68,15 @@ namespace LeninSearch.Ocr
             // 
             // tableLayoutPanel2
             // 
-            this.tableLayoutPanel2.ColumnCount = 3;
+            this.tableLayoutPanel2.ColumnCount = 4;
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
             this.tableLayoutPanel2.Controls.Add(this.csvFile_tb, 0, 0);
             this.tableLayoutPanel2.Controls.Add(this.load_btn, 1, 0);
-            this.tableLayoutPanel2.Controls.Add(this.save_btn, 2, 0);
+            this.tableLayoutPanel2.Controls.Add(this.saveLabeled_btn, 2, 0);
+            this.tableLayoutPanel2.Controls.Add(this.saveAll_btn, 3, 0);
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel2.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(0);
@@ -89,13 +92,13 @@ namespace LeninSearch.Ocr
             this.csvFile_tb.Location = new System.Drawing.Point(3, 3);
             this.csvFile_tb.Name = "csvFile_tb";
             this.csvFile_tb.ReadOnly = true;
-            this.csvFile_tb.Size = new System.Drawing.Size(443, 23);
+            this.csvFile_tb.Size = new System.Drawing.Size(343, 23);
             this.csvFile_tb.TabIndex = 0;
             // 
             // load_btn
             // 
             this.load_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.load_btn.Location = new System.Drawing.Point(450, 1);
+            this.load_btn.Location = new System.Drawing.Point(350, 1);
             this.load_btn.Margin = new System.Windows.Forms.Padding(1);
             this.load_btn.Name = "load_btn";
             this.load_btn.Size = new System.Drawing.Size(98, 26);
@@ -103,16 +106,16 @@ namespace LeninSearch.Ocr
             this.load_btn.Text = "Load";
             this.load_btn.UseVisualStyleBackColor = true;
             // 
-            // save_btn
+            // saveLabeled_btn
             // 
-            this.save_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.save_btn.Location = new System.Drawing.Point(550, 1);
-            this.save_btn.Margin = new System.Windows.Forms.Padding(1);
-            this.save_btn.Name = "save_btn";
-            this.save_btn.Size = new System.Drawing.Size(98, 26);
-            this.save_btn.TabIndex = 2;
-            this.save_btn.Text = "Save";
-            this.save_btn.UseVisualStyleBackColor = true;
+            this.saveLabeled_btn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.saveLabeled_btn.Location = new System.Drawing.Point(450, 1);
+            this.saveLabeled_btn.Margin = new System.Windows.Forms.Padding(1);
+            this.saveLabeled_btn.Name = "saveLabeled_btn";
+            this.saveLabeled_btn.Size = new System.Drawing.Size(98, 26);
+            this.saveLabeled_btn.TabIndex = 2;
+            this.saveLabeled_btn.Text = "Save Labeled";
+            this.saveLabeled_btn.UseVisualStyleBackColor = true;
             // 
             // tableLayoutPanel3
             // 
@@ -237,6 +240,17 @@ namespace LeninSearch.Ocr
             this.none_rb.Text = "None";
             this.none_rb.UseVisualStyleBackColor = true;
             // 
+            // saveAll_btn
+            // 
+            this.saveAll_btn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.saveAll_btn.Location = new System.Drawing.Point(550, 1);
+            this.saveAll_btn.Margin = new System.Windows.Forms.Padding(1);
+            this.saveAll_btn.Name = "saveAll_btn";
+            this.saveAll_btn.Size = new System.Drawing.Size(98, 26);
+            this.saveAll_btn.TabIndex = 3;
+            this.saveAll_btn.Text = "Save All";
+            this.saveAll_btn.UseVisualStyleBackColor = true;
+            // 
             // LabelingForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -264,7 +278,7 @@ namespace LeninSearch.Ocr
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.TextBox csvFile_tb;
         private System.Windows.Forms.Button load_btn;
-        private System.Windows.Forms.Button save_btn;
+        private System.Windows.Forms.Button saveLabeled_btn;
         private System.Windows.Forms.ListBox ocrBlock_lb;
         private System.Windows.Forms.RadioButton none_rb;
         private System.Windows.Forms.RadioButton paragraph_rb;
@@ -272,5 +286,6 @@ namespace LeninSearch.Ocr
         private System.Windows.Forms.RadioButton comment_rb;
         private System.Windows.Forms.RadioButton garbage_rb;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel6;
+        private System.Windows.Forms.Button saveAll_btn;
     }
 }
