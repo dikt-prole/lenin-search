@@ -32,6 +32,8 @@ namespace LeninSearch.Script.Scripts
                 {
                     var page = ocrResponse.Results[0].Results[0].TextDetection.Pages[0];
 
+                    if (page.Blocks == null) continue;
+
                     for (var blockIndex = 0; blockIndex < page.Blocks.Count; blockIndex++)
                     {
                         var pageBlock = page.Blocks[blockIndex];
@@ -50,8 +52,7 @@ namespace LeninSearch.Script.Scripts
 
                         blockRows.Add(new OcrBlockRow
                         {
-                            ImageFile = imageFile,
-                            OcrJsonFile = jsonFile,
+                            FileName = Path.GetFileNameWithoutExtension(imageFile),
                             BlockIndex = blockIndex,
 
                             PixelsPerSymbol = pixelsPerSymbol,
@@ -65,6 +66,7 @@ namespace LeninSearch.Script.Scripts
             }
 
             var csvFile = Path.Combine(ocrBookFolder, "ocr-block-rows.csv");
+            if (File.Exists(csvFile)) File.Delete(csvFile);
             using (var csv = new CsvWriter(new StreamWriter(csvFile), CultureInfo.InvariantCulture))
             {
                 csv.WriteRecords(blockRows);

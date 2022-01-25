@@ -3,8 +3,7 @@
     public class OcrBlockRow
     {
         // block id
-        public string ImageFile { get; set; }
-        public string OcrJsonFile { get; set; }
+        public string FileName { get; set; }
         public int BlockIndex { get; set; }
 
         // block data
