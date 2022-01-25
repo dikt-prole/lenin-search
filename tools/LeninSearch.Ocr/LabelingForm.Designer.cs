@@ -34,6 +34,7 @@ namespace LeninSearch.Ocr
             this.csvFile_tb = new System.Windows.Forms.TextBox();
             this.load_btn = new System.Windows.Forms.Button();
             this.saveLabeled_btn = new System.Windows.Forms.Button();
+            this.saveAll_btn = new System.Windows.Forms.Button();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.ocrBlock_lb = new System.Windows.Forms.ListBox();
@@ -43,7 +44,6 @@ namespace LeninSearch.Ocr
             this.title_rb = new System.Windows.Forms.RadioButton();
             this.paragraph_rb = new System.Windows.Forms.RadioButton();
             this.none_rb = new System.Windows.Forms.RadioButton();
-            this.saveAll_btn = new System.Windows.Forms.Button();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.tableLayoutPanel3.SuspendLayout();
@@ -116,6 +116,17 @@ namespace LeninSearch.Ocr
             this.saveLabeled_btn.TabIndex = 2;
             this.saveLabeled_btn.Text = "Save Labeled";
             this.saveLabeled_btn.UseVisualStyleBackColor = true;
+            // 
+            // saveAll_btn
+            // 
+            this.saveAll_btn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.saveAll_btn.Location = new System.Drawing.Point(550, 1);
+            this.saveAll_btn.Margin = new System.Windows.Forms.Padding(1);
+            this.saveAll_btn.Name = "saveAll_btn";
+            this.saveAll_btn.Size = new System.Drawing.Size(98, 26);
+            this.saveAll_btn.TabIndex = 3;
+            this.saveAll_btn.Text = "Save All";
+            this.saveAll_btn.UseVisualStyleBackColor = true;
             // 
             // tableLayoutPanel3
             // 
@@ -239,17 +250,6 @@ namespace LeninSearch.Ocr
             this.none_rb.TabStop = true;
             this.none_rb.Text = "None";
             this.none_rb.UseVisualStyleBackColor = true;
-            // 
-            // saveAll_btn
-            // 
-            this.saveAll_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.saveAll_btn.Location = new System.Drawing.Point(550, 1);
-            this.saveAll_btn.Margin = new System.Windows.Forms.Padding(1);
-            this.saveAll_btn.Name = "saveAll_btn";
-            this.saveAll_btn.Size = new System.Drawing.Size(98, 26);
-            this.saveAll_btn.TabIndex = 3;
-            this.saveAll_btn.Text = "Save All";
-            this.saveAll_btn.UseVisualStyleBackColor = true;
             // 
             // LabelingForm
             // 

@@ -12,6 +12,9 @@
         public int RightIndent { get; set; }
         public int TopIndent { get; set; }
         public double PixelsPerSymbol { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
+        public double WidthToHeightRatio { get; set; }
 
         // block label
         public OcrBlockLabel? Label { get; set; }
