@@ -15,5 +15,12 @@
 
         // block label
         public OcrBlockLabel? Label { get; set; }
+
+        public override string ToString()
+        {
+            if (Label == null) return $"{FileName}-{BlockIndex}";
+
+            return $"{FileName}-{BlockIndex} ({Label})";
+        }
     }
 }
