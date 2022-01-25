@@ -1,7 +1,7 @@
 ﻿
 namespace LeninSearch.Ocr
 {
-    partial class OcrForm
+    partial class SingleImageOcrForm
     {
         /// <summary>
         ///  Required designer variable.
@@ -110,7 +110,7 @@ namespace LeninSearch.Ocr
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(628, 626);
             this.Controls.Add(this.tableLayoutPanel1);
-            this.Name = "OcrForm";
+            this.Name = "SingleImageOcrForm";
             this.Text = "Lenin Search Ocr ";
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel2.ResumeLayout(false);

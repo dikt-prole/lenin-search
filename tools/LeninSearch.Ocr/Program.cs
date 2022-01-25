@@ -17,7 +17,7 @@ namespace LeninSearch.Ocr
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new OcrForm());
+            Application.Run(new SingleImageOcrForm());
         }
     }
 }

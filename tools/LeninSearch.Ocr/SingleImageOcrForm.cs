@@ -16,13 +16,13 @@ using Newtonsoft.Json;
 
 namespace LeninSearch.Ocr
 {
-    public partial class OcrForm : Form
+    public partial class SingleImageOcrForm : Form
     {
         private string _imageFile;
         private string _iamToken;
         private readonly HttpClient _httpClient = new HttpClient();
 
-        public OcrForm()
+        public SingleImageOcrForm()
         {
             InitializeComponent();
             load_btn.Click += Load_btnOnClick;
