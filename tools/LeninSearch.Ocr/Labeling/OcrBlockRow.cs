@@ -15,6 +15,8 @@
         public int Width { get; set; }
         public int Height { get; set; }
         public double WidthToHeightRatio { get; set; }
+        public int WordCount { get; set; }
+        public int SymbolCount { get; set; }
 
         // block label
         public OcrBlockLabel? Label { get; set; }
