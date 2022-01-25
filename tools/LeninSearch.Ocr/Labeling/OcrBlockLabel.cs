@@ -1,6 +1,6 @@
 ﻿namespace LeninSearch.Ocr.Labeling
 {
-    public enum BlockLabel
+    public enum OcrBlockLabel
     {
         Paragraph = 0,
         Title = 1,

@@ -17,6 +17,11 @@ namespace LeninSearch.Ocr.YandexVision.OcrResponse
     public class BoundingBox
     {
         public IList<Vertex> Vertices { get; set; }
+
+        public Vertex TopLeft => Vertices[0];
+        public Vertex BottomLeft => Vertices[1];
+        public Vertex BottomRight => Vertices[2];
+        public Vertex TopRight => Vertices[3];
     }
 
     public class Language
