@@ -34,6 +34,56 @@ namespace LeninSearch.Ocr
             comment_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Comment);
             grabage_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Garbage);
             none_panel.BackColor = BlockPalette.GetColor(null);
+
+            pictureBox1.MouseClick += (sender, args) =>
+            {
+                if (!_loadPages) return;
+
+                if (args.Button != MouseButtons.Right) return;
+
+                var menu = new ContextMenuStrip();
+
+                var point = args.Location;
+
+                menu.Items.Add("Paragraph", null, (o, a) => SetLabelAtPictureBoxPoint(point, OcrBlockLabel.Paragraph));
+                menu.Items.Add("Comment", null, (o, a) => SetLabelAtPictureBoxPoint(point, OcrBlockLabel.Comment));
+                menu.Items.Add("Title", null, (o, a) => SetLabelAtPictureBoxPoint(point, OcrBlockLabel.Title));
+                menu.Items.Add("Garbage", null, (o, a) => SetLabelAtPictureBoxPoint(point, OcrBlockLabel.Garbage));
+                menu.Items.Add("None", null, (o, a) => SetLabelAtPictureBoxPoint(point, null));
+
+                menu.Show(pictureBox1, point);
+            };
+        }
+
+        private void SetLabelAtPictureBoxPoint(Point point, OcrBlockLabel? label)
+        {
+            var bookFolder = Path.GetDirectoryName(csvFile_tb.Text);
+            var imageFolder = Path.Combine(bookFolder, "images");
+            var jsonFolder = Path.Combine(bookFolder, "json");
+            var fileName = ocrBlock_lb.SelectedItem as string;
+
+            if (fileName == null) return;
+
+            var imageFile = Directory.GetFiles(imageFolder).FirstOrDefault(f => f.Contains($"{fileName}."));
+            var image = new Bitmap(Image.FromFile(imageFile));
+            var jsonFile = Directory.GetFiles(jsonFolder).FirstOrDefault(f => f.Contains($"{fileName}."));
+            var ocrResponse = JsonConvert.DeserializeObject<OcrResponse>(File.ReadAllText(jsonFile));
+
+            var effImageHeight = pictureBox1.Height;
+            var effImageWidth = image.Width * effImageHeight / image.Height;
+            var effLeftMargin = (pictureBox1.Width - effImageWidth) / 2;
+            var effPointX = (point.X - effLeftMargin) * image.Width / effImageWidth;
+            var effPointY = point.Y * image.Height / effImageHeight;
+
+            var page = ocrResponse.Results[0].Results[0].TextDetection.Pages[0];
+            var block = page.Blocks.FirstOrDefault(b => b.BoundingBox.Contains(effPointX, effPointY));
+
+            if (block != null)
+            {
+                var row = _blockRows.First(r => r.FileName == fileName && r.BlockIndex == page.Blocks.IndexOf(block));
+                row.Label = label;
+                ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = fileName;
+            }
         }
 
         private void LoadPages_btnOnClick(object? sender, EventArgs e)
@@ -91,41 +141,23 @@ namespace LeninSearch.Ocr
 
         private void OcrBlock_lbOnKeyDown(object sender, KeyEventArgs e)
         {
-            if (_loadPages)
-            {
-                var fileName = ocrBlock_lb.SelectedItem as string;
+            if (_loadPages) return;
 
-                if (fileName == null) return;
+            var row = ocrBlock_lb.SelectedItem as OcrBlockRow;
 
-                if (e.KeyCode == Keys.N)
-                {
-                    var fileRows = _blockRows.Where(r => r.FileName == fileName).ToList();
-                    foreach (var fileRow in fileRows)
-                    {
-                        fileRow.Label = null;
-                    }
+            if (row == null) return;
 
-                    ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = fileName;
-                }
-            }
-            else
-            {
-                var row = ocrBlock_lb.SelectedItem as OcrBlockRow;
+            if (e.KeyCode == Keys.P) row.Label = OcrBlockLabel.Paragraph;
 
-                if (row == null) return;
+            if (e.KeyCode == Keys.C) row.Label = OcrBlockLabel.Comment;
 
-                if (e.KeyCode == Keys.P) row.Label = OcrBlockLabel.Paragraph;
+            if (e.KeyCode == Keys.T) row.Label = OcrBlockLabel.Title;
 
-                if (e.KeyCode == Keys.C) row.Label = OcrBlockLabel.Comment;
+            if (e.KeyCode == Keys.G) row.Label = OcrBlockLabel.Garbage;
 
-                if (e.KeyCode == Keys.T) row.Label = OcrBlockLabel.Title;
+            if (e.KeyCode == Keys.N) row.Label = null;
 
-                if (e.KeyCode == Keys.G) row.Label = OcrBlockLabel.Garbage;
-
-                if (e.KeyCode == Keys.N) row.Label = null;
-
-                ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = row;
-            }
+            ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = row;
         }
 
         private void OcrBlock_lbOnSelectedIndexChanged(object? sender, EventArgs e)
@@ -157,7 +189,7 @@ namespace LeninSearch.Ocr
 
             var drawRows = _loadPages
                 ? _blockRows.Where(r => r.FileName == fileName).ToList()
-                : new List<OcrBlockRow> {ocrBlock_lb.SelectedItem as OcrBlockRow};
+                : new List<OcrBlockRow> { ocrBlock_lb.SelectedItem as OcrBlockRow };
 
             foreach (var row in drawRows)
             {
