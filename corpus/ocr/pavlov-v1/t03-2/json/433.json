@@ -1,0 +1,1957 @@
+{
+ "results": [
+  {
+   "results": [
+    {
+     "textDetection": {
+      "pages": [
+       {
+        "blocks": [
+         {
+          "boundingBox": {
+           "vertices": [
+            {
+             "x": "44",
+             "y": "66"
+            },
+            {
+             "x": "44",
+             "y": "83"
+            },
+            {
+             "x": "79",
+             "y": "83"
+            },
+            {
+             "x": "79",
+             "y": "66"
+            }
+           ]
+          },
+          "lines": [
+           {
+            "boundingBox": {
+             "vertices": [
+              {
+               "x": "44",
+               "y": "66"
+              },
+              {
+               "x": "44",
+               "y": "83"
+              },
+              {
+               "x": "79",
+               "y": "83"
+              },
+              {
+               "x": "79",
+               "y": "66"
+              }
+             ]
+            },
+            "words": [
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "44",
+                 "y": "65"
+                },
+                {
+                 "x": "44",
+                 "y": "84"
+                },
+                {
+                 "x": "79",
+                 "y": "84"
+                },
+                {
+                 "x": "79",
+                 "y": "65"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9164258242
+               }
+              ],
+              "text": "438",
+              "confidence": 0.9164258242,
+              "entityIndex": "-1"
+             }
+            ],
+            "confidence": 0.9164258242
+           }
+          ]
+         },
+         {
+          "boundingBox": {
+           "vertices": [
+            {
+             "x": "337",
+             "y": "68"
+            },
+            {
+             "x": "337",
+             "y": "84"
+            },
+            {
+             "x": "452",
+             "y": "84"
+            },
+            {
+             "x": "452",
+             "y": "68"
+            }
+           ]
+          },
+          "lines": [
+           {
+            "boundingBox": {
+             "vertices": [
+              {
+               "x": "337",
+               "y": "68"
+              },
+              {
+               "x": "337",
+               "y": "84"
+              },
+              {
+               "x": "452",
+               "y": "84"
+              },
+              {
+               "x": "452",
+               "y": "68"
+              }
+             ]
+            },
+            "words": [
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "337",
+                 "y": "70"
+                },
+                {
+                 "x": "337",
+                 "y": "84"
+                },
+                {
+                 "x": "452",
+                 "y": "84"
+                },
+                {
+                 "x": "452",
+                 "y": "70"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9123587608
+               }
+              ],
+              "text": "Содержание",
+              "confidence": 0.9123587608,
+              "entityIndex": "-1"
+             }
+            ],
+            "confidence": 0.9123587608
+           }
+          ]
+         },
+         {
+          "boundingBox": {
+           "vertices": [
+            {
+             "x": "50",
+             "y": "126"
+            },
+            {
+             "x": "50",
+             "y": "169"
+            },
+            {
+             "x": "679",
+             "y": "169"
+            },
+            {
+             "x": "679",
+             "y": "126"
+            }
+           ]
+          },
+          "lines": [
+           {
+            "boundingBox": {
+             "vertices": [
+              {
+               "x": "50",
+               "y": "126"
+              },
+              {
+               "x": "50",
+               "y": "146"
+              },
+              {
+               "x": "679",
+               "y": "146"
+              },
+              {
+               "x": "679",
+               "y": "126"
+              }
+             ]
+            },
+            "words": [
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "50",
+                 "y": "131"
+                },
+                {
+                 "x": "50",
+                 "y": "145"
+                },
+                {
+                 "x": "157",
+                 "y": "145"
+                },
+                {
+                 "x": "157",
+                 "y": "131"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9810654521
+               }
+              ],
+              "text": "Статьи,",
+              "confidence": 0.9810654521,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "174",
+                 "y": "131"
+                },
+                {
+                 "x": "174",
+                 "y": "145"
+                },
+                {
+                 "x": "207",
+                 "y": "145"
+                },
+                {
+                 "x": "207",
+                 "y": "131"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9810654521
+               }
+              ],
+              "text": "не",
+              "confidence": 0.9810654521,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "224",
+                 "y": "131"
+                },
+                {
+                 "x": "224",
+                 "y": "145"
+                },
+                {
+                 "x": "326",
+                 "y": "145"
+                },
+                {
+                 "x": "326",
+                 "y": "131"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9810654521
+               }
+              ],
+              "text": "вошедшие",
+              "confidence": 0.9810654521,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "389",
+                 "y": "131"
+                },
+                {
+                 "x": "389",
+                 "y": "145"
+                },
+                {
+                 "x": "404",
+                 "y": "145"
+                },
+                {
+                 "x": "404",
+                 "y": "131"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9810654521
+               }
+              ],
+              "text": "B",
+              "confidence": 0.9810654521,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "421",
+                 "y": "131"
+                },
+                {
+                 "x": "421",
+                 "y": "145"
+                },
+                {
+                 "x": "448",
+                 "y": "145"
+                },
+                {
+                 "x": "448",
+                 "y": "131"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9810654521
+               }
+              ],
+              "text": "«Д",
+              "confidence": 0.9810654521,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "460",
+                 "y": "130"
+                },
+                {
+                 "x": "460",
+                 "y": "145"
+                },
+                {
+                 "x": "470",
+                 "y": "145"
+                },
+                {
+                 "x": "470",
+                 "y": "130"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9810654521
+               }
+              ],
+              "text": "в",
+              "confidence": 0.9810654521,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "478",
+                 "y": "130"
+                },
+                {
+                 "x": "478",
+                 "y": "145"
+                },
+                {
+                 "x": "486",
+                 "y": "145"
+                },
+                {
+                 "x": "486",
+                 "y": "130"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9810654521
+               }
+              ],
+              "text": "а",
+              "confidence": 0.9810654521,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "494",
+                 "y": "130"
+                },
+                {
+                 "x": "494",
+                 "y": "145"
+                },
+                {
+                 "x": "503",
+                 "y": "145"
+                },
+                {
+                 "x": "503",
+                 "y": "130"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9810654521
+               }
+              ],
+              "text": "д",
+              "confidence": 0.9810654521,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "512",
+                 "y": "130"
+                },
+                {
+                 "x": "512",
+                 "y": "145"
+                },
+                {
+                 "x": "522",
+                 "y": "145"
+                },
+                {
+                 "x": "522",
+                 "y": "130"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9810654521
+               }
+              ],
+              "text": "ц",
+              "confidence": 0.9810654521,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "531",
+                 "y": "130"
+                },
+                {
+                 "x": "531",
+                 "y": "145"
+                },
+                {
+                 "x": "540",
+                 "y": "145"
+                },
+                {
+                 "x": "540",
+                 "y": "130"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9810654521
+               }
+              ],
+              "text": "а",
+              "confidence": 0.9810654521,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "549",
+                 "y": "130"
+                },
+                {
+                 "x": "549",
+                 "y": "145"
+                },
+                {
+                 "x": "557",
+                 "y": "145"
+                },
+                {
+                 "x": "557",
+                 "y": "130"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9810654521
+               }
+              ],
+              "text": "т",
+              "confidence": 0.9810654521,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "564",
+                 "y": "130"
+                },
+                {
+                 "x": "564",
+                 "y": "145"
+                },
+                {
+                 "x": "573",
+                 "y": "145"
+                },
+                {
+                 "x": "573",
+                 "y": "130"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9810654521
+               }
+              ],
+              "text": "и",
+              "confidence": 0.9810654521,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "584",
+                 "y": "130"
+                },
+                {
+                 "x": "584",
+                 "y": "145"
+                },
+                {
+                 "x": "593",
+                 "y": "145"
+                },
+                {
+                 "x": "593",
+                 "y": "130"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9810654521
+               }
+              ],
+              "text": "л",
+              "confidence": 0.9810654521,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "600",
+                 "y": "130"
+                },
+                {
+                 "x": "600",
+                 "y": "145"
+                },
+                {
+                 "x": "609",
+                 "y": "145"
+                },
+                {
+                 "x": "609",
+                 "y": "130"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9810654521
+               }
+              ],
+              "text": "е",
+              "confidence": 0.9810654521,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "618",
+                 "y": "130"
+                },
+                {
+                 "x": "618",
+                 "y": "145"
+                },
+                {
+                 "x": "626",
+                 "y": "145"
+                },
+                {
+                 "x": "626",
+                 "y": "130"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9810654521
+               }
+              ],
+              "text": "т",
+              "confidence": 0.9810654521,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "633",
+                 "y": "130"
+                },
+                {
+                 "x": "633",
+                 "y": "145"
+                },
+                {
+                 "x": "641",
+                 "y": "145"
+                },
+                {
+                 "x": "641",
+                 "y": "130"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9810654521
+               }
+              ],
+              "text": "н",
+              "confidence": 0.9810654521,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "650",
+                 "y": "130"
+                },
+                {
+                 "x": "650",
+                 "y": "145"
+                },
+                {
+                 "x": "660",
+                 "y": "145"
+                },
+                {
+                 "x": "660",
+                 "y": "130"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9810654521
+               }
+              ],
+              "text": "и",
+              "confidence": 0.9810654521,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "669",
+                 "y": "130"
+                },
+                {
+                 "x": "669",
+                 "y": "145"
+                },
+                {
+                 "x": "679",
+                 "y": "145"
+                },
+                {
+                 "x": "679",
+                 "y": "130"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9810654521
+               }
+              ],
+              "text": "й",
+              "confidence": 0.9810654521,
+              "entityIndex": "-1"
+             }
+            ],
+            "confidence": 0.9810654521
+           },
+           {
+            "boundingBox": {
+             "vertices": [
+              {
+               "x": "326",
+               "y": "155"
+              },
+              {
+               "x": "326",
+               "y": "169"
+              },
+              {
+               "x": "399",
+               "y": "169"
+              },
+              {
+               "x": "399",
+               "y": "155"
+              }
+             ]
+            },
+            "words": [
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "326",
+                 "y": "156"
+                },
+                {
+                 "x": "326",
+                 "y": "169"
+                },
+                {
+                 "x": "335",
+                 "y": "169"
+                },
+                {
+                 "x": "335",
+                 "y": "156"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.8524498343
+               }
+              ],
+              "text": "о",
+              "confidence": 0.8524498343,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "342",
+                 "y": "155"
+                },
+                {
+                 "x": "342",
+                 "y": "169"
+                },
+                {
+                 "x": "352",
+                 "y": "169"
+                },
+                {
+                 "x": "352",
+                 "y": "155"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.8524498343
+               }
+              ],
+              "text": "п",
+              "confidence": 0.8524498343,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "364",
+                 "y": "155"
+                },
+                {
+                 "x": "364",
+                 "y": "169"
+                },
+                {
+                 "x": "375",
+                 "y": "169"
+                },
+                {
+                 "x": "375",
+                 "y": "155"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.8524498343
+               }
+              ],
+              "text": "ы",
+              "confidence": 0.8524498343,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "384",
+                 "y": "155"
+                },
+                {
+                 "x": "384",
+                 "y": "169"
+                },
+                {
+                 "x": "399",
+                 "y": "169"
+                },
+                {
+                 "x": "399",
+                 "y": "155"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.8524498343
+               }
+              ],
+              "text": "т»",
+              "confidence": 0.8524498343,
+              "entityIndex": "-1"
+             }
+            ],
+            "confidence": 0.8524498343
+           }
+          ]
+         },
+         {
+          "boundingBox": {
+           "vertices": [
+            {
+             "x": "47",
+             "y": "199"
+            },
+            {
+             "x": "47",
+             "y": "264"
+            },
+            {
+             "x": "548",
+             "y": "264"
+            },
+            {
+             "x": "548",
+             "y": "199"
+            }
+           ]
+          },
+          "lines": [
+           {
+            "boundingBox": {
+             "vertices": [
+              {
+               "x": "47",
+               "y": "199"
+              },
+              {
+               "x": "47",
+               "y": "216"
+              },
+              {
+               "x": "548",
+               "y": "216"
+              },
+              {
+               "x": "548",
+               "y": "199"
+              }
+             ]
+            },
+            "words": [
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "47",
+                 "y": "202"
+                },
+                {
+                 "x": "47",
+                 "y": "216"
+                },
+                {
+                 "x": "152",
+                 "y": "216"
+                },
+                {
+                 "x": "152",
+                 "y": "202"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9561052918
+               }
+              ],
+              "text": "Физиология",
+              "confidence": 0.9561052918,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "161",
+                 "y": "202"
+                },
+                {
+                 "x": "161",
+                 "y": "216"
+                },
+                {
+                 "x": "172",
+                 "y": "216"
+                },
+                {
+                 "x": "172",
+                 "y": "202"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9561052918
+               }
+              ],
+              "text": "и",
+              "confidence": 0.9561052918,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "183",
+                 "y": "202"
+                },
+                {
+                 "x": "183",
+                 "y": "216"
+                },
+                {
+                 "x": "271",
+                 "y": "216"
+                },
+                {
+                 "x": "271",
+                 "y": "202"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9561052918
+               }
+              ],
+              "text": "патология",
+              "confidence": 0.9561052918,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "280",
+                 "y": "202"
+                },
+                {
+                 "x": "280",
+                 "y": "216"
+                },
+                {
+                 "x": "345",
+                 "y": "216"
+                },
+                {
+                 "x": "345",
+                 "y": "202"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9561052918
+               }
+              ],
+              "text": "высшей",
+              "confidence": 0.9561052918,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "356",
+                 "y": "202"
+                },
+                {
+                 "x": "356",
+                 "y": "216"
+                },
+                {
+                 "x": "425",
+                 "y": "216"
+                },
+                {
+                 "x": "425",
+                 "y": "202"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9561052918
+               }
+              ],
+              "text": "нервной",
+              "confidence": 0.9561052918,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "438",
+                 "y": "202"
+                },
+                {
+                 "x": "438",
+                 "y": "216"
+                },
+                {
+                 "x": "548",
+                 "y": "216"
+                },
+                {
+                 "x": "548",
+                 "y": "202"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9561052918
+               }
+              ],
+              "text": "деятельности",
+              "confidence": 0.9561052918,
+              "entityIndex": "-1"
+             }
+            ],
+            "confidence": 0.9561052918
+           },
+           {
+            "boundingBox": {
+             "vertices": [
+              {
+               "x": "48",
+               "y": "224"
+              },
+              {
+               "x": "48",
+               "y": "240"
+              },
+              {
+               "x": "171",
+               "y": "240"
+              },
+              {
+               "x": "171",
+               "y": "224"
+              }
+             ]
+            },
+            "words": [
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "48",
+                 "y": "225"
+                },
+                {
+                 "x": "48",
+                 "y": "239"
+                },
+                {
+                 "x": "132",
+                 "y": "239"
+                },
+                {
+                 "x": "132",
+                 "y": "225"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.935118854
+               }
+              ],
+              "text": "Проблема",
+              "confidence": 0.935118854,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "141",
+                 "y": "227"
+                },
+                {
+                 "x": "141",
+                 "y": "240"
+                },
+                {
+                 "x": "171",
+                 "y": "240"
+                },
+                {
+                 "x": "171",
+                 "y": "227"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.935118854
+               }
+              ],
+              "text": "сна",
+              "confidence": 0.935118854,
+              "entityIndex": "-1"
+             }
+            ],
+            "confidence": 0.935118854
+           },
+           {
+            "boundingBox": {
+             "vertices": [
+              {
+               "x": "240",
+               "y": "229"
+              },
+              {
+               "x": "240",
+               "y": "237"
+              },
+              {
+               "x": "247",
+               "y": "237"
+              },
+              {
+               "x": "247",
+               "y": "229"
+              }
+             ]
+            },
+            "words": [
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "240",
+                 "y": "228"
+                },
+                {
+                 "x": "240",
+                 "y": "238"
+                },
+                {
+                 "x": "247",
+                 "y": "238"
+                },
+                {
+                 "x": "247",
+                 "y": "228"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.6661292315
+               }
+              ],
+              "text": "•",
+              "confidence": 0.6661292315,
+              "entityIndex": "-1"
+             }
+            ],
+            "confidence": 0.6661292315
+           },
+           {
+            "boundingBox": {
+             "vertices": [
+              {
+               "x": "525",
+               "y": "228"
+              },
+              {
+               "x": "525",
+               "y": "237"
+              },
+              {
+               "x": "532",
+               "y": "237"
+              },
+              {
+               "x": "532",
+               "y": "228"
+              }
+             ]
+            },
+            "words": [
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "525",
+                 "y": "228"
+                },
+                {
+                 "x": "525",
+                 "y": "237"
+                },
+                {
+                 "x": "532",
+                 "y": "237"
+                },
+                {
+                 "x": "532",
+                 "y": "228"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.7682569623
+               }
+              ],
+              "text": "•",
+              "confidence": 0.7682569623,
+              "entityIndex": "-1"
+             }
+            ],
+            "confidence": 0.7682569623
+           },
+           {
+            "boundingBox": {
+             "vertices": [
+              {
+               "x": "51",
+               "y": "247"
+              },
+              {
+               "x": "51",
+               "y": "264"
+              },
+              {
+               "x": "452",
+               "y": "264"
+              },
+              {
+               "x": "452",
+               "y": "247"
+              }
+             ]
+            },
+            "words": [
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "51",
+                 "y": "250"
+                },
+                {
+                 "x": "51",
+                 "y": "264"
+                },
+                {
+                 "x": "106",
+                 "y": "264"
+                },
+                {
+                 "x": "106",
+                 "y": "250"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9588670135
+               }
+              ],
+              "text": "Новые",
+              "confidence": 0.9588670135,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "114",
+                 "y": "250"
+                },
+                {
+                 "x": "114",
+                 "y": "263"
+                },
+                {
+                 "x": "230",
+                 "y": "263"
+                },
+                {
+                 "x": "230",
+                 "y": "250"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9588670135
+               }
+              ],
+              "text": "исследования",
+              "confidence": 0.9588670135,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "241",
+                 "y": "251"
+                },
+                {
+                 "x": "241",
+                 "y": "263"
+                },
+                {
+                 "x": "263",
+                 "y": "263"
+                },
+                {
+                 "x": "263",
+                 "y": "251"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9588670135
+               }
+              ],
+              "text": "по",
+              "confidence": 0.9588670135,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "274",
+                 "y": "251"
+                },
+                {
+                 "x": "274",
+                 "y": "263"
+                },
+                {
+                 "x": "355",
+                 "y": "263"
+                },
+                {
+                 "x": "355",
+                 "y": "251"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9588670135
+               }
+              ],
+              "text": "условным",
+              "confidence": 0.9588670135,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "368",
+                 "y": "251"
+                },
+                {
+                 "x": "368",
+                 "y": "263"
+                },
+                {
+                 "x": "452",
+                 "y": "263"
+                },
+                {
+                 "x": "452",
+                 "y": "251"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9588670135
+               }
+              ],
+              "text": "рефлексам",
+              "confidence": 0.9588670135,
+              "entityIndex": "-1"
+             }
+            ],
+            "confidence": 0.9588670135
+           }
+          ]
+         },
+         {
+          "boundingBox": {
+           "vertices": [
+            {
+             "x": "709",
+             "y": "197"
+            },
+            {
+             "x": "709",
+             "y": "214"
+            },
+            {
+             "x": "740",
+             "y": "214"
+            },
+            {
+             "x": "740",
+             "y": "197"
+            }
+           ]
+          },
+          "lines": [
+           {
+            "boundingBox": {
+             "vertices": [
+              {
+               "x": "709",
+               "y": "197"
+              },
+              {
+               "x": "709",
+               "y": "214"
+              },
+              {
+               "x": "740",
+               "y": "214"
+              },
+              {
+               "x": "740",
+               "y": "197"
+              }
+             ]
+            },
+            "words": [
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "709",
+                 "y": "197"
+                },
+                {
+                 "x": "709",
+                 "y": "213"
+                },
+                {
+                 "x": "740",
+                 "y": "213"
+                },
+                {
+                 "x": "740",
+                 "y": "197"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9929955602
+               }
+              ],
+              "text": "383",
+              "confidence": 0.9929955602,
+              "entityIndex": "-1"
+             }
+            ],
+            "confidence": 0.9929955602
+           }
+          ]
+         },
+         {
+          "boundingBox": {
+           "vertices": [
+            {
+             "x": "707",
+             "y": "219"
+            },
+            {
+             "x": "707",
+             "y": "262"
+            },
+            {
+             "x": "742",
+             "y": "262"
+            },
+            {
+             "x": "742",
+             "y": "219"
+            }
+           ]
+          },
+          "lines": [
+           {
+            "boundingBox": {
+             "vertices": [
+              {
+               "x": "707",
+               "y": "219"
+              },
+              {
+               "x": "707",
+               "y": "239"
+              },
+              {
+               "x": "742",
+               "y": "239"
+              },
+              {
+               "x": "742",
+               "y": "219"
+              }
+             ]
+            },
+            "words": [
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "707",
+                 "y": "219"
+                },
+                {
+                 "x": "707",
+                 "y": "239"
+                },
+                {
+                 "x": "742",
+                 "y": "239"
+                },
+                {
+                 "x": "742",
+                 "y": "219"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.980889678
+               }
+              ],
+              "text": "409",
+              "confidence": 0.980889678,
+              "entityIndex": "-1"
+             }
+            ],
+            "confidence": 0.980889678
+           },
+           {
+            "boundingBox": {
+             "vertices": [
+              {
+               "x": "708",
+               "y": "243"
+              },
+              {
+               "x": "708",
+               "y": "262"
+              },
+              {
+               "x": "741",
+               "y": "262"
+              },
+              {
+               "x": "741",
+               "y": "243"
+              }
+             ]
+            },
+            "words": [
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "708",
+                 "y": "243"
+                },
+                {
+                 "x": "708",
+                 "y": "263"
+                },
+                {
+                 "x": "741",
+                 "y": "263"
+                },
+                {
+                 "x": "741",
+                 "y": "243"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9770005941
+               }
+              ],
+              "text": "428",
+              "confidence": 0.9770005941,
+              "entityIndex": "-1"
+             }
+            ],
+            "confidence": 0.9770005941
+           }
+          ]
+         },
+         {
+          "boundingBox": {
+           "vertices": [
+            {
+             "x": "48",
+             "y": "329"
+            },
+            {
+             "x": "48",
+             "y": "346"
+            },
+            {
+             "x": "371",
+             "y": "346"
+            },
+            {
+             "x": "371",
+             "y": "329"
+            }
+           ]
+          },
+          "lines": [
+           {
+            "boundingBox": {
+             "vertices": [
+              {
+               "x": "48",
+               "y": "329"
+              },
+              {
+               "x": "48",
+               "y": "346"
+              },
+              {
+               "x": "371",
+               "y": "346"
+              },
+              {
+               "x": "371",
+               "y": "329"
+              }
+             ]
+            },
+            "words": [
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "48",
+                 "y": "332"
+                },
+                {
+                 "x": "48",
+                 "y": "346"
+                },
+                {
+                 "x": "217",
+                 "y": "346"
+                },
+                {
+                 "x": "217",
+                 "y": "332"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9274145365
+               }
+              ],
+              "text": "Редакторские",
+              "confidence": 0.9274145365,
+              "entityIndex": "-1"
+             },
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "230",
+                 "y": "332"
+                },
+                {
+                 "x": "230",
+                 "y": "345"
+                },
+                {
+                 "x": "371",
+                 "y": "345"
+                },
+                {
+                 "x": "371",
+                 "y": "332"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9274145365
+               }
+              ],
+              "text": "примечания",
+              "confidence": 0.9274145365,
+              "entityIndex": "-1"
+             }
+            ],
+            "confidence": 0.9274145365
+           }
+          ]
+         },
+         {
+          "boundingBox": {
+           "vertices": [
+            {
+             "x": "708",
+             "y": "327"
+            },
+            {
+             "x": "708",
+             "y": "344"
+            },
+            {
+             "x": "739",
+             "y": "344"
+            },
+            {
+             "x": "739",
+             "y": "327"
+            }
+           ]
+          },
+          "lines": [
+           {
+            "boundingBox": {
+             "vertices": [
+              {
+               "x": "708",
+               "y": "327"
+              },
+              {
+               "x": "708",
+               "y": "344"
+              },
+              {
+               "x": "739",
+               "y": "344"
+              },
+              {
+               "x": "739",
+               "y": "327"
+              }
+             ]
+            },
+            "words": [
+             {
+              "boundingBox": {
+               "vertices": [
+                {
+                 "x": "708",
+                 "y": "326"
+                },
+                {
+                 "x": "708",
+                 "y": "344"
+                },
+                {
+                 "x": "739",
+                 "y": "344"
+                },
+                {
+                 "x": "739",
+                 "y": "326"
+                }
+               ]
+              },
+              "languages": [
+               {
+                "languageCode": "ru",
+                "confidence": 0.9831321239
+               }
+              ],
+              "text": "433",
+              "confidence": 0.9831321239,
+              "entityIndex": "-1"
+             }
+            ],
+            "confidence": 0.9831321239
+           }
+          ]
+         }
+        ],
+        "width": "800",
+        "height": "1234"
+       }
+      ]
+     }
+    }
+   ]
+  }
+ ]
+}
