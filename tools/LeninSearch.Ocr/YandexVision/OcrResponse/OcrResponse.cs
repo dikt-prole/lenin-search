@@ -23,7 +23,7 @@ namespace LeninSearch.Ocr.YandexVision.OcrResponse
         public Vertex BottomRight => Vertices[2];
         public Vertex TopRight => Vertices[3];
 
-        public bool IsSamey(BoundingBox box)
+        public bool IsSameY(BoundingBox box)
         {
             var topLeft = TopLeft.Point();
             var bottomLeft = BottomLeft.Point();
@@ -83,7 +83,7 @@ namespace LeninSearch.Ocr.YandexVision.OcrResponse
         public double Confidence { get; set; }
     }
 
-    public class Block
+    public class OcrBlock
     {
         public BoundingBox BoundingBox { get; set; }
         public IList<Line> Lines { get; set; }
@@ -91,7 +91,7 @@ namespace LeninSearch.Ocr.YandexVision.OcrResponse
 
     public class Page
     {
-        public IList<Block> Blocks { get; set; }
+        public IList<OcrBlock> Blocks { get; set; }
         public string Width { get; set; }
         public string Height { get; set; }
     }

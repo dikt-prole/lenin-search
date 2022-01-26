@@ -1,4 +1,9 @@
-﻿namespace LeninSearch.Ocr.Labeling
+﻿using System.Drawing;
+using System.IO;
+using System.Linq;
+using LeninSearch.Ocr.YandexVision.OcrResponse;
+
+namespace LeninSearch.Ocr.Labeling
 {
     public class OcrBlockRow
     {
@@ -29,6 +34,64 @@
             if (Label == null) return $"{FileName}-{BlockIndex}";
 
             return $"{FileName}-{BlockIndex} ({Label})";
+        }
+
+        public static OcrBlockRow Construct(Page ocrPage, int blockIndex, string imageFile)
+        {
+            var block = ocrPage.Blocks[blockIndex];
+
+            var topLeft = block.BoundingBox.TopLeft.Point();
+            var topRight = block.BoundingBox.TopRight.Point();
+            var bottomLeft = block.BoundingBox.BottomLeft.Point();
+            var bottomRight = block.BoundingBox.BottomRight.Point();
+
+            using var image = new Bitmap(Image.FromFile(imageFile));
+
+            var words = block.Lines.SelectMany(l => l.Words).ToList();
+            var text = string.Join(" ", words.Select(w => w.Text));
+            var totalPixelWidth = block.Lines.Sum(l => l.BoundingBox.TopRight.Point().X - l.BoundingBox.TopLeft.Point().X);
+            var pixelsPerSymbol = 1.0 * totalPixelWidth / text.Length;
+            var rowWidth = block.BoundingBox.TopRight.Point().X - block.BoundingBox.TopLeft.Point().X;
+            var rowHeight = block.BoundingBox.BottomLeft.Point().Y - block.BoundingBox.TopLeft.Point().Y;
+            var pageLines = GetPageLines(imageFile);
+
+            var row = new OcrBlockRow
+            {
+                FileName = Path.GetFileNameWithoutExtension(imageFile),
+                BlockIndex = blockIndex,
+                PixelsPerSymbol = pixelsPerSymbol,
+                LeftIndent = topLeft.X,
+                RightIndent = image.Width - topRight.X,
+                TopIndent = topLeft.Y,
+                BottomIndent = image.Height - bottomLeft.Y,
+                SameyCount = ocrPage.Blocks.Count(b => b != block && block.BoundingBox.IsSameY(b.BoundingBox)),
+                Width = rowWidth,
+                Height = rowHeight,
+                WidthToHeightRatio = 1.0 * rowWidth / rowHeight,
+                WordCount = words.Count,
+                SymbolCount = text.Length,
+                TopLineDistance = block.BoundingBox.TopLeft.Point().Y - pageLines.TopY,
+                BottomLineDistance = pageLines.BottomY - block.BoundingBox.TopLeft.Point().Y
+            };
+
+            return row;
+        }
+
+        private static (int TopY, int BottomY) GetPageLines(string imageFile)
+        {
+            var pageLines = CvUtil.GetPageLines(imageFile);
+
+            if (pageLines.BottomY.HasValue && pageLines.TopY.HasValue)
+            {
+                return (pageLines.TopY.Value, pageLines.BottomY.Value);
+            }
+
+            using var image = Image.FromFile(imageFile);
+
+            var topY = pageLines.TopY ?? 0;
+            var bottomY = pageLines.BottomY ?? image.Height;
+
+            return (topY, bottomY);
         }
     }
 }

@@ -14,7 +14,7 @@ namespace LeninSearch.Ocr
                 case OcrBlockLabel.Garbage:
                     return Color.Brown;
                 case OcrBlockLabel.Image:
-                    return Color.OrangeRed;
+                    return Color.Orange;
                 case OcrBlockLabel.Comment:
                     return Color.DodgerBlue;
                 case OcrBlockLabel.Paragraph:

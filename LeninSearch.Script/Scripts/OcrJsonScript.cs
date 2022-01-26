@@ -1,22 +1,20 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Windows.Forms;
 using LeninSearch.Ocr;
 using Newtonsoft.Json;
 
 namespace LeninSearch.Script.Scripts
 {
-    public class OcrScript : IScript
+    public class OcrJsonScript : IScript
     {
-        public string Id => "ocr";
-        public string Arguments => "image-folder, ocr-folder";
+        public string Id => "ocr-json";
+        public string Arguments => "image-folder, json-folder";
         public void Execute(params string[] input)
         {
             var imageFolder = input[0];
-            var ocrFolder = input[1];
+            var jsonFolder = input[1];
             var apiKey = Environment.GetEnvironmentVariable("YandexApiKey");
             var httpClient = new HttpClient();
 
@@ -49,7 +47,7 @@ namespace LeninSearch.Script.Scripts
                 }
 
                 var responseJson = response.Content.ReadAsStringAsync().Result;
-                var ocrFile = Path.Combine(ocrFolder, Path.GetFileNameWithoutExtension(imageFile) + ".json");
+                var ocrFile = Path.Combine(jsonFolder, Path.GetFileNameWithoutExtension(imageFile) + ".json");
                 File.WriteAllText(ocrFile, responseJson);
             }
         }

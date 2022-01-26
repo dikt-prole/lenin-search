@@ -41,6 +41,7 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tableLayoutPanel6 = new System.Windows.Forms.TableLayoutPanel();
+            this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
@@ -52,7 +53,6 @@ namespace LeninSearch.Ocr
             this.grabage_panel = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.image_panel = new System.Windows.Forms.Panel();
-            this.label6 = new System.Windows.Forms.Label();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.tableLayoutPanel3.SuspendLayout();
@@ -242,6 +242,16 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel6.Size = new System.Drawing.Size(752, 28);
             this.tableLayoutPanel6.TabIndex = 2;
             // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(636, 6);
+            this.label6.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(54, 15);
+            this.label6.TabIndex = 11;
+            this.label6.Text = "Image (I)";
+            // 
             // label5
             // 
             this.label5.AutoSize = true;
@@ -345,16 +355,6 @@ namespace LeninSearch.Ocr
             this.image_panel.Name = "image_panel";
             this.image_panel.Size = new System.Drawing.Size(18, 18);
             this.image_panel.TabIndex = 10;
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(636, 6);
-            this.label6.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(54, 15);
-            this.label6.TabIndex = 11;
-            this.label6.Text = "Image (I)";
             // 
             // LabelingForm
             // 
