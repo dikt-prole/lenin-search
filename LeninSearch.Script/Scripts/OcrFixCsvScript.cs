@@ -40,6 +40,7 @@ namespace LeninSearch.Script.Scripts
                 var ocrResponse = JsonConvert.DeserializeObject<OcrResponse>(File.ReadAllText(jsonFile));
                 var page = ocrResponse.Results[0].Results[0].TextDetection.Pages[0];
                 var fixedRow = OcrBlockRow.Construct(page, row.BlockIndex, imageFile);
+                fixedRow.Label = row.Label;
                 rows[i] = fixedRow;
             }
 

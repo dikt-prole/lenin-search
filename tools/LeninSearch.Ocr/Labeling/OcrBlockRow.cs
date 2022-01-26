@@ -25,6 +25,7 @@ namespace LeninSearch.Ocr.Labeling
         public int SameyCount { get; set; }
         public int BottomLineDistance { get; set; }
         public int TopLineDistance { get; set; }
+        public int ImageIndex { get; set; }
 
         // block label
         public OcrBlockLabel? Label { get; set; }
@@ -54,6 +55,7 @@ namespace LeninSearch.Ocr.Labeling
             var rowWidth = block.BoundingBox.TopRight.Point().X - block.BoundingBox.TopLeft.Point().X;
             var rowHeight = block.BoundingBox.BottomLeft.Point().Y - block.BoundingBox.TopLeft.Point().Y;
             var pageLines = GetPageLines(imageFile);
+            var imageIndex = int.Parse(new string(Path.GetFileNameWithoutExtension(imageFile).Where(char.IsNumber).ToArray()));
 
             var row = new OcrBlockRow
             {
@@ -71,11 +73,14 @@ namespace LeninSearch.Ocr.Labeling
                 WordCount = words.Count,
                 SymbolCount = text.Length,
                 TopLineDistance = block.BoundingBox.TopLeft.Point().Y - pageLines.TopY,
-                BottomLineDistance = pageLines.BottomY - block.BoundingBox.TopLeft.Point().Y
+                BottomLineDistance = pageLines.BottomY - block.BoundingBox.TopLeft.Point().Y,
+                ImageIndex = imageIndex
             };
 
             return row;
         }
+
+        
 
         private static (int TopY, int BottomY) GetPageLines(string imageFile)
         {
