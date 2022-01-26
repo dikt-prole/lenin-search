@@ -33,6 +33,7 @@ namespace LeninSearch.Ocr
             title_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Title);
             comment_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Comment);
             grabage_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Garbage);
+            image_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Image);
             none_panel.BackColor = BlockPalette.GetColor(null);
 
             pictureBox1.MouseClick += (sender, args) =>
@@ -45,6 +46,7 @@ namespace LeninSearch.Ocr
 
                 var point = args.Location;
 
+                menu.Items.Add("Image", null, (o, a) => SetLabelAtPictureBoxPoint(point, OcrBlockLabel.Image));
                 menu.Items.Add("Paragraph", null, (o, a) => SetLabelAtPictureBoxPoint(point, OcrBlockLabel.Paragraph));
                 menu.Items.Add("Comment", null, (o, a) => SetLabelAtPictureBoxPoint(point, OcrBlockLabel.Comment));
                 menu.Items.Add("Title", null, (o, a) => SetLabelAtPictureBoxPoint(point, OcrBlockLabel.Title));
@@ -154,6 +156,8 @@ namespace LeninSearch.Ocr
             if (e.KeyCode == Keys.T) row.Label = OcrBlockLabel.Title;
 
             if (e.KeyCode == Keys.G) row.Label = OcrBlockLabel.Garbage;
+
+            if (e.KeyCode == Keys.I) row.Label = OcrBlockLabel.Image;
 
             if (e.KeyCode == Keys.N) row.Label = null;
 
