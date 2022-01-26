@@ -11,6 +11,9 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
 using LeninSearch.Ocr.YandexVision.OcrResponse;
 using Newtonsoft.Json;
 
@@ -27,6 +30,48 @@ namespace LeninSearch.Ocr
             InitializeComponent();
             load_btn.Click += Load_btnOnClick;
             ocr_btn.Click += Ocr_btnOnClick;
+            lines_btn.Click += Lines_btnOnClick;
+        }
+
+        private void Lines_btnOnClick(object? sender, EventArgs e)
+        {
+            using UMat gray = new UMat();
+            using UMat cannyEdges = new UMat();
+
+            Image<Bgr, Byte> img1 = new Image<Bgr, Byte>(_imageFile);
+
+            CvInvoke.CvtColor(img1, gray, ColorConversion.Bgr2Gray);
+
+            double cannyThreshold = 180.0;
+            double cannyThresholdLinking = 120.0;
+            CvInvoke.Canny(gray, cannyEdges, cannyThreshold, cannyThresholdLinking);
+            LineSegment2D[] lines = CvInvoke.HoughLinesP(
+                cannyEdges,
+                1, //Distance resolution in pixel-related units
+                Math.PI / 2, //Angle resolution measured in radians.
+                2, //threshold
+                50, //min Line width
+                1); //gap between lines
+
+            var image = new Bitmap(Image.FromFile(_imageFile));
+
+            using var g = Graphics.FromImage(image);
+
+            var horizontal = new LineSegment2D(new Point(0, 0), new Point(10, 0));
+
+            foreach (var line in lines)
+            {
+                var angle = line.GetExteriorAngleDegree(horizontal);
+
+                Debug.WriteLine($"The angle is: {angle}");
+
+                if (Math.Abs(angle) < 5)
+                {
+                    g.DrawLine(Pens.Red, line.P1, line.P2);
+                }
+            }
+
+            pictureBox1.Image = image;
         }
 
         private async void Ocr_btnOnClick(object? sender, EventArgs e)

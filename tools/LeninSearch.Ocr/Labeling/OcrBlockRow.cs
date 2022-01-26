@@ -18,7 +18,8 @@
         public int WordCount { get; set; }
         public int SymbolCount { get; set; }
         public int SameyCount { get; set; }
-
+        public int BottomLineDistance { get; set; }
+        public int TopLineDistance { get; set; }
 
         // block label
         public OcrBlockLabel? Label { get; set; }

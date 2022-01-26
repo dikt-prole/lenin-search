@@ -34,6 +34,7 @@ namespace LeninSearch.Ocr
             this.load_btn = new System.Windows.Forms.Button();
             this.ocr_btn = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.lines_btn = new System.Windows.Forms.Button();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -59,17 +60,17 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel2.ColumnCount = 4;
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel2.Controls.Add(this.load_btn, 0, 0);
             this.tableLayoutPanel2.Controls.Add(this.ocr_btn, 1, 0);
+            this.tableLayoutPanel2.Controls.Add(this.lines_btn, 2, 0);
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel2.Location = new System.Drawing.Point(0, 594);
             this.tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(0);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             this.tableLayoutPanel2.RowCount = 1;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 32F));
             this.tableLayoutPanel2.Size = new System.Drawing.Size(628, 32);
             this.tableLayoutPanel2.TabIndex = 0;
             // 
@@ -104,7 +105,17 @@ namespace LeninSearch.Ocr
             this.pictureBox1.TabIndex = 1;
             this.pictureBox1.TabStop = false;
             // 
-            // OcrForm
+            // lines_btn
+            // 
+            this.lines_btn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lines_btn.Location = new System.Drawing.Point(203, 3);
+            this.lines_btn.Name = "lines_btn";
+            this.lines_btn.Size = new System.Drawing.Size(94, 26);
+            this.lines_btn.TabIndex = 2;
+            this.lines_btn.Text = "Lines";
+            this.lines_btn.UseVisualStyleBackColor = true;
+            // 
+            // SingleImageOcrForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -126,6 +137,7 @@ namespace LeninSearch.Ocr
         private System.Windows.Forms.Button load_btn;
         private System.Windows.Forms.Button ocr_btn;
         private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.Button lines_btn;
     }
 }
 
