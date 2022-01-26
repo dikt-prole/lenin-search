@@ -10,45 +10,49 @@ namespace LeninSearch.Script.Scripts
     public class OcrJsonScript : IScript
     {
         public string Id => "ocr-json";
-        public string Arguments => "image-folder, json-folder";
+        public string Arguments => "book-folders";
         public void Execute(params string[] input)
         {
-            var imageFolder = input[0];
-            var jsonFolder = input[1];
             var apiKey = Environment.GetEnvironmentVariable("YandexApiKey");
             var httpClient = new HttpClient();
-
-            var imageFiles = Directory.GetFiles(imageFolder);
-            foreach (var imageFile in imageFiles)
+            var bookFolders = input;
+            foreach (var bookFolder in bookFolders)
             {
-                Console.WriteLine($"Processing '{imageFile}'");
+                var imageFolder = Path.Combine(bookFolder, "images");
+                var jsonFolder = Path.Combine(bookFolder, "json");
 
-                var imageBytes = File.ReadAllBytes(imageFile);
-                var ocrRequest = YtVisionRequest.Ocr(imageBytes);
-                var ocrRequestJson = JsonConvert.SerializeObject(ocrRequest, Formatting.Indented);
-                var request = new HttpRequestMessage
+                var imageFiles = Directory.GetFiles(imageFolder);
+                foreach (var imageFile in imageFiles)
                 {
-                    RequestUri = new Uri("https://vision.api.cloud.yandex.net/vision/v1/batchAnalyze"),
-                    Method = HttpMethod.Post,
-                    Headers =
+                    Console.WriteLine($"Processing '{imageFile}'");
+
+                    var imageBytes = File.ReadAllBytes(imageFile);
+                    var ocrRequest = YtVisionRequest.Ocr(imageBytes);
+                    var ocrRequestJson = JsonConvert.SerializeObject(ocrRequest, Formatting.Indented);
+                    var request = new HttpRequestMessage
                     {
-                        {HttpRequestHeader.ContentType.ToString(), "application/json"},
-                        {HttpRequestHeader.Authorization.ToString(), $"Api-Key {apiKey}"}
-                    },
-                    Content = new StringContent(ocrRequestJson)
-                };
+                        RequestUri = new Uri("https://vision.api.cloud.yandex.net/vision/v1/batchAnalyze"),
+                        Method = HttpMethod.Post,
+                        Headers =
+                        {
+                            {HttpRequestHeader.ContentType.ToString(), "application/json"},
+                            {HttpRequestHeader.Authorization.ToString(), $"Api-Key {apiKey}"}
+                        },
+                        Content = new StringContent(ocrRequestJson)
+                    };
 
-                var response = httpClient.SendAsync(request).Result;
+                    var response = httpClient.SendAsync(request).Result;
 
-                if (response.StatusCode != HttpStatusCode.OK)
-                {
-                    Console.WriteLine($"Response code: {response.StatusCode}");
-                    return;
+                    if (response.StatusCode != HttpStatusCode.OK)
+                    {
+                        Console.WriteLine($"Response code: {response.StatusCode}");
+                        return;
+                    }
+
+                    var responseJson = response.Content.ReadAsStringAsync().Result;
+                    var ocrFile = Path.Combine(jsonFolder, Path.GetFileNameWithoutExtension(imageFile) + ".json");
+                    File.WriteAllText(ocrFile, responseJson);
                 }
-
-                var responseJson = response.Content.ReadAsStringAsync().Result;
-                var ocrFile = Path.Combine(jsonFolder, Path.GetFileNameWithoutExtension(imageFile) + ".json");
-                File.WriteAllText(ocrFile, responseJson);
             }
         }
     }
