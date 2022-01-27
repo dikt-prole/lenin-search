@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
@@ -166,52 +167,60 @@ namespace LeninSearch.Ocr
 
         private void OcrBlock_lbOnSelectedIndexChanged(object? sender, EventArgs e)
         {
-            var bookFolder = Path.GetDirectoryName(csvFile_tb.Text);
-            var imageFolder = Path.Combine(bookFolder, "images");
-            var jsonFolder = Path.Combine(bookFolder, "json");
-            var fileName = _loadPages
-                ? ocrBlock_lb.SelectedItem as string
-                : (ocrBlock_lb.SelectedItem as OcrBlockRow)?.FileName;
-
-            if (fileName == null) return;
-
-            var imageFile = Directory.GetFiles(imageFolder).FirstOrDefault(f => f.Contains($"{fileName}."));
-            if (imageFile == null)
+            try
             {
-                MessageBox.Show("Image file not found", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+                var bookFolder = Path.GetDirectoryName(csvFile_tb.Text);
+                var imageFolder = Path.Combine(bookFolder, "images");
+                var jsonFolder = Path.Combine(bookFolder, "json");
+                var fileName = _loadPages
+                    ? ocrBlock_lb.SelectedItem as string
+                    : (ocrBlock_lb.SelectedItem as OcrBlockRow)?.FileName;
 
-            var jsonFile = Directory.GetFiles(jsonFolder).FirstOrDefault(f => f.Contains($"{fileName}."));
-            if (jsonFile == null)
-            {
-                MessageBox.Show("Json file not found", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+                if (fileName == null) return;
 
-            var image = new Bitmap(Image.FromFile(imageFile));
-            var ocrResponse = JsonConvert.DeserializeObject<OcrResponse>(File.ReadAllText(jsonFile));
-            var page = ocrResponse.Results[0].Results[0].TextDetection.Pages[0];
-
-            var drawRows = _loadPages
-                ? _blockRows.Where(r => r.FileName == fileName).ToList()
-                : new List<OcrBlockRow> { ocrBlock_lb.SelectedItem as OcrBlockRow };
-
-            foreach (var row in drawRows)
-            {
-                var block = page.Blocks[row.BlockIndex];
-                var box = block.BoundingBox;
-                using (var g = Graphics.FromImage(image))
+                var imageFile = Directory.GetFiles(imageFolder).FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == fileName);
+                if (imageFile == null)
                 {
-                    var pen = GetPen(row);
-
-                    g.DrawLine(pen, box.TopLeft.Point(), box.BottomLeft.Point());
-                    g.DrawLine(pen, box.BottomLeft.Point(), box.BottomRight.Point());
-                    g.DrawLine(pen, box.BottomRight.Point(), box.TopRight.Point());
-                    g.DrawLine(pen, box.TopRight.Point(), box.TopLeft.Point());
-
-                    //DrawFeatures(g, box, row);
+                    MessageBox.Show("Image file not found", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
 
-                pictureBox1.Image = image;
+                var jsonFile = Directory.GetFiles(jsonFolder).FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == fileName);
+                if (jsonFile == null)
+                {
+                    MessageBox.Show("Json file not found", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+
+                var image = new Bitmap(Image.FromFile(imageFile));
+                var ocrResponse = JsonConvert.DeserializeObject<OcrResponse>(File.ReadAllText(jsonFile));
+                var page = ocrResponse.Results[0].Results[0].TextDetection.Pages[0];
+
+                var drawRows = _loadPages
+                    ? _blockRows.Where(r => r.FileName == fileName).ToList()
+                    : new List<OcrBlockRow> { ocrBlock_lb.SelectedItem as OcrBlockRow };
+
+                foreach (var row in drawRows)
+                {
+                    var block = page.Blocks[row.BlockIndex];
+                    var box = block.BoundingBox;
+                    using (var g = Graphics.FromImage(image))
+                    {
+                        var pen = GetPen(row);
+
+                        g.DrawLine(pen, box.TopLeft.Point(), box.BottomLeft.Point());
+                        g.DrawLine(pen, box.BottomLeft.Point(), box.BottomRight.Point());
+                        g.DrawLine(pen, box.BottomRight.Point(), box.TopRight.Point());
+                        g.DrawLine(pen, box.TopRight.Point(), box.TopLeft.Point());
+
+                        //DrawFeatures(g, box, row);
+                    }
+
+                    pictureBox1.Image = image;
+                }
+            }
+            catch (Exception exc)
+            {
+                Debug.WriteLine(exc);
+                throw;
             }
         }
 
