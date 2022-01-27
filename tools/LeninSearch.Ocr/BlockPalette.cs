@@ -25,5 +25,7 @@ namespace LeninSearch.Ocr
 
             return Color.Black; 
         }
+
+        public static Color ImageBlockColor => Color.Coral;
     }
 }
