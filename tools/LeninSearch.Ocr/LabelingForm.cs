@@ -67,9 +67,9 @@ namespace LeninSearch.Ocr
 
             if (fileName == null) return;
 
-            var imageFile = Directory.GetFiles(imageFolder).FirstOrDefault(f => f.Contains($"{fileName}."));
+            var imageFile = Directory.GetFiles(imageFolder).FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == fileName);
             var image = new Bitmap(Image.FromFile(imageFile));
-            var jsonFile = Directory.GetFiles(jsonFolder).FirstOrDefault(f => f.Contains($"{fileName}."));
+            var jsonFile = Directory.GetFiles(jsonFolder).FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == fileName);
             var ocrResponse = JsonConvert.DeserializeObject<OcrResponse>(File.ReadAllText(jsonFile));
 
             var effImageHeight = pictureBox1.Height;
@@ -105,7 +105,7 @@ namespace LeninSearch.Ocr
 
             using (var csv = new CsvReader(new StreamReader(dialog.FileName), CultureInfo.InvariantCulture))
             {
-                _blockRows = csv.GetRecords<OcrBlockRow>().ToList();
+                _blockRows = csv.GetRecords<OcrBlockRow>().OrderBy(r => r.ImageIndex).ToList();
             }
 
             ocrBlock_lb.Items.Clear();
