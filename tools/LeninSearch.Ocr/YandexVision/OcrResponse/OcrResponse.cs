@@ -59,6 +59,15 @@ namespace LeninSearch.Ocr.YandexVision.OcrResponse
 
             return true;
         }
+
+        public Rectangle Rectangle()
+        {
+            var topLeft = TopLeft.Point();
+
+            var bottomRight = BottomRight.Point();
+
+            return new Rectangle(topLeft.X, topLeft.Y, bottomRight.X - topLeft.X, bottomRight.Y - topLeft.Y);
+        }
     }
 
     public class Language

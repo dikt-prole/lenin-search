@@ -19,6 +19,8 @@ namespace LeninSearch.Ocr
 
         private bool _loadPages;
 
+        private Point? _selectionStartPoint;
+
         public LabelingForm()
         {
             InitializeComponent();
@@ -37,28 +39,61 @@ namespace LeninSearch.Ocr
             image_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Image);
             none_panel.BackColor = BlockPalette.GetColor(null);
 
-            pictureBox1.MouseClick += (sender, args) =>
+            pictureBox1.Paint += PictureBox1OnPaint;
+            pictureBox1.MouseDown += (sender, args) =>
             {
                 if (!_loadPages) return;
-
                 if (args.Button != MouseButtons.Right) return;
+
+                _selectionStartPoint = args.Location;
+            };
+            pictureBox1.MouseUp += (sender, args) =>
+            {
+                if (!_loadPages) return;
+                if (args.Button != MouseButtons.Right) return;
+                if (_selectionStartPoint == null) return;
+
+                var xs = new List<int> { _selectionStartPoint.Value.X, args.Location.X }.OrderBy(i => i).ToList();
+                var ys = new List<int> { _selectionStartPoint.Value.Y, args.Location.Y }.OrderBy(i => i).ToList();
+                var rect = new Rectangle(xs[0], ys[0], xs[1] - xs[0], ys[1] - ys[0]);
 
                 var menu = new ContextMenuStrip();
 
                 var point = args.Location;
 
-                menu.Items.Add("Image", null, (o, a) => SetLabelAtPictureBoxPoint(point, OcrBlockLabel.Image));
-                menu.Items.Add("Paragraph", null, (o, a) => SetLabelAtPictureBoxPoint(point, OcrBlockLabel.Paragraph));
-                menu.Items.Add("Comment", null, (o, a) => SetLabelAtPictureBoxPoint(point, OcrBlockLabel.Comment));
-                menu.Items.Add("Title", null, (o, a) => SetLabelAtPictureBoxPoint(point, OcrBlockLabel.Title));
-                menu.Items.Add("Garbage", null, (o, a) => SetLabelAtPictureBoxPoint(point, OcrBlockLabel.Garbage));
-                menu.Items.Add("None", null, (o, a) => SetLabelAtPictureBoxPoint(point, null));
+                menu.Items.Add("Image", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Image));
+                menu.Items.Add("Paragraph", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Paragraph));
+                menu.Items.Add("Comment", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Comment));
+                menu.Items.Add("Title", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Title));
+                menu.Items.Add("Garbage", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Garbage));
+                menu.Items.Add("None", null, (o, a) => SetLabelForIntersectingBlocks(rect, null));
 
                 menu.Show(pictureBox1, point);
+
+                _selectionStartPoint = null;
+            };
+            pictureBox1.MouseMove += (sender, args) =>
+            {
+                if (!_loadPages) return;
+                if (args.Button != MouseButtons.Right) return;
+                if (_selectionStartPoint == null) return;
+
+                pictureBox1.Refresh();
             };
         }
 
-        private void SetLabelAtPictureBoxPoint(Point point, OcrBlockLabel? label)
+        private void PictureBox1OnPaint(object sender, PaintEventArgs e)
+        {
+            if (_selectionStartPoint == null) return;
+
+            var currentPoint = pictureBox1.PointToClient(Cursor.Position);
+            var xs = new List<int> {_selectionStartPoint.Value.X, currentPoint.X}.OrderBy(i => i).ToList();
+            var ys = new List<int> { _selectionStartPoint.Value.Y, currentPoint.Y }.OrderBy(i => i).ToList();
+            var rect = new Rectangle(xs[0], ys[0], xs[1] - xs[0], ys[1] - ys[0]);
+
+            e.Graphics.DrawRectangle(Pens.Black, rect);
+        }
+        private void SetLabelForIntersectingBlocks(Rectangle rect, OcrBlockLabel? label)
         {
             var bookFolder = Path.GetDirectoryName(csvFile_tb.Text);
             var imageFolder = Path.Combine(bookFolder, "images");
@@ -72,21 +107,25 @@ namespace LeninSearch.Ocr
             var jsonFile = Directory.GetFiles(jsonFolder).FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == fileName);
             var ocrResponse = JsonConvert.DeserializeObject<OcrResponse>(File.ReadAllText(jsonFile));
 
-            var effImageHeight = pictureBox1.Height;
-            var effImageWidth = image.Width * effImageHeight / image.Height;
-            var effLeftMargin = (pictureBox1.Width - effImageWidth) / 2;
-            var effPointX = (point.X - effLeftMargin) * image.Width / effImageWidth;
-            var effPointY = point.Y * image.Height / effImageHeight;
+            var pbToOriginal = 1.0 * image.Height / pictureBox1.Height;
+            var originalRectY = (int)(rect.Y * pbToOriginal);
+            var pbLeftMargin = (pictureBox1.Width - image.Width / pbToOriginal) / 2;
+            var originalRectX = (int) ((rect.X - pbLeftMargin) * pbToOriginal);
+            var originalRectWidth = (int) (rect.Size.Width * pbToOriginal);
+            var originalRectHeight = (int)(rect.Size.Height * pbToOriginal);
+            var originalRect = new Rectangle(originalRectX, originalRectY, originalRectWidth, originalRectHeight);
 
             var page = ocrResponse.Results[0].Results[0].TextDetection.Pages[0];
-            var block = page.Blocks.FirstOrDefault(b => b.BoundingBox.Contains(effPointX, effPointY));
-
-            if (block != null)
+            foreach (var block in page.Blocks)
             {
-                var row = _blockRows.First(r => r.FileName == fileName && r.BlockIndex == page.Blocks.IndexOf(block));
-                row.Label = label;
-                ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = fileName;
+                if (block.BoundingBox.Rectangle().IntersectsWith(originalRect))
+                {
+                    var row = _blockRows.First(r => r.FileName == fileName && r.BlockIndex == page.Blocks.IndexOf(block));
+                    row.Label = label;
+                }
             }
+
+            ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = fileName;
         }
 
         private void LoadPages_btnOnClick(object? sender, EventArgs e)
