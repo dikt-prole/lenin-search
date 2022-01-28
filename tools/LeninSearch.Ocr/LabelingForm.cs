@@ -124,39 +124,49 @@ namespace LeninSearch.Ocr
             // 2. generate image blocks
             var bookFolder = Path.GetDirectoryName(csvFile_tb.Text);
             var jsonFolder = Path.Combine(bookFolder, "json");
+            var imageFolder = Path.Combine(bookFolder, "images");
             _imageBlocks = new List<ImageBlock>();
             foreach (var fileName in fileBlockGroups.Keys)
             {
                 var jsonFile = Path.Combine(jsonFolder, fileName + ".json");
+                var imageFile = Directory.GetFiles(imageFolder).First(f => Path.GetFileNameWithoutExtension(f) == fileName);
+                using var image = Image.FromFile(imageFile);
+
                 var ocrResponse = JsonConvert.DeserializeObject<OcrResponse>(File.ReadAllText(jsonFile));
                 var page = ocrResponse.Results[0].Results[0].TextDetection.Pages[0];
                 foreach (var blockGroup in fileBlockGroups[fileName])
                 {
-                    var topLeftX = int.MaxValue;
-                    var topLeftY = int.MaxValue;
-                    var bottomRightX = 0;
-                    var bottomRightY = 0;
+                    var topY = int.MaxValue;
+                    var leftX = int.MaxValue;
+                    var bottomY = 0;
+                    var rightX = 0;
 
                     foreach (var row in blockGroup)
                     {
                         var block = page.Blocks[row.BlockIndex];
 
                         var topLeft = block.BoundingBox.TopLeft.Point();
-                        if (topLeft.X < topLeftX) topLeftX = topLeft.X;
-                        if (topLeft.Y < topLeftY) topLeftY = topLeft.Y;
+                        if (topLeft.X < leftX) leftX = topLeft.X;
+                        if (topLeft.Y < topY) topY = topLeft.Y;
 
                         var bottomRight = block.BoundingBox.BottomRight.Point();
-                        if (bottomRight.X > bottomRightX) bottomRightX = bottomRight.X;
-                        if (bottomRight.Y > bottomRightY) bottomRightY = bottomRight.Y;
+                        if (bottomRight.X > rightX) rightX = bottomRight.X;
+                        if (bottomRight.Y > bottomY) bottomY = bottomRight.Y;
                     }
+
+                    var defaultLeft = 40;
+                    if (leftX > defaultLeft) leftX = defaultLeft;
+
+                    var defaultRight = image.Width - defaultLeft;
+                    if (rightX < defaultRight) rightX = defaultRight;
 
                     var imageBlock = new ImageBlock
                     {
                         FileName = fileName,
-                        TopLeftX = topLeftX - 10,
-                        TopLeftY = topLeftY - 10,
-                        BottomRightX = bottomRightX + 10,
-                        BottomRightY = bottomRightY + 10
+                        TopLeftX = leftX,
+                        TopLeftY = topY - 10,
+                        BottomRightX = rightX,
+                        BottomRightY = bottomY + 10
                     };
 
                     _imageBlocks.Add(imageBlock);
@@ -216,6 +226,7 @@ namespace LeninSearch.Ocr
                     menu.Items.Add("Garbage", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Garbage));
                     menu.Items.Add("None", null, (o, a) => SetLabelForIntersectingBlocks(rect, null));
                     menu.Items.Add("Add Image Block", null, (o, a) => AddImageBlock(rect));
+                    menu.Items.Add("Remove Image Block", null, (o, a) => RemoveImageBlock(rect));
                     menu.Show(pictureBox1, e.Location);
                     _selectionStartPoint = null;
                 }
@@ -312,6 +323,17 @@ namespace LeninSearch.Ocr
 
             _imageBlocks.Add(imageBlock);
             ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = fileName;
+        }
+
+        private void RemoveImageBlock(Rectangle pbRectangle)
+        {
+            var fileName = ocrBlock_lb.SelectedItem as string;
+            if (fileName == null) return;
+
+            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
+            _imageBlocks?.RemoveAll(ib => ib.FileName == fileName && ib.Rectangle.IntersectsWith(originalRect));
+
+            pictureBox1.Refresh();
         }
 
         private void LoadPages_btnOnClick(object? sender, EventArgs e)

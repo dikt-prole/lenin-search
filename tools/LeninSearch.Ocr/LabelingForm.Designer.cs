@@ -38,6 +38,7 @@ namespace LeninSearch.Ocr
             this.loadPages_btn = new System.Windows.Forms.Button();
             this.autoAddImageBlocks_btn = new System.Windows.Forms.Button();
             this.saveImageBlocks_btn = new System.Windows.Forms.Button();
+            this.loadImageBlocks_btn = new System.Windows.Forms.Button();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.ocrBlock_lb = new System.Windows.Forms.ListBox();
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
@@ -55,7 +56,6 @@ namespace LeninSearch.Ocr
             this.grabage_panel = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.image_panel = new System.Windows.Forms.Panel();
-            this.loadImageBlocks_btn = new System.Windows.Forms.Button();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.tableLayoutPanel3.SuspendLayout();
@@ -181,6 +181,17 @@ namespace LeninSearch.Ocr
             this.saveImageBlocks_btn.TabIndex = 6;
             this.saveImageBlocks_btn.Text = "Save Image Blocks";
             this.saveImageBlocks_btn.UseVisualStyleBackColor = true;
+            // 
+            // loadImageBlocks_btn
+            // 
+            this.loadImageBlocks_btn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.loadImageBlocks_btn.Location = new System.Drawing.Point(813, 1);
+            this.loadImageBlocks_btn.Margin = new System.Windows.Forms.Padding(1);
+            this.loadImageBlocks_btn.Name = "loadImageBlocks_btn";
+            this.loadImageBlocks_btn.Size = new System.Drawing.Size(118, 26);
+            this.loadImageBlocks_btn.TabIndex = 7;
+            this.loadImageBlocks_btn.Text = "Load Image Blocks";
+            this.loadImageBlocks_btn.UseVisualStyleBackColor = true;
             // 
             // tableLayoutPanel3
             // 
@@ -386,17 +397,6 @@ namespace LeninSearch.Ocr
             this.image_panel.Name = "image_panel";
             this.image_panel.Size = new System.Drawing.Size(18, 18);
             this.image_panel.TabIndex = 10;
-            // 
-            // loadImageBlocks_btn
-            // 
-            this.loadImageBlocks_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.loadImageBlocks_btn.Location = new System.Drawing.Point(813, 1);
-            this.loadImageBlocks_btn.Margin = new System.Windows.Forms.Padding(1);
-            this.loadImageBlocks_btn.Name = "loadImageBlocks_btn";
-            this.loadImageBlocks_btn.Size = new System.Drawing.Size(118, 26);
-            this.loadImageBlocks_btn.TabIndex = 7;
-            this.loadImageBlocks_btn.Text = "Load Image Blocks";
-            this.loadImageBlocks_btn.UseVisualStyleBackColor = true;
             // 
             // LabelingForm
             // 
