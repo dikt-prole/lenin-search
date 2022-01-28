@@ -179,7 +179,7 @@ namespace LeninSearch.Ocr
 
         private void PictureBox1OnMouseDown(object sender, MouseEventArgs e)
         {
-            if (_loadPages)
+            if (_loadPages && pictureBox1.Image != null)
             {
                 if (e.Button == MouseButtons.Right)
                 {
@@ -195,13 +195,29 @@ namespace LeninSearch.Ocr
                         var originalPoint = pictureBox1.ToOriginalPoint(e.Location);
                         if (ib.TopLeftRectangle.Contains(originalPoint))
                         {
-                            _moveImageBlockDragPoint = p => { ib.TopLeftX = p.X; ib.TopLeftY = p.Y; pictureBox1.Refresh(); };
+                            _moveImageBlockDragPoint = p =>
+                            {
+                                if (ModifierKeys != Keys.Shift)
+                                {
+                                    ib.TopLeftX = p.X;
+                                }
+                                ib.TopLeftY = p.Y; 
+                                pictureBox1.Refresh();
+                            };
                             break;
                         }
 
                         if (ib.BottomRightRectangle.Contains(originalPoint))
                         {
-                            _moveImageBlockDragPoint = p => { ib.BottomRightX = p.X; ib.BottomRightY = p.Y; pictureBox1.Refresh(); };
+                            _moveImageBlockDragPoint = p =>
+                            {
+                                if (ModifierKeys != Keys.Shift)
+                                {
+                                    ib.BottomRightX = p.X;
+                                }
+                                ib.BottomRightY = p.Y; 
+                                pictureBox1.Refresh();
+                            };
                             break;
                         }
                     }
