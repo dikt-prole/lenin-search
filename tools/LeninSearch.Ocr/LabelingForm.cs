@@ -23,6 +23,8 @@ namespace LeninSearch.Ocr
 
         private List<ImageBlock> _imageBlocks;
 
+        private Action<Point> _moveImageBlockDragPoint;
+
         public LabelingForm()
         {
             InitializeComponent();
@@ -42,49 +44,83 @@ namespace LeninSearch.Ocr
             none_panel.BackColor = BlockPalette.GetColor(null);
 
             pictureBox1.Paint += PictureBox1OnPaint;
-            pictureBox1.MouseDown += (sender, args) =>
-            {
-                if (!_loadPages) return;
-                if (args.Button != MouseButtons.Right) return;
-
-                _selectionStartPoint = args.Location;
-            };
-            pictureBox1.MouseUp += (sender, args) =>
-            {
-                if (!_loadPages) return;
-                if (args.Button != MouseButtons.Right) return;
-                if (_selectionStartPoint == null) return;
-
-                var xs = new List<int> { _selectionStartPoint.Value.X, args.Location.X }.OrderBy(i => i).ToList();
-                var ys = new List<int> { _selectionStartPoint.Value.Y, args.Location.Y }.OrderBy(i => i).ToList();
-                var rect = new Rectangle(xs[0], ys[0], xs[1] - xs[0], ys[1] - ys[0]);
-
-                var menu = new ContextMenuStrip();
-
-                var point = args.Location;
-
-                menu.Items.Add("Image", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Image));
-                menu.Items.Add("Paragraph", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Paragraph));
-                menu.Items.Add("Comment", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Comment));
-                menu.Items.Add("Title", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Title));
-                menu.Items.Add("Garbage", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Garbage));
-                menu.Items.Add("None", null, (o, a) => SetLabelForIntersectingBlocks(rect, null));
-                menu.Items.Add("Add Image Block", null, (o, a) => AddImageBlock(rect));
-
-                menu.Show(pictureBox1, point);
-
-                _selectionStartPoint = null;
-            };
+            pictureBox1.MouseDown += PictureBox1OnMouseDown;
+            pictureBox1.MouseUp += PictureBox1OnMouseUp;
             pictureBox1.MouseMove += PictureBox1OnMouseMove;
+        }
+
+        private void PictureBox1OnMouseDown(object sender, MouseEventArgs e)
+        {
+            if (_loadPages)
+            {
+                if (e.Button == MouseButtons.Right)
+                {
+                    _selectionStartPoint = e.Location;
+                }
+
+                if (e.Button == MouseButtons.Left && ocrBlock_lb.SelectedItem is string fileName)
+                {
+                    _moveImageBlockDragPoint = null;
+                    var fileImageBlocks = _imageBlocks?.Where(ib => ib.FileName == fileName).ToList() ?? new List<ImageBlock>();
+                    foreach (var ib in fileImageBlocks)
+                    {
+                        var originalPoint = pictureBox1.ToOriginalPoint(e.Location);
+                        if (ib.TopLeftRectangle.Contains(originalPoint))
+                        {
+                            _moveImageBlockDragPoint = p => { ib.TopLeftX = p.X; ib.TopLeftY = p.Y; pictureBox1.Refresh(); };
+                            break;
+                        }
+
+                        if (ib.BottomRightRectangle.Contains(originalPoint))
+                        {
+                            _moveImageBlockDragPoint = p => { ib.BottomRightX = p.X; ib.BottomRightY = p.Y; pictureBox1.Refresh(); };
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void PictureBox1OnMouseUp(object sender, MouseEventArgs e)
+        {
+            if (_loadPages)
+            {
+                if (e.Button == MouseButtons.Right && _selectionStartPoint != null)
+                {
+                    var xs = new List<int> { _selectionStartPoint.Value.X, e.Location.X }.OrderBy(i => i).ToList();
+                    var ys = new List<int> { _selectionStartPoint.Value.Y, e.Location.Y }.OrderBy(i => i).ToList();
+                    var rect = new Rectangle(xs[0], ys[0], xs[1] - xs[0], ys[1] - ys[0]);
+                    var menu = new ContextMenuStrip();
+                    menu.Items.Add("Image", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Image));
+                    menu.Items.Add("Paragraph", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Paragraph));
+                    menu.Items.Add("Comment", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Comment));
+                    menu.Items.Add("Title", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Title));
+                    menu.Items.Add("Garbage", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Garbage));
+                    menu.Items.Add("None", null, (o, a) => SetLabelForIntersectingBlocks(rect, null));
+                    menu.Items.Add("Add Image Block", null, (o, a) => AddImageBlock(rect));
+                    menu.Show(pictureBox1, e.Location);
+                    _selectionStartPoint = null;
+                }
+
+                if (e.Button == MouseButtons.Left)
+                {
+                    _moveImageBlockDragPoint = null;
+                }
+            }
         }
 
         private void PictureBox1OnMouseMove(object sender, MouseEventArgs e)
         {
-            if (!_loadPages) return;
-            if (e.Button != MouseButtons.Right) return;
-            if (_selectionStartPoint == null) return;
+            if (e.Button == MouseButtons.Right && _selectionStartPoint != null)
+            {
+                pictureBox1.Refresh();
+            }
 
-            pictureBox1.Refresh();
+            if (e.Button == MouseButtons.Left)
+            {
+                var originalPoint = pictureBox1.ToOriginalPoint(e.Location);
+                _moveImageBlockDragPoint?.Invoke(originalPoint);
+            }
         }
 
         private void PictureBox1OnPaint(object sender, PaintEventArgs e)
@@ -101,36 +137,29 @@ namespace LeninSearch.Ocr
                 e.Graphics.DrawRectangle(Pens.Black, rect);
             }
 
-            var fileImageBlocks = _imageBlocks?.Where(b => b.FileName == fileName).ToList();
-            foreach (var ib in fileImageBlocks ?? new List<ImageBlock>())
+            var fileImageBlocks = _imageBlocks?.Where(b => b.FileName == fileName).ToList() ?? new List<ImageBlock>();
+            foreach (var ib in fileImageBlocks)
             {
-                var originalRectangle = new Rectangle(ib.TopLeftX, ib.TopLeftY, ib.BottomRightX - ib.TopLeftX, ib.BottomRightY - ib.TopLeftY);
-                var pbRectangle = ToPictureBoxRectangle(originalRectangle, pictureBox1.Image);
-                var imageBlockPen = new Pen(BlockPalette.ImageBlockColor, 2);
-                e.Graphics.DrawRectangle(imageBlockPen, pbRectangle);
+                using var ibPen = new Pen(BlockPalette.ImageBlockColor, 2);
+                e.Graphics.DrawRectangle(ibPen, pictureBox1.ToPictureBoxRectangle(ib.Rectangle));
 
-                using var imageBlockBrush = new SolidBrush(BlockPalette.ImageBlockColor);
-                var topLeftRect = new Rectangle(pbRectangle.X - 4, pbRectangle.Y - 4, 8, 8);
-                e.Graphics.FillRectangle(imageBlockBrush, topLeftRect);
-                var bottomRightRect = new Rectangle(pbRectangle.X + pbRectangle.Width - 4, pbRectangle.Y + pbRectangle.Height - 4, 8, 8);
-                e.Graphics.FillRectangle(imageBlockBrush, bottomRightRect);
+                using var ibBrush = new SolidBrush(BlockPalette.ImageBlockColor);
+                e.Graphics.FillRectangle(ibBrush, pictureBox1.ToPictureBoxRectangle(ib.TopLeftRectangle));
+                e.Graphics.FillRectangle(ibBrush, pictureBox1.ToPictureBoxRectangle(ib.BottomRightRectangle));
             }
         }
-        private void SetLabelForIntersectingBlocks(Rectangle rect, OcrBlockLabel? label)
+        private void SetLabelForIntersectingBlocks(Rectangle pbRectangle, OcrBlockLabel? label)
         {
             var bookFolder = Path.GetDirectoryName(csvFile_tb.Text);
-            var imageFolder = Path.Combine(bookFolder, "images");
             var jsonFolder = Path.Combine(bookFolder, "json");
             var fileName = ocrBlock_lb.SelectedItem as string;
 
             if (fileName == null) return;
 
-            var imageFile = Directory.GetFiles(imageFolder).FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == fileName);
-            var image = new Bitmap(Image.FromFile(imageFile));
             var jsonFile = Directory.GetFiles(jsonFolder).FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == fileName);
             var ocrResponse = JsonConvert.DeserializeObject<OcrResponse>(File.ReadAllText(jsonFile));
 
-            var originalRect = ToOriginalRectangle(rect, image);
+            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
 
             var page = ocrResponse.Results[0].Results[0].TextDetection.Pages[0];
             foreach (var block in page.Blocks)
@@ -145,12 +174,12 @@ namespace LeninSearch.Ocr
             ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = fileName;
         }
 
-        private void AddImageBlock(Rectangle rect)
+        private void AddImageBlock(Rectangle pbRectangle)
         {
             var fileName = ocrBlock_lb.SelectedItem as string;
             if (fileName == null) return;
 
-            var originalRect = ToOriginalRectangle(rect, pictureBox1.Image);
+            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
 
             var imageBlock = new ImageBlock
             {
@@ -165,28 +194,6 @@ namespace LeninSearch.Ocr
 
             _imageBlocks.Add(imageBlock);
             ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = fileName;
-        }
-
-        private Rectangle ToOriginalRectangle(Rectangle pictureBoxRectangle, Image image)
-        {
-            var pbToOriginal = 1.0 * image.Height / pictureBox1.Height;
-            var originalRectY = (int)(pictureBoxRectangle.Y * pbToOriginal);
-            var pbLeftMargin = (pictureBox1.Width - image.Width / pbToOriginal) / 2;
-            var originalRectX = (int)((pictureBoxRectangle.X - pbLeftMargin) * pbToOriginal);
-            var originalRectWidth = (int)(pictureBoxRectangle.Size.Width * pbToOriginal);
-            var originalRectHeight = (int)(pictureBoxRectangle.Size.Height * pbToOriginal);
-            return new Rectangle(originalRectX, originalRectY, originalRectWidth, originalRectHeight);
-        }
-
-        private Rectangle ToPictureBoxRectangle(Rectangle originalRectangle, Image image)
-        {
-            var originalToPb = 1.0 * pictureBox1.Height / image.Height;
-            var pbRectY = (int)(originalRectangle.Y * originalToPb);
-            var pbLeftMargin = (pictureBox1.Width - image.Width * originalToPb) / 2;
-            var pbRectX = (int)(originalRectangle.X * originalToPb + pbLeftMargin);
-            var pbRectWidth = (int)(originalRectangle.Size.Width * originalToPb);
-            var pbRectHeight = (int)(originalRectangle.Size.Height * originalToPb);
-            return new Rectangle(pbRectX, pbRectY, pbRectWidth, pbRectHeight);
         }
 
         private void LoadPages_btnOnClick(object? sender, EventArgs e)
