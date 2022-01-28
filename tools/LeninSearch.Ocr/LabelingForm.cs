@@ -47,6 +47,124 @@ namespace LeninSearch.Ocr
             pictureBox1.MouseDown += PictureBox1OnMouseDown;
             pictureBox1.MouseUp += PictureBox1OnMouseUp;
             pictureBox1.MouseMove += PictureBox1OnMouseMove;
+
+            autoAddImageBlocks_btn.Click += AutoAddImageBlocks_btnOnClick;
+            saveImageBlocks_btn.Click += SaveImageBlocks_btnOnClick;
+            loadImageBlocks_btn.Click += LoadImageBlocks_btnOnClick;
+        }
+
+        private void LoadImageBlocks_btnOnClick(object? sender, EventArgs e)
+        {
+            var dialog = new OpenFileDialog
+            {
+                Filter = "JSON|*.json",
+                Title = "Load image blocks"
+            };
+
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+
+            _imageBlocks = JsonConvert.DeserializeObject<List<ImageBlock>>(File.ReadAllText(dialog.FileName));
+
+            MessageBox.Show($"Image blocks loaded", "Image blocks", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void SaveImageBlocks_btnOnClick(object? sender, EventArgs e)
+        {
+            var dialog = new SaveFileDialog
+            {
+                Filter = "JSON|*.json",
+                Title = "Save image blocks"
+            };
+
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+
+            if (_imageBlocks == null) return;
+
+            var imageBlocksJson = JsonConvert.SerializeObject(_imageBlocks);
+            File.WriteAllText(dialog.FileName, imageBlocksJson);
+
+            MessageBox.Show($"Image blocks saved to '{dialog.FileName}'", "Image blocks", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void AutoAddImageBlocks_btnOnClick(object sender, EventArgs e)
+        {
+            // 1. get image row groups
+            var fileBlockGroups = new Dictionary<string, List<List<OcrBlockRow>>>();
+            var fileNames = _blockRows.OrderBy(r => r.ImageIndex).Select(r => r.FileName).Distinct().ToList();
+            foreach (var fileName in fileNames)
+            {
+                var blockGroups = new List<List<OcrBlockRow>>();
+                var blockGroup = new List<OcrBlockRow>();
+                var rows = _blockRows.Where(r => r.FileName == fileName).OrderBy(r => r.BlockIndex).ToList();
+
+                foreach (var row in rows)
+                {
+                    if (row.Label != OcrBlockLabel.Image && blockGroup.Any())
+                    {
+                        blockGroups.Add(blockGroup);
+                        blockGroup = new List<OcrBlockRow>();
+                    }
+                    else if (row.Label == OcrBlockLabel.Image)
+                    {
+                        blockGroup.Add(row);
+                    }
+                }
+
+                if (blockGroup.Any())
+                {
+                    blockGroups.Add(blockGroup);
+                }
+
+                if (blockGroups.Any())
+                {
+                    fileBlockGroups.Add(fileName, blockGroups);
+                }
+            }
+
+            // 2. generate image blocks
+            var bookFolder = Path.GetDirectoryName(csvFile_tb.Text);
+            var jsonFolder = Path.Combine(bookFolder, "json");
+            _imageBlocks = new List<ImageBlock>();
+            foreach (var fileName in fileBlockGroups.Keys)
+            {
+                var jsonFile = Path.Combine(jsonFolder, fileName + ".json");
+                var ocrResponse = JsonConvert.DeserializeObject<OcrResponse>(File.ReadAllText(jsonFile));
+                var page = ocrResponse.Results[0].Results[0].TextDetection.Pages[0];
+                foreach (var blockGroup in fileBlockGroups[fileName])
+                {
+                    var topLeftX = int.MaxValue;
+                    var topLeftY = int.MaxValue;
+                    var bottomRightX = 0;
+                    var bottomRightY = 0;
+
+                    foreach (var row in blockGroup)
+                    {
+                        var block = page.Blocks[row.BlockIndex];
+
+                        var topLeft = block.BoundingBox.TopLeft.Point();
+                        if (topLeft.X < topLeftX) topLeftX = topLeft.X;
+                        if (topLeft.Y < topLeftY) topLeftY = topLeft.Y;
+
+                        var bottomRight = block.BoundingBox.BottomRight.Point();
+                        if (bottomRight.X > bottomRightX) bottomRightX = bottomRight.X;
+                        if (bottomRight.Y > bottomRightY) bottomRightY = bottomRight.Y;
+                    }
+
+                    var imageBlock = new ImageBlock
+                    {
+                        FileName = fileName,
+                        TopLeftX = topLeftX - 10,
+                        TopLeftY = topLeftY - 10,
+                        BottomRightX = bottomRightX + 10,
+                        BottomRightY = bottomRightY + 10
+                    };
+
+                    _imageBlocks.Add(imageBlock);
+                }
+            }
+
+            MessageBox.Show("Image blocks were auto generated", "Image blocks", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            pictureBox1.Refresh();
         }
 
         private void PictureBox1OnMouseDown(object sender, MouseEventArgs e)
