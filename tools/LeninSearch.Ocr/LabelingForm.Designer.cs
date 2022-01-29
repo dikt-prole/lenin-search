@@ -32,13 +32,6 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.csvFile_tb = new System.Windows.Forms.TextBox();
-            this.loadBlocks_btn = new System.Windows.Forms.Button();
-            this.saveLabeled_btn = new System.Windows.Forms.Button();
-            this.saveAll_btn = new System.Windows.Forms.Button();
-            this.loadPages_btn = new System.Windows.Forms.Button();
-            this.autoAddImageBlocks_btn = new System.Windows.Forms.Button();
-            this.saveImageBlocks_btn = new System.Windows.Forms.Button();
-            this.loadImageBlocks_btn = new System.Windows.Forms.Button();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.ocrBlock_lb = new System.Windows.Forms.ListBox();
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
@@ -56,12 +49,23 @@ namespace LeninSearch.Ocr
             this.grabage_panel = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.image_panel = new System.Windows.Forms.Panel();
+            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.oCRToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.loadPages_mi = new System.Windows.Forms.ToolStripMenuItem();
+            this.loadBlocks_mi = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveLabeledBlocks_mi = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveAllBlocks_mi = new System.Windows.Forms.ToolStripMenuItem();
+            this.imageBlocksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.autoAddImageBlocks_mi = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveImageBlocks_mi = new System.Windows.Forms.ToolStripMenuItem();
+            this.loadImageBlocks_mi = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.tableLayoutPanel3.SuspendLayout();
             this.tableLayoutPanel4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.tableLayoutPanel6.SuspendLayout();
+            this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // tableLayoutPanel1
@@ -71,33 +75,26 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel2, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel3, 0, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 24);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 2;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(932, 587);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(932, 563);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // tableLayoutPanel2
             // 
-            this.tableLayoutPanel2.ColumnCount = 8;
+            this.tableLayoutPanel2.ColumnCount = 2;
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 150F));
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 120F));
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 120F));
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel2.Controls.Add(this.csvFile_tb, 0, 0);
-            this.tableLayoutPanel2.Controls.Add(this.loadBlocks_btn, 2, 0);
-            this.tableLayoutPanel2.Controls.Add(this.saveLabeled_btn, 3, 0);
-            this.tableLayoutPanel2.Controls.Add(this.saveAll_btn, 4, 0);
-            this.tableLayoutPanel2.Controls.Add(this.loadPages_btn, 1, 0);
-            this.tableLayoutPanel2.Controls.Add(this.autoAddImageBlocks_btn, 5, 0);
-            this.tableLayoutPanel2.Controls.Add(this.saveImageBlocks_btn, 6, 0);
-            this.tableLayoutPanel2.Controls.Add(this.loadImageBlocks_btn, 7, 0);
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel2.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(0);
@@ -113,85 +110,8 @@ namespace LeninSearch.Ocr
             this.csvFile_tb.Location = new System.Drawing.Point(3, 3);
             this.csvFile_tb.Name = "csvFile_tb";
             this.csvFile_tb.ReadOnly = true;
-            this.csvFile_tb.Size = new System.Drawing.Size(136, 23);
+            this.csvFile_tb.Size = new System.Drawing.Size(826, 23);
             this.csvFile_tb.TabIndex = 0;
-            // 
-            // loadBlocks_btn
-            // 
-            this.loadBlocks_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.loadBlocks_btn.Location = new System.Drawing.Point(243, 1);
-            this.loadBlocks_btn.Margin = new System.Windows.Forms.Padding(1);
-            this.loadBlocks_btn.Name = "loadBlocks_btn";
-            this.loadBlocks_btn.Size = new System.Drawing.Size(98, 26);
-            this.loadBlocks_btn.TabIndex = 1;
-            this.loadBlocks_btn.Text = "Load Blocks";
-            this.loadBlocks_btn.UseVisualStyleBackColor = true;
-            // 
-            // saveLabeled_btn
-            // 
-            this.saveLabeled_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.saveLabeled_btn.Location = new System.Drawing.Point(343, 1);
-            this.saveLabeled_btn.Margin = new System.Windows.Forms.Padding(1);
-            this.saveLabeled_btn.Name = "saveLabeled_btn";
-            this.saveLabeled_btn.Size = new System.Drawing.Size(98, 26);
-            this.saveLabeled_btn.TabIndex = 2;
-            this.saveLabeled_btn.Text = "Save Labeled";
-            this.saveLabeled_btn.UseVisualStyleBackColor = true;
-            // 
-            // saveAll_btn
-            // 
-            this.saveAll_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.saveAll_btn.Location = new System.Drawing.Point(443, 1);
-            this.saveAll_btn.Margin = new System.Windows.Forms.Padding(1);
-            this.saveAll_btn.Name = "saveAll_btn";
-            this.saveAll_btn.Size = new System.Drawing.Size(98, 26);
-            this.saveAll_btn.TabIndex = 3;
-            this.saveAll_btn.Text = "Save All";
-            this.saveAll_btn.UseVisualStyleBackColor = true;
-            // 
-            // loadPages_btn
-            // 
-            this.loadPages_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.loadPages_btn.Location = new System.Drawing.Point(143, 1);
-            this.loadPages_btn.Margin = new System.Windows.Forms.Padding(1);
-            this.loadPages_btn.Name = "loadPages_btn";
-            this.loadPages_btn.Size = new System.Drawing.Size(98, 26);
-            this.loadPages_btn.TabIndex = 4;
-            this.loadPages_btn.Text = "Load Pages";
-            this.loadPages_btn.UseVisualStyleBackColor = true;
-            // 
-            // autoAddImageBlocks_btn
-            // 
-            this.autoAddImageBlocks_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.autoAddImageBlocks_btn.Location = new System.Drawing.Point(543, 1);
-            this.autoAddImageBlocks_btn.Margin = new System.Windows.Forms.Padding(1);
-            this.autoAddImageBlocks_btn.Name = "autoAddImageBlocks_btn";
-            this.autoAddImageBlocks_btn.Size = new System.Drawing.Size(148, 26);
-            this.autoAddImageBlocks_btn.TabIndex = 5;
-            this.autoAddImageBlocks_btn.Text = "Auto Add Image Blocks";
-            this.autoAddImageBlocks_btn.UseVisualStyleBackColor = true;
-            // 
-            // saveImageBlocks_btn
-            // 
-            this.saveImageBlocks_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.saveImageBlocks_btn.Location = new System.Drawing.Point(693, 1);
-            this.saveImageBlocks_btn.Margin = new System.Windows.Forms.Padding(1);
-            this.saveImageBlocks_btn.Name = "saveImageBlocks_btn";
-            this.saveImageBlocks_btn.Size = new System.Drawing.Size(118, 26);
-            this.saveImageBlocks_btn.TabIndex = 6;
-            this.saveImageBlocks_btn.Text = "Save Image Blocks";
-            this.saveImageBlocks_btn.UseVisualStyleBackColor = true;
-            // 
-            // loadImageBlocks_btn
-            // 
-            this.loadImageBlocks_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.loadImageBlocks_btn.Location = new System.Drawing.Point(813, 1);
-            this.loadImageBlocks_btn.Margin = new System.Windows.Forms.Padding(1);
-            this.loadImageBlocks_btn.Name = "loadImageBlocks_btn";
-            this.loadImageBlocks_btn.Size = new System.Drawing.Size(118, 26);
-            this.loadImageBlocks_btn.TabIndex = 7;
-            this.loadImageBlocks_btn.Text = "Load Image Blocks";
-            this.loadImageBlocks_btn.UseVisualStyleBackColor = true;
             // 
             // tableLayoutPanel3
             // 
@@ -207,7 +127,7 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel3.Name = "tableLayoutPanel3";
             this.tableLayoutPanel3.RowCount = 1;
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel3.Size = new System.Drawing.Size(932, 559);
+            this.tableLayoutPanel3.Size = new System.Drawing.Size(932, 535);
             this.tableLayoutPanel3.TabIndex = 1;
             // 
             // ocrBlock_lb
@@ -217,7 +137,7 @@ namespace LeninSearch.Ocr
             this.ocrBlock_lb.ItemHeight = 15;
             this.ocrBlock_lb.Location = new System.Drawing.Point(3, 3);
             this.ocrBlock_lb.Name = "ocrBlock_lb";
-            this.ocrBlock_lb.Size = new System.Drawing.Size(174, 553);
+            this.ocrBlock_lb.Size = new System.Drawing.Size(174, 529);
             this.ocrBlock_lb.TabIndex = 1;
             // 
             // tableLayoutPanel4
@@ -234,7 +154,7 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel4.RowCount = 2;
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
-            this.tableLayoutPanel4.Size = new System.Drawing.Size(752, 559);
+            this.tableLayoutPanel4.Size = new System.Drawing.Size(752, 535);
             this.tableLayoutPanel4.TabIndex = 3;
             // 
             // pictureBox1
@@ -243,7 +163,7 @@ namespace LeninSearch.Ocr
             this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pictureBox1.Location = new System.Drawing.Point(3, 3);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(746, 525);
+            this.pictureBox1.Size = new System.Drawing.Size(746, 501);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox1.TabIndex = 1;
             this.pictureBox1.TabStop = false;
@@ -276,7 +196,7 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel6.Controls.Add(this.label1, 1, 0);
             this.tableLayoutPanel6.Controls.Add(this.image_panel, 10, 0);
             this.tableLayoutPanel6.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel6.Location = new System.Drawing.Point(0, 531);
+            this.tableLayoutPanel6.Location = new System.Drawing.Point(0, 507);
             this.tableLayoutPanel6.Margin = new System.Windows.Forms.Padding(0);
             this.tableLayoutPanel6.Name = "tableLayoutPanel6";
             this.tableLayoutPanel6.RowCount = 1;
@@ -398,12 +318,88 @@ namespace LeninSearch.Ocr
             this.image_panel.Size = new System.Drawing.Size(18, 18);
             this.image_panel.TabIndex = 10;
             // 
+            // menuStrip1
+            // 
+            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.oCRToolStripMenuItem,
+            this.imageBlocksToolStripMenuItem});
+            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip1.Name = "menuStrip1";
+            this.menuStrip1.Size = new System.Drawing.Size(932, 24);
+            this.menuStrip1.TabIndex = 1;
+            this.menuStrip1.Text = "menuStrip1";
+            // 
+            // oCRToolStripMenuItem
+            // 
+            this.oCRToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.loadPages_mi,
+            this.loadBlocks_mi,
+            this.saveLabeledBlocks_mi,
+            this.saveAllBlocks_mi});
+            this.oCRToolStripMenuItem.Name = "oCRToolStripMenuItem";
+            this.oCRToolStripMenuItem.Size = new System.Drawing.Size(80, 20);
+            this.oCRToolStripMenuItem.Text = "OCR Blocks";
+            // 
+            // loadPages_mi
+            // 
+            this.loadPages_mi.Name = "loadPages_mi";
+            this.loadPages_mi.Size = new System.Drawing.Size(180, 22);
+            this.loadPages_mi.Text = "Load Pages";
+            // 
+            // loadBlocks_mi
+            // 
+            this.loadBlocks_mi.Name = "loadBlocks_mi";
+            this.loadBlocks_mi.Size = new System.Drawing.Size(180, 22);
+            this.loadBlocks_mi.Text = "Load Blocks";
+            // 
+            // saveLabeledBlocks_mi
+            // 
+            this.saveLabeledBlocks_mi.Name = "saveLabeledBlocks_mi";
+            this.saveLabeledBlocks_mi.Size = new System.Drawing.Size(180, 22);
+            this.saveLabeledBlocks_mi.Text = "Save Labeled Blocks";
+            // 
+            // saveAllBlocks_mi
+            // 
+            this.saveAllBlocks_mi.Name = "saveAllBlocks_mi";
+            this.saveAllBlocks_mi.Size = new System.Drawing.Size(180, 22);
+            this.saveAllBlocks_mi.Text = "Save All Blocks";
+            // 
+            // imageBlocksToolStripMenuItem
+            // 
+            this.imageBlocksToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.autoAddImageBlocks_mi,
+            this.saveImageBlocks_mi,
+            this.loadImageBlocks_mi});
+            this.imageBlocksToolStripMenuItem.Name = "imageBlocksToolStripMenuItem";
+            this.imageBlocksToolStripMenuItem.Size = new System.Drawing.Size(89, 20);
+            this.imageBlocksToolStripMenuItem.Text = "Image Blocks";
+            // 
+            // autoAddImageBlocks_mi
+            // 
+            this.autoAddImageBlocks_mi.Name = "autoAddImageBlocks_mi";
+            this.autoAddImageBlocks_mi.Size = new System.Drawing.Size(180, 22);
+            this.autoAddImageBlocks_mi.Text = "Auto Add Blocks";
+            // 
+            // saveImageBlocks_mi
+            // 
+            this.saveImageBlocks_mi.Name = "saveImageBlocks_mi";
+            this.saveImageBlocks_mi.Size = new System.Drawing.Size(180, 22);
+            this.saveImageBlocks_mi.Text = "Save All Blocks";
+            // 
+            // loadImageBlocks_mi
+            // 
+            this.loadImageBlocks_mi.Name = "loadImageBlocks_mi";
+            this.loadImageBlocks_mi.Size = new System.Drawing.Size(180, 22);
+            this.loadImageBlocks_mi.Text = "Load Blocks";
+            // 
             // LabelingForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(932, 587);
             this.Controls.Add(this.tableLayoutPanel1);
+            this.Controls.Add(this.menuStrip1);
+            this.MainMenuStrip = this.menuStrip1;
             this.Name = "LabelingForm";
             this.Text = "LabelingForm";
             this.tableLayoutPanel1.ResumeLayout(false);
@@ -414,7 +410,10 @@ namespace LeninSearch.Ocr
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.tableLayoutPanel6.ResumeLayout(false);
             this.tableLayoutPanel6.PerformLayout();
+            this.menuStrip1.ResumeLayout(false);
+            this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -425,11 +424,8 @@ namespace LeninSearch.Ocr
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.TextBox csvFile_tb;
-        private System.Windows.Forms.Button loadBlocks_btn;
-        private System.Windows.Forms.Button saveLabeled_btn;
         private System.Windows.Forms.ListBox ocrBlock_lb;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel6;
-        private System.Windows.Forms.Button saveAll_btn;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel4;
         private System.Windows.Forms.Panel none_panel;
         private System.Windows.Forms.Panel paragraph_panel;
@@ -441,11 +437,17 @@ namespace LeninSearch.Ocr
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button loadPages_btn;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Panel image_panel;
-        private System.Windows.Forms.Button autoAddImageBlocks_btn;
-        private System.Windows.Forms.Button saveImageBlocks_btn;
-        private System.Windows.Forms.Button loadImageBlocks_btn;
+        private System.Windows.Forms.MenuStrip menuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem oCRToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem loadPages_mi;
+        private System.Windows.Forms.ToolStripMenuItem loadBlocks_mi;
+        private System.Windows.Forms.ToolStripMenuItem saveLabeledBlocks_mi;
+        private System.Windows.Forms.ToolStripMenuItem saveAllBlocks_mi;
+        private System.Windows.Forms.ToolStripMenuItem imageBlocksToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem autoAddImageBlocks_mi;
+        private System.Windows.Forms.ToolStripMenuItem saveImageBlocks_mi;
+        private System.Windows.Forms.ToolStripMenuItem loadImageBlocks_mi;
     }
 }

@@ -28,11 +28,13 @@ namespace LeninSearch.Ocr
         public LabelingForm()
         {
             InitializeComponent();
-            loadBlocks_btn.Click += LoadBlocks_btnOnClick;
-            loadPages_btn.Click += LoadPages_btnOnClick;
 
-            saveLabeled_btn.Click += SaveLabeled_btnOnClick;
-            saveAll_btn.Click += SaveAll_btnOnClick;
+
+            loadBlocks_mi.Click += LoadBlocks_btnOnClick;
+            loadPages_mi.Click += LoadPages_btnOnClick;
+
+            saveLabeledBlocks_mi.Click += SaveLabeled_btnOnClick;
+            saveAllBlocks_mi.Click += SaveAll_btnOnClick;
             ocrBlock_lb.SelectedIndexChanged += OcrBlock_lbOnSelectedIndexChanged;
             ocrBlock_lb.KeyDown += OcrBlock_lbOnKeyDown;
 
@@ -48,9 +50,9 @@ namespace LeninSearch.Ocr
             pictureBox1.MouseUp += PictureBox1OnMouseUp;
             pictureBox1.MouseMove += PictureBox1OnMouseMove;
 
-            autoAddImageBlocks_btn.Click += AutoAddImageBlocks_btnOnClick;
-            saveImageBlocks_btn.Click += SaveImageBlocks_btnOnClick;
-            loadImageBlocks_btn.Click += LoadImageBlocks_btnOnClick;
+            autoAddImageBlocks_mi.Click += AutoAddImageBlocks_btnOnClick;
+            saveImageBlocks_mi.Click += SaveImageBlocks_btnOnClick;
+            loadImageBlocks_mi.Click += LoadImageBlocks_btnOnClick;
         }
 
         private void LoadImageBlocks_btnOnClick(object? sender, EventArgs e)
