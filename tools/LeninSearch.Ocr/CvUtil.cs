@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using Emgu.CV;
@@ -9,7 +10,7 @@ namespace LeninSearch.Ocr
 {
     public static class CvUtil
     {
-        public static (int? TopY, int? BottomY) GetPageLines(string imageFile)
+        public static (int ImageWidth, int ImageHeight, int? TopLineY, int? BottomLineY) GetPageLines(string imageFile)
         {
             var cannyThreshold = 180.0;
             var cannyThresholdLinking = 120.0;
@@ -35,13 +36,13 @@ namespace LeninSearch.Ocr
             var topLines = lines.Where(l => l.P1.Y < img1.Height / 2).OrderBy(l => l.P1.Y).ToArray();
             var bottomLines = lines.Where(l => l.P1.Y > img1.Height / 2).OrderByDescending(l => l.P1.Y).ToArray();
 
-            if (!topLines.Any() && !bottomLines.Any()) return (null, null);
+            if (!topLines.Any() && !bottomLines.Any()) return (img1.Width, img1.Height, null, null);
 
-            if (!topLines.Any()) return (null, bottomLines[0].P1.Y);
+            if (!topLines.Any()) return (img1.Width, img1.Height, null, bottomLines[0].P1.Y);
 
-            if (!bottomLines.Any()) return (topLines[0].P1.Y, null);
+            if (!bottomLines.Any()) return (img1.Width, img1.Height, topLines[0].P1.Y, null);
 
-            return (topLines[0].P1.Y, bottomLines[0].P1.Y);
+            return (img1.Width, img1.Height, topLines[0].P1.Y, bottomLines[0].P1.Y);
         }
     }
 }

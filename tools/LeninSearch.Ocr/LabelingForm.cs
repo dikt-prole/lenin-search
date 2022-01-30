@@ -6,8 +6,10 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using Accord.MachineLearning.DecisionTrees;
 using CsvHelper;
 using LeninSearch.Ocr.Labeling;
+using LeninSearch.Ocr.Model;
 using LeninSearch.Ocr.YandexVision.OcrResponse;
 using Newtonsoft.Json;
 
@@ -37,6 +39,7 @@ namespace LeninSearch.Ocr
             saveAllBlocks_mi.Click += SaveAll_btnOnClick;
             ocrBlock_lb.SelectedIndexChanged += OcrBlock_lbOnSelectedIndexChanged;
             ocrBlock_lb.KeyDown += OcrBlock_lbOnKeyDown;
+            trainModel_mi.Click += TrainModel_miOnClick;
 
             paragraph_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Paragraph);
             title_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Title);
@@ -53,6 +56,37 @@ namespace LeninSearch.Ocr
             autoAddImageBlocks_mi.Click += AutoAddImageBlocks_btnOnClick;
             saveImageBlocks_mi.Click += SaveImageBlocks_btnOnClick;
             loadImageBlocks_mi.Click += LoadImageBlocks_btnOnClick;
+            recognizeImages_mi.Click += RecognizeImages_miOnClick;
+        }
+
+        private void RecognizeImages_miOnClick(object? sender, EventArgs e)
+        {
+            var dialog = new FolderBrowserDialog();
+
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+
+            var imageFiles = Directory.GetFiles(dialog.SelectedPath)
+                .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg")).ToList();
+
+            var blocks = new List<OcrBlockFeatures>();
+
+            foreach (var imageFile in imageFiles)
+            {
+                
+            }
+        }
+
+        private void TrainModel_miOnClick(object? sender, EventArgs e)
+        {
+            var labeledCount = _blockRows?.Count(r => r.Label.HasValue) ?? 0;
+
+            if (DialogResult.Yes != MessageBox.Show($"Train model base on {labeledCount} blocks?", "Model",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1)) return;
+
+            var teacher = new RandomForestLearning {NumberOfTrees = 10};
+
+
+
         }
 
         private void LoadImageBlocks_btnOnClick(object? sender, EventArgs e)

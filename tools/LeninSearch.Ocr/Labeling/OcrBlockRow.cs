@@ -22,7 +22,7 @@ namespace LeninSearch.Ocr.Labeling
         public double WidthToHeightRatio { get; set; }
         public int WordCount { get; set; }
         public int SymbolCount { get; set; }
-        public int SameyCount { get; set; }
+        public int SameYLevelBlockCount { get; set; }
         public int BottomLineDistance { get; set; }
         public int TopLineDistance { get; set; }
         public int ImageIndex { get; set; }
@@ -66,7 +66,7 @@ namespace LeninSearch.Ocr.Labeling
                 RightIndent = image.Width - topRight.X,
                 TopIndent = topLeft.Y,
                 BottomIndent = image.Height - bottomLeft.Y,
-                SameyCount = ocrPage.Blocks.Count(b => b != block && block.BoundingBox.IsSameY(b.BoundingBox)),
+                SameYLevelBlockCount = ocrPage.Blocks.Count(b => b != block && block.BoundingBox.IsSameY(b.BoundingBox)),
                 Width = rowWidth,
                 Height = rowHeight,
                 WidthToHeightRatio = 1.0 * rowWidth / rowHeight,

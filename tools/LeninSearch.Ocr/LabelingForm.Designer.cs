@@ -55,10 +55,12 @@ namespace LeninSearch.Ocr
             this.loadBlocks_mi = new System.Windows.Forms.ToolStripMenuItem();
             this.saveLabeledBlocks_mi = new System.Windows.Forms.ToolStripMenuItem();
             this.saveAllBlocks_mi = new System.Windows.Forms.ToolStripMenuItem();
+            this.trainModel_mi = new System.Windows.Forms.ToolStripMenuItem();
             this.imageBlocksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.autoAddImageBlocks_mi = new System.Windows.Forms.ToolStripMenuItem();
             this.saveImageBlocks_mi = new System.Windows.Forms.ToolStripMenuItem();
             this.loadImageBlocks_mi = new System.Windows.Forms.ToolStripMenuItem();
+            this.recognizeImages_mi = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.tableLayoutPanel3.SuspendLayout();
@@ -335,7 +337,9 @@ namespace LeninSearch.Ocr
             this.loadPages_mi,
             this.loadBlocks_mi,
             this.saveLabeledBlocks_mi,
-            this.saveAllBlocks_mi});
+            this.saveAllBlocks_mi,
+            this.trainModel_mi,
+            this.recognizeImages_mi});
             this.oCRToolStripMenuItem.Name = "oCRToolStripMenuItem";
             this.oCRToolStripMenuItem.Size = new System.Drawing.Size(80, 20);
             this.oCRToolStripMenuItem.Text = "OCR Blocks";
@@ -364,6 +368,12 @@ namespace LeninSearch.Ocr
             this.saveAllBlocks_mi.Size = new System.Drawing.Size(180, 22);
             this.saveAllBlocks_mi.Text = "Save All Blocks";
             // 
+            // trainModel_mi
+            // 
+            this.trainModel_mi.Name = "trainModel_mi";
+            this.trainModel_mi.Size = new System.Drawing.Size(180, 22);
+            this.trainModel_mi.Text = "Train Model";
+            // 
             // imageBlocksToolStripMenuItem
             // 
             this.imageBlocksToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -377,20 +387,26 @@ namespace LeninSearch.Ocr
             // autoAddImageBlocks_mi
             // 
             this.autoAddImageBlocks_mi.Name = "autoAddImageBlocks_mi";
-            this.autoAddImageBlocks_mi.Size = new System.Drawing.Size(180, 22);
+            this.autoAddImageBlocks_mi.Size = new System.Drawing.Size(162, 22);
             this.autoAddImageBlocks_mi.Text = "Auto Add Blocks";
             // 
             // saveImageBlocks_mi
             // 
             this.saveImageBlocks_mi.Name = "saveImageBlocks_mi";
-            this.saveImageBlocks_mi.Size = new System.Drawing.Size(180, 22);
+            this.saveImageBlocks_mi.Size = new System.Drawing.Size(162, 22);
             this.saveImageBlocks_mi.Text = "Save All Blocks";
             // 
             // loadImageBlocks_mi
             // 
             this.loadImageBlocks_mi.Name = "loadImageBlocks_mi";
-            this.loadImageBlocks_mi.Size = new System.Drawing.Size(180, 22);
+            this.loadImageBlocks_mi.Size = new System.Drawing.Size(162, 22);
             this.loadImageBlocks_mi.Text = "Load Blocks";
+            // 
+            // recognizeImages_mi
+            // 
+            this.recognizeImages_mi.Name = "recognizeImages_mi";
+            this.recognizeImages_mi.Size = new System.Drawing.Size(180, 22);
+            this.recognizeImages_mi.Text = "Recognize Images";
             // 
             // LabelingForm
             // 
@@ -449,5 +465,7 @@ namespace LeninSearch.Ocr
         private System.Windows.Forms.ToolStripMenuItem autoAddImageBlocks_mi;
         private System.Windows.Forms.ToolStripMenuItem saveImageBlocks_mi;
         private System.Windows.Forms.ToolStripMenuItem loadImageBlocks_mi;
+        private System.Windows.Forms.ToolStripMenuItem trainModel_mi;
+        private System.Windows.Forms.ToolStripMenuItem recognizeImages_mi;
     }
 }
