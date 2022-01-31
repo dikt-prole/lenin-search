@@ -86,15 +86,15 @@ namespace LeninSearch.Ocr.Labeling
         {
             var pageLines = CvUtil.GetPageLines(imageFile);
 
-            if (pageLines.BottomY.HasValue && pageLines.TopY.HasValue)
+            if (pageLines.BottomLineY.HasValue && pageLines.TopLineY.HasValue)
             {
-                return (pageLines.TopY.Value, pageLines.BottomY.Value);
+                return (pageLines.TopLineY.Value, pageLines.BottomLineY.Value);
             }
 
             using var image = Image.FromFile(imageFile);
 
-            var topY = pageLines.TopY ?? 0;
-            var bottomY = pageLines.BottomY ?? image.Height;
+            var topY = pageLines.TopLineY ?? 0;
+            var bottomY = pageLines.BottomLineY ?? image.Height;
 
             return (topY, bottomY);
         }

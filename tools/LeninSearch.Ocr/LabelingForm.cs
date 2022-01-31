@@ -2,44 +2,39 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using Accord.MachineLearning.DecisionTrees;
-using CsvHelper;
 using LeninSearch.Ocr.Labeling;
 using LeninSearch.Ocr.Model;
-using LeninSearch.Ocr.YandexVision.OcrResponse;
+using LeninSearch.Ocr.YandexVision;
 using Newtonsoft.Json;
 
 namespace LeninSearch.Ocr
 {
     public partial class LabelingForm : Form
     {
-        private List<OcrBlockRow> _blockRows;
-
         private bool _loadPages;
 
         private Point? _selectionStartPoint;
 
-        private List<ImageBlock> _imageBlocks;
+        private OcrData _ocrData = OcrData.Empty();
 
         private Action<Point> _moveImageBlockDragPoint;
+
+        private List<OcrFeaturedBlock> _featuredBlocks;
 
         public LabelingForm()
         {
             InitializeComponent();
 
+            displayBlocks_btn.Click += DisplayBlocks_btnOnClick;
+            displayPages_btn.Click += DisplayPages_btnOnClick;
 
-            loadBlocks_mi.Click += LoadBlocks_btnOnClick;
-            loadPages_mi.Click += LoadPages_btnOnClick;
-
-            saveLabeledBlocks_mi.Click += SaveLabeled_btnOnClick;
-            saveAllBlocks_mi.Click += SaveAll_btnOnClick;
             ocrBlock_lb.SelectedIndexChanged += OcrBlock_lbOnSelectedIndexChanged;
             ocrBlock_lb.KeyDown += OcrBlock_lbOnKeyDown;
-            trainModel_mi.Click += TrainModel_miOnClick;
+            trainModel_btn.Click += TrainModel_miOnClick;
 
             paragraph_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Paragraph);
             title_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Title);
@@ -53,96 +48,116 @@ namespace LeninSearch.Ocr
             pictureBox1.MouseUp += PictureBox1OnMouseUp;
             pictureBox1.MouseMove += PictureBox1OnMouseMove;
 
-            autoAddImageBlocks_mi.Click += AutoAddImageBlocks_btnOnClick;
-            saveImageBlocks_mi.Click += SaveImageBlocks_btnOnClick;
-            loadImageBlocks_mi.Click += LoadImageBlocks_btnOnClick;
-            recognizeImages_mi.Click += RecognizeImages_miOnClick;
+            generateImageBlocks_btn.Click += GenerateImageBlocksClick;
+            saveOcrData_btn.Click += SaveOcrDataClick;
+
+            openBookFolder_btn.Click += OpenBookFolder_btnOnClick;
+            generateBlocks_btn.Click += GenerateBlocks_btnOnClick;
         }
 
-        private void RecognizeImages_miOnClick(object? sender, EventArgs e)
+        private async void GenerateBlocks_btnOnClick(object? sender, EventArgs e)
+        {
+            var imageFiles = Directory.GetFiles(bookFolder_tb.Text)
+                .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg")).ToList();
+
+            var blockService = new YandexVisionOcrBlockService();
+
+            _featuredBlocks = new List<OcrFeaturedBlock>();
+
+            var sw = new Stopwatch(); sw.Start();
+
+            var chunks = imageFiles.ChunkBy(8);
+
+            progressBar1.Minimum = 0;
+            progressBar1.Maximum = chunks.Count;
+            progressBar1.Value = 0;
+
+            for (var i = 0; i < chunks.Count; i++)
+            {
+                var chunk = chunks[i];
+
+                var tasks = chunk.Select(f => blockService.GetBlocksAsync(f));
+
+                var results = await Task.WhenAll(tasks);
+                foreach (var result in results)
+                {
+                    if (!result.Success)
+                    {
+                        MessageBox.Show(result.Error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+
+                    _featuredBlocks.AddRange(result.Blocks);
+                }
+
+                progressBar1.Value = i + 1;
+            }
+
+            sw.Stop();
+
+            MessageBox.Show($"Blocks generated in {sw.Elapsed}", "Blocks", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void OpenBookFolder_btnOnClick(object? sender, EventArgs e)
         {
             var dialog = new FolderBrowserDialog();
 
             if (dialog.ShowDialog() != DialogResult.OK) return;
 
-            var imageFiles = Directory.GetFiles(dialog.SelectedPath)
-                .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg")).ToList();
-
-            var blocks = new List<OcrBlockFeatures>();
-
-            foreach (var imageFile in imageFiles)
-            {
-                
-            }
+            bookFolder_tb.Text = dialog.SelectedPath;
         }
 
         private void TrainModel_miOnClick(object? sender, EventArgs e)
         {
-            var labeledCount = _blockRows?.Count(r => r.Label.HasValue) ?? 0;
+            //var labeledCount = _blockRows?.Count(r => r.Label.HasValue) ?? 0;
 
-            if (DialogResult.Yes != MessageBox.Show($"Train model base on {labeledCount} blocks?", "Model",
-                MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1)) return;
+            //if (DialogResult.Yes != MessageBox.Show($"Train model base on {labeledCount} blocks?", "Model",
+            //    MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1)) return;
 
-            var teacher = new RandomForestLearning {NumberOfTrees = 10};
+            //var teacher = new RandomForestLearning {NumberOfTrees = 10};
 
 
 
         }
 
-        private void LoadImageBlocks_btnOnClick(object? sender, EventArgs e)
+        private void SaveOcrDataClick(object? sender, EventArgs e)
         {
-            var dialog = new OpenFileDialog
+            var ocrDataFile = Path.Combine(bookFolder_tb.Text, "ocr-data.json");
+
+            if (File.Exists(ocrDataFile) && DialogResult.Yes != MessageBox.Show("Ocr data exists, overwrite?", "Ocr data",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question))
             {
-                Filter = "JSON|*.json",
-                Title = "Load image blocks"
-            };
+                return;
+            }
 
-            if (dialog.ShowDialog() != DialogResult.OK) return;
+            var ocrDataJson = JsonConvert.SerializeObject(_featuredBlocks);
 
-            _imageBlocks = JsonConvert.DeserializeObject<List<ImageBlock>>(File.ReadAllText(dialog.FileName));
+            File.WriteAllText(ocrDataFile, ocrDataJson);
 
-            MessageBox.Show($"Image blocks loaded", "Image blocks", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show($"Ocr data saved to '{ocrDataFile}'", "Ocr data", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        private void SaveImageBlocks_btnOnClick(object? sender, EventArgs e)
-        {
-            var dialog = new SaveFileDialog
-            {
-                Filter = "JSON|*.json",
-                Title = "Save image blocks"
-            };
-
-            if (dialog.ShowDialog() != DialogResult.OK) return;
-
-            if (_imageBlocks == null) return;
-
-            var imageBlocksJson = JsonConvert.SerializeObject(_imageBlocks);
-            File.WriteAllText(dialog.FileName, imageBlocksJson);
-
-            MessageBox.Show($"Image blocks saved to '{dialog.FileName}'", "Image blocks", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private void AutoAddImageBlocks_btnOnClick(object sender, EventArgs e)
+        private void GenerateImageBlocksClick(object sender, EventArgs e)
         {
             // 1. get image row groups
-            var fileBlockGroups = new Dictionary<string, List<List<OcrBlockRow>>>();
-            var fileNames = _blockRows.OrderBy(r => r.ImageIndex).Select(r => r.FileName).Distinct().ToList();
+            var fileBlockGroups = new Dictionary<string, List<List<OcrFeaturedBlock>>>();
+            var fileNames = _featuredBlocks.OrderBy(r => r.ImageIndex).Select(r => r.FileName).Distinct().ToList();
             foreach (var fileName in fileNames)
             {
-                var blockGroups = new List<List<OcrBlockRow>>();
-                var blockGroup = new List<OcrBlockRow>();
-                var rows = _blockRows.Where(r => r.FileName == fileName).OrderBy(r => r.BlockIndex).ToList();
+                var blockGroups = new List<List<OcrFeaturedBlock>>();
+                var blockGroup = new List<OcrFeaturedBlock>();
+                var blocks = _featuredBlocks.Where(r => r.FileName == fileName).OrderBy(r => r.BlockIndex).ToList();
 
-                foreach (var row in rows)
+                foreach (var block in blocks)
                 {
-                    if (row.Label != OcrBlockLabel.Image && blockGroup.Any())
+                    if (block.Label != OcrBlockLabel.Image && blockGroup.Any())
                     {
                         blockGroups.Add(blockGroup);
-                        blockGroup = new List<OcrBlockRow>();
+                        blockGroup = new List<OcrFeaturedBlock>();
                     }
-                    else if (row.Label == OcrBlockLabel.Image)
+                    else if (block.Label == OcrBlockLabel.Image)
                     {
-                        blockGroup.Add(row);
+                        blockGroup.Add(block);
                     }
                 }
 
@@ -158,18 +173,12 @@ namespace LeninSearch.Ocr
             }
 
             // 2. generate image blocks
-            var bookFolder = Path.GetDirectoryName(csvFile_tb.Text);
-            var jsonFolder = Path.Combine(bookFolder, "json");
-            var imageFolder = Path.Combine(bookFolder, "images");
-            _imageBlocks = new List<ImageBlock>();
+            _ocrData.ImageBlocks = new List<OcrImageBlock>();
             foreach (var fileName in fileBlockGroups.Keys)
             {
-                var jsonFile = Path.Combine(jsonFolder, fileName + ".json");
-                var imageFile = Directory.GetFiles(imageFolder).First(f => Path.GetFileNameWithoutExtension(f) == fileName);
+                var imageFile = Directory.GetFiles(bookFolder_tb.Text).First(f => Path.GetFileNameWithoutExtension(f) == fileName);
                 using var image = Image.FromFile(imageFile);
 
-                var ocrResponse = JsonConvert.DeserializeObject<OcrResponse>(File.ReadAllText(jsonFile));
-                var page = ocrResponse.Results[0].Results[0].TextDetection.Pages[0];
                 foreach (var blockGroup in fileBlockGroups[fileName])
                 {
                     var topY = int.MaxValue;
@@ -177,17 +186,12 @@ namespace LeninSearch.Ocr
                     var bottomY = 0;
                     var rightX = 0;
 
-                    foreach (var row in blockGroup)
+                    foreach (var block in blockGroup)
                     {
-                        var block = page.Blocks[row.BlockIndex];
-
-                        var topLeft = block.BoundingBox.TopLeft.Point();
-                        if (topLeft.X < leftX) leftX = topLeft.X;
-                        if (topLeft.Y < topY) topY = topLeft.Y;
-
-                        var bottomRight = block.BoundingBox.BottomRight.Point();
-                        if (bottomRight.X > rightX) rightX = bottomRight.X;
-                        if (bottomRight.Y > bottomY) bottomY = bottomRight.Y;
+                        if (block.TopLeftX < leftX) leftX = block.TopLeftX;
+                        if (block.TopLeftY < topY) topY = block.TopLeftY;
+                        if (block.BottomRightX > rightX) rightX = block.BottomRightX;
+                        if (block.BottomRightY > bottomY) bottomY = block.BottomRightY;
                     }
 
                     var defaultLeft = 40;
@@ -196,7 +200,7 @@ namespace LeninSearch.Ocr
                     var defaultRight = image.Width - defaultLeft;
                     if (rightX < defaultRight) rightX = defaultRight;
 
-                    var imageBlock = new ImageBlock
+                    var imageBlock = new OcrImageBlock
                     {
                         FileName = fileName,
                         TopLeftX = leftX,
@@ -205,7 +209,7 @@ namespace LeninSearch.Ocr
                         BottomRightY = bottomY + 10
                     };
 
-                    _imageBlocks.Add(imageBlock);
+                    _ocrData.ImageBlocks.Add(imageBlock);
                 }
             }
 
@@ -225,7 +229,7 @@ namespace LeninSearch.Ocr
                 if (e.Button == MouseButtons.Left && ocrBlock_lb.SelectedItem is string fileName)
                 {
                     _moveImageBlockDragPoint = null;
-                    var fileImageBlocks = _imageBlocks?.Where(ib => ib.FileName == fileName).ToList() ?? new List<ImageBlock>();
+                    var fileImageBlocks = _ocrData.ImageBlocks.Where(ib => ib.FileName == fileName).ToList();
                     foreach (var ib in fileImageBlocks)
                     {
                         var originalPoint = pictureBox1.ToOriginalPoint(e.Location);
@@ -307,6 +311,7 @@ namespace LeninSearch.Ocr
         private void PictureBox1OnPaint(object sender, PaintEventArgs e)
         {
             var fileName = ocrBlock_lb.SelectedItem as string;
+
             if (fileName == null) return;
 
             if (_selectionStartPoint != null)
@@ -318,7 +323,7 @@ namespace LeninSearch.Ocr
                 e.Graphics.DrawRectangle(Pens.Black, rect);
             }
 
-            var fileImageBlocks = _imageBlocks?.Where(b => b.FileName == fileName).ToList() ?? new List<ImageBlock>();
+            var fileImageBlocks = _ocrData.ImageBlocks.Where(b => b.FileName == fileName).ToList();
             foreach (var ib in fileImageBlocks)
             {
                 using var ibPen = new Pen(BlockPalette.ImageBlockColor, 2);
@@ -331,24 +336,18 @@ namespace LeninSearch.Ocr
         }
         private void SetLabelForIntersectingBlocks(Rectangle pbRectangle, OcrBlockLabel? label)
         {
-            var bookFolder = Path.GetDirectoryName(csvFile_tb.Text);
-            var jsonFolder = Path.Combine(bookFolder, "json");
             var fileName = ocrBlock_lb.SelectedItem as string;
 
             if (fileName == null) return;
 
-            var jsonFile = Directory.GetFiles(jsonFolder).FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == fileName);
-            var ocrResponse = JsonConvert.DeserializeObject<OcrResponse>(File.ReadAllText(jsonFile));
-
             var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
 
-            var page = ocrResponse.Results[0].Results[0].TextDetection.Pages[0];
-            foreach (var block in page.Blocks)
+            var fileBlocks = _featuredBlocks.Where(b => b.FileName == fileName).ToList();
+            foreach (var block in fileBlocks)
             {
-                if (block.BoundingBox.Rectangle().IntersectsWith(originalRect))
+                if (block.Rectangle.IntersectsWith(originalRect))
                 {
-                    var row = _blockRows.First(r => r.FileName == fileName && r.BlockIndex == page.Blocks.IndexOf(block));
-                    row.Label = label;
+                    block.Label = label;
                 }
             }
 
@@ -362,7 +361,7 @@ namespace LeninSearch.Ocr
 
             var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
 
-            var imageBlock = new ImageBlock
+            var imageBlock = new OcrImageBlock
             {
                 FileName = fileName,
                 TopLeftX = originalRect.X,
@@ -371,9 +370,7 @@ namespace LeninSearch.Ocr
                 BottomRightY = originalRect.Y + originalRect.Size.Height
             };
 
-            if (_imageBlocks == null) _imageBlocks = new List<ImageBlock>();
-
-            _imageBlocks.Add(imageBlock);
+            _ocrData.ImageBlocks.Add(imageBlock);
             ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = fileName;
         }
 
@@ -383,61 +380,27 @@ namespace LeninSearch.Ocr
             if (fileName == null) return;
 
             var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
-            _imageBlocks?.RemoveAll(ib => ib.FileName == fileName && ib.Rectangle.IntersectsWith(originalRect));
+            _ocrData.ImageBlocks.RemoveAll(ib => ib.FileName == fileName && ib.Rectangle.IntersectsWith(originalRect));
 
             pictureBox1.Refresh();
         }
 
-        private void LoadPages_btnOnClick(object? sender, EventArgs e)
+        private void DisplayPages_btnOnClick(object? sender, EventArgs e)
         {
-            var dialog = new OpenFileDialog
-            {
-                Title = "Load ocr block CSV",
-                Filter = "CSV|*.csv"
-            };
-
-            if (dialog.ShowDialog() != DialogResult.OK) return;
-
-            _loadPages = true;
-
-            csvFile_tb.Text = dialog.FileName;
-
-            using (var csv = new CsvReader(new StreamReader(dialog.FileName), CultureInfo.InvariantCulture))
-            {
-                _blockRows = csv.GetRecords<OcrBlockRow>().OrderBy(r => r.ImageIndex).ToList();
-            }
-
             ocrBlock_lb.Items.Clear();
-            var fileNames = _blockRows.Select(r => r.FileName).Distinct().ToList();
+            var fileNames = _featuredBlocks.Select(r => r.FileName).Distinct().ToList();
             foreach (var fileName in fileNames)
             {
                 ocrBlock_lb.Items.Add(fileName);
             }
         }
 
-        private void LoadBlocks_btnOnClick(object? sender, EventArgs e)
+        private void DisplayBlocks_btnOnClick(object? sender, EventArgs e)
         {
-            var dialog = new OpenFileDialog
-            {
-                Title = "Load ocr block CSV",
-                Filter = "CSV|*.csv"
-            };
-
-            if (dialog.ShowDialog() != DialogResult.OK) return;
-
-            _loadPages = false;
-
-            csvFile_tb.Text = dialog.FileName;
-
-            using (var csv = new CsvReader(new StreamReader(dialog.FileName), CultureInfo.InvariantCulture))
-            {
-                _blockRows = csv.GetRecords<OcrBlockRow>().ToList();
-            }
-
             ocrBlock_lb.Items.Clear();
-            foreach (var blockRow in _blockRows)
+            foreach (var block in _featuredBlocks)
             {
-                ocrBlock_lb.Items.Add(blockRow);
+                ocrBlock_lb.Items.Add(block);
             }
         }
 
@@ -468,49 +431,29 @@ namespace LeninSearch.Ocr
         {
             try
             {
-                var bookFolder = Path.GetDirectoryName(csvFile_tb.Text);
-                var imageFolder = Path.Combine(bookFolder, "images");
-                var jsonFolder = Path.Combine(bookFolder, "json");
                 var fileName = _loadPages
                     ? ocrBlock_lb.SelectedItem as string
                     : (ocrBlock_lb.SelectedItem as OcrBlockRow)?.FileName;
 
                 if (fileName == null) return;
 
-                var imageFile = Directory.GetFiles(imageFolder).FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == fileName);
+                var imageFile = Directory.GetFiles(bookFolder_tb.Text).FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == fileName);
                 if (imageFile == null)
                 {
                     MessageBox.Show("Image file not found", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
 
-                var jsonFile = Directory.GetFiles(jsonFolder).FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == fileName);
-                if (jsonFile == null)
-                {
-                    MessageBox.Show("Json file not found", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-
                 var image = new Bitmap(Image.FromFile(imageFile));
-                var ocrResponse = JsonConvert.DeserializeObject<OcrResponse>(File.ReadAllText(jsonFile));
-                var page = ocrResponse.Results[0].Results[0].TextDetection.Pages[0];
+                var drawBlocks = _loadPages
+                    ? _featuredBlocks.Where(r => r.FileName == fileName).ToList()
+                    : new List<OcrFeaturedBlock> { ocrBlock_lb.SelectedItem as OcrFeaturedBlock };
 
-                var drawRows = _loadPages
-                    ? _blockRows.Where(r => r.FileName == fileName).ToList()
-                    : new List<OcrBlockRow> { ocrBlock_lb.SelectedItem as OcrBlockRow };
-
-                foreach (var row in drawRows)
+                foreach (var block in drawBlocks)
                 {
-                    var block = page.Blocks[row.BlockIndex];
-                    var box = block.BoundingBox;
                     using (var g = Graphics.FromImage(image))
                     {
-                        var pen = GetPen(row);
-
-                        g.DrawLine(pen, box.TopLeft.Point(), box.BottomLeft.Point());
-                        g.DrawLine(pen, box.BottomLeft.Point(), box.BottomRight.Point());
-                        g.DrawLine(pen, box.BottomRight.Point(), box.TopRight.Point());
-                        g.DrawLine(pen, box.TopRight.Point(), box.TopLeft.Point());
-
-                        //DrawFeatures(g, box, row);
+                        var pen = GetPen(block);
+                        g.DrawRectangle(pen, block.Rectangle);
                     }
 
                     pictureBox1.Image = image;
@@ -523,73 +466,11 @@ namespace LeninSearch.Ocr
             }
         }
 
-        private void DrawFeatures(Graphics g, BoundingBox box, OcrBlockRow row)
+        private Pen GetPen(OcrFeaturedBlock block)
         {
-            var font = new Font(Font.FontFamily, 12, FontStyle.Bold);
-
-            var leftIndentX = box.TopLeft.Point().X;
-            var leftIndentY = (box.BottomLeft.Point().Y + box.TopLeft.Point().Y) / 2;
-            g.DrawString(row.LeftIndent.ToString(), font, Brushes.Blue, leftIndentX, leftIndentY);
-
-            var rightIndentX = box.TopRight.Point().X - 50;
-            var rightIndentY = leftIndentY;
-            g.DrawString(row.RightIndent.ToString(), font, Brushes.Blue, rightIndentX, rightIndentY);
-
-            var topIndentX = (box.TopRight.Point().X + box.TopLeft.Point().X) / 2;
-            var topIndentY = box.TopLeft.Point().Y - 30;
-            g.DrawString(row.TopIndent.ToString(), font, Brushes.Blue, topIndentX, topIndentY);
-
-            var bottomIndentX = topIndentX;
-            var bottomIndentY = box.BottomLeft.Point().Y + 10;
-            g.DrawString(row.BottomIndent.ToString(), font, Brushes.Blue, bottomIndentX, bottomIndentY);
-
-            var pixelsPerSymbolX = (box.TopRight.Point().X + box.TopLeft.Point().X) / 2;
-            var pixelsPerSymbolY = (box.BottomLeft.Point().Y + box.TopLeft.Point().Y) / 2 - 20;
-            g.DrawString(row.PixelsPerSymbol.ToString("F2"), font, Brushes.DeepPink, pixelsPerSymbolX, pixelsPerSymbolY);
-        }
-
-        private Pen GetPen(OcrBlockRow row)
-        {
-            var color = BlockPalette.GetColor(row.Label);
+            var color = BlockPalette.GetColor(block.Label);
 
             return new Pen(color, 4);
-        }
-
-        private void SaveLabeled_btnOnClick(object? sender, EventArgs e)
-        {
-            var dialog = new SaveFileDialog
-            {
-                Title = "Save labeled rows",
-                Filter = "CSV|*.csv"
-            };
-
-            if (dialog.ShowDialog() != DialogResult.OK) return;
-
-            var labeledRows = _blockRows.Where(r => r.Label != null).ToList();
-            using (var csv = new CsvWriter(new StreamWriter(dialog.FileName), CultureInfo.InvariantCulture))
-            {
-                csv.WriteRecords(labeledRows);
-            }
-
-            MessageBox.Show($"Saved {labeledRows.Count} to '{dialog.FileName}'", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private void SaveAll_btnOnClick(object? sender, EventArgs e)
-        {
-            var dialog = new SaveFileDialog
-            {
-                Title = "Save all rows",
-                Filter = "CSV|*.csv"
-            };
-
-            if (dialog.ShowDialog() != DialogResult.OK) return;
-
-            using (var csv = new CsvWriter(new StreamWriter(dialog.FileName), CultureInfo.InvariantCulture))
-            {
-                csv.WriteRecords(_blockRows);
-            }
-
-            MessageBox.Show($"Saved {_blockRows.Count} to '{dialog.FileName}'", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }

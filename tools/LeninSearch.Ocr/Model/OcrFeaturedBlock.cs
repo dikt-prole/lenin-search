@@ -1,4 +1,8 @@
-﻿using LeninSearch.Ocr.Labeling;
+﻿using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using LeninSearch.Ocr.Labeling;
 
 namespace LeninSearch.Ocr.Model
 {
@@ -9,9 +13,19 @@ namespace LeninSearch.Ocr.Model
         public int TopLeftY { get; set; }
         public int BottomRightX { get; set; }
         public int BottomRightY { get; set; }
-        public string Text { get; set; }
+        public string[] Lines { get; set; }
         public OcrBlockLabel? Label { get; set; }
         public OcrBlockFeatures Features { get; set; }
         public int BlockIndex { get; set; }
+        public int ImageIndex => int.Parse(new string(FileName).Where(char.IsNumber).ToArray());
+
+        public Rectangle Rectangle => new Rectangle(TopLeftX, TopLeftY, BottomRightX - TopLeftX, BottomRightY - TopLeftY);
+
+        public override string ToString()
+        {
+            if (Label == null) return $"{FileName}-{BlockIndex}";
+
+            return $"{FileName}-{BlockIndex} ({Label})";
+        }
     }
 }

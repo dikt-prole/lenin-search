@@ -20,6 +20,7 @@ namespace LeninSearch.Ocr.YandexVision
 
         public async Task<(List<OcrFeaturedBlock> Blocks, bool Success, string Error)> GetBlocksAsync(string imageFile)
         {
+            var httpClient = new HttpClient();
             var apiKey = Environment.GetEnvironmentVariable("YandexApiKey");
             var imageBytes = File.ReadAllBytes(imageFile);
             var ocrRequest = YtVisionRequest.Ocr(imageBytes);
@@ -39,7 +40,7 @@ namespace LeninSearch.Ocr.YandexVision
             OcrResponse.OcrResponse ocrResponse = null;
             try
             {
-                var response = await HttpClient.SendAsync(request);
+                var response = await httpClient.SendAsync(request);
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
                     return (null, false, $"Send request error: {response.StatusCode}");
@@ -54,8 +55,25 @@ namespace LeninSearch.Ocr.YandexVision
             }
 
             using var image = new Bitmap(Image.FromFile(imageFile));
-            var responseBlocks = ocrResponse.Results[0].Results[0].TextDetection.Pages[0].Blocks;
+            var responseBlocks = ocrResponse.Results[0].Results[0]?.TextDetection?.Pages[0]?.Blocks;
             var featuredBlocks = new List<OcrFeaturedBlock>();
+
+            if (responseBlocks == null)
+            {
+                var featuredBlock = new OcrFeaturedBlock
+                {
+                    FileName = Path.GetFileNameWithoutExtension(imageFile),
+                    BlockIndex = 0,
+                    Lines = null,
+                    TopLeftX = 20,
+                    TopLeftY = 20,
+                    BottomRightX = image.Width - 40,
+                    BottomRightY = image.Height - 40,
+                    Features = null
+                };
+                featuredBlocks.Add(featuredBlock);
+                return (featuredBlocks, true, null);
+            }
 
             for (var blockIndex = 0; blockIndex < responseBlocks.Count; blockIndex++)
             {
@@ -97,7 +115,7 @@ namespace LeninSearch.Ocr.YandexVision
                 {
                     FileName = Path.GetFileNameWithoutExtension(imageFile),
                     BlockIndex = blockIndex,
-                    Text = GetText(responseBlock),
+                    Lines = responseBlock.Lines.Select(l => string.Join(" ", l.Words.Select(w => w.Text))).ToArray(),
                     TopLeftX = topLeft.X,
                     TopLeftY = topLeft.Y,
                     BottomRightX = bottomRight.X,
