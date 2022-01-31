@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace LeninSearch.Ocr.Model
 {
@@ -14,6 +16,25 @@ namespace LeninSearch.Ocr.Model
                 FeaturedBlocks = new List<OcrFeaturedBlock>(),
                 ImageBlocks = new List<OcrImageBlock>()
             };
+        }
+
+        public static OcrData Load(string bookFolder)
+        {
+            var file = Path.Combine(bookFolder, "ocr-data.json");
+            if (File.Exists(file))
+            {
+                var json = File.ReadAllText(file);
+                return JsonConvert.DeserializeObject<OcrData>(json);
+            }
+
+            return Empty();
+        }
+
+        public void Save(string bookFolder)
+        {
+            var file = Path.Combine(bookFolder, "ocr-data.json");
+            var json = JsonConvert.SerializeObject(this, Formatting.Indented);
+            File.WriteAllText(file, json);
         }
     }
 }

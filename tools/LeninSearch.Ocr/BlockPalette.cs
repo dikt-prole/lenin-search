@@ -19,6 +19,8 @@ namespace LeninSearch.Ocr
                     return Color.DodgerBlue;
                 case OcrBlockLabel.Paragraph:
                     return Color.Green;
+                case OcrBlockLabel.Continuation:
+                    return Color.MediumAquamarine;
                 case OcrBlockLabel.Title:
                     return Color.Red;
             }

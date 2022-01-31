@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Accord.MachineLearning.DecisionTrees;
 using LeninSearch.Ocr.Labeling;
 using LeninSearch.Ocr.Model;
 using LeninSearch.Ocr.YandexVision;
@@ -15,7 +16,7 @@ namespace LeninSearch.Ocr
 {
     public partial class LabelingForm : Form
     {
-        private bool _loadPages;
+        private bool _displayPages;
 
         private Point? _selectionStartPoint;
 
@@ -23,20 +24,22 @@ namespace LeninSearch.Ocr
 
         private Action<Point> _moveImageBlockDragPoint;
 
-        private List<OcrFeaturedBlock> _featuredBlocks;
+        private RandomForest _model;
 
         public LabelingForm()
         {
             InitializeComponent();
 
-            displayBlocks_btn.Click += DisplayBlocks_btnOnClick;
+            displayBlocks_btn.Click += DisplayBlocksOnClick;
             displayPages_btn.Click += DisplayPages_btnOnClick;
 
             ocrBlock_lb.SelectedIndexChanged += OcrBlock_lbOnSelectedIndexChanged;
             ocrBlock_lb.KeyDown += OcrBlock_lbOnKeyDown;
-            trainModel_btn.Click += TrainModel_miOnClick;
+            trainModel_btn.Click += TrainModelClick;
+            applyModel_btn.Click += ApplyModelClick;
 
             paragraph_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Paragraph);
+            continuation_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Paragraph);
             title_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Title);
             comment_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Comment);
             grabage_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Garbage);
@@ -51,44 +54,58 @@ namespace LeninSearch.Ocr
             generateImageBlocks_btn.Click += GenerateImageBlocksClick;
             saveOcrData_btn.Click += SaveOcrDataClick;
 
-            openBookFolder_btn.Click += OpenBookFolder_btnOnClick;
-            generateBlocks_btn.Click += GenerateBlocks_btnOnClick;
+            openBookFolder_btn.Click += OpenBookFolderClick;
+            generateBlocks_btn.Click += GenerateBlocksClick;
         }
 
-        private async void GenerateBlocks_btnOnClick(object? sender, EventArgs e)
+        private void ApplyModelClick(object? sender, EventArgs e)
+        {
+            if (_model == null)
+            {
+                MessageBox.Show("No model trained yet", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            var featuredBlocks = _ocrData.FeaturedBlocks.Where(b => b.Features != null).ToList();
+
+            var inputs = featuredBlocks.Select(b => b.Features.ToFeatureRow()).ToArray();
+            var predicted = _model.Decide(inputs);
+
+            for (var i = 0; i < featuredBlocks.Count; i++)
+            {
+                featuredBlocks[i].Label = (OcrBlockLabel) predicted[i];
+            }
+
+            MessageBox.Show("Model applied", "Model", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private async void GenerateBlocksClick(object? sender, EventArgs e)
         {
             var imageFiles = Directory.GetFiles(bookFolder_tb.Text)
                 .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg")).ToList();
 
             var blockService = new YandexVisionOcrBlockService();
 
-            _featuredBlocks = new List<OcrFeaturedBlock>();
+            _ocrData.FeaturedBlocks = new List<OcrFeaturedBlock>();
 
             var sw = new Stopwatch(); sw.Start();
 
-            var chunks = imageFiles.ChunkBy(8);
-
             progressBar1.Minimum = 0;
-            progressBar1.Maximum = chunks.Count;
+            progressBar1.Maximum = imageFiles.Count;
             progressBar1.Value = 0;
 
-            for (var i = 0; i < chunks.Count; i++)
+            for (var i = 0; i < imageFiles.Count; i++)
             {
-                var chunk = chunks[i];
+                var imageFile = imageFiles[i];
 
-                var tasks = chunk.Select(f => blockService.GetBlocksAsync(f));
-
-                var results = await Task.WhenAll(tasks);
-                foreach (var result in results)
+                var result = await blockService.GetBlocksAsync(imageFile);
+                if (!result.Success)
                 {
-                    if (!result.Success)
-                    {
-                        MessageBox.Show(result.Error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
-
-                    _featuredBlocks.AddRange(result.Blocks);
+                    MessageBox.Show(result.Error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
                 }
+
+                _ocrData.FeaturedBlocks.AddRange(result.Blocks);
 
                 progressBar1.Value = i + 1;
             }
@@ -96,57 +113,62 @@ namespace LeninSearch.Ocr
             sw.Stop();
 
             MessageBox.Show($"Blocks generated in {sw.Elapsed}", "Blocks", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            DisplayBlocksOnClick(null, null);
+
+            ocrBlock_lb.SelectedIndex = 0;
         }
 
-        private void OpenBookFolder_btnOnClick(object? sender, EventArgs e)
+        private void OpenBookFolderClick(object? sender, EventArgs e)
         {
             var dialog = new FolderBrowserDialog();
 
             if (dialog.ShowDialog() != DialogResult.OK) return;
 
+            _ocrData = OcrData.Load(dialog.SelectedPath);
+
             bookFolder_tb.Text = dialog.SelectedPath;
         }
 
-        private void TrainModel_miOnClick(object? sender, EventArgs e)
+        private void TrainModelClick(object? sender, EventArgs e)
         {
-            //var labeledCount = _blockRows?.Count(r => r.Label.HasValue) ?? 0;
+            var dialog = new TrainModelDialog();
+            if (dialog.ShowDialog() != DialogResult.OK) return;
 
-            //if (DialogResult.Yes != MessageBox.Show($"Train model base on {labeledCount} blocks?", "Model",
-            //    MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1)) return;
+            var labeledBlocks = _ocrData.FeaturedBlocks
+                .Where(r => r.Label.HasValue && r.Features != null && r.ImageIndex < dialog.MaxImageIndex).ToList();
 
-            //var teacher = new RandomForestLearning {NumberOfTrees = 10};
+            double[][] inputs = labeledBlocks.Select(lb => lb.Features.ToFeatureRow()).ToArray();
+            int[] outputs = labeledBlocks.Select(lb => (int) lb.Label).ToArray();
 
+            Accord.Math.Random.Generator.Seed = 1;
+            var teacher = new RandomForestLearning
+            {
+                NumberOfTrees = 20
+            };
 
+            _model = teacher.Learn(inputs, outputs);
 
+            MessageBox.Show($"Model trained on {labeledBlocks.Count} examples", "Model", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void SaveOcrDataClick(object? sender, EventArgs e)
         {
-            var ocrDataFile = Path.Combine(bookFolder_tb.Text, "ocr-data.json");
+            _ocrData.Save(bookFolder_tb.Text);
 
-            if (File.Exists(ocrDataFile) && DialogResult.Yes != MessageBox.Show("Ocr data exists, overwrite?", "Ocr data",
-                MessageBoxButtons.YesNo, MessageBoxIcon.Question))
-            {
-                return;
-            }
-
-            var ocrDataJson = JsonConvert.SerializeObject(_featuredBlocks);
-
-            File.WriteAllText(ocrDataFile, ocrDataJson);
-
-            MessageBox.Show($"Ocr data saved to '{ocrDataFile}'", "Ocr data", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Ocr data saved", "Ocr data", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void GenerateImageBlocksClick(object sender, EventArgs e)
         {
             // 1. get image row groups
             var fileBlockGroups = new Dictionary<string, List<List<OcrFeaturedBlock>>>();
-            var fileNames = _featuredBlocks.OrderBy(r => r.ImageIndex).Select(r => r.FileName).Distinct().ToList();
+            var fileNames = _ocrData.FeaturedBlocks.OrderBy(r => r.ImageIndex).Select(r => r.FileName).Distinct().ToList();
             foreach (var fileName in fileNames)
             {
                 var blockGroups = new List<List<OcrFeaturedBlock>>();
                 var blockGroup = new List<OcrFeaturedBlock>();
-                var blocks = _featuredBlocks.Where(r => r.FileName == fileName).OrderBy(r => r.BlockIndex).ToList();
+                var blocks = _ocrData.FeaturedBlocks.Where(r => r.FileName == fileName).OrderBy(r => r.BlockIndex).ToList();
 
                 foreach (var block in blocks)
                 {
@@ -219,7 +241,7 @@ namespace LeninSearch.Ocr
 
         private void PictureBox1OnMouseDown(object sender, MouseEventArgs e)
         {
-            if (_loadPages && pictureBox1.Image != null)
+            if (_displayPages && pictureBox1.Image != null)
             {
                 if (e.Button == MouseButtons.Right)
                 {
@@ -267,7 +289,7 @@ namespace LeninSearch.Ocr
 
         private void PictureBox1OnMouseUp(object sender, MouseEventArgs e)
         {
-            if (_loadPages)
+            if (_displayPages)
             {
                 if (e.Button == MouseButtons.Right && _selectionStartPoint != null)
                 {
@@ -277,6 +299,7 @@ namespace LeninSearch.Ocr
                     var menu = new ContextMenuStrip();
                     menu.Items.Add("Image", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Image));
                     menu.Items.Add("Paragraph", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Paragraph));
+                    menu.Items.Add("Continuation", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Continuation));
                     menu.Items.Add("Comment", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Comment));
                     menu.Items.Add("Title", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Title));
                     menu.Items.Add("Garbage", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Garbage));
@@ -342,7 +365,7 @@ namespace LeninSearch.Ocr
 
             var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
 
-            var fileBlocks = _featuredBlocks.Where(b => b.FileName == fileName).ToList();
+            var fileBlocks = _ocrData.FeaturedBlocks.Where(b => b.FileName == fileName).ToList();
             foreach (var block in fileBlocks)
             {
                 if (block.Rectangle.IntersectsWith(originalRect))
@@ -388,31 +411,37 @@ namespace LeninSearch.Ocr
         private void DisplayPages_btnOnClick(object? sender, EventArgs e)
         {
             ocrBlock_lb.Items.Clear();
-            var fileNames = _featuredBlocks.Select(r => r.FileName).Distinct().ToList();
+            var fileNames = _ocrData.FeaturedBlocks.Select(r => r.FileName).Distinct().ToList();
             foreach (var fileName in fileNames)
             {
                 ocrBlock_lb.Items.Add(fileName);
             }
+
+            _displayPages = true;
         }
 
-        private void DisplayBlocks_btnOnClick(object? sender, EventArgs e)
+        private void DisplayBlocksOnClick(object? sender, EventArgs e)
         {
             ocrBlock_lb.Items.Clear();
-            foreach (var block in _featuredBlocks)
+            foreach (var block in _ocrData.FeaturedBlocks)
             {
                 ocrBlock_lb.Items.Add(block);
             }
+
+            _displayPages = false;
         }
 
         private void OcrBlock_lbOnKeyDown(object sender, KeyEventArgs e)
         {
-            if (_loadPages) return;
+            if (_displayPages) return;
 
-            var row = ocrBlock_lb.SelectedItem as OcrBlockRow;
+            var row = ocrBlock_lb.SelectedItem as OcrFeaturedBlock;
 
             if (row == null) return;
 
             if (e.KeyCode == Keys.P) row.Label = OcrBlockLabel.Paragraph;
+
+            if (e.KeyCode == Keys.O) row.Label = OcrBlockLabel.Continuation;
 
             if (e.KeyCode == Keys.C) row.Label = OcrBlockLabel.Comment;
 
@@ -431,9 +460,9 @@ namespace LeninSearch.Ocr
         {
             try
             {
-                var fileName = _loadPages
+                var fileName = _displayPages
                     ? ocrBlock_lb.SelectedItem as string
-                    : (ocrBlock_lb.SelectedItem as OcrBlockRow)?.FileName;
+                    : (ocrBlock_lb.SelectedItem as OcrFeaturedBlock)?.FileName;
 
                 if (fileName == null) return;
 
@@ -444,8 +473,8 @@ namespace LeninSearch.Ocr
                 }
 
                 var image = new Bitmap(Image.FromFile(imageFile));
-                var drawBlocks = _loadPages
-                    ? _featuredBlocks.Where(r => r.FileName == fileName).ToList()
+                var drawBlocks = _displayPages
+                    ? _ocrData.FeaturedBlocks.Where(r => r.FileName == fileName).ToList()
                     : new List<OcrFeaturedBlock> { ocrBlock_lb.SelectedItem as OcrFeaturedBlock };
 
                 foreach (var block in drawBlocks)

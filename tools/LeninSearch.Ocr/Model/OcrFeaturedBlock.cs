@@ -18,7 +18,6 @@ namespace LeninSearch.Ocr.Model
         public OcrBlockFeatures Features { get; set; }
         public int BlockIndex { get; set; }
         public int ImageIndex => int.Parse(new string(FileName).Where(char.IsNumber).ToArray());
-
         public Rectangle Rectangle => new Rectangle(TopLeftX, TopLeftY, BottomRightX - TopLeftX, BottomRightY - TopLeftY);
 
         public override string ToString()

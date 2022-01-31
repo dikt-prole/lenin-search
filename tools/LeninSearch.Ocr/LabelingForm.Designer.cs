@@ -46,14 +46,16 @@ namespace LeninSearch.Ocr
             this.grabage_panel = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.image_panel = new System.Windows.Forms.Panel();
+            this.continuation_panel = new System.Windows.Forms.Panel();
+            this.label7 = new System.Windows.Forms.Label();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.bookFolder_tb = new System.Windows.Forms.TextBox();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.saveOcrData_btn = new System.Windows.Forms.Button();
             this.openBookFolder_btn = new System.Windows.Forms.Button();
             this.displayPages_btn = new System.Windows.Forms.Button();
             this.displayBlocks_btn = new System.Windows.Forms.Button();
             this.generateBlocks_btn = new System.Windows.Forms.Button();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.bookFolder_tb = new System.Windows.Forms.TextBox();
             this.trainModel_btn = new System.Windows.Forms.Button();
             this.generateImageBlocks_btn = new System.Windows.Forms.Button();
             this.applyModel_btn = new System.Windows.Forms.Button();
@@ -80,7 +82,7 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel3.Name = "tableLayoutPanel3";
             this.tableLayoutPanel3.RowCount = 1;
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel3.Size = new System.Drawing.Size(932, 587);
+            this.tableLayoutPanel3.Size = new System.Drawing.Size(1484, 587);
             this.tableLayoutPanel3.TabIndex = 1;
             // 
             // ocrBlock_lb
@@ -107,7 +109,7 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel4.RowCount = 2;
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
-            this.tableLayoutPanel4.Size = new System.Drawing.Size(352, 587);
+            this.tableLayoutPanel4.Size = new System.Drawing.Size(904, 587);
             this.tableLayoutPanel4.TabIndex = 3;
             // 
             // pictureBox1
@@ -116,26 +118,28 @@ namespace LeninSearch.Ocr
             this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pictureBox1.Location = new System.Drawing.Point(3, 3);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(346, 553);
+            this.pictureBox1.Size = new System.Drawing.Size(898, 553);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox1.TabIndex = 1;
             this.pictureBox1.TabStop = false;
             // 
             // tableLayoutPanel6
             // 
-            this.tableLayoutPanel6.ColumnCount = 12;
+            this.tableLayoutPanel6.ColumnCount = 14;
+            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 28F));
+            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 14F));
+            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 28F));
+            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 14F));
+            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 28F));
+            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 14F));
+            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 28F));
+            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 14F));
+            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 28F));
+            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 14F));
+            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 28F));
+            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 14F));
             this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 16F));
-            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 28F));
-            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 16F));
-            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 28F));
-            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 16F));
-            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 28F));
-            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 16F));
-            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 28F));
-            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 16F));
-            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 28F));
-            this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
             this.tableLayoutPanel6.Controls.Add(this.label6, 11, 0);
             this.tableLayoutPanel6.Controls.Add(this.label5, 9, 0);
             this.tableLayoutPanel6.Controls.Add(this.label4, 7, 0);
@@ -148,62 +152,64 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel6.Controls.Add(this.grabage_panel, 8, 0);
             this.tableLayoutPanel6.Controls.Add(this.label1, 1, 0);
             this.tableLayoutPanel6.Controls.Add(this.image_panel, 10, 0);
+            this.tableLayoutPanel6.Controls.Add(this.continuation_panel, 12, 0);
+            this.tableLayoutPanel6.Controls.Add(this.label7, 13, 0);
             this.tableLayoutPanel6.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel6.Location = new System.Drawing.Point(0, 559);
             this.tableLayoutPanel6.Margin = new System.Windows.Forms.Padding(0);
             this.tableLayoutPanel6.Name = "tableLayoutPanel6";
             this.tableLayoutPanel6.RowCount = 1;
             this.tableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel6.Size = new System.Drawing.Size(352, 28);
+            this.tableLayoutPanel6.Size = new System.Drawing.Size(904, 28);
             this.tableLayoutPanel6.TabIndex = 2;
             // 
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(316, 6);
+            this.label6.Location = new System.Drawing.Point(666, 6);
             this.label6.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(27, 22);
+            this.label6.Size = new System.Drawing.Size(54, 15);
             this.label6.TabIndex = 11;
             this.label6.Text = "Image (I)";
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(259, 6);
+            this.label5.Location = new System.Drawing.Point(539, 6);
             this.label5.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(23, 22);
+            this.label5.Size = new System.Drawing.Size(70, 15);
             this.label5.TabIndex = 9;
             this.label5.Text = "Garbage (G)";
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(202, 6);
+            this.label4.Location = new System.Drawing.Point(412, 6);
             this.label4.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(23, 22);
+            this.label4.Size = new System.Drawing.Size(46, 15);
             this.label4.TabIndex = 8;
             this.label4.Text = "Title (T)";
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(145, 6);
+            this.label3.Location = new System.Drawing.Point(285, 6);
             this.label3.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(23, 22);
+            this.label3.Size = new System.Drawing.Size(80, 15);
             this.label3.TabIndex = 7;
             this.label3.Text = "Comment (C)";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(88, 6);
+            this.label2.Location = new System.Drawing.Point(158, 6);
             this.label2.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(22, 22);
+            this.label2.Size = new System.Drawing.Size(79, 15);
             this.label2.TabIndex = 6;
             this.label2.Text = "Paragraph (P)";
             // 
@@ -219,7 +225,7 @@ namespace LeninSearch.Ocr
             // paragraph_panel
             // 
             this.paragraph_panel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.paragraph_panel.Location = new System.Drawing.Point(62, 5);
+            this.paragraph_panel.Location = new System.Drawing.Point(132, 5);
             this.paragraph_panel.Margin = new System.Windows.Forms.Padding(5);
             this.paragraph_panel.Name = "paragraph_panel";
             this.paragraph_panel.Size = new System.Drawing.Size(18, 18);
@@ -228,7 +234,7 @@ namespace LeninSearch.Ocr
             // comment_panel
             // 
             this.comment_panel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.comment_panel.Location = new System.Drawing.Point(119, 5);
+            this.comment_panel.Location = new System.Drawing.Point(259, 5);
             this.comment_panel.Margin = new System.Windows.Forms.Padding(5);
             this.comment_panel.Name = "comment_panel";
             this.comment_panel.Size = new System.Drawing.Size(18, 18);
@@ -237,7 +243,7 @@ namespace LeninSearch.Ocr
             // title_panel
             // 
             this.title_panel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.title_panel.Location = new System.Drawing.Point(176, 5);
+            this.title_panel.Location = new System.Drawing.Point(386, 5);
             this.title_panel.Margin = new System.Windows.Forms.Padding(5);
             this.title_panel.Name = "title_panel";
             this.title_panel.Size = new System.Drawing.Size(18, 18);
@@ -246,7 +252,7 @@ namespace LeninSearch.Ocr
             // grabage_panel
             // 
             this.grabage_panel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.grabage_panel.Location = new System.Drawing.Point(233, 5);
+            this.grabage_panel.Location = new System.Drawing.Point(513, 5);
             this.grabage_panel.Margin = new System.Windows.Forms.Padding(5);
             this.grabage_panel.Name = "grabage_panel";
             this.grabage_panel.Size = new System.Drawing.Size(18, 18);
@@ -258,18 +264,36 @@ namespace LeninSearch.Ocr
             this.label1.Location = new System.Drawing.Point(31, 6);
             this.label1.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(23, 22);
+            this.label1.Size = new System.Drawing.Size(56, 15);
             this.label1.TabIndex = 5;
             this.label1.Text = "None (N)";
             // 
             // image_panel
             // 
             this.image_panel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.image_panel.Location = new System.Drawing.Point(290, 5);
+            this.image_panel.Location = new System.Drawing.Point(640, 5);
             this.image_panel.Margin = new System.Windows.Forms.Padding(5);
             this.image_panel.Name = "image_panel";
             this.image_panel.Size = new System.Drawing.Size(18, 18);
             this.image_panel.TabIndex = 10;
+            // 
+            // continuation_panel
+            // 
+            this.continuation_panel.Location = new System.Drawing.Point(767, 5);
+            this.continuation_panel.Margin = new System.Windows.Forms.Padding(5);
+            this.continuation_panel.Name = "continuation_panel";
+            this.continuation_panel.Size = new System.Drawing.Size(18, 18);
+            this.continuation_panel.TabIndex = 12;
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(793, 6);
+            this.label7.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(97, 15);
+            this.label7.TabIndex = 13;
+            this.label7.Text = "Continuation (O)";
             // 
             // tableLayoutPanel1
             // 
@@ -288,7 +312,7 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel1.Controls.Add(this.generateImageBlocks_btn, 0, 5);
             this.tableLayoutPanel1.Controls.Add(this.applyModel_btn, 1, 4);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(535, 3);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(1087, 3);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 8;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
@@ -301,25 +325,6 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(394, 581);
             this.tableLayoutPanel1.TabIndex = 4;
-            // 
-            // bookFolder_tb
-            // 
-            this.tableLayoutPanel1.SetColumnSpan(this.bookFolder_tb, 2);
-            this.bookFolder_tb.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.bookFolder_tb.Location = new System.Drawing.Point(3, 3);
-            this.bookFolder_tb.Name = "bookFolder_tb";
-            this.bookFolder_tb.ReadOnly = true;
-            this.bookFolder_tb.Size = new System.Drawing.Size(257, 23);
-            this.bookFolder_tb.TabIndex = 0;
-            // 
-            // progressBar1
-            // 
-            this.tableLayoutPanel1.SetColumnSpan(this.progressBar1, 3);
-            this.progressBar1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.progressBar1.Location = new System.Drawing.Point(3, 31);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(388, 4);
-            this.progressBar1.TabIndex = 2;
             // 
             // saveOcrData_btn
             // 
@@ -371,6 +376,25 @@ namespace LeninSearch.Ocr
             this.generateBlocks_btn.Text = "Generate Blocks";
             this.generateBlocks_btn.UseVisualStyleBackColor = true;
             // 
+            // progressBar1
+            // 
+            this.tableLayoutPanel1.SetColumnSpan(this.progressBar1, 3);
+            this.progressBar1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.progressBar1.Location = new System.Drawing.Point(3, 31);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(388, 4);
+            this.progressBar1.TabIndex = 2;
+            // 
+            // bookFolder_tb
+            // 
+            this.tableLayoutPanel1.SetColumnSpan(this.bookFolder_tb, 2);
+            this.bookFolder_tb.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.bookFolder_tb.Location = new System.Drawing.Point(3, 3);
+            this.bookFolder_tb.Name = "bookFolder_tb";
+            this.bookFolder_tb.ReadOnly = true;
+            this.bookFolder_tb.Size = new System.Drawing.Size(257, 23);
+            this.bookFolder_tb.TabIndex = 0;
+            // 
             // trainModel_btn
             // 
             this.trainModel_btn.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -405,7 +429,7 @@ namespace LeninSearch.Ocr
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(932, 587);
+            this.ClientSize = new System.Drawing.Size(1484, 587);
             this.Controls.Add(this.tableLayoutPanel3);
             this.Name = "LabelingForm";
             this.Text = "LabelingForm";
@@ -449,5 +473,7 @@ namespace LeninSearch.Ocr
         private System.Windows.Forms.Button trainModel_btn;
         private System.Windows.Forms.Button generateImageBlocks_btn;
         private System.Windows.Forms.Button applyModel_btn;
+        private System.Windows.Forms.Panel continuation_panel;
+        private System.Windows.Forms.Label label7;
     }
 }

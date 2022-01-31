@@ -17,5 +17,27 @@
         public int TopLineDistance { get; set; }
         public int ImageIndex { get; set; }
         public int FirstLineIndent { get; set; }
+
+        public double[] ToFeatureRow()
+        {
+            return new double[]
+            {
+                BottomIndent,
+                LeftIndent,
+                RightIndent,
+                TopIndent,
+                PixelsPerSymbol,
+                Width,
+                Height,
+                WidthToHeightRatio,
+                WordCount,
+                SymbolCount,
+                SameYLevelBlockCount,
+                BottomLineDistance,
+                TopLineDistance,
+                ImageIndex,
+                FirstLineIndent
+            };
+        }
     }
 }
