@@ -10,39 +10,108 @@ namespace LeninSearch.Ocr
 {
     public static class CvUtil
     {
-        public static (int ImageWidth, int ImageHeight, int? TopLineY, int? BottomLineY) GetPageLines(string imageFile)
+        public static (DividerLine TopLine, DividerLine BottomLine) GetTopBottomDividerLines(string imageFile)
         {
-            var cannyThreshold = 180.0;
-            var cannyThresholdLinking = 120.0;
+            Image<Bgr, Byte> bgrImage = new Image<Bgr, Byte>(imageFile);
 
+            var dividerLines = GetAllDividerLines(bgrImage);
+
+            var bottomLineCandidates = dividerLines
+                .Where(l => l.Y > bgrImage.Height * 3 / 4)
+                .Where(l => l.LeftX > 30 && l.RightX < 160)
+                .OrderByDescending(l => l.Length)
+                .ToList();
+
+            var topLineCandidates = dividerLines
+                .Where(l => l.Y > 55 && l.Y < 85)
+                .OrderByDescending(l => l.Length)
+                .ToList();
+
+            var topLine = topLineCandidates.FirstOrDefault() ?? new DividerLine
+            {
+                Y = 0,
+                LeftX = 0,
+                RightX = bgrImage.Width
+            };
+
+            var bottomLine = bottomLineCandidates.FirstOrDefault() ?? new DividerLine
+            {
+                Y = bgrImage.Height,
+                LeftX = 0,
+                RightX = bgrImage.Width
+            };
+
+            return (topLine, bottomLine);
+        }
+
+        public static IEnumerable<DividerLine> GetAllDividerLines(Image<Bgr, Byte> bgrImage)
+        {
             using UMat gray = new UMat();
             using UMat cannyEdges = new UMat();
 
-            Image<Bgr, Byte> img1 = new Image<Bgr, Byte>(imageFile);
-            CvInvoke.CvtColor(img1, gray, ColorConversion.Bgr2Gray);
+            CvInvoke.CvtColor(bgrImage, gray, ColorConversion.Bgr2Gray);
+
+            double cannyThreshold = 180.0;
+            double cannyThresholdLinking = 120.0;
             CvInvoke.Canny(gray, cannyEdges, cannyThreshold, cannyThresholdLinking);
             LineSegment2D[] lines = CvInvoke.HoughLinesP(
                 cannyEdges,
                 1, //Distance resolution in pixel-related units
                 Math.PI / 2, //Angle resolution measured in radians.
                 2, //threshold
-                50, //min Line width
+                5, //min Line width
                 1); //gap between lines
 
-            var testLine = new LineSegment2D(new Point(0, 0), new Point(10, 0));
+            var horizontal = new LineSegment2D(new Point(0, 0), new Point(10, 0));
 
-            lines = lines.Where(l => Math.Abs(l.GetExteriorAngleDegree(testLine)) < 5).ToArray();
+            var lineSource = lines.Where(l => Math.Abs(l.GetExteriorAngleDegree(horizontal)) < 3).ToList();
+            var lineGroups = new List<List<LineSegment2D>>();
+            while (lineSource.Any())
+            {
+                var attractorLine = lineSource[0];
 
-            var topLines = lines.Where(l => l.P1.Y < img1.Height / 2).OrderBy(l => l.P1.Y).ToArray();
-            var bottomLines = lines.Where(l => l.P1.Y > img1.Height / 2).OrderByDescending(l => l.P1.Y).ToArray();
+                lineSource.Remove(attractorLine);
+                var attractedLines = lineSource
+                    .Where(l => Math.Abs(l.P1.Y - attractorLine.P1.Y) < 3)
+                    .Where(l => GetMinDistance(attractorLine, l) < 10)
+                    .ToList();
 
-            if (!topLines.Any() && !bottomLines.Any()) return (img1.Width, img1.Height, null, null);
+                foreach (var l in attractedLines) lineSource.Remove(l);
+                attractedLines.Add(attractorLine);
+                lineGroups.Add(attractedLines);
+            }
 
-            if (!topLines.Any()) return (img1.Width, img1.Height, null, bottomLines[0].P1.Y);
-
-            if (!bottomLines.Any()) return (img1.Width, img1.Height, topLines[0].P1.Y, null);
-
-            return (img1.Width, img1.Height, topLines[0].P1.Y, bottomLines[0].P1.Y);
+            foreach (var lineGroup in lineGroups)
+            {
+                var allPoints = lineGroup.SelectMany(l => new[] { l.P1, l.P2 }).ToList();
+                yield return new DividerLine
+                {
+                    Y = lineGroup.Last().P1.Y,
+                    LeftX = allPoints.Select(p => p.X).Min(),
+                    RightX = allPoints.Select(p => p.X).Max()
+                };
+            }
         }
+
+        private static int GetMinDistance(LineSegment2D l1, LineSegment2D l2)
+        {
+            var distances = new List<int>
+            {
+                Math.Abs(l1.P1.X - l2.P1.X),
+                Math.Abs(l1.P1.X - l2.P2.X),
+                Math.Abs(l1.P2.X - l2.P2.X),
+                Math.Abs(l1.P2.X - l2.P1.X)
+            };
+
+            return distances.Min();
+        }
+    }
+
+    public class DividerLine
+    {
+        public int Y { get; set; }
+        public int LeftX { get; set; }
+        public int RightX { get; set; }
+        public int Length => RightX - LeftX;
     }
 }

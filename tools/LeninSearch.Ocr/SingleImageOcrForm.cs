@@ -35,43 +35,32 @@ namespace LeninSearch.Ocr
 
         private void Lines_btnOnClick(object? sender, EventArgs e)
         {
-            using UMat gray = new UMat();
-            using UMat cannyEdges = new UMat();
+            var dividerLines = CvUtil.GetTopBottomDividerLines(_imageFile);
 
-            Image<Bgr, Byte> img1 = new Image<Bgr, Byte>(_imageFile);
-
-            CvInvoke.CvtColor(img1, gray, ColorConversion.Bgr2Gray);
-
-            double cannyThreshold = 180.0;
-            double cannyThresholdLinking = 120.0;
-            CvInvoke.Canny(gray, cannyEdges, cannyThreshold, cannyThresholdLinking);
-            LineSegment2D[] lines = CvInvoke.HoughLinesP(
-                cannyEdges,
-                1, //Distance resolution in pixel-related units
-                Math.PI / 2, //Angle resolution measured in radians.
-                2, //threshold
-                50, //min Line width
-                1); //gap between lines
+            var tl = dividerLines.TopLine;
+            var bl = dividerLines.BottomLine;
 
             var image = new Bitmap(Image.FromFile(_imageFile));
 
             using var g = Graphics.FromImage(image);
 
-            var horizontal = new LineSegment2D(new Point(0, 0), new Point(10, 0));
-
-            foreach (var line in lines)
-            {
-                var angle = line.GetExteriorAngleDegree(horizontal);
-
-                Debug.WriteLine($"The angle is: {angle}");
-
-                if (Math.Abs(angle) < 5)
-                {
-                    g.DrawLine(Pens.Red, line.P1, line.P2);
-                }
-            }
+            g.DrawLine(Pens.Red, tl.LeftX, tl.Y, tl.RightX, tl.Y);
+            g.DrawLine(Pens.Red, bl.LeftX, bl.Y, bl.RightX, bl.Y);
 
             pictureBox1.Image = image;
+        }
+
+        private int GetMinDistance(LineSegment2D l1, LineSegment2D l2)
+        {
+            var distances = new List<int>
+            {
+                Math.Abs(l1.P1.X - l2.P1.X),
+                Math.Abs(l1.P1.X - l2.P2.X),
+                Math.Abs(l1.P2.X - l2.P2.X),
+                Math.Abs(l1.P2.X - l2.P1.X)
+            };
+
+            return distances.Min();
         }
 
         private async void Ocr_btnOnClick(object? sender, EventArgs e)
@@ -122,22 +111,11 @@ namespace LeninSearch.Ocr
                 {
                     foreach (var line in block.Lines)
                     {
-                        //DrawBoundingBox(g, line.BoundingBox, Color.LawnGreen);
-
-                        var text = string.Join(" ", line.Words.Select(w => w.Text));
-                        var font = new Font(Font.FontFamily, 16, FontStyle.Regular);
-                        var textPoint = line.BoundingBox.Vertices[0].Point();
-                        g.DrawString(text, font, Brushes.Blue, textPoint.X, textPoint.Y - 25);
-
-                        var countPoint = line.BoundingBox.Vertices[3].Point();
-                        var lineLength = line.BoundingBox.Vertices[3].Point().X - line.BoundingBox.Vertices[0].Point().X;
-                        var pxs = 1.0 * lineLength / text.Length;
-
-                        g.DrawString(pxs.ToString("F2"), font, Brushes.DarkOrange, countPoint);
+                        DrawBoundingBox(g, line.BoundingBox, Color.Red);
                     }
 
-                    DrawBoundingBox(g, block.BoundingBox, Color.Red);
-                }    
+                    DrawBoundingBox(g, block.BoundingBox, Color.Blue);
+                }
             }
 
             pictureBox1.Image = image;

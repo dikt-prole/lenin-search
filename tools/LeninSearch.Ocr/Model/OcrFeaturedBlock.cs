@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -13,7 +14,7 @@ namespace LeninSearch.Ocr.Model
         public int TopLeftY { get; set; }
         public int BottomRightX { get; set; }
         public int BottomRightY { get; set; }
-        public string[] Lines { get; set; }
+        public List<OcrLine> Lines { get; set; }
         public OcrBlockLabel? Label { get; set; }
         public OcrBlockFeatures Features { get; set; }
         public int BlockIndex { get; set; }

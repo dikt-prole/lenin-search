@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
+using LeninSearch.Ocr.Model;
 
 namespace LeninSearch.Ocr.YandexVision.OcrResponse
 {
@@ -83,19 +86,49 @@ namespace LeninSearch.Ocr.YandexVision.OcrResponse
         public string Text { get; set; }
         public double Confidence { get; set; }
         public string EntityIndex { get; set; }
+
+        public OcrWord ToOcrWord()
+        {
+            var topLeft = BoundingBox.TopLeft.Point();
+            var bottomRight = BoundingBox.BottomRight.Point();
+            return new OcrWord
+            {
+                Id = Guid.NewGuid(),
+                TopLeftX = topLeft.X,
+                TopLeftY = topLeft.Y,
+                BottomRightX = bottomRight.X,
+                BottomRightY = bottomRight.Y,
+                Text = Text
+            };
+        }
     }
 
-    public class Line
+    public class YandexVisionLine
     {
         public BoundingBox BoundingBox { get; set; }
         public IList<Word> Words { get; set; }
         public double Confidence { get; set; }
+
+        public OcrLine ToOcrLine()
+        {
+            var topLeft = BoundingBox.TopLeft.Point();
+            var bottomRight = BoundingBox.BottomRight.Point();
+            return new OcrLine
+            {
+                Id = Guid.NewGuid(),
+                TopLeftX = topLeft.X,
+                TopLeftY = topLeft.Y,
+                BottomRightX = bottomRight.X,
+                BottomRightY = bottomRight.Y,
+                Words = Words.Select(w => w.ToOcrWord()).ToList()
+            };
+        }
     }
 
     public class OcrBlock
     {
         public BoundingBox BoundingBox { get; set; }
-        public IList<Line> Lines { get; set; }
+        public IList<YandexVisionLine> Lines { get; set; }
     }
 
     public class Page

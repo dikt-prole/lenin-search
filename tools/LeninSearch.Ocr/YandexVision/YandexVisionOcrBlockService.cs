@@ -78,72 +78,105 @@ namespace LeninSearch.Ocr.YandexVision
             for (var blockIndex = 0; blockIndex < responseBlocks.Count; blockIndex++)
             {
                 var responseBlock = responseBlocks[blockIndex];
-                var topLeft = responseBlock.BoundingBox.TopLeft.Point();
-                var topRight = responseBlock.BoundingBox.TopRight.Point();
-                var bottomLeft = responseBlock.BoundingBox.BottomLeft.Point();
-                var bottomRight = responseBlock.BoundingBox.BottomRight.Point();
-
-                var words = responseBlock.Lines.SelectMany(l => l.Words).ToList();
-                var text = string.Join(" ", words.Select(w => w.Text));
-                var totalPixelWidth = responseBlock.Lines.Sum(l => l.BoundingBox.TopRight.Point().X - l.BoundingBox.TopLeft.Point().X);
-                var pixelsPerSymbol = 1.0 * totalPixelWidth / text.Length;
-                var rowWidth = responseBlock.BoundingBox.TopRight.Point().X - responseBlock.BoundingBox.TopLeft.Point().X;
-                var rowHeight = responseBlock.BoundingBox.BottomLeft.Point().Y - responseBlock.BoundingBox.TopLeft.Point().Y;
-                var pageLines = GetPageLines(imageFile);
+                var dividerLines = CvUtil.GetTopBottomDividerLines(imageFile);
+                var blockTopLeft = responseBlock.BoundingBox.TopLeft.Point();
+                var blockBottomRight = responseBlock.BoundingBox.BottomRight.Point();
+                var blockBottomLineDistance = dividerLines.BottomLine.Y - blockTopLeft.Y;
+                var blockTopLineDistance = blockTopLeft.Y - dividerLines.TopLine.Y;
                 var imageIndex = int.Parse(new string(Path.GetFileNameWithoutExtension(imageFile).Where(char.IsNumber).ToArray()));
 
-                var features = new OcrBlockFeatures
+                if (blockBottomLineDistance < 0) // in this case this case the block is comment for sure*
                 {
-                    PixelsPerSymbol = pixelsPerSymbol,
-                    LeftIndent = topLeft.X,
-                    RightIndent = image.Width - topRight.X,
-                    TopIndent = topLeft.Y,
-                    BottomIndent = image.Height - bottomLeft.Y,
-                    SameYLevelBlockCount = responseBlocks.Count(b => b != responseBlock && responseBlock.BoundingBox.IsSameY(b.BoundingBox)),
-                    Width = rowWidth,
-                    Height = rowHeight,
-                    WidthToHeightRatio = 1.0 * rowWidth / rowHeight,
-                    WordCount = words.Count,
-                    SymbolCount = text.Length,
-                    TopLineDistance = responseBlock.BoundingBox.TopLeft.Point().Y - pageLines.TopY,
-                    BottomLineDistance = pageLines.BottomY - responseBlock.BoundingBox.TopLeft.Point().Y,
-                    ImageIndex = imageIndex,
-                    FirstLineIndent = responseBlock.Lines[0].BoundingBox.TopLeft.Point().X
-                };
+                    foreach (var responseLine in responseBlock.Lines)
+                    {
+                        var lineTopLeft = responseLine.BoundingBox.TopLeft.Point();
+                        var lineBottomRight = responseLine.BoundingBox.BottomRight.Point();
+                        var words = responseLine.Words;
+                        var text = string.Join(" ", words.Select(w => w.Text));
+                        var totalPixelWidth = responseBlock.Lines.Sum(l => l.BoundingBox.TopRight.Point().X - l.BoundingBox.TopLeft.Point().X);
+                        var pixelsPerSymbol = 1.0 * totalPixelWidth / text.Length;
+                        var blockWidth = lineBottomRight.X - lineTopLeft.X;
+                        var blockHeight = lineBottomRight.Y - lineTopLeft.Y;
 
-                var featuredBlock = new OcrFeaturedBlock
+                        var features = new OcrBlockFeatures
+                        {
+                            PixelsPerSymbol = pixelsPerSymbol,
+                            LeftIndent = lineTopLeft.X,
+                            RightIndent = image.Width - lineBottomRight.X,
+                            TopIndent = lineTopLeft.Y,
+                            BottomIndent = image.Height - lineBottomRight.Y,
+                            SameYLevelBlockCount = 0,
+                            Width = blockWidth,
+                            Height = blockHeight,
+                            WidthToHeightRatio = 1.0 * blockWidth / blockHeight,
+                            WordCount = words.Count,
+                            SymbolCount = text.Length,
+                            TopLineDistance = lineTopLeft.Y - dividerLines.TopLine.Y,
+                            BottomLineDistance = dividerLines.BottomLine.Y - lineTopLeft.Y,
+                            ImageIndex = imageIndex,
+                            FirstLineIndent = lineTopLeft.X
+                        };
+
+                        var featuredBlock = new OcrFeaturedBlock
+                        {
+                            FileName = Path.GetFileNameWithoutExtension(imageFile),
+                            BlockIndex = blockIndex,
+                            Lines = new List<OcrLine> { responseLine.ToOcrLine() },
+                            TopLeftX = lineTopLeft.X,
+                            TopLeftY = lineTopLeft.Y,
+                            BottomRightX = lineBottomRight.X,
+                            BottomRightY = lineBottomRight.Y,
+                            Features = features
+                        };
+
+                        featuredBlocks.Add(featuredBlock);
+                    }
+                }
+                else
                 {
-                    FileName = Path.GetFileNameWithoutExtension(imageFile),
-                    BlockIndex = blockIndex,
-                    Lines = responseBlock.Lines.Select(l => string.Join(" ", l.Words.Select(w => w.Text))).ToArray(),
-                    TopLeftX = topLeft.X,
-                    TopLeftY = topLeft.Y,
-                    BottomRightX = bottomRight.X,
-                    BottomRightY = bottomRight.Y,
-                    Features = features
-                };
+                    var words = responseBlock.Lines.SelectMany(l => l.Words).ToList();
+                    var text = string.Join(" ", words.Select(w => w.Text));
+                    var totalPixelWidth = responseBlock.Lines.Sum(l => l.BoundingBox.TopRight.Point().X - l.BoundingBox.TopLeft.Point().X);
+                    var pixelsPerSymbol = 1.0 * totalPixelWidth / text.Length;
+                    var rowWidth = responseBlock.BoundingBox.TopRight.Point().X - responseBlock.BoundingBox.TopLeft.Point().X;
+                    var rowHeight = responseBlock.BoundingBox.BottomLeft.Point().Y - responseBlock.BoundingBox.TopLeft.Point().Y;
 
-                featuredBlocks.Add(featuredBlock);
+                    var features = new OcrBlockFeatures
+                    {
+                        PixelsPerSymbol = pixelsPerSymbol,
+                        LeftIndent = blockTopLeft.X,
+                        RightIndent = image.Width - blockBottomRight.X,
+                        TopIndent = blockTopLeft.Y,
+                        BottomIndent = image.Height - blockBottomRight.Y,
+                        SameYLevelBlockCount = responseBlocks.Count(b => b != responseBlock && responseBlock.BoundingBox.IsSameY(b.BoundingBox)),
+                        Width = rowWidth,
+                        Height = rowHeight,
+                        WidthToHeightRatio = 1.0 * rowWidth / rowHeight,
+                        WordCount = words.Count,
+                        SymbolCount = text.Length,
+                        TopLineDistance = blockTopLineDistance,
+                        BottomLineDistance = blockTopLineDistance,
+                        ImageIndex = imageIndex,
+                        FirstLineIndent = responseBlock.Lines[0].BoundingBox.TopLeft.Point().X
+                    };
+
+                    var featuredBlock = new OcrFeaturedBlock
+                    {
+                        FileName = Path.GetFileNameWithoutExtension(imageFile),
+                        BlockIndex = blockIndex,
+                        Lines = responseBlock.Lines.Select(l => l.ToOcrLine()).ToList(),
+                        TopLeftX = blockTopLeft.X,
+                        TopLeftY = blockTopLeft.Y,
+                        BottomRightX = blockBottomRight.X,
+                        BottomRightY = blockBottomRight.Y,
+                        Features = features
+                    };
+
+                    featuredBlocks.Add(featuredBlock);
+                }
             }
 
             return (featuredBlocks, true, null);
-        }
-
-        private static (int TopY, int BottomY) GetPageLines(string imageFile)
-        {
-            var result = CvUtil.GetPageLines(imageFile);
-
-            if (result.BottomLineY.HasValue && result.TopLineY.HasValue)
-            {
-                return (result.TopLineY.Value, result.BottomLineY.Value);
-            }
-
-            using var image = Image.FromFile(imageFile);
-
-            var topY = result.TopLineY ?? 0;
-            var bottomY = result.BottomLineY ?? image.Height;
-
-            return (topY, bottomY);
         }
 
         private string GetText(OcrBlock ocrBlock)
