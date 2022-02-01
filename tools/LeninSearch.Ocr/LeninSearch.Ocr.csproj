@@ -20,4 +20,10 @@
     <Folder Include="YandexVision\OcrRequest\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="ImageScopeDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+
 </Project>

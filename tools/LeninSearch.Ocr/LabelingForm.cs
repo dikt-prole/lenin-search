@@ -66,7 +66,14 @@ namespace LeninSearch.Ocr
                 return;
             }
 
-            var featuredBlocks = _ocrData.FeaturedBlocks.Where(b => b.Features != null).ToList();
+            var dialog = new ImageScopeDialog();
+
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+
+            var featuredBlocks = _ocrData.FeaturedBlocks
+                .Where(b => b.Features != null)
+                .Where(dialog.BlockMatch)
+                .ToList();
 
             var inputs = featuredBlocks.Select(b => b.Features.ToFeatureRow()).ToArray();
             var predicted = _model.Decide(inputs);
@@ -81,8 +88,13 @@ namespace LeninSearch.Ocr
 
         private async void GenerateBlocksClick(object? sender, EventArgs e)
         {
+            var dialog = new ImageScopeDialog();
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+
             var imageFiles = Directory.GetFiles(bookFolder_tb.Text)
-                .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg")).ToList();
+                .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg"))
+                .Where(f => dialog.ImageMatch(int.Parse(new string(Path.GetFileNameWithoutExtension(f).Where(char.IsNumber).ToArray()))))
+                .ToList();
 
             var blockService = new YandexVisionOcrBlockService();
 
@@ -132,11 +144,13 @@ namespace LeninSearch.Ocr
 
         private void TrainModelClick(object? sender, EventArgs e)
         {
-            var dialog = new TrainModelDialog();
+            var dialog = new ImageScopeDialog();
+
             if (dialog.ShowDialog() != DialogResult.OK) return;
 
             var labeledBlocks = _ocrData.FeaturedBlocks
-                .Where(r => r.Label.HasValue && r.Features != null && r.ImageIndex < dialog.MaxImageIndex).ToList();
+                .Where(r => r.Label.HasValue && r.Features != null)
+                .Where(dialog.BlockMatch).ToList();
 
             double[][] inputs = labeledBlocks.Select(lb => lb.Features.ToFeatureRow()).ToArray();
             int[] outputs = labeledBlocks.Select(lb => (int) lb.Label).ToArray();
@@ -162,8 +176,12 @@ namespace LeninSearch.Ocr
         private void GenerateImageBlocksClick(object sender, EventArgs e)
         {
             // 1. get image row groups
+            var dialog = new ImageScopeDialog();
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+
             var fileBlockGroups = new Dictionary<string, List<List<OcrFeaturedBlock>>>();
-            var fileNames = _ocrData.FeaturedBlocks.OrderBy(r => r.ImageIndex).Select(r => r.FileName).Distinct().ToList();
+            var fileNames = _ocrData.FeaturedBlocks.Where(dialog.BlockMatch)
+                .OrderBy(r => r.ImageIndex).Select(r => r.FileName).Distinct().ToList();
             foreach (var fileName in fileNames)
             {
                 var blockGroups = new List<List<OcrFeaturedBlock>>();
@@ -481,8 +499,12 @@ namespace LeninSearch.Ocr
                 {
                     using (var g = Graphics.FromImage(image))
                     {
-                        var pen = GetPen(block);
-                        g.DrawRectangle(pen, block.Rectangle);
+                        using (var brush = GetBrush(block))
+                        using (var pen = GetPen(block))
+                        {
+                            g.FillRectangle(brush, block.Rectangle);
+                            g.DrawRectangle(pen, block.Rectangle);
+                        }
                     }
 
                     pictureBox1.Image = image;
@@ -499,7 +521,14 @@ namespace LeninSearch.Ocr
         {
             var color = BlockPalette.GetColor(block.Label);
 
-            return new Pen(color, 4);
+            return new Pen(color, 2);
+        }
+
+        private Brush GetBrush(OcrFeaturedBlock block)
+        {
+            var color = BlockPalette.GetColor(block.Label);
+
+            return new SolidBrush(Color.FromArgb(64, color));
         }
     }
 }
