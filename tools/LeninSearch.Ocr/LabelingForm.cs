@@ -597,7 +597,7 @@ namespace LeninSearch.Ocr
                         using var pen = GetPen(block);
                         g.DrawRectangle(pen, block.Rectangle);
                         
-                        using var textBrush = new SolidBrush(Color.Black);
+                        using var textBrush = new SolidBrush(Color.DarkViolet);
                         var font = new Font(Font.FontFamily, 12, FontStyle.Bold);
                         g.DrawString(block.BlockIndex.ToString(), font, textBrush, block.BottomRightX + 1, block.TopLeftY);
                     }
