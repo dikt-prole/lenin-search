@@ -325,6 +325,7 @@ namespace LeninSearch.Ocr
                     menu.Items.Add("Add Image Block", null, (o, a) => AddImageBlock(rect));
                     menu.Items.Add("Remove Image Block", null, (o, a) => RemoveImageBlock(rect));
                     menu.Items.Add("Break Block Into Lines", null, (o, a) => BreakBlockIntoLines(rect));
+                    menu.Items.Add("Merge Blocks", null, (o, a) => MergeBlocks(rect));
                     menu.Show(pictureBox1, e.Location);
                     _selectionStartPoint = null;
                 }
@@ -407,6 +408,56 @@ namespace LeninSearch.Ocr
                     _ocrData.FeaturedBlocks.Insert(blockIndex, lineBlock);
                 }
             }
+
+            fileBlocks = _ocrData.FeaturedBlocks.Where(b => b.FileName == fileName).ToList();
+            for (var i = 0; i < fileBlocks.Count; i++)
+            {
+                fileBlocks[i].BlockIndex = i;
+            }
+
+            ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = fileName;
+        }
+
+        private void MergeBlocks(Rectangle pbRectangle)
+        {
+            var fileName = ocrBlock_lb.SelectedItem as string;
+
+            if (fileName == null) return;
+
+            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
+
+            var fileBlocks = _ocrData.FeaturedBlocks.Where(b => b.FileName == fileName).ToList();
+            var intersectingBlocks = fileBlocks.Where(b => b.Rectangle.IntersectsWith(originalRect)).ToList();
+
+            if (intersectingBlocks.Count < 2) return;
+
+            var firstIntersectingBlock = intersectingBlocks.First();
+            var firstIntersectingBlockIndex = _ocrData.FeaturedBlocks.IndexOf(firstIntersectingBlock);
+
+            foreach (var block in intersectingBlocks)
+            {
+                _ocrData.FeaturedBlocks.Remove(block);
+            }
+
+            var lines = intersectingBlocks.SelectMany(b => b.Lines).ToList();
+
+            var topLeftX = intersectingBlocks.Select(b => b.TopLeftX).Min();
+            var topLeftY = intersectingBlocks.Select(b => b.TopLeftY).Min();
+            var bottomRightX = intersectingBlocks.Select(b => b.BottomRightX).Max();
+            var bottomRightY = intersectingBlocks.Select(b => b.BottomRightY).Max();
+            
+            var resultBlock = new OcrFeaturedBlock
+            {
+                FileName = fileName,
+                TopLeftX = topLeftX,
+                TopLeftY = topLeftY,
+                BottomRightX = bottomRightX,
+                BottomRightY = bottomRightY,
+                Features = firstIntersectingBlock.Features,
+                Label = firstIntersectingBlock.Label,
+                Lines = lines
+            };
+            _ocrData.FeaturedBlocks.Insert(firstIntersectingBlockIndex, resultBlock);
 
             fileBlocks = _ocrData.FeaturedBlocks.Where(b => b.FileName == fileName).ToList();
             for (var i = 0; i < fileBlocks.Count; i++)
