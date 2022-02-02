@@ -80,7 +80,7 @@ namespace LeninSearch.Ocr
 
             for (var i = 0; i < featuredBlocks.Count; i++)
             {
-                featuredBlocks[i].Label = (OcrBlockLabel) predicted[i];
+                featuredBlocks[i].Label = (OcrBlockLabel)predicted[i];
             }
 
             MessageBox.Show("Model applied", "Model", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -153,7 +153,7 @@ namespace LeninSearch.Ocr
                 .Where(dialog.BlockMatch).ToList();
 
             double[][] inputs = labeledBlocks.Select(lb => lb.Features.ToFeatureRow()).ToArray();
-            int[] outputs = labeledBlocks.Select(lb => (int) lb.Label).ToArray();
+            int[] outputs = labeledBlocks.Select(lb => (int)lb.Label).ToArray();
 
             Accord.Math.Random.Generator.Seed = 1;
             var teacher = new RandomForestLearning
@@ -281,7 +281,7 @@ namespace LeninSearch.Ocr
                                 {
                                     ib.TopLeftX = p.X;
                                 }
-                                ib.TopLeftY = p.Y; 
+                                ib.TopLeftY = p.Y;
                                 pictureBox1.Refresh();
                             };
                             break;
@@ -295,7 +295,7 @@ namespace LeninSearch.Ocr
                                 {
                                     ib.BottomRightX = p.X;
                                 }
-                                ib.BottomRightY = p.Y; 
+                                ib.BottomRightY = p.Y;
                                 pictureBox1.Refresh();
                             };
                             break;
@@ -324,6 +324,7 @@ namespace LeninSearch.Ocr
                     menu.Items.Add("None", null, (o, a) => SetLabelForIntersectingBlocks(rect, null));
                     menu.Items.Add("Add Image Block", null, (o, a) => AddImageBlock(rect));
                     menu.Items.Add("Remove Image Block", null, (o, a) => RemoveImageBlock(rect));
+                    menu.Items.Add("Break Block Into Lines", null, (o, a) => BreakBlockIntoLines(rect));
                     menu.Show(pictureBox1, e.Location);
                     _selectionStartPoint = null;
                 }
@@ -374,6 +375,46 @@ namespace LeninSearch.Ocr
                 e.Graphics.FillRectangle(ibBrush, pictureBox1.ToPictureBoxRectangle(ib.TopLeftRectangle));
                 e.Graphics.FillRectangle(ibBrush, pictureBox1.ToPictureBoxRectangle(ib.BottomRightRectangle));
             }
+        }
+        private void BreakBlockIntoLines(Rectangle pbRectangle)
+        {
+            var fileName = ocrBlock_lb.SelectedItem as string;
+
+            if (fileName == null) return;
+
+            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
+
+            var fileBlocks = _ocrData.FeaturedBlocks.Where(b => b.FileName == fileName).ToList();
+            var intersectingBlocks = fileBlocks.Where(b => b.Rectangle.IntersectsWith(originalRect)).ToList();
+            foreach (var block in intersectingBlocks)
+            {
+                var blockIndex = _ocrData.FeaturedBlocks.IndexOf(block);
+                _ocrData.FeaturedBlocks.Remove(block);
+                for (var i = block.Lines.Count - 1; i >= 0; i--)
+                {
+                    var line = block.Lines[i];
+                    var lineBlock = new OcrFeaturedBlock
+                    {
+                        FileName = fileName,
+                        BottomRightX = line.BottomRightX,
+                        BottomRightY = line.BottomRightY,
+                        TopLeftX = line.TopLeftX,
+                        TopLeftY = line.TopLeftY,
+                        Features = block.Features.Copy(),
+                        Label = block.Label,
+                        Lines = new List<OcrLine> {line}
+                    };
+                    _ocrData.FeaturedBlocks.Insert(blockIndex, lineBlock);
+                }
+            }
+
+            fileBlocks = _ocrData.FeaturedBlocks.Where(b => b.FileName == fileName).ToList();
+            for (var i = 0; i < fileBlocks.Count; i++)
+            {
+                fileBlocks[i].BlockIndex = i;
+            }
+
+            ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = fileName;
         }
         private void SetLabelForIntersectingBlocks(Rectangle pbRectangle, OcrBlockLabel? label)
         {
@@ -499,12 +540,15 @@ namespace LeninSearch.Ocr
                 {
                     using (var g = Graphics.FromImage(image))
                     {
-                        using (var brush = GetBrush(block))
-                        using (var pen = GetPen(block))
-                        {
-                            g.FillRectangle(brush, block.Rectangle);
-                            g.DrawRectangle(pen, block.Rectangle);
-                        }
+                        using var brush = GetBrush(block);
+                        g.FillRectangle(brush, block.Rectangle);
+
+                        using var pen = GetPen(block);
+                        g.DrawRectangle(pen, block.Rectangle);
+                        
+                        using var textBrush = new SolidBrush(Color.Black);
+                        var font = new Font(Font.FontFamily, 12, FontStyle.Bold);
+                        g.DrawString(block.BlockIndex.ToString(), font, textBrush, block.BottomRightX + 1, block.TopLeftY);
                     }
 
                     pictureBox1.Image = image;

@@ -35,10 +35,8 @@ namespace LeninSearch.Ocr
 
         private void Lines_btnOnClick(object? sender, EventArgs e)
         {
-            var dividerLines = CvUtil.GetTopBottomDividerLines(_imageFile);
-
-            var tl = dividerLines.TopLine;
-            var bl = dividerLines.BottomLine;
+            var tl = CvUtil.GetTopDividerLine(_imageFile);
+            var bl = CvUtil.GetBottomDividerLine(_imageFile);
 
             var image = new Bitmap(Image.FromFile(_imageFile));
 

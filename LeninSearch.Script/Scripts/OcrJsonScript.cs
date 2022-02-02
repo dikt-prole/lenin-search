@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
-using System.Net;
-using System.Net.Http;
-using LeninSearch.Ocr;
-using Newtonsoft.Json;
+using System.Linq;
+using LeninSearch.Ocr.Model;
+using LeninSearch.Ocr.YandexVision;
 
 namespace LeninSearch.Script.Scripts
 {
@@ -13,46 +13,30 @@ namespace LeninSearch.Script.Scripts
         public string Arguments => "book-folders";
         public void Execute(params string[] input)
         {
-            var apiKey = Environment.GetEnvironmentVariable("YandexApiKey");
-            var httpClient = new HttpClient();
             var bookFolders = input;
+            var blockService = new YandexVisionOcrBlockService();
             foreach (var bookFolder in bookFolders)
             {
-                var imageFolder = Path.Combine(bookFolder, "images");
-                var jsonFolder = Path.Combine(bookFolder, "json");
-
-                var imageFiles = Directory.GetFiles(imageFolder);
+                Console.WriteLine($"Processing book folder: {bookFolder}");
+                var sw = new Stopwatch(); sw.Start();
+                var ocrData = OcrData.Empty();
+                var imageFiles = Directory.GetFiles(bookFolder)
+                    .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg"));
                 foreach (var imageFile in imageFiles)
                 {
-                    Console.WriteLine($"Processing '{imageFile}'");
-
-                    var imageBytes = File.ReadAllBytes(imageFile);
-                    var ocrRequest = YtVisionRequest.Ocr(imageBytes);
-                    var ocrRequestJson = JsonConvert.SerializeObject(ocrRequest, Formatting.Indented);
-                    var request = new HttpRequestMessage
+                    var featureBlocksResult = blockService.GetBlocksAsync(imageFile).Result;
+                    if (!featureBlocksResult.Success)
                     {
-                        RequestUri = new Uri("https://vision.api.cloud.yandex.net/vision/v1/batchAnalyze"),
-                        Method = HttpMethod.Post,
-                        Headers =
-                        {
-                            {HttpRequestHeader.ContentType.ToString(), "application/json"},
-                            {HttpRequestHeader.Authorization.ToString(), $"Api-Key {apiKey}"}
-                        },
-                        Content = new StringContent(ocrRequestJson)
-                    };
-
-                    var response = httpClient.SendAsync(request).Result;
-
-                    if (response.StatusCode != HttpStatusCode.OK)
-                    {
-                        Console.WriteLine($"Response code: {response.StatusCode}");
+                        Console.WriteLine(featureBlocksResult.Error);
                         return;
                     }
 
-                    var responseJson = response.Content.ReadAsStringAsync().Result;
-                    var ocrFile = Path.Combine(jsonFolder, Path.GetFileNameWithoutExtension(imageFile) + ".json");
-                    File.WriteAllText(ocrFile, responseJson);
+                    ocrData.FeaturedBlocks.AddRange(featureBlocksResult.Blocks);
                 }
+
+                ocrData.Save(bookFolder);
+                sw.Stop();
+                Console.WriteLine($"Ready in {sw.Elapsed}");
             }
         }
     }

@@ -78,11 +78,12 @@ namespace LeninSearch.Ocr.YandexVision
             for (var blockIndex = 0; blockIndex < responseBlocks.Count; blockIndex++)
             {
                 var responseBlock = responseBlocks[blockIndex];
-                var dividerLines = CvUtil.GetTopBottomDividerLines(imageFile);
+                var topDividerLine = CvUtil.GetTopDividerLine(imageFile);
+                var bottomDividerLine = CvUtil.GetBottomDividerLine(imageFile);
                 var blockTopLeft = responseBlock.BoundingBox.TopLeft.Point();
                 var blockBottomRight = responseBlock.BoundingBox.BottomRight.Point();
-                var blockBottomLineDistance = dividerLines.BottomLine.Y - blockTopLeft.Y;
-                var blockTopLineDistance = blockTopLeft.Y - dividerLines.TopLine.Y;
+                var blockBottomLineDistance = bottomDividerLine.Y - blockTopLeft.Y;
+                var blockTopLineDistance = blockTopLeft.Y - topDividerLine.Y;
                 var imageIndex = int.Parse(new string(Path.GetFileNameWithoutExtension(imageFile).Where(char.IsNumber).ToArray()));
 
                 if (blockBottomLineDistance < 0) // in this case this case the block is comment for sure*
@@ -111,8 +112,8 @@ namespace LeninSearch.Ocr.YandexVision
                             WidthToHeightRatio = 1.0 * blockWidth / blockHeight,
                             WordCount = words.Count,
                             SymbolCount = text.Length,
-                            TopLineDistance = lineTopLeft.Y - dividerLines.TopLine.Y,
-                            BottomLineDistance = dividerLines.BottomLine.Y - lineTopLeft.Y,
+                            TopLineDistance = lineTopLeft.Y - topDividerLine.Y,
+                            BottomLineDistance = bottomDividerLine.Y - lineTopLeft.Y,
                             ImageIndex = imageIndex,
                             FirstLineIndent = lineTopLeft.X
                         };

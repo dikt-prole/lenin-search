@@ -1,4 +1,6 @@
-﻿namespace LeninSearch.Ocr.Model
+﻿using Newtonsoft.Json;
+
+namespace LeninSearch.Ocr.Model
 {
     public class OcrBlockFeatures
     {
@@ -38,6 +40,11 @@
                 ImageIndex,
                 FirstLineIndent
             };
+        }
+
+        public OcrBlockFeatures Copy()
+        {
+            return JsonConvert.DeserializeObject<OcrBlockFeatures>(JsonConvert.SerializeObject(this));
         }
     }
 }

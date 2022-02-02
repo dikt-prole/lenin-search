@@ -54,7 +54,9 @@ namespace LeninSearch.Ocr.Labeling
             var pixelsPerSymbol = 1.0 * totalPixelWidth / text.Length;
             var rowWidth = block.BoundingBox.TopRight.Point().X - block.BoundingBox.TopLeft.Point().X;
             var rowHeight = block.BoundingBox.BottomLeft.Point().Y - block.BoundingBox.TopLeft.Point().Y;
-            var dividerLines = CvUtil.GetTopBottomDividerLines(imageFile);
+
+            var topDividerLine = CvUtil.GetTopDividerLine(imageFile);
+            var bottomDividerLine = CvUtil.GetBottomDividerLine(imageFile);
             var imageIndex = int.Parse(new string(Path.GetFileNameWithoutExtension(imageFile).Where(char.IsNumber).ToArray()));
 
             var row = new OcrBlockRow
@@ -72,8 +74,8 @@ namespace LeninSearch.Ocr.Labeling
                 WidthToHeightRatio = 1.0 * rowWidth / rowHeight,
                 WordCount = words.Count,
                 SymbolCount = text.Length,
-                TopLineDistance = block.BoundingBox.TopLeft.Point().Y - dividerLines.TopLine.Y,
-                BottomLineDistance = dividerLines.BottomLine.Y - block.BoundingBox.TopLeft.Point().Y,
+                TopLineDistance = block.BoundingBox.TopLeft.Point().Y - topDividerLine.Y,
+                BottomLineDistance = bottomDividerLine.Y - block.BoundingBox.TopLeft.Point().Y,
                 ImageIndex = imageIndex
             };
 

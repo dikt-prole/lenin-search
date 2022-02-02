@@ -10,38 +10,58 @@ namespace LeninSearch.Ocr
 {
     public static class CvUtil
     {
-        public static (DividerLine TopLine, DividerLine BottomLine) GetTopBottomDividerLines(string imageFile)
+        public static DividerLine GetBottomDividerLine(string imageFile)
         {
-            Image<Bgr, Byte> bgrImage = new Image<Bgr, Byte>(imageFile);
+            using var image = new Bitmap(Image.FromFile(imageFile));
 
-            var dividerLines = GetAllDividerLines(bgrImage);
+            var minY = image.Height * 3 / 4;
+            var maxY = image.Height - 1;
+            var minX = 30;
+            var maxX = 160;
 
-            var bottomLineCandidates = dividerLines
-                .Where(l => l.Y > bgrImage.Height * 3 / 4)
-                .Where(l => l.LeftX > 30 && l.RightX < 160)
-                .OrderByDescending(l => l.Length)
-                .ToList();
-
-            var topLineCandidates = dividerLines
-                .Where(l => l.Y > 55 && l.Y < 85)
-                .OrderByDescending(l => l.Length)
-                .ToList();
-
-            var topLine = topLineCandidates.FirstOrDefault() ?? new DividerLine
+            var lineRectangle = new Rectangle(minX, minY, maxX - minX, maxY - minY);
+            var lineImage = image.Clone(lineRectangle, image.PixelFormat);
+            var lineBgr = lineImage.ToImage<Bgr, byte>();
+            var dividerLine = GetAllDividerLines(lineBgr).OrderByDescending(l => l.Length).FirstOrDefault();
+            if (dividerLine == null)
             {
-                Y = 0,
-                LeftX = 0,
-                RightX = bgrImage.Width
-            };
-
-            var bottomLine = bottomLineCandidates.FirstOrDefault() ?? new DividerLine
+                dividerLine = new DividerLine(image.Height, 0, image.Width);
+            }
+            else
             {
-                Y = bgrImage.Height,
-                LeftX = 0,
-                RightX = bgrImage.Width
-            };
+                dividerLine.Y += minY;
+                dividerLine.LeftX += minX;
+                dividerLine.RightX += minX;
+            }
 
-            return (topLine, bottomLine);
+            return dividerLine;
+        }
+
+        public static DividerLine GetTopDividerLine(string imageFile)
+        {
+            using var image = new Bitmap(Image.FromFile(imageFile));
+
+            var minY = 55;
+            var maxY = 85;
+            var minX = 0;
+            var maxX = image.Width;
+
+            var lineRectangle = new Rectangle(minX, minY, maxX - minX, maxY - minY);
+            var lineImage = image.Clone(lineRectangle, image.PixelFormat);
+            var lineBgr = lineImage.ToImage<Bgr, byte>();
+            var dividerLine = GetAllDividerLines(lineBgr).OrderByDescending(l => l.Length).FirstOrDefault();
+            if (dividerLine == null)
+            {
+                dividerLine = new DividerLine(0, 0, image.Width);
+            }
+            else
+            {
+                dividerLine.Y += minY;
+                dividerLine.LeftX += minX;
+                dividerLine.RightX += minX;
+            }
+
+            return dividerLine;
         }
 
         public static IEnumerable<DividerLine> GetAllDividerLines(Image<Bgr, Byte> bgrImage)
@@ -109,6 +129,15 @@ namespace LeninSearch.Ocr
 
     public class DividerLine
     {
+        public DividerLine() {}
+
+        public DividerLine(int y, int leftX, int rightX)
+        {
+            Y = y;
+            LeftX = leftX;
+            RightX = rightX;
+        }
+
         public int Y { get; set; }
         public int LeftX { get; set; }
         public int RightX { get; set; }
