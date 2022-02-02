@@ -31,7 +31,7 @@ namespace LeninSearch.Ocr
             InitializeComponent();
 
             displayBlocks_btn.Click += DisplayBlocksOnClick;
-            displayPages_btn.Click += DisplayPages_btnOnClick;
+            displayPages_btn.Click += DisplayPagesClick;
 
             ocrBlock_lb.SelectedIndexChanged += OcrBlock_lbOnSelectedIndexChanged;
             ocrBlock_lb.KeyDown += OcrBlock_lbOnKeyDown;
@@ -91,8 +91,7 @@ namespace LeninSearch.Ocr
             var dialog = new ImageScopeDialog();
             if (dialog.ShowDialog() != DialogResult.OK) return;
 
-            var imageFiles = Directory.GetFiles(bookFolder_tb.Text)
-                .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg"))
+            var imageFiles = GetImageFiles(bookFolder_tb.Text)
                 .Where(f => dialog.ImageMatch(int.Parse(new string(Path.GetFileNameWithoutExtension(f).Where(char.IsNumber).ToArray()))))
                 .ToList();
 
@@ -518,10 +517,15 @@ namespace LeninSearch.Ocr
             pictureBox1.Refresh();
         }
 
-        private void DisplayPages_btnOnClick(object? sender, EventArgs e)
+        private void DisplayPagesClick(object? sender, EventArgs e)
         {
             ocrBlock_lb.Items.Clear();
-            var fileNames = _ocrData.FeaturedBlocks.Select(r => r.FileName).Distinct().ToList();
+
+            var fileNames = GetImageFiles(bookFolder_tb.Text)
+                .Select(Path.GetFileNameWithoutExtension)
+                .OrderBy(f => int.Parse(new string(Path.GetFileNameWithoutExtension(f).Where(char.IsNumber).ToArray())))
+                .ToList();
+
             foreach (var fileName in fileNames)
             {
                 ocrBlock_lb.Items.Add(fileName);
@@ -624,6 +628,13 @@ namespace LeninSearch.Ocr
             var color = BlockPalette.GetColor(block.Label);
 
             return new SolidBrush(Color.FromArgb(64, color));
+        }
+
+        private string[] GetImageFiles(string folder)
+        {
+            return Directory.GetFiles(folder)
+                .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg"))
+                .ToArray();
         }
     }
 }
