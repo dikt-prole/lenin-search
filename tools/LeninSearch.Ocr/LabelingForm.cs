@@ -26,6 +26,19 @@ namespace LeninSearch.Ocr
 
         private RandomForest _model;
 
+        private OcrBlockLabel? _mouseLeftLabel;
+
+        private readonly Dictionary<Keys, OcrBlockLabel?> _keyLabels = new Dictionary<Keys, OcrBlockLabel?>
+        {
+            {Keys.C, OcrBlockLabel.Comment},
+            {Keys.I, OcrBlockLabel.Image},
+            {Keys.P, OcrBlockLabel.Paragraph},
+            {Keys.O, OcrBlockLabel.Continuation},
+            {Keys.G, OcrBlockLabel.Garbage},
+            {Keys.T, OcrBlockLabel.Title},
+            {Keys.N, null}
+        };
+
         public LabelingForm()
         {
             InitializeComponent();
@@ -42,7 +55,7 @@ namespace LeninSearch.Ocr
             continuation_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Paragraph);
             title_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Title);
             comment_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Comment);
-            grabage_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Garbage);
+            garbage_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Garbage);
             image_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Image);
             none_panel.BackColor = BlockPalette.GetColor(null);
 
@@ -267,38 +280,57 @@ namespace LeninSearch.Ocr
 
                 if (e.Button == MouseButtons.Left && ocrBlock_lb.SelectedItem is string fileName)
                 {
+                    var originalPoint = pictureBox1.ToOriginalPoint(e.Location);
+                    var fileImageBlocks = _ocrData.ImageBlocks
+                        .Where(ib => ib.FileName == fileName)
+                        .Where(ib => ib.TopLeftRectangle.Contains(originalPoint) || ib.BottomRightRectangle.Contains(originalPoint))
+                        .ToList();
                     _moveImageBlockDragPoint = null;
-                    var fileImageBlocks = _ocrData.ImageBlocks.Where(ib => ib.FileName == fileName).ToList();
-                    foreach (var ib in fileImageBlocks)
+                    if (fileImageBlocks.Any())
                     {
-                        var originalPoint = pictureBox1.ToOriginalPoint(e.Location);
-                        if (ib.TopLeftRectangle.Contains(originalPoint))
+                        foreach (var ib in fileImageBlocks)
                         {
-                            _moveImageBlockDragPoint = p =>
+                            if (ib.TopLeftRectangle.Contains(originalPoint))
                             {
-                                if (ModifierKeys != Keys.Shift)
+                                _moveImageBlockDragPoint = p =>
                                 {
-                                    ib.TopLeftX = p.X;
-                                }
-                                ib.TopLeftY = p.Y;
-                                pictureBox1.Refresh();
-                            };
-                            break;
+                                    if (ModifierKeys != Keys.Shift)
+                                    {
+                                        ib.TopLeftX = p.X;
+                                    }
+                                    ib.TopLeftY = p.Y;
+                                    pictureBox1.Refresh();
+                                };
+                                break;
+                            }
+
+                            if (ib.BottomRightRectangle.Contains(originalPoint))
+                            {
+                                _moveImageBlockDragPoint = p =>
+                                {
+                                    if (ModifierKeys != Keys.Shift)
+                                    {
+                                        ib.BottomRightX = p.X;
+                                    }
+                                    ib.BottomRightY = p.Y;
+                                    pictureBox1.Refresh();
+                                };
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var blocksAtPoint = _ocrData.FeaturedBlocks
+                            .Where(b => b.FileName == fileName)
+                            .Where(b => b.Rectangle.Contains(originalPoint))
+                            .ToList();
+                        foreach (var block in blocksAtPoint)
+                        {
+                            block.Label = _mouseLeftLabel;
                         }
 
-                        if (ib.BottomRightRectangle.Contains(originalPoint))
-                        {
-                            _moveImageBlockDragPoint = p =>
-                            {
-                                if (ModifierKeys != Keys.Shift)
-                                {
-                                    ib.BottomRightX = p.X;
-                                }
-                                ib.BottomRightY = p.Y;
-                                pictureBox1.Refresh();
-                            };
-                            break;
-                        }
+                        ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = fileName;
                     }
                 }
             }
@@ -547,27 +579,47 @@ namespace LeninSearch.Ocr
 
         private void OcrBlock_lbOnKeyDown(object sender, KeyEventArgs e)
         {
-            if (_displayPages) return;
+            if (!_keyLabels.ContainsKey(e.KeyCode)) return;
 
-            var row = ocrBlock_lb.SelectedItem as OcrFeaturedBlock;
+            var label = _keyLabels[e.KeyCode];
 
-            if (row == null) return;
+            if (_displayPages)
+            {
+                _mouseLeftLabel = label;
+                SetLabelPanelSelected(label);
+            }
+            else
+            {
+                var row = ocrBlock_lb.SelectedItem as OcrFeaturedBlock;
+                if (row == null) return;
+                row.Label = label;
+                ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = row;
+            }
+        }
 
-            if (e.KeyCode == Keys.P) row.Label = OcrBlockLabel.Paragraph;
-
-            if (e.KeyCode == Keys.O) row.Label = OcrBlockLabel.Continuation;
-
-            if (e.KeyCode == Keys.C) row.Label = OcrBlockLabel.Comment;
-
-            if (e.KeyCode == Keys.T) row.Label = OcrBlockLabel.Title;
-
-            if (e.KeyCode == Keys.G) row.Label = OcrBlockLabel.Garbage;
-
-            if (e.KeyCode == Keys.I) row.Label = OcrBlockLabel.Image;
-
-            if (e.KeyCode == Keys.N) row.Label = null;
-
-            ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = row;
+        private void SetLabelPanelSelected(OcrBlockLabel? label)
+        {
+            paragraph_panel.BorderStyle = label == OcrBlockLabel.Paragraph
+                ? BorderStyle.FixedSingle
+                : BorderStyle.None;
+            continuation_panel.BorderStyle = label == OcrBlockLabel.Continuation
+                ? BorderStyle.FixedSingle
+                : BorderStyle.None;
+            title_panel.BorderStyle = label == OcrBlockLabel.Title
+                ? BorderStyle.FixedSingle
+                : BorderStyle.None;
+            comment_panel.BorderStyle = label == OcrBlockLabel.Comment
+                ? BorderStyle.FixedSingle
+                : BorderStyle.None;
+            garbage_panel.BorderStyle = label == OcrBlockLabel.Garbage
+                ? BorderStyle.FixedSingle
+                : BorderStyle.None;
+            image_panel.BorderStyle = label == OcrBlockLabel.Image
+                ? BorderStyle.FixedSingle
+                : BorderStyle.None;
+            none_panel.BorderStyle = label == null
+                ? BorderStyle.FixedSingle
+                : BorderStyle.None;
         }
 
         private void OcrBlock_lbOnSelectedIndexChanged(object? sender, EventArgs e)

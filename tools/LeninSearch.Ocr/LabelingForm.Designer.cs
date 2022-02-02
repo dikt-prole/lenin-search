@@ -43,7 +43,7 @@ namespace LeninSearch.Ocr
             this.paragraph_panel = new System.Windows.Forms.Panel();
             this.comment_panel = new System.Windows.Forms.Panel();
             this.title_panel = new System.Windows.Forms.Panel();
-            this.grabage_panel = new System.Windows.Forms.Panel();
+            this.garbage_panel = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.image_panel = new System.Windows.Forms.Panel();
             this.continuation_panel = new System.Windows.Forms.Panel();
@@ -149,7 +149,7 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel6.Controls.Add(this.paragraph_panel, 2, 0);
             this.tableLayoutPanel6.Controls.Add(this.comment_panel, 4, 0);
             this.tableLayoutPanel6.Controls.Add(this.title_panel, 6, 0);
-            this.tableLayoutPanel6.Controls.Add(this.grabage_panel, 8, 0);
+            this.tableLayoutPanel6.Controls.Add(this.garbage_panel, 8, 0);
             this.tableLayoutPanel6.Controls.Add(this.label1, 1, 0);
             this.tableLayoutPanel6.Controls.Add(this.image_panel, 10, 0);
             this.tableLayoutPanel6.Controls.Add(this.continuation_panel, 12, 0);
@@ -251,12 +251,12 @@ namespace LeninSearch.Ocr
             // 
             // grabage_panel
             // 
-            this.grabage_panel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.grabage_panel.Location = new System.Drawing.Point(513, 5);
-            this.grabage_panel.Margin = new System.Windows.Forms.Padding(5);
-            this.grabage_panel.Name = "grabage_panel";
-            this.grabage_panel.Size = new System.Drawing.Size(18, 18);
-            this.grabage_panel.TabIndex = 4;
+            this.garbage_panel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.garbage_panel.Location = new System.Drawing.Point(513, 5);
+            this.garbage_panel.Margin = new System.Windows.Forms.Padding(5);
+            this.garbage_panel.Name = "garbage_panel";
+            this.garbage_panel.Size = new System.Drawing.Size(18, 18);
+            this.garbage_panel.TabIndex = 4;
             // 
             // label1
             // 
@@ -454,7 +454,7 @@ namespace LeninSearch.Ocr
         private System.Windows.Forms.Panel paragraph_panel;
         private System.Windows.Forms.Panel comment_panel;
         private System.Windows.Forms.Panel title_panel;
-        private System.Windows.Forms.Panel grabage_panel;
+        private System.Windows.Forms.Panel garbage_panel;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label3;
