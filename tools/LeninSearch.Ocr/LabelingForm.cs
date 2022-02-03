@@ -150,6 +150,8 @@ namespace LeninSearch.Ocr
             _ocrData = OcrData.Load(dialog.SelectedPath);
 
             bookFolder_tb.Text = dialog.SelectedPath;
+
+            DisplayPagesClick(null, null);
         }
 
         private void TrainModelClick(object? sender, EventArgs e)
@@ -350,7 +352,10 @@ namespace LeninSearch.Ocr
                     menu.Items.Add("Image", null, (o, a) => SetLabelForIntersectingLines(rect, OcrLabel.Image));
                     menu.Items.Add("Garbage", null, (o, a) => SetLabelForIntersectingLines(rect, OcrLabel.Garbage));
                     menu.Items.Add("None", null, (o, a) => SetLabelForIntersectingLines(rect, null));
-
+                    menu.Items.Add(new ToolStripSeparator());
+                    menu.Items.Add("Set Top Divider", null, (o, a) => SetTopDivider(rect));
+                    menu.Items.Add("Set Bottom Divider", null, (o, a) => SetBottomDivider(rect));
+                    menu.Items.Add(new ToolStripSeparator());
                     menu.Items.Add("Add Image Block", null, (o, a) => AddImageBlock(rect));
                     menu.Items.Add("Remove Image Block", null, (o, a) => RemoveImageBlock(rect));
 
@@ -420,6 +425,68 @@ namespace LeninSearch.Ocr
                 {
                     line.Label = label;
                 }
+            }
+
+            ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
+        }
+
+        private void SetTopDivider(Rectangle pbRectangle)
+        {
+            var fileName = ocr_lb.SelectedItem as string;
+
+            if (fileName == null) return;
+
+            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
+
+            var divider = new DividerLine(originalRect.Y, 10, pictureBox1.Image.Width - 10);
+
+            var page = _ocrData.GetPage(fileName);
+
+            if (page == null) return;
+
+            page.TopDivider = divider;
+
+            foreach (var line in page.Lines)
+            {
+                if (line.Features == null) continue;
+
+                line.Features.BelowTopDivider = line.TopLeftY > divider.Y ? 1 : 0;
+            }
+
+            ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
+        }
+
+        private void SetBottomDivider(Rectangle pbRectangle)
+        {
+            var fileName = ocr_lb.SelectedItem as string;
+
+            if (fileName == null) return;
+
+            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
+
+            var divider = new DividerLine(originalRect.Y, 10, pictureBox1.Image.Width - 10);
+
+            var page = _ocrData.GetPage(fileName);
+
+            if (page == null) return;
+
+            page.BottomDivider = divider;
+
+            foreach (var line in page.Lines)
+            {
+                if (line.Features == null) continue;
+
+                line.Features.AboveBottomDivider = line.TopLeftY < divider.Y ? 1 : 0;
+            }
+
+            foreach (var line in page.Lines.Where(l => l.Features?.AboveBottomDivider == 1 && l.Label == OcrLabel.Comment))
+            {
+                line.Label = null;
+            }
+
+            foreach (var line in page.Lines.Where(l => l.Features?.AboveBottomDivider == 0))
+            {
+                line.Label = OcrLabel.Comment;
             }
 
             ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
@@ -538,9 +605,11 @@ namespace LeninSearch.Ocr
                 var image = new Bitmap(Image.FromFile(imageFile));
                 var page = _ocrData.GetPage(fileName);
 
-                using (var g = Graphics.FromImage(image))
+                if (page != null)
                 {
+                    using var g = Graphics.FromImage(image);
                     using var dividerPen = new Pen(Color.DarkViolet, 2);
+
                     g.DrawLine(dividerPen, 10, page.TopDivider.Y, image.Width - 10, page.TopDivider.Y);
                     g.DrawLine(dividerPen, 10, page.BottomDivider.Y, image.Width - 10, page.BottomDivider.Y);
 
