@@ -27,9 +27,9 @@ namespace LeninSearch.Ocr
             };
         }
 
-        public bool BlockMatch(OcrFeaturedBlock block)
+        public bool LineMatch(OcrLine line)
         {
-            return MinImageIndex <= block.ImageIndex && block.ImageIndex <= MaxImageIndex;
+            return MinImageIndex <= line.ImageIndex && line.ImageIndex <= MaxImageIndex;
         }
 
         public bool ImageMatch(int imageIndex)

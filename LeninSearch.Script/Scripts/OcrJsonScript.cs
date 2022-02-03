@@ -14,7 +14,7 @@ namespace LeninSearch.Script.Scripts
         public void Execute(params string[] input)
         {
             var bookFolders = input;
-            var blockService = new YandexVisionOcrBlockService();
+            var blockService = new YandexVisionOcrLineService();
             foreach (var bookFolder in bookFolders)
             {
                 Console.WriteLine($"Processing book folder: {bookFolder}");
@@ -24,14 +24,14 @@ namespace LeninSearch.Script.Scripts
                     .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg"));
                 foreach (var imageFile in imageFiles)
                 {
-                    var featureBlocksResult = blockService.GetBlocksAsync(imageFile).Result;
-                    if (!featureBlocksResult.Success)
+                    var linesResult = blockService.GetOcrPageAsync(imageFile).Result;
+                    if (!linesResult.Success)
                     {
-                        Console.WriteLine(featureBlocksResult.Error);
+                        Console.WriteLine(linesResult.Error);
                         return;
                     }
 
-                    ocrData.FeaturedBlocks.AddRange(featureBlocksResult.Blocks);
+                    ocrData.Lines.AddRange(linesResult.Lines);
                 }
 
                 ocrData.Save(bookFolder);

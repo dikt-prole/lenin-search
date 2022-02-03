@@ -14,6 +14,7 @@ using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using LeninSearch.Ocr.YandexVision;
 using LeninSearch.Ocr.YandexVision.OcrResponse;
 using Newtonsoft.Json;
 
@@ -21,7 +22,6 @@ namespace LeninSearch.Ocr
 {
     public partial class SingleImageOcrForm : Form
     {
-        private string _imageFile;
         private string _iamToken;
         private readonly HttpClient _httpClient = new HttpClient();
 
@@ -31,90 +31,73 @@ namespace LeninSearch.Ocr
             load_btn.Click += Load_btnOnClick;
             ocr_btn.Click += Ocr_btnOnClick;
             lines_btn.Click += Lines_btnOnClick;
+            prev_btn.Click += Prev_btnOnClick;
+            next_btn.Click += Next_btnOnClick;
+        }
+
+        private void Next_btnOnClick(object? sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(file_tb.Text)) return;
+
+            var directory = Path.GetDirectoryName(file_tb.Text);
+
+            var files = Directory.GetFiles(directory).Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg")).ToList();
+
+            var currentIndex = files.IndexOf(file_tb.Text);
+
+            if (currentIndex < files.Count - 1)
+            {
+                file_tb.Text = files[currentIndex + 1];
+                pictureBox1.Image = Image.FromFile(file_tb.Text);
+            }
+        }
+
+        private void Prev_btnOnClick(object? sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(file_tb.Text)) return;
+
+            var directory = Path.GetDirectoryName(file_tb.Text);
+
+            var files = Directory.GetFiles(directory).Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg")).ToList();
+
+            var currentIndex = files.IndexOf(file_tb.Text);
+
+            if (currentIndex > 0)
+            {
+                file_tb.Text = files[currentIndex - 1];
+                pictureBox1.Image = Image.FromFile(file_tb.Text);
+            }
         }
 
         private void Lines_btnOnClick(object? sender, EventArgs e)
         {
-            var tl = CvUtil.GetTopDividerLine(_imageFile);
-            var bl = CvUtil.GetBottomDividerLine(_imageFile);
-
-            var image = new Bitmap(Image.FromFile(_imageFile));
-
-            using var g = Graphics.FromImage(image);
-
-            g.DrawLine(Pens.Red, tl.LeftX, tl.Y, tl.RightX, tl.Y);
-            g.DrawLine(Pens.Red, bl.LeftX, bl.Y, bl.RightX, bl.Y);
-
-            pictureBox1.Image = image;
-        }
-
-        private int GetMinDistance(LineSegment2D l1, LineSegment2D l2)
-        {
-            var distances = new List<int>
-            {
-                Math.Abs(l1.P1.X - l2.P1.X),
-                Math.Abs(l1.P1.X - l2.P2.X),
-                Math.Abs(l1.P2.X - l2.P2.X),
-                Math.Abs(l1.P2.X - l2.P1.X)
-            };
-
-            return distances.Min();
+            return;
         }
 
         private async void Ocr_btnOnClick(object? sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(_imageFile)) return;
+            if (string.IsNullOrEmpty(file_tb.Text)) return;
 
-            if (string.IsNullOrEmpty(_iamToken)) RefreshIamToken();
+            var lineService = new YandexVisionOcrLineService();
 
-            var imageBytes = File.ReadAllBytes(_imageFile);
-
-            var ocrRequest = YtVisionRequest.Ocr(imageBytes);
-
-            var ocrRequestJson = JsonConvert.SerializeObject(ocrRequest, Formatting.Indented);
-
-            var apiKey = Environment.GetEnvironmentVariable("YandexApiKey");
-
-            var request = new HttpRequestMessage
-            {
-                RequestUri = new Uri("https://vision.api.cloud.yandex.net/vision/v1/batchAnalyze"),
-                Method = HttpMethod.Post,
-                Headers =
-                {
-                    {HttpRequestHeader.ContentType.ToString(), "application/json"},
-                    {HttpRequestHeader.Authorization.ToString(), $"Api-Key {apiKey}"}
-                },
-                Content = new StringContent(ocrRequestJson)
-            };
-
-            var response = await _httpClient.SendAsync(request);
-
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                MessageBox.Show($"Response code: {response.StatusCode}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            var responseJson = await response.Content.ReadAsStringAsync();
-
-            var ocrResponse = JsonConvert.DeserializeObject<OcrResponse>(responseJson);
-
-            var blocks = ocrResponse.Results[0].Results[0].TextDetection.Pages[0].Blocks;
+            var ocrResult = await lineService.GetOcrPageAsync(file_tb.Text);
+            var page = ocrResult.Page;
 
             // draw blocks on an image
-            var image = new Bitmap(Image.FromFile(_imageFile));
-            using (var g = Graphics.FromImage(image))
-            {
-                foreach (var block in blocks)
-                {
-                    foreach (var line in block.Lines)
-                    {
-                        DrawBoundingBox(g, line.BoundingBox, Color.Red);
-                    }
+            var image = new Bitmap(Image.FromFile(file_tb.Text));
+            using var g = Graphics.FromImage(image);
 
-                    DrawBoundingBox(g, block.BoundingBox, Color.Blue);
-                }
+            foreach (var line in page.Lines)
+            {
+                g.DrawLine(Pens.Red, 0, line.TopLeftY, image.Width, line.TopLeftY);
+                g.DrawLine(Pens.Red, 0, line.BottomRightY, image.Width, line.BottomRightY);
             }
+
+            using var pen = new Pen(Color.DarkViolet, 4);
+
+            g.DrawLine(pen, page.BottomDivider.LeftX, page.BottomDivider.Y, page.BottomDivider.RightX, page.BottomDivider.Y);
+            g.DrawLine(pen, page.TopDivider.LeftX, page.TopDivider.Y, page.TopDivider.RightX, page.TopDivider.Y);
+
 
             pictureBox1.Image = image;
         }
@@ -144,10 +127,9 @@ namespace LeninSearch.Ocr
 
             if (dialog.ShowDialog() != DialogResult.OK) return;
 
-            _imageFile = dialog.FileName;
+            file_tb.Text = dialog.FileName;
 
-
-            pictureBox1.Image = Image.FromFile(_imageFile);
+            pictureBox1.Image = Image.FromFile(file_tb.Text);
         }
 
         private void RefreshIamToken()

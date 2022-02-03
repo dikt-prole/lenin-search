@@ -4,13 +4,10 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Accord.MachineLearning.DecisionTrees;
-using LeninSearch.Ocr.Labeling;
 using LeninSearch.Ocr.Model;
 using LeninSearch.Ocr.YandexVision;
-using Newtonsoft.Json;
 
 namespace LeninSearch.Ocr
 {
@@ -26,16 +23,17 @@ namespace LeninSearch.Ocr
 
         private RandomForest _model;
 
-        private OcrBlockLabel? _mouseLeftLabel;
+        private OcrLabel? _mouseLeftLabel;
 
-        private readonly Dictionary<Keys, OcrBlockLabel?> _keyLabels = new Dictionary<Keys, OcrBlockLabel?>
+        private readonly Dictionary<Keys, OcrLabel?> _keyLabels = new Dictionary<Keys, OcrLabel?>
         {
-            {Keys.C, OcrBlockLabel.Comment},
-            {Keys.I, OcrBlockLabel.Image},
-            {Keys.P, OcrBlockLabel.Paragraph},
-            {Keys.O, OcrBlockLabel.Continuation},
-            {Keys.G, OcrBlockLabel.Garbage},
-            {Keys.T, OcrBlockLabel.Title},
+            {Keys.S, OcrLabel.PStart},
+            {Keys.M, OcrLabel.PMiddle},
+            {Keys.E, OcrLabel.PEnd},
+            {Keys.C, OcrLabel.Comment},
+            {Keys.T, OcrLabel.Title},
+            {Keys.A, OcrLabel.Image},
+            {Keys.G, OcrLabel.Garbage},
             {Keys.N, null}
         };
 
@@ -43,21 +41,21 @@ namespace LeninSearch.Ocr
         {
             InitializeComponent();
 
-            displayBlocks_btn.Click += DisplayBlocksOnClick;
             displayPages_btn.Click += DisplayPagesClick;
 
-            ocrBlock_lb.SelectedIndexChanged += OcrBlock_lbOnSelectedIndexChanged;
-            ocrBlock_lb.KeyDown += OcrBlock_lbOnKeyDown;
+            ocr_lb.SelectedIndexChanged += OcrLbOnSelectedIndexChanged;
+            ocr_lb.KeyDown += OcrLbOnKeyDown;
             trainModel_btn.Click += TrainModelClick;
             applyModel_btn.Click += ApplyModelClick;
 
-            paragraph_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Paragraph);
-            continuation_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Paragraph);
-            title_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Title);
-            comment_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Comment);
-            garbage_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Garbage);
-            image_panel.BackColor = BlockPalette.GetColor(OcrBlockLabel.Image);
-            none_panel.BackColor = BlockPalette.GetColor(null);
+            none_panel.BackColor = OcrPalette.GetColor(null);
+            pstart_panel.BackColor = OcrPalette.GetColor(OcrLabel.PStart);
+            pmiddle_panel.BackColor = OcrPalette.GetColor(OcrLabel.PMiddle);
+            pend_panel.BackColor = OcrPalette.GetColor(OcrLabel.PEnd);
+            comment_panel.BackColor = OcrPalette.GetColor(OcrLabel.Comment);
+            title_panel.BackColor = OcrPalette.GetColor(OcrLabel.Title);
+            image_panel.BackColor = OcrPalette.GetColor(OcrLabel.Image);
+            garbage_panel.BackColor = OcrPalette.GetColor(OcrLabel.Garbage);
 
             pictureBox1.Paint += PictureBox1OnPaint;
             pictureBox1.MouseDown += PictureBox1OnMouseDown;
@@ -68,7 +66,7 @@ namespace LeninSearch.Ocr
             saveOcrData_btn.Click += SaveOcrDataClick;
 
             openBookFolder_btn.Click += OpenBookFolderClick;
-            generateBlocks_btn.Click += GenerateBlocksClick;
+            generateLines_btn.Click += GenerateLinesClick;
         }
 
         private void ApplyModelClick(object? sender, EventArgs e)
@@ -83,23 +81,23 @@ namespace LeninSearch.Ocr
 
             if (dialog.ShowDialog() != DialogResult.OK) return;
 
-            var featuredBlocks = _ocrData.FeaturedBlocks
+            var featuredLines = _ocrData.Pages.SelectMany(p => p.Lines)
                 .Where(b => b.Features != null)
-                .Where(dialog.BlockMatch)
+                .Where(dialog.LineMatch)
                 .ToList();
 
-            var inputs = featuredBlocks.Select(b => b.Features.ToFeatureRow()).ToArray();
+            var inputs = featuredLines.Select(l => l.Features.ToFeatureRow()).ToArray();
             var predicted = _model.Decide(inputs);
 
-            for (var i = 0; i < featuredBlocks.Count; i++)
+            for (var i = 0; i < featuredLines.Count; i++)
             {
-                featuredBlocks[i].Label = (OcrBlockLabel)predicted[i];
+                featuredLines[i].Label = (OcrLabel)predicted[i];
             }
 
             MessageBox.Show("Model applied", "Model", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        private async void GenerateBlocksClick(object? sender, EventArgs e)
+        private async void GenerateLinesClick(object? sender, EventArgs e)
         {
             var dialog = new ImageScopeDialog();
             if (dialog.ShowDialog() != DialogResult.OK) return;
@@ -108,9 +106,9 @@ namespace LeninSearch.Ocr
                 .Where(f => dialog.ImageMatch(int.Parse(new string(Path.GetFileNameWithoutExtension(f).Where(char.IsNumber).ToArray()))))
                 .ToList();
 
-            var blockService = new YandexVisionOcrBlockService();
+            var lineService = new YandexVisionOcrLineService();
 
-            _ocrData.FeaturedBlocks = new List<OcrFeaturedBlock>();
+            _ocrData.Pages = new List<OcrPage>();
 
             var sw = new Stopwatch(); sw.Start();
 
@@ -122,25 +120,25 @@ namespace LeninSearch.Ocr
             {
                 var imageFile = imageFiles[i];
 
-                var result = await blockService.GetBlocksAsync(imageFile);
+                var result = await lineService.GetOcrPageAsync(imageFile);
                 if (!result.Success)
                 {
                     MessageBox.Show(result.Error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
-                _ocrData.FeaturedBlocks.AddRange(result.Blocks);
+                _ocrData.Pages.Add(result.Page);
 
                 progressBar1.Value = i + 1;
             }
 
             sw.Stop();
 
-            MessageBox.Show($"Blocks generated in {sw.Elapsed}", "Blocks", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show($"Lines generated in {sw.Elapsed}", "Lines", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-            DisplayBlocksOnClick(null, null);
+            DisplayPagesClick(null, null);
 
-            ocrBlock_lb.SelectedIndex = 0;
+            ocr_lb.SelectedIndex = 0;
         }
 
         private void OpenBookFolderClick(object? sender, EventArgs e)
@@ -160,12 +158,12 @@ namespace LeninSearch.Ocr
 
             if (dialog.ShowDialog() != DialogResult.OK) return;
 
-            var labeledBlocks = _ocrData.FeaturedBlocks
+            var labeledLines = _ocrData.Pages.SelectMany(p => p.Lines)
                 .Where(r => r.Label.HasValue && r.Features != null)
-                .Where(dialog.BlockMatch).ToList();
+                .Where(dialog.LineMatch).ToList();
 
-            double[][] inputs = labeledBlocks.Select(lb => lb.Features.ToFeatureRow()).ToArray();
-            int[] outputs = labeledBlocks.Select(lb => (int)lb.Label).ToArray();
+            double[][] inputs = labeledLines.Select(l => l.Features.ToFeatureRow()).ToArray();
+            int[] outputs = labeledLines.Select(l => (int)l.Label).ToArray();
 
             Accord.Math.Random.Generator.Seed = 1;
             var teacher = new RandomForestLearning
@@ -175,7 +173,7 @@ namespace LeninSearch.Ocr
 
             _model = teacher.Learn(inputs, outputs);
 
-            MessageBox.Show($"Model trained on {labeledBlocks.Count} examples", "Model", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show($"Model trained on {labeledLines.Count} examples", "Model", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void SaveOcrDataClick(object? sender, EventArgs e)
@@ -191,59 +189,59 @@ namespace LeninSearch.Ocr
             var dialog = new ImageScopeDialog();
             if (dialog.ShowDialog() != DialogResult.OK) return;
 
-            var fileBlockGroups = new Dictionary<string, List<List<OcrFeaturedBlock>>>();
-            var fileNames = _ocrData.FeaturedBlocks.Where(dialog.BlockMatch)
+            var fileLineGroups = new Dictionary<string, List<List<OcrLine>>>();
+            var fileNames = _ocrData.Pages.SelectMany(p => p.Lines).Where(dialog.LineMatch)
                 .OrderBy(r => r.ImageIndex).Select(r => r.FileName).Distinct().ToList();
             foreach (var fileName in fileNames)
             {
-                var blockGroups = new List<List<OcrFeaturedBlock>>();
-                var blockGroup = new List<OcrFeaturedBlock>();
-                var blocks = _ocrData.FeaturedBlocks.Where(r => r.FileName == fileName).OrderBy(r => r.BlockIndex).ToList();
+                var lineGroups = new List<List<OcrLine>>();
+                var lineGroup = new List<OcrLine>();
+                var lines = _ocrData.GetPage(fileName).Lines.OrderBy(r => r.LineIndex).ToList();
 
-                foreach (var block in blocks)
+                foreach (var line in lines)
                 {
-                    if (block.Label != OcrBlockLabel.Image && blockGroup.Any())
+                    if (line.Label != OcrLabel.Image && lineGroup.Any())
                     {
-                        blockGroups.Add(blockGroup);
-                        blockGroup = new List<OcrFeaturedBlock>();
+                        lineGroups.Add(lineGroup);
+                        lineGroup = new List<OcrLine>();
                     }
-                    else if (block.Label == OcrBlockLabel.Image)
+                    else if (line.Label == OcrLabel.Image)
                     {
-                        blockGroup.Add(block);
+                        lineGroup.Add(line);
                     }
                 }
 
-                if (blockGroup.Any())
+                if (lineGroup.Any())
                 {
-                    blockGroups.Add(blockGroup);
+                    lineGroups.Add(lineGroup);
                 }
 
-                if (blockGroups.Any())
+                if (lineGroups.Any())
                 {
-                    fileBlockGroups.Add(fileName, blockGroups);
+                    fileLineGroups.Add(fileName, lineGroups);
                 }
             }
 
-            // 2. generate image blocks
+            // 2. generate image lines
             _ocrData.ImageBlocks = new List<OcrImageBlock>();
-            foreach (var fileName in fileBlockGroups.Keys)
+            foreach (var fileName in fileLineGroups.Keys)
             {
                 var imageFile = Directory.GetFiles(bookFolder_tb.Text).First(f => Path.GetFileNameWithoutExtension(f) == fileName);
                 using var image = Image.FromFile(imageFile);
 
-                foreach (var blockGroup in fileBlockGroups[fileName])
+                foreach (var lineGroup in fileLineGroups[fileName])
                 {
                     var topY = int.MaxValue;
                     var leftX = int.MaxValue;
                     var bottomY = 0;
                     var rightX = 0;
 
-                    foreach (var block in blockGroup)
+                    foreach (var line in lineGroup)
                     {
-                        if (block.TopLeftX < leftX) leftX = block.TopLeftX;
-                        if (block.TopLeftY < topY) topY = block.TopLeftY;
-                        if (block.BottomRightX > rightX) rightX = block.BottomRightX;
-                        if (block.BottomRightY > bottomY) bottomY = block.BottomRightY;
+                        if (line.TopLeftX < leftX) leftX = line.TopLeftX;
+                        if (line.TopLeftY < topY) topY = line.TopLeftY;
+                        if (line.BottomRightX > rightX) rightX = line.BottomRightX;
+                        if (line.BottomRightY > bottomY) bottomY = line.BottomRightY;
                     }
 
                     var defaultLeft = 40;
@@ -265,7 +263,7 @@ namespace LeninSearch.Ocr
                 }
             }
 
-            MessageBox.Show("Image blocks were auto generated", "Image blocks", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Image lines were auto generated", "Image lines", MessageBoxButtons.OK, MessageBoxIcon.Information);
             pictureBox1.Refresh();
         }
 
@@ -278,7 +276,7 @@ namespace LeninSearch.Ocr
                     _selectionStartPoint = e.Location;
                 }
 
-                if (e.Button == MouseButtons.Left && ocrBlock_lb.SelectedItem is string fileName)
+                if (e.Button == MouseButtons.Left && ocr_lb.SelectedItem is string fileName)
                 {
                     var originalPoint = pictureBox1.ToOriginalPoint(e.Location);
                     var fileImageBlocks = _ocrData.ImageBlocks
@@ -321,16 +319,14 @@ namespace LeninSearch.Ocr
                     }
                     else
                     {
-                        var blocksAtPoint = _ocrData.FeaturedBlocks
-                            .Where(b => b.FileName == fileName)
-                            .Where(b => b.Rectangle.Contains(originalPoint))
-                            .ToList();
-                        foreach (var block in blocksAtPoint)
+                        var page = _ocrData.GetPage(fileName);
+                        var linesAtPoint = page.Lines.Where(b => b.Rectangle.Contains(originalPoint)).ToList();
+                        foreach (var line in linesAtPoint)
                         {
-                            block.Label = _mouseLeftLabel;
+                            line.Label = _mouseLeftLabel;
                         }
 
-                        ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = fileName;
+                        ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
                     }
                 }
             }
@@ -346,17 +342,18 @@ namespace LeninSearch.Ocr
                     var ys = new List<int> { _selectionStartPoint.Value.Y, e.Location.Y }.OrderBy(i => i).ToList();
                     var rect = new Rectangle(xs[0], ys[0], xs[1] - xs[0], ys[1] - ys[0]);
                     var menu = new ContextMenuStrip();
-                    menu.Items.Add("Image", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Image));
-                    menu.Items.Add("Paragraph", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Paragraph));
-                    menu.Items.Add("Continuation", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Continuation));
-                    menu.Items.Add("Comment", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Comment));
-                    menu.Items.Add("Title", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Title));
-                    menu.Items.Add("Garbage", null, (o, a) => SetLabelForIntersectingBlocks(rect, OcrBlockLabel.Garbage));
-                    menu.Items.Add("None", null, (o, a) => SetLabelForIntersectingBlocks(rect, null));
+                    menu.Items.Add("PStart", null, (o, a) => SetLabelForIntersectingLines(rect, OcrLabel.PStart));
+                    menu.Items.Add("PMiddle", null, (o, a) => SetLabelForIntersectingLines(rect, OcrLabel.PMiddle));
+                    menu.Items.Add("PEnd", null, (o, a) => SetLabelForIntersectingLines(rect, OcrLabel.PEnd));
+                    menu.Items.Add("Comment", null, (o, a) => SetLabelForIntersectingLines(rect, OcrLabel.Comment));
+                    menu.Items.Add("Title", null, (o, a) => SetLabelForIntersectingLines(rect, OcrLabel.Title));
+                    menu.Items.Add("Image", null, (o, a) => SetLabelForIntersectingLines(rect, OcrLabel.Image));
+                    menu.Items.Add("Garbage", null, (o, a) => SetLabelForIntersectingLines(rect, OcrLabel.Garbage));
+                    menu.Items.Add("None", null, (o, a) => SetLabelForIntersectingLines(rect, null));
+
                     menu.Items.Add("Add Image Block", null, (o, a) => AddImageBlock(rect));
                     menu.Items.Add("Remove Image Block", null, (o, a) => RemoveImageBlock(rect));
-                    menu.Items.Add("Break Block Into Lines", null, (o, a) => BreakBlockIntoLines(rect));
-                    menu.Items.Add("Merge Blocks", null, (o, a) => MergeBlocks(rect));
+
                     menu.Show(pictureBox1, e.Location);
                     _selectionStartPoint = null;
                 }
@@ -384,7 +381,7 @@ namespace LeninSearch.Ocr
 
         private void PictureBox1OnPaint(object sender, PaintEventArgs e)
         {
-            var fileName = ocrBlock_lb.SelectedItem as string;
+            var fileName = ocr_lb.SelectedItem as string;
 
             if (fileName == null) return;
 
@@ -400,127 +397,37 @@ namespace LeninSearch.Ocr
             var fileImageBlocks = _ocrData.ImageBlocks.Where(b => b.FileName == fileName).ToList();
             foreach (var ib in fileImageBlocks)
             {
-                using var ibPen = new Pen(BlockPalette.ImageBlockColor, 2);
+                using var ibPen = new Pen(OcrPalette.ImageBlockColor, 2);
                 e.Graphics.DrawRectangle(ibPen, pictureBox1.ToPictureBoxRectangle(ib.Rectangle));
 
-                using var ibBrush = new SolidBrush(BlockPalette.ImageBlockColor);
+                using var ibBrush = new SolidBrush(OcrPalette.ImageBlockColor);
                 e.Graphics.FillRectangle(ibBrush, pictureBox1.ToPictureBoxRectangle(ib.TopLeftRectangle));
                 e.Graphics.FillRectangle(ibBrush, pictureBox1.ToPictureBoxRectangle(ib.BottomRightRectangle));
             }
         }
-        private void BreakBlockIntoLines(Rectangle pbRectangle)
+
+        private void SetLabelForIntersectingLines(Rectangle pbRectangle, OcrLabel? label)
         {
-            var fileName = ocrBlock_lb.SelectedItem as string;
+            var fileName = ocr_lb.SelectedItem as string;
 
             if (fileName == null) return;
 
             var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
 
-            var fileBlocks = _ocrData.FeaturedBlocks.Where(b => b.FileName == fileName).ToList();
-            var intersectingBlocks = fileBlocks.Where(b => b.Rectangle.IntersectsWith(originalRect)).ToList();
-            foreach (var block in intersectingBlocks)
+            foreach (var line in _ocrData.GetPage(fileName).Lines)
             {
-                var blockIndex = _ocrData.FeaturedBlocks.IndexOf(block);
-                _ocrData.FeaturedBlocks.Remove(block);
-                for (var i = block.Lines.Count - 1; i >= 0; i--)
+                if (line.Rectangle.IntersectsWith(originalRect))
                 {
-                    var line = block.Lines[i];
-                    var lineBlock = new OcrFeaturedBlock
-                    {
-                        FileName = fileName,
-                        BottomRightX = line.BottomRightX,
-                        BottomRightY = line.BottomRightY,
-                        TopLeftX = line.TopLeftX,
-                        TopLeftY = line.TopLeftY,
-                        Features = block.Features.Copy(),
-                        Label = block.Label,
-                        Lines = new List<OcrLine> {line}
-                    };
-                    _ocrData.FeaturedBlocks.Insert(blockIndex, lineBlock);
+                    line.Label = label;
                 }
             }
 
-            fileBlocks = _ocrData.FeaturedBlocks.Where(b => b.FileName == fileName).ToList();
-            for (var i = 0; i < fileBlocks.Count; i++)
-            {
-                fileBlocks[i].BlockIndex = i;
-            }
-
-            ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = fileName;
-        }
-
-        private void MergeBlocks(Rectangle pbRectangle)
-        {
-            var fileName = ocrBlock_lb.SelectedItem as string;
-
-            if (fileName == null) return;
-
-            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
-
-            var fileBlocks = _ocrData.FeaturedBlocks.Where(b => b.FileName == fileName).ToList();
-            var intersectingBlocks = fileBlocks.Where(b => b.Rectangle.IntersectsWith(originalRect)).ToList();
-
-            if (intersectingBlocks.Count < 2) return;
-
-            var firstIntersectingBlock = intersectingBlocks.First();
-            var firstIntersectingBlockIndex = _ocrData.FeaturedBlocks.IndexOf(firstIntersectingBlock);
-
-            foreach (var block in intersectingBlocks)
-            {
-                _ocrData.FeaturedBlocks.Remove(block);
-            }
-
-            var lines = intersectingBlocks.SelectMany(b => b.Lines).ToList();
-
-            var topLeftX = intersectingBlocks.Select(b => b.TopLeftX).Min();
-            var topLeftY = intersectingBlocks.Select(b => b.TopLeftY).Min();
-            var bottomRightX = intersectingBlocks.Select(b => b.BottomRightX).Max();
-            var bottomRightY = intersectingBlocks.Select(b => b.BottomRightY).Max();
-            
-            var resultBlock = new OcrFeaturedBlock
-            {
-                FileName = fileName,
-                TopLeftX = topLeftX,
-                TopLeftY = topLeftY,
-                BottomRightX = bottomRightX,
-                BottomRightY = bottomRightY,
-                Features = firstIntersectingBlock.Features,
-                Label = firstIntersectingBlock.Label,
-                Lines = lines
-            };
-            _ocrData.FeaturedBlocks.Insert(firstIntersectingBlockIndex, resultBlock);
-
-            fileBlocks = _ocrData.FeaturedBlocks.Where(b => b.FileName == fileName).ToList();
-            for (var i = 0; i < fileBlocks.Count; i++)
-            {
-                fileBlocks[i].BlockIndex = i;
-            }
-
-            ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = fileName;
-        }
-        private void SetLabelForIntersectingBlocks(Rectangle pbRectangle, OcrBlockLabel? label)
-        {
-            var fileName = ocrBlock_lb.SelectedItem as string;
-
-            if (fileName == null) return;
-
-            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
-
-            var fileBlocks = _ocrData.FeaturedBlocks.Where(b => b.FileName == fileName).ToList();
-            foreach (var block in fileBlocks)
-            {
-                if (block.Rectangle.IntersectsWith(originalRect))
-                {
-                    block.Label = label;
-                }
-            }
-
-            ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = fileName;
+            ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
         }
 
         private void AddImageBlock(Rectangle pbRectangle)
         {
-            var fileName = ocrBlock_lb.SelectedItem as string;
+            var fileName = ocr_lb.SelectedItem as string;
             if (fileName == null) return;
 
             var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
@@ -535,12 +442,12 @@ namespace LeninSearch.Ocr
             };
 
             _ocrData.ImageBlocks.Add(imageBlock);
-            ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = fileName;
+            ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
         }
 
         private void RemoveImageBlock(Rectangle pbRectangle)
         {
-            var fileName = ocrBlock_lb.SelectedItem as string;
+            var fileName = ocr_lb.SelectedItem as string;
             if (fileName == null) return;
 
             var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
@@ -551,7 +458,7 @@ namespace LeninSearch.Ocr
 
         private void DisplayPagesClick(object? sender, EventArgs e)
         {
-            ocrBlock_lb.Items.Clear();
+            ocr_lb.Items.Clear();
 
             var fileNames = GetImageFiles(bookFolder_tb.Text)
                 .Select(Path.GetFileNameWithoutExtension)
@@ -560,24 +467,13 @@ namespace LeninSearch.Ocr
 
             foreach (var fileName in fileNames)
             {
-                ocrBlock_lb.Items.Add(fileName);
+                ocr_lb.Items.Add(fileName);
             }
 
             _displayPages = true;
         }
 
-        private void DisplayBlocksOnClick(object? sender, EventArgs e)
-        {
-            ocrBlock_lb.Items.Clear();
-            foreach (var block in _ocrData.FeaturedBlocks)
-            {
-                ocrBlock_lb.Items.Add(block);
-            }
-
-            _displayPages = false;
-        }
-
-        private void OcrBlock_lbOnKeyDown(object sender, KeyEventArgs e)
+        private void OcrLbOnKeyDown(object sender, KeyEventArgs e)
         {
             if (!_keyLabels.ContainsKey(e.KeyCode)) return;
 
@@ -590,45 +486,46 @@ namespace LeninSearch.Ocr
             }
             else
             {
-                var row = ocrBlock_lb.SelectedItem as OcrFeaturedBlock;
+                var row = ocr_lb.SelectedItem as OcrLine;
                 if (row == null) return;
                 row.Label = label;
-                ocrBlock_lb.Items[ocrBlock_lb.SelectedIndex] = row;
+                ocr_lb.Items[ocr_lb.SelectedIndex] = row;
             }
         }
 
-        private void SetLabelPanelSelected(OcrBlockLabel? label)
+        private void SetLabelPanelSelected(OcrLabel? label)
         {
-            paragraph_panel.BorderStyle = label == OcrBlockLabel.Paragraph
-                ? BorderStyle.FixedSingle
+            pstart_panel.BorderStyle = label == OcrLabel.PStart
+                ? BorderStyle.Fixed3D
                 : BorderStyle.None;
-            continuation_panel.BorderStyle = label == OcrBlockLabel.Continuation
-                ? BorderStyle.FixedSingle
+            pmiddle_panel.BorderStyle = label == OcrLabel.PMiddle
+                ? BorderStyle.Fixed3D
                 : BorderStyle.None;
-            title_panel.BorderStyle = label == OcrBlockLabel.Title
-                ? BorderStyle.FixedSingle
+            pend_panel.BorderStyle = label == OcrLabel.PEnd
+                ? BorderStyle.Fixed3D
                 : BorderStyle.None;
-            comment_panel.BorderStyle = label == OcrBlockLabel.Comment
-                ? BorderStyle.FixedSingle
+            comment_panel.BorderStyle = label == OcrLabel.Comment
+                ? BorderStyle.Fixed3D
                 : BorderStyle.None;
-            garbage_panel.BorderStyle = label == OcrBlockLabel.Garbage
-                ? BorderStyle.FixedSingle
+            title_panel.BorderStyle = label == OcrLabel.Title
+                ? BorderStyle.Fixed3D
                 : BorderStyle.None;
-            image_panel.BorderStyle = label == OcrBlockLabel.Image
-                ? BorderStyle.FixedSingle
+            image_panel.BorderStyle = label == OcrLabel.Image
+                ? BorderStyle.Fixed3D
+                : BorderStyle.None;
+            garbage_panel.BorderStyle = label == OcrLabel.Garbage
+                ? BorderStyle.Fixed3D
                 : BorderStyle.None;
             none_panel.BorderStyle = label == null
-                ? BorderStyle.FixedSingle
+                ? BorderStyle.Fixed3D
                 : BorderStyle.None;
         }
 
-        private void OcrBlock_lbOnSelectedIndexChanged(object? sender, EventArgs e)
+        private void OcrLbOnSelectedIndexChanged(object? sender, EventArgs e)
         {
             try
             {
-                var fileName = _displayPages
-                    ? ocrBlock_lb.SelectedItem as string
-                    : (ocrBlock_lb.SelectedItem as OcrFeaturedBlock)?.FileName;
+                var fileName = ocr_lb.SelectedItem as string;
 
                 if (fileName == null) return;
 
@@ -639,27 +536,28 @@ namespace LeninSearch.Ocr
                 }
 
                 var image = new Bitmap(Image.FromFile(imageFile));
-                var drawBlocks = _displayPages
-                    ? _ocrData.FeaturedBlocks.Where(r => r.FileName == fileName).ToList()
-                    : new List<OcrFeaturedBlock> { ocrBlock_lb.SelectedItem as OcrFeaturedBlock };
+                var page = _ocrData.GetPage(fileName);
 
-                foreach (var block in drawBlocks)
+                using (var g = Graphics.FromImage(image))
                 {
-                    using (var g = Graphics.FromImage(image))
-                    {
-                        using var brush = GetBrush(block);
-                        g.FillRectangle(brush, block.Rectangle);
+                    using var dividerPen = new Pen(Color.DarkViolet, 2);
+                    g.DrawLine(dividerPen, 10, page.TopDivider.Y, image.Width - 10, page.TopDivider.Y);
+                    g.DrawLine(dividerPen, 10, page.BottomDivider.Y, image.Width - 10, page.BottomDivider.Y);
 
-                        using var pen = GetPen(block);
-                        g.DrawRectangle(pen, block.Rectangle);
-                        
+                    foreach (var line in page.Lines)
+                    {
+                        using var brush = GetBrush(line);
+                        g.FillRectangle(brush, line.Rectangle);
+
+                        using var pen = GetPen(line);
+                        g.DrawRectangle(pen, line.Rectangle);
+
                         using var textBrush = new SolidBrush(Color.DarkViolet);
                         var font = new Font(Font.FontFamily, 12, FontStyle.Bold);
-                        g.DrawString(block.BlockIndex.ToString(), font, textBrush, block.BottomRightX + 1, block.TopLeftY);
+                        g.DrawString(line.LineIndex.ToString(), font, textBrush, line.BottomRightX + 1, line.TopLeftY);
                     }
-
-                    pictureBox1.Image = image;
                 }
+                pictureBox1.Image = image;
             }
             catch (Exception exc)
             {
@@ -668,16 +566,16 @@ namespace LeninSearch.Ocr
             }
         }
 
-        private Pen GetPen(OcrFeaturedBlock block)
+        private Pen GetPen(OcrLine line)
         {
-            var color = BlockPalette.GetColor(block.Label);
+            var color = OcrPalette.GetColor(line.Label);
 
             return new Pen(color, 2);
         }
 
-        private Brush GetBrush(OcrFeaturedBlock block)
+        private Brush GetBrush(OcrLine line)
         {
-            var color = BlockPalette.GetColor(block.Label);
+            var color = OcrPalette.GetColor(line.Label);
 
             return new SolidBrush(Color.FromArgb(64, color));
         }
