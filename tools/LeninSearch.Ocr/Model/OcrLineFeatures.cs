@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Linq;
 
 namespace LeninSearch.Ocr.Model
 {
@@ -49,6 +50,39 @@ namespace LeninSearch.Ocr.Model
         public OcrLineFeatures Copy()
         {
             return JsonConvert.DeserializeObject<OcrLineFeatures>(JsonConvert.SerializeObject(this));
+        }
+
+        public static OcrLineFeatures Calculate(OcrPage page, OcrLine line)
+        {
+            var lineRectangle = line.Rectangle;
+            var pageWideRectangle = line.PageWideRectangle(page.Width);
+            var lineText = string.Join(" ", line.Words.Select(w => w.Text));
+            var lastChar = lineText.Last();
+            return new OcrLineFeatures
+            {
+                // geometric features
+                LeftIndent = line.TopLeftY,
+                RightIndent = page.Width - line.BottomRightX,
+                TopIndent = line.TopLeftY,
+                BottomIndent = page.Height - line.BottomRightY,
+                BelowTopDivider = page.TopDivider.Y < line.TopLeftY ? 1 : 0,
+                AboveBottomDivider = page.BottomDivider.Y > line.TopLeftY ? 1 : 0,
+                Width = lineRectangle.Width,
+                Height = lineRectangle.Height,
+                SameYCount = page.Lines.Count(pl =>
+                    pl != line && pageWideRectangle.IntersectsWith(pl.PageWideRectangle(page.Width))),
+                WidthToHeightRatio = 1.0 * lineRectangle.Width / lineRectangle.Height,
+
+                // text features
+                PixelsPerSymbol = 1.0 * (line.BottomRightX - line.TopLeftX) / lineText.Length,
+                WordCount = line.Words.Count,
+                SymbolCount = lineText.Length,
+                StartsWithCapital = char.IsUpper(lineText[0]) ? 1 : 0,
+                EndsWithSymbol = char.IsSymbol(lastChar) ? 1 : 0,
+
+                // other features
+                ImageIndex = page.ImageIndex
+            };
         }
     }
 }

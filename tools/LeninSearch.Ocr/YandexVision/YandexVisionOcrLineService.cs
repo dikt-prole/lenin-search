@@ -19,7 +19,6 @@ namespace LeninSearch.Ocr.YandexVision
 
         public async Task<(OcrPage Page, bool Success, string Error)> GetOcrPageAsync(string imageFile)
         {
-            var httpClient = new HttpClient();
             var apiKey = Environment.GetEnvironmentVariable("YandexApiKey");
             var imageBytes = File.ReadAllBytes(imageFile);
             var ocrRequest = YtVisionRequest.Ocr(imageBytes);
@@ -39,7 +38,7 @@ namespace LeninSearch.Ocr.YandexVision
             OcrResponse.OcrResponse ocrResponse = null;
             try
             {
-                var response = await httpClient.SendAsync(request);
+                var response = await HttpClient.SendAsync(request);
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
                     return (null, false, $"Send request error: {response.StatusCode}");
@@ -59,6 +58,8 @@ namespace LeninSearch.Ocr.YandexVision
             {
                 Filename = Path.GetFileNameWithoutExtension(imageFile),
                 Lines = new List<OcrLine>(),
+                Width = image.Width,
+                Height = image.Height,
                 BottomDivider = new DividerLine(image.Height - 1, 0, image.Width),
                 TopDivider = new DividerLine(1, 0, image.Width)
             };
@@ -77,6 +78,7 @@ namespace LeninSearch.Ocr.YandexVision
                     Features = null,
                     Label = OcrLabel.Image
                 };
+
                 page.Lines.Add(featuredLine);
                 return (page, true, null);
             }
@@ -92,41 +94,8 @@ namespace LeninSearch.Ocr.YandexVision
             var lineIndex = 0;
             foreach (var responseLine in pageLines)
             {
-
                 var topLeft = responseLine.BoundingBox.TopLeft.Point();
                 var bottomRight = responseLine.BoundingBox.BottomRight.Point();
-                var imageIndex = int.Parse(new string(Path.GetFileNameWithoutExtension(imageFile).Where(char.IsNumber).ToArray()));
-
-                var text = string.Join(" ", responseLine.Words.Select(w => w.Text));
-                var lineRectangle = responseLine.BoundingBox.Rectangle();
-                var pixelsPerSymbol = 1.0 * lineRectangle.Width / text.Length;
-                var lastChar = responseLine.Words.Last().Text.Last();
-
-                var features = new OcrLineFeatures
-                {
-                    // geometric features
-                    LeftIndent = topLeft.X,
-                    RightIndent = image.Width - bottomRight.X,
-                    TopIndent = topLeft.Y,
-                    BottomIndent = image.Height - bottomRight.Y,
-                    BelowTopDivider = page.TopDivider.Y < topLeft.Y ? 1 : 0,
-                    AboveBottomDivider = page.BottomDivider.Y > topLeft.Y ? 1 : 0,
-                    Width = lineRectangle.Width,
-                    Height = lineRectangle.Height,
-                    SameYCount = pageLines.Count(pl => pl != responseLine && responseLine.BoundingBox.IsSameY(pl.BoundingBox)),
-                    WidthToHeightRatio = 1.0 * lineRectangle.Width / lineRectangle.Height,
-
-                    // text features
-                    PixelsPerSymbol = pixelsPerSymbol,
-                    WordCount = responseLine.Words.Count,
-                    SymbolCount = text.Length,
-                    StartsWithCapital = char.IsUpper(responseLine.Words[0].Text[0]) ? 1 : 0,
-                    EndsWithSymbol = (lastChar == '.' || lastChar == '!' || lastChar == '?') ? 1 : 0,
-
-                    // other features
-                    ImageIndex = imageIndex
-                };
-
                 var featuredLine = new OcrLine
                 {
                     FileName = Path.GetFileNameWithoutExtension(imageFile),
@@ -135,14 +104,16 @@ namespace LeninSearch.Ocr.YandexVision
                     TopLeftX = topLeft.X,
                     TopLeftY = topLeft.Y,
                     BottomRightX = bottomRight.X,
-                    BottomRightY = bottomRight.Y,
-                    Features = features,
-                    Label = features.BelowTopDivider == 0
-                        ? OcrLabel.Garbage
-                        : features.AboveBottomDivider == 0
-                            ? OcrLabel.Comment
-                            : OcrLabel.PMiddle
+                    BottomRightY = bottomRight.Y
                 };
+
+                featuredLine.Features = OcrLineFeatures.Calculate(page, featuredLine);
+
+                featuredLine.Label = featuredLine.Features.BelowTopDivider == 0
+                    ? OcrLabel.Garbage
+                    : featuredLine.Features.AboveBottomDivider == 0
+                        ? OcrLabel.Comment
+                        : OcrLabel.PMiddle;
 
                 page.Lines.Add(featuredLine);
 

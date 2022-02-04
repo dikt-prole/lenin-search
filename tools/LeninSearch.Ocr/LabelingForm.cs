@@ -271,65 +271,67 @@ namespace LeninSearch.Ocr
 
         private void PictureBox1OnMouseDown(object sender, MouseEventArgs e)
         {
-            if (pictureBox1.Image != null)
+            if (pictureBox1.Image == null) return;
+
+            if (e.Button == MouseButtons.Right)
             {
-                if (e.Button == MouseButtons.Right)
+                _selectionStartPoint = e.Location;
+            }
+
+            if (e.Button == MouseButtons.Left && ocr_lb.SelectedItem is string fileName)
+            {
+                var originalPoint = pictureBox1.ToOriginalPoint(e.Location);
+                var fileImageBlocks = _ocrData.ImageBlocks
+                    .Where(ib => ib.FileName == fileName)
+                    .Where(ib => ib.TopLeftRectangle.Contains(originalPoint) || ib.BottomRightRectangle.Contains(originalPoint))
+                    .ToList();
+                _moveImageBlockDragPoint = null;
+                if (fileImageBlocks.Any())
                 {
-                    _selectionStartPoint = e.Location;
+                    foreach (var ib in fileImageBlocks)
+                    {
+                        if (ib.TopLeftRectangle.Contains(originalPoint))
+                        {
+                            _moveImageBlockDragPoint = p =>
+                            {
+                                if (ModifierKeys != Keys.Shift)
+                                {
+                                    ib.TopLeftX = p.X;
+                                }
+                                ib.TopLeftY = p.Y;
+                                pictureBox1.Refresh();
+                            };
+                            break;
+                        }
+
+                        if (ib.BottomRightRectangle.Contains(originalPoint))
+                        {
+                            _moveImageBlockDragPoint = p =>
+                            {
+                                if (ModifierKeys != Keys.Shift)
+                                {
+                                    ib.BottomRightX = p.X;
+                                }
+                                ib.BottomRightY = p.Y;
+                                pictureBox1.Refresh();
+                            };
+                            break;
+                        }
+                    }
                 }
-
-                if (e.Button == MouseButtons.Left && ocr_lb.SelectedItem is string fileName)
+                else
                 {
-                    var originalPoint = pictureBox1.ToOriginalPoint(e.Location);
-                    var fileImageBlocks = _ocrData.ImageBlocks
-                        .Where(ib => ib.FileName == fileName)
-                        .Where(ib => ib.TopLeftRectangle.Contains(originalPoint) || ib.BottomRightRectangle.Contains(originalPoint))
-                        .ToList();
-                    _moveImageBlockDragPoint = null;
-                    if (fileImageBlocks.Any())
-                    {
-                        foreach (var ib in fileImageBlocks)
-                        {
-                            if (ib.TopLeftRectangle.Contains(originalPoint))
-                            {
-                                _moveImageBlockDragPoint = p =>
-                                {
-                                    if (ModifierKeys != Keys.Shift)
-                                    {
-                                        ib.TopLeftX = p.X;
-                                    }
-                                    ib.TopLeftY = p.Y;
-                                    pictureBox1.Refresh();
-                                };
-                                break;
-                            }
+                    var page = _ocrData.GetPage(fileName);
 
-                            if (ib.BottomRightRectangle.Contains(originalPoint))
-                            {
-                                _moveImageBlockDragPoint = p =>
-                                {
-                                    if (ModifierKeys != Keys.Shift)
-                                    {
-                                        ib.BottomRightX = p.X;
-                                    }
-                                    ib.BottomRightY = p.Y;
-                                    pictureBox1.Refresh();
-                                };
-                                break;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        var page = _ocrData.GetPage(fileName);
-                        var linesAtPoint = page.Lines.Where(b => b.Rectangle.Contains(originalPoint)).ToList();
-                        foreach (var line in linesAtPoint)
-                        {
-                            line.Label = _mouseLeftLabel;
-                        }
+                    if (page == null) return;
 
-                        ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
+                    var linesAtPoint = page.Lines.Where(b => b.Rectangle.Contains(originalPoint)).ToList();
+                    foreach (var line in linesAtPoint)
+                    {
+                        line.Label = _mouseLeftLabel;
                     }
+
+                    ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
                 }
             }
         }
@@ -378,6 +380,7 @@ namespace LeninSearch.Ocr
                 menu.Items.Add(new ToolStripSeparator());
                 menu.Items.Add("Show Text", null, (o, a) => SetDisplayText(rect, true));
                 menu.Items.Add("Hide Text", null, (o, a) => SetDisplayText(rect, false));
+                menu.Items.Add("Add Word", null, (o, a) => AddWord(rect));
 
                 menu.Show(pictureBox1, e.Location);
                 _selectionStartPoint = null;
@@ -391,6 +394,8 @@ namespace LeninSearch.Ocr
 
         private void PictureBox1OnMouseMove(object sender, MouseEventArgs e)
         {
+            if (pictureBox1.Image == null) return;
+
             if (e.Button == MouseButtons.Right && _selectionStartPoint != null)
             {
                 pictureBox1.Refresh();
@@ -428,6 +433,46 @@ namespace LeninSearch.Ocr
                 e.Graphics.FillRectangle(ibBrush, pictureBox1.ToPictureBoxRectangle(ib.TopLeftRectangle));
                 e.Graphics.FillRectangle(ibBrush, pictureBox1.ToPictureBoxRectangle(ib.BottomRightRectangle));
             }
+        }
+
+        private void AddWord(Rectangle pbRectangle)
+        {
+            var fileName = ocr_lb.SelectedItem as string;
+            if (fileName == null) return;
+            var page = _ocrData.GetPage(fileName);
+            if (page == null) return;
+            var dialog = new AddWordDialog();
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+
+            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
+
+            var word = new OcrWord
+            {
+                TopLeftX = originalRect.X,
+                TopLeftY = originalRect.Y,
+                BottomRightX = originalRect.X + originalRect.Width,
+                BottomRightY = originalRect.Y + originalRect.Height,
+                Text = dialog.Text
+            };
+
+            var line = new OcrLine
+            {
+                TopLeftX = word.TopLeftX,
+                TopLeftY = word.TopLeftY,
+                BottomRightX = word.BottomRightX,
+                BottomRightY = word.BottomRightY,
+                Words = new List<OcrWord> { word }
+            };
+
+            line.Features = OcrLineFeatures.Calculate(page, line);
+
+            page.Lines.Add(line);
+
+            page.Lines = page.Lines.OrderBy(l => l.TopLeftY).ToList();
+
+            for (var i = 0; i < page.Lines.Count; i++) page.Lines[i].LineIndex = i;
+
+            ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
         }
 
         private void SetDisplayText(Rectangle pbRectangle, bool displayText)
@@ -656,7 +701,7 @@ namespace LeninSearch.Ocr
 
                             if (line.DisplayText)
                             {
-                                g.DrawString(word.Text, font, textBrush, word.TopLeftX, line.TopLeftY - 12);
+                                g.DrawString(word.Text, font, textBrush, word.TopLeftX, line.TopLeftY - 15);
                             }
                         }
                     }

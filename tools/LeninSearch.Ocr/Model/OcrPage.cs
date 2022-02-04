@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using Accord.Math.Geometry;
 
@@ -11,6 +12,9 @@ namespace LeninSearch.Ocr.Model
         public DividerLine TopDivider { get; set; }
         public DividerLine BottomDivider { get; set; }
         public List<OcrLine> Lines { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
+        public int ImageIndex => int.Parse(new string(Filename.Where(char.IsNumber).ToArray()));
 
         public void MergeLines(OcrLine intoLine, params OcrLine[] mergeLines)
         {
