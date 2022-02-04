@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 
 namespace LeninSearch.Ocr.Model
 {
@@ -16,6 +17,7 @@ namespace LeninSearch.Ocr.Model
         public OcrLineFeatures Features { get; set; }
         public OcrLabel? Label { get; set; }
         public List<OcrWord> Words { get; set; }
+        public bool DisplayText { get; set; }
         public int ImageIndex => int.Parse(new string(FileName).Where(char.IsNumber).ToArray());
         public Rectangle Rectangle => new Rectangle(TopLeftX, TopLeftY, BottomRightX - TopLeftX, BottomRightY - TopLeftY);
 

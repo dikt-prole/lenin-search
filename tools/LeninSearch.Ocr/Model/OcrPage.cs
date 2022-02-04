@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using Accord.Math.Geometry;
 
@@ -16,13 +17,18 @@ namespace LeninSearch.Ocr.Model
             foreach (var line in mergeLines) Lines.Remove(line);
 
             var intersectingLines = new[] { intoLine }.Concat(mergeLines).ToList();
-            intoLine.Words = intersectingLines.Where(l => l.Words != null).SelectMany(l => l.Words).ToList();
+            intoLine.Words = intersectingLines.Where(l => l.Words != null).SelectMany(l => l.Words).OrderBy(w => w.TopLeftX).ToList();
             intoLine.TopLeftX = intersectingLines.Select(b => b.TopLeftX).Min();
             intoLine.TopLeftY = intersectingLines.Select(b => b.TopLeftY).Min();
             intoLine.BottomRightX = intersectingLines.Select(b => b.BottomRightX).Max();
             intoLine.BottomRightY = intersectingLines.Select(b => b.BottomRightY).Max();
 
             for (var i = 0; i < Lines.Count; i++) Lines[i].LineIndex = i;
+        }
+
+        public List<OcrLine> GetIntersectingLines(Rectangle rect)
+        {
+            return Lines.Where(l => l.Rectangle.IntersectsWith(rect)).ToList();
         }
     }
 }

@@ -375,6 +375,9 @@ namespace LeninSearch.Ocr
                 menu.Items.Add(new ToolStripSeparator());
                 menu.Items.Add("Add Image Block", null, (o, a) => AddImageBlock(rect));
                 menu.Items.Add("Remove Image Block", null, (o, a) => RemoveImageBlock(rect));
+                menu.Items.Add(new ToolStripSeparator());
+                menu.Items.Add("Show Text", null, (o, a) => SetDisplayText(rect, true));
+                menu.Items.Add("Hide Text", null, (o, a) => SetDisplayText(rect, false));
 
                 menu.Show(pictureBox1, e.Location);
                 _selectionStartPoint = null;
@@ -427,12 +430,23 @@ namespace LeninSearch.Ocr
             }
         }
 
+        private void SetDisplayText(Rectangle pbRectangle, bool displayText)
+        {
+            var fileName = ocr_lb.SelectedItem as string;
+            if (fileName == null) return;
+            var page = _ocrData.GetPage(fileName);
+            if (page == null) return;
+            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
+
+            foreach (var line in page.GetIntersectingLines(originalRect)) line.DisplayText = displayText;
+
+            ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
+        }
+
         private void SetLabelForIntersectingLines(Rectangle pbRectangle, OcrLabel? label)
         {
             var fileName = ocr_lb.SelectedItem as string;
-
             if (fileName == null) return;
-
             var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
 
             foreach (var line in _ocrData.GetPage(fileName).Lines)
@@ -608,6 +622,7 @@ namespace LeninSearch.Ocr
                     using var dividerPen = new Pen(Color.DarkViolet, 2);
                     using var textBrush = new SolidBrush(Color.DarkViolet);
                     using var commentLinePen = new Pen(OcrPalette.GetColor(OcrLabel.Comment), 1);
+                    var font = new Font(Font.FontFamily, 12, FontStyle.Bold);
 
                     g.DrawLine(dividerPen, 10, page.TopDivider.Y, image.Width - 10, page.TopDivider.Y);
                     g.DrawLine(dividerPen, 10, page.BottomDivider.Y, image.Width - 10, page.BottomDivider.Y);
@@ -620,15 +635,12 @@ namespace LeninSearch.Ocr
                         using var pen = GetPen(line);
                         g.DrawRectangle(pen, line.Rectangle);
 
-                        var font = new Font(Font.FontFamily, 12, FontStyle.Bold);
                         g.DrawString(line.LineIndex.ToString(), font, textBrush, line.BottomRightX + 1, line.TopLeftY);
 
-                        if (line.Words != null)
+                        foreach (var word in line.Words ?? new List<OcrWord>())
                         {
-                            foreach (var word in line.Words)
+                            if (word.CommentLineIndex != null)
                             {
-                                if (word.CommentLineIndex == null) continue;
-
                                 var commentLine = page.Lines[word.CommentLineIndex.Value];
 
                                 var verticalMinY = word.BottomRightY;
@@ -640,6 +652,11 @@ namespace LeninSearch.Ocr
                                 var horizontalMaxX = word.BottomRightX;
                                 var horizontalY = word.BottomRightY;
                                 g.DrawLine(commentLinePen, horizontalMinX, horizontalY, horizontalMaxX, horizontalY);
+                            }
+
+                            if (line.DisplayText)
+                            {
+                                g.DrawString(word.Text, font, textBrush, word.TopLeftX, line.TopLeftY - 12);
                             }
                         }
                     }
