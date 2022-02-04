@@ -7,7 +7,6 @@ namespace LeninSearch.Ocr.Model
 {
     public class OcrLine
     {
-        public Guid Id { get; set; }
         public string FileName { get; set; }
         public int LineIndex { get; set; }
         public int TopLeftX { get; set; }

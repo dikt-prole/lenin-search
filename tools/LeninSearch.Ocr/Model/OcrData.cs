@@ -9,15 +9,13 @@ namespace LeninSearch.Ocr.Model
     {
         public List<OcrPage> Pages { get; set; }
         public List<OcrImageBlock> ImageBlocks { get; set; }
-        public List<OcrCommentLink> CommentLinks { get; set; }
 
         public static OcrData Empty()
         {
             return new OcrData
             {
                 Pages = new List<OcrPage>(),
-                ImageBlocks = new List<OcrImageBlock>(),
-                CommentLinks = new List<OcrCommentLink>()
+                ImageBlocks = new List<OcrImageBlock>()
             };
         }
 

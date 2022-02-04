@@ -13,7 +13,7 @@ using Newtonsoft.Json;
 
 namespace LeninSearch.Ocr.YandexVision
 {
-    public class YandexVisionOcrLineService : IOcrBlockService
+    public class YandexVisionOcrLineService : IOcrService
     {
         private static readonly HttpClient HttpClient = new HttpClient();
 
@@ -140,8 +140,8 @@ namespace LeninSearch.Ocr.YandexVision
                     Label = features.BelowTopDivider == 0
                         ? OcrLabel.Garbage
                         : features.AboveBottomDivider == 0
-                            ? (OcrLabel?)OcrLabel.Comment
-                            : null
+                            ? OcrLabel.Comment
+                            : OcrLabel.PMiddle
                 };
 
                 page.Lines.Add(featuredLine);

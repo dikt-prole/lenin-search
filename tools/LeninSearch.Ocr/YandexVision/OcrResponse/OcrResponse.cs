@@ -93,7 +93,6 @@ namespace LeninSearch.Ocr.YandexVision.OcrResponse
             var bottomRight = BoundingBox.BottomRight.Point();
             return new OcrWord
             {
-                Id = Guid.NewGuid(),
                 TopLeftX = topLeft.X,
                 TopLeftY = topLeft.Y,
                 BottomRightX = bottomRight.X,
@@ -115,7 +114,6 @@ namespace LeninSearch.Ocr.YandexVision.OcrResponse
             var bottomRight = BoundingBox.BottomRight.Point();
             return new OcrLine
             {
-                Id = Guid.NewGuid(),
                 TopLeftX = topLeft.X,
                 TopLeftY = topLeft.Y,
                 BottomRightX = bottomRight.X,

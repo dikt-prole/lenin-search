@@ -7,14 +7,13 @@ using System.Linq;
 using System.Windows.Forms;
 using Accord.MachineLearning.DecisionTrees;
 using LeninSearch.Ocr.Model;
+using LeninSearch.Ocr.Service;
 using LeninSearch.Ocr.YandexVision;
 
 namespace LeninSearch.Ocr
 {
     public partial class LabelingForm : Form
     {
-        private bool _displayPages;
-
         private Point? _selectionStartPoint;
 
         private OcrData _ocrData = OcrData.Empty();
@@ -24,6 +23,9 @@ namespace LeninSearch.Ocr
         private RandomForest _model;
 
         private OcrLabel? _mouseLeftLabel;
+
+        private readonly IOcrService _ocrService = new IntersectingLineMergerDecorator(new YandexVisionOcrLineService());
+        //private readonly IOcrService _ocrService = new YandexVisionOcrLineService();
 
         private readonly Dictionary<Keys, OcrLabel?> _keyLabels = new Dictionary<Keys, OcrLabel?>
         {
@@ -106,8 +108,6 @@ namespace LeninSearch.Ocr
                 .Where(f => dialog.ImageMatch(int.Parse(new string(Path.GetFileNameWithoutExtension(f).Where(char.IsNumber).ToArray()))))
                 .ToList();
 
-            var lineService = new YandexVisionOcrLineService();
-
             _ocrData.Pages = new List<OcrPage>();
 
             var sw = new Stopwatch(); sw.Start();
@@ -120,7 +120,7 @@ namespace LeninSearch.Ocr
             {
                 var imageFile = imageFiles[i];
 
-                var result = await lineService.GetOcrPageAsync(imageFile);
+                var result = await _ocrService.GetOcrPageAsync(imageFile);
                 if (!result.Success)
                 {
                     MessageBox.Show(result.Error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -271,7 +271,7 @@ namespace LeninSearch.Ocr
 
         private void PictureBox1OnMouseDown(object sender, MouseEventArgs e)
         {
-            if (_displayPages && pictureBox1.Image != null)
+            if (pictureBox1.Image != null)
             {
                 if (e.Button == MouseButtons.Right)
                 {
@@ -336,37 +336,53 @@ namespace LeninSearch.Ocr
 
         private void PictureBox1OnMouseUp(object sender, MouseEventArgs e)
         {
-            if (_displayPages)
+            var fileName = ocr_lb.SelectedItem as string;
+            if (fileName == null) return;
+            var page = _ocrData.GetPage(fileName);
+            if (page == null) return;
+
+            if (e.Button == MouseButtons.Right && _selectionStartPoint != null)
             {
-                if (e.Button == MouseButtons.Right && _selectionStartPoint != null)
-                {
-                    var xs = new List<int> { _selectionStartPoint.Value.X, e.Location.X }.OrderBy(i => i).ToList();
-                    var ys = new List<int> { _selectionStartPoint.Value.Y, e.Location.Y }.OrderBy(i => i).ToList();
-                    var rect = new Rectangle(xs[0], ys[0], xs[1] - xs[0], ys[1] - ys[0]);
-                    var menu = new ContextMenuStrip();
-                    menu.Items.Add("PStart", null, (o, a) => SetLabelForIntersectingLines(rect, OcrLabel.PStart));
-                    menu.Items.Add("PMiddle", null, (o, a) => SetLabelForIntersectingLines(rect, OcrLabel.PMiddle));
-                    menu.Items.Add("PEnd", null, (o, a) => SetLabelForIntersectingLines(rect, OcrLabel.PEnd));
-                    menu.Items.Add("Comment", null, (o, a) => SetLabelForIntersectingLines(rect, OcrLabel.Comment));
-                    menu.Items.Add("Title", null, (o, a) => SetLabelForIntersectingLines(rect, OcrLabel.Title));
-                    menu.Items.Add("Image", null, (o, a) => SetLabelForIntersectingLines(rect, OcrLabel.Image));
-                    menu.Items.Add("Garbage", null, (o, a) => SetLabelForIntersectingLines(rect, OcrLabel.Garbage));
-                    menu.Items.Add("None", null, (o, a) => SetLabelForIntersectingLines(rect, null));
-                    menu.Items.Add(new ToolStripSeparator());
-                    menu.Items.Add("Set Top Divider", null, (o, a) => SetTopDivider(rect));
-                    menu.Items.Add("Set Bottom Divider", null, (o, a) => SetBottomDivider(rect));
-                    menu.Items.Add(new ToolStripSeparator());
-                    menu.Items.Add("Add Image Block", null, (o, a) => AddImageBlock(rect));
-                    menu.Items.Add("Remove Image Block", null, (o, a) => RemoveImageBlock(rect));
+                var xs = new List<int> { _selectionStartPoint.Value.X, e.Location.X }.OrderBy(i => i).ToList();
+                var ys = new List<int> { _selectionStartPoint.Value.Y, e.Location.Y }.OrderBy(i => i).ToList();
+                var rect = new Rectangle(xs[0], ys[0], xs[1] - xs[0], ys[1] - ys[0]);
+                var menu = new ContextMenuStrip();
+                menu.Items.Add("PStart", null, (o, a) => SetLabelForIntersectingLines(rect, OcrLabel.PStart));
+                menu.Items.Add("PMiddle", null, (o, a) => SetLabelForIntersectingLines(rect, OcrLabel.PMiddle));
+                menu.Items.Add("PEnd", null, (o, a) => SetLabelForIntersectingLines(rect, OcrLabel.PEnd));
+                menu.Items.Add("Comment", null, (o, a) => SetLabelForIntersectingLines(rect, OcrLabel.Comment));
+                menu.Items.Add("Title", null, (o, a) => SetLabelForIntersectingLines(rect, OcrLabel.Title));
+                menu.Items.Add("Image", null, (o, a) => SetLabelForIntersectingLines(rect, OcrLabel.Image));
+                menu.Items.Add("Garbage", null, (o, a) => SetLabelForIntersectingLines(rect, OcrLabel.Garbage));
+                menu.Items.Add("None", null, (o, a) => SetLabelForIntersectingLines(rect, null));
+                menu.Items.Add(new ToolStripSeparator());
+                menu.Items.Add("Set Top Divider", null, (o, a) => SetTopDivider(rect));
+                menu.Items.Add("Set Bottom Divider", null, (o, a) => SetBottomDivider(rect));
+                menu.Items.Add("Merge Lines", null, (o, a) => MergeLines(rect));
 
-                    menu.Show(pictureBox1, e.Location);
-                    _selectionStartPoint = null;
+                var commentLines = page.Lines.Where(l => l.Label == OcrLabel.Comment).ToList();
+                if (commentLines.Any())
+                {
+                    var bindWordMenuItem = new ToolStripMenuItem("Bind Word", null);
+                    foreach (var commentLine in commentLines)
+                    {
+                        bindWordMenuItem.DropDownItems.Add($"Comment Line {commentLine.LineIndex}", null,
+                            (o, a) => BindWordToCommentLine(rect, commentLine.LineIndex));
+                    }
+                    menu.Items.Add(bindWordMenuItem);
                 }
 
-                if (e.Button == MouseButtons.Left)
-                {
-                    _moveImageBlockDragPoint = null;
-                }
+                menu.Items.Add(new ToolStripSeparator());
+                menu.Items.Add("Add Image Block", null, (o, a) => AddImageBlock(rect));
+                menu.Items.Add("Remove Image Block", null, (o, a) => RemoveImageBlock(rect));
+
+                menu.Show(pictureBox1, e.Location);
+                _selectionStartPoint = null;
+            }
+
+            if (e.Button == MouseButtons.Left)
+            {
+                _moveImageBlockDragPoint = null;
             }
         }
 
@@ -529,7 +545,6 @@ namespace LeninSearch.Ocr
                 ocr_lb.Items.Add(fileName);
             }
 
-            _displayPages = true;
         }
 
         private void OcrLbOnKeyDown(object sender, KeyEventArgs e)
@@ -538,18 +553,8 @@ namespace LeninSearch.Ocr
 
             var label = _keyLabels[e.KeyCode];
 
-            if (_displayPages)
-            {
-                _mouseLeftLabel = label;
-                SetLabelPanelSelected(label);
-            }
-            else
-            {
-                var row = ocr_lb.SelectedItem as OcrLine;
-                if (row == null) return;
-                row.Label = label;
-                ocr_lb.Items[ocr_lb.SelectedIndex] = row;
-            }
+            _mouseLeftLabel = label;
+            SetLabelPanelSelected(label);
         }
 
         private void SetLabelPanelSelected(OcrLabel? label)
@@ -601,6 +606,8 @@ namespace LeninSearch.Ocr
                 {
                     using var g = Graphics.FromImage(image);
                     using var dividerPen = new Pen(Color.DarkViolet, 2);
+                    using var textBrush = new SolidBrush(Color.DarkViolet);
+                    using var commentLinePen = new Pen(OcrPalette.GetColor(OcrLabel.Comment), 1);
 
                     g.DrawLine(dividerPen, 10, page.TopDivider.Y, image.Width - 10, page.TopDivider.Y);
                     g.DrawLine(dividerPen, 10, page.BottomDivider.Y, image.Width - 10, page.BottomDivider.Y);
@@ -613,9 +620,28 @@ namespace LeninSearch.Ocr
                         using var pen = GetPen(line);
                         g.DrawRectangle(pen, line.Rectangle);
 
-                        using var textBrush = new SolidBrush(Color.DarkViolet);
                         var font = new Font(Font.FontFamily, 12, FontStyle.Bold);
                         g.DrawString(line.LineIndex.ToString(), font, textBrush, line.BottomRightX + 1, line.TopLeftY);
+
+                        if (line.Words != null)
+                        {
+                            foreach (var word in line.Words)
+                            {
+                                if (word.CommentLineIndex == null) continue;
+
+                                var commentLine = page.Lines[word.CommentLineIndex.Value];
+
+                                var verticalMinY = word.BottomRightY;
+                                var verticalMaxY = commentLine.TopLeftY;
+                                var verticalX = (word.BottomRightX + word.TopLeftX) / 2;
+                                g.DrawLine(commentLinePen, verticalX, verticalMinY, verticalX, verticalMaxY);
+
+                                var horizontalMinX = word.TopLeftX;
+                                var horizontalMaxX = word.BottomRightX;
+                                var horizontalY = word.BottomRightY;
+                                g.DrawLine(commentLinePen, horizontalMinX, horizontalY, horizontalMaxX, horizontalY);
+                            }
+                        }
                     }
                 }
                 pictureBox1.Image = image;
@@ -625,6 +651,43 @@ namespace LeninSearch.Ocr
                 Debug.WriteLine(exc);
                 throw;
             }
+        }
+
+        private void MergeLines(Rectangle pbRectangle)
+        {
+            var filename = ocr_lb.SelectedItem as string;
+            if (filename == null) return;
+            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
+            var page = _ocrData.GetPage(filename);
+            if (page == null) return;
+
+            var intersectingLines = page.Lines.Where(l => l.Rectangle.IntersectsWith(originalRect)).ToList();
+
+            if (intersectingLines.Count < 2) return;
+
+            page.MergeLines(intersectingLines[0], intersectingLines.Skip(1).ToArray());
+
+            ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
+        }
+
+        private void BindWordToCommentLine(Rectangle pbRectangle, int commentLineIndex)
+        {
+            var filename = ocr_lb.SelectedItem as string;
+            if (filename == null) return;
+            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
+            var page = _ocrData.GetPage(filename);
+            if (page == null) return;
+
+            var intersectingLine = page.Lines.FirstOrDefault(l => l.Rectangle.IntersectsWith(originalRect));
+
+            var word = intersectingLine?.Words?.FirstOrDefault(w => w.Rectangle.IntersectsWith(originalRect));
+
+            if (word != null)
+            {
+                word.CommentLineIndex = commentLineIndex;
+            }
+
+            ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
         }
 
         private Pen GetPen(OcrLine line)
