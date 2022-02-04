@@ -363,16 +363,14 @@ namespace LeninSearch.Ocr
                 menu.Items.Add("Merge Lines", null, (o, a) => MergeLines(rect));
 
                 var commentLines = page.Lines.Where(l => l.Label == OcrLabel.Comment).ToList();
-                if (commentLines.Any())
+                var bindWordMenuItem = new ToolStripMenuItem("Bind Word", null);
+                bindWordMenuItem.DropDownItems.Add("None", null, (o, a) => BindWordToCommentLine(rect, null));
+                foreach (var commentLine in commentLines)
                 {
-                    var bindWordMenuItem = new ToolStripMenuItem("Bind Word", null);
-                    foreach (var commentLine in commentLines)
-                    {
-                        bindWordMenuItem.DropDownItems.Add($"Comment Line {commentLine.LineIndex}", null,
-                            (o, a) => BindWordToCommentLine(rect, commentLine.LineIndex));
-                    }
-                    menu.Items.Add(bindWordMenuItem);
+                    bindWordMenuItem.DropDownItems.Add($"Comment Line {commentLine.LineIndex}", null,
+                        (o, a) => BindWordToCommentLine(rect, commentLine.LineIndex));
                 }
+                menu.Items.Add(bindWordMenuItem);
 
                 menu.Items.Add(new ToolStripSeparator());
                 menu.Items.Add("Add Image Block", null, (o, a) => AddImageBlock(rect));
@@ -732,7 +730,7 @@ namespace LeninSearch.Ocr
             ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
         }
 
-        private void BindWordToCommentLine(Rectangle pbRectangle, int commentLineIndex)
+        private void BindWordToCommentLine(Rectangle pbRectangle, int? commentLineIndex)
         {
             var filename = ocr_lb.SelectedItem as string;
             if (filename == null) return;
