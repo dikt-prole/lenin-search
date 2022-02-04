@@ -438,19 +438,19 @@ namespace LeninSearch.Ocr
 
             var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
 
-            var divider = new DividerLine(originalRect.Y, 10, pictureBox1.Image.Width - 10);
-
             var page = _ocrData.GetPage(fileName);
 
             if (page == null) return;
 
-            page.TopDivider = divider;
+            page.TopDivider = new DividerLine(originalRect.Y, 10, pictureBox1.Image.Width - 10);
 
             foreach (var line in page.Lines)
             {
                 if (line.Features == null) continue;
 
-                line.Features.BelowTopDivider = line.TopLeftY > divider.Y ? 1 : 0;
+                line.Features.BelowTopDivider = line.TopLeftY > page.TopDivider.Y ? 1 : 0;
+
+                if (line.Features.BelowTopDivider == 0) line.Label = OcrLabel.Garbage;
             }
 
             ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
@@ -464,29 +464,21 @@ namespace LeninSearch.Ocr
 
             var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
 
-            var divider = new DividerLine(originalRect.Y, 10, pictureBox1.Image.Width - 10);
-
             var page = _ocrData.GetPage(fileName);
 
             if (page == null) return;
 
-            page.BottomDivider = divider;
+            page.BottomDivider = new DividerLine(originalRect.Y, 10, pictureBox1.Image.Width - 10); ;
 
             foreach (var line in page.Lines)
             {
                 if (line.Features == null) continue;
 
-                line.Features.AboveBottomDivider = line.TopLeftY < divider.Y ? 1 : 0;
-            }
+                line.Features.AboveBottomDivider = line.TopLeftY < page.BottomDivider.Y ? 1 : 0;
 
-            foreach (var line in page.Lines.Where(l => l.Features?.AboveBottomDivider == 1 && l.Label == OcrLabel.Comment))
-            {
-                line.Label = null;
-            }
+                if (line.Features.AboveBottomDivider == 1 && line.Label == OcrLabel.Comment) line.Label = null;
 
-            foreach (var line in page.Lines.Where(l => l.Features?.AboveBottomDivider == 0))
-            {
-                line.Label = OcrLabel.Comment;
+                if (line.Features.AboveBottomDivider == 0 && line.Label == null) line.Label = OcrLabel.Comment;
             }
 
             ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
