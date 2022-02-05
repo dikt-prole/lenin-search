@@ -1,50 +1,47 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using System.Drawing.Text;
+using Newtonsoft.Json;
 using System.Linq;
+using System.Reflection;
+using Emgu.CV.Aruco;
 
 namespace LeninSearch.Ocr.Model
 {
     public class OcrLineFeatures
     {
-        public int LeftIndent { get; set; }
-        public int RightIndent { get; set; }
-        public int BottomIndent { get; set; }
-        public int TopIndent { get; set; }
-        public int BelowTopDivider { get; set; }
-        public int AboveBottomDivider { get; set; }
+        private static readonly char[] Symbols = new[] {'.', '?', '!', ':'};
+
+        public double LeftIndent { get; set; }
+        public double RightIndent { get; set; }
+        public double BottomIndent { get; set; }
+        public double TopIndent { get; set; }
+        public double BelowTopDivider { get; set; }
+        public double AboveBottomDivider { get; set; }
         public double PixelsPerSymbol { get; set; }
-        public int Width { get; set; }
-        public int Height { get; set; }
+        public double Width { get; set; }
+        public double Height { get; set; }
         public double WidthToHeightRatio { get; set; }
-        public int WordCount { get; set; }
-        public int SymbolCount { get; set; }
-        public int SameYCount { get; set; }
-        public int ImageIndex { get; set; }
-        public int StartsWithCapital { get; set; }
-        public int EndsWithSymbol { get; set; }
+        public double WordCount { get; set; }
+        public double SymbolCount { get; set; }
+        public double SameYCount { get; set; }
+        public double ImageIndex { get; set; }
+        public double StartsWithCapital { get; set; }
+        public double EndsWithSymbol { get; set; }
 
-        public double[] ToFeatureRow()
+        public double[] ToFeatureRow(Dictionary<string, bool> rowModel)
         {
-            return new double[]
+            var props = typeof(OcrLineFeatures).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+            var rowValues = new List<double>();
+            foreach (var propName in rowModel.Keys)
             {
-                LeftIndent,
-                RightIndent,
-                BottomIndent,
-                TopIndent,
-                BelowTopDivider,
-                AboveBottomDivider,
-                Width,
-                Height,
-                WidthToHeightRatio,
+                if (!rowModel[propName]) continue;
 
-                PixelsPerSymbol,
-                WordCount,
-                SymbolCount,
-                SameYCount,
-                StartsWithCapital,
-                EndsWithSymbol,
+                var prop = props.First(p => p.Name == propName);
 
-                ImageIndex
-            };
+                rowValues.Add((double)prop.GetValue(this));
+            }
+
+            return rowValues.ToArray();
         }
 
         public OcrLineFeatures Copy()
@@ -78,11 +75,23 @@ namespace LeninSearch.Ocr.Model
                 WordCount = line.Words.Count,
                 SymbolCount = lineText.Length,
                 StartsWithCapital = char.IsUpper(lineText[0]) ? 1 : 0,
-                EndsWithSymbol = char.IsSymbol(lastChar) ? 1 : 0,
+                EndsWithSymbol = Symbols.Contains(lastChar) ? 1 : 0,
 
                 // other features
                 ImageIndex = page.ImageIndex
             };
+        }
+
+        public static Dictionary<string, bool> GetDefaultRowModel()
+        {
+            var props = typeof(OcrLineFeatures).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+
+            var rowModel = props.ToDictionary(p => p.Name, p => true);
+
+            rowModel[nameof(EndsWithSymbol)] = false;
+            rowModel[nameof(PixelsPerSymbol)] = false;
+
+            return rowModel;
         }
     }
 }

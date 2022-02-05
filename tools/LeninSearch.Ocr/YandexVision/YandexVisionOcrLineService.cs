@@ -61,14 +61,14 @@ namespace LeninSearch.Ocr.YandexVision
                 Width = image.Width,
                 Height = image.Height,
                 BottomDivider = new DividerLine(image.Height - 1, 0, image.Width),
-                TopDivider = new DividerLine(1, 0, image.Width)
+                TopDivider = new DividerLine(1, 0, image.Width),
+                ImageBlocks = new List<OcrImageBlock>()
             };
 
             if (responseBlocks == null)
             {
                 var featuredLine = new OcrLine
                 {
-                    FileName = Path.GetFileNameWithoutExtension(imageFile),
                     LineIndex = 0,
                     Words = null,
                     TopLeftX = 20,
@@ -98,7 +98,6 @@ namespace LeninSearch.Ocr.YandexVision
                 var bottomRight = responseLine.BoundingBox.BottomRight.Point();
                 var featuredLine = new OcrLine
                 {
-                    FileName = Path.GetFileNameWithoutExtension(imageFile),
                     LineIndex = lineIndex,
                     Words = responseLine.Words.Select(w => w.ToOcrWord()).ToList(),
                     TopLeftX = topLeft.X,
@@ -107,17 +106,20 @@ namespace LeninSearch.Ocr.YandexVision
                     BottomRightY = bottomRight.Y
                 };
 
-                featuredLine.Features = OcrLineFeatures.Calculate(page, featuredLine);
-
-                featuredLine.Label = featuredLine.Features.BelowTopDivider == 0
-                    ? OcrLabel.Garbage
-                    : featuredLine.Features.AboveBottomDivider == 0
-                        ? OcrLabel.Comment
-                        : OcrLabel.PMiddle;
-
                 page.Lines.Add(featuredLine);
 
                 lineIndex++;
+            }
+
+            foreach (var line in page.Lines)
+            {
+                line.Features = OcrLineFeatures.Calculate(page, line);
+
+                line.Label = line.Features.BelowTopDivider == 0
+                    ? OcrLabel.Garbage
+                    : line.Features.AboveBottomDivider == 0
+                        ? OcrLabel.Comment
+                        : OcrLabel.PMiddle;
             }
 
             return (page, true, null);

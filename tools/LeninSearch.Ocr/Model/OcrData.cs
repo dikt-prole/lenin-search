@@ -8,15 +8,9 @@ namespace LeninSearch.Ocr.Model
     public class OcrData
     {
         public List<OcrPage> Pages { get; set; }
-        public List<OcrImageBlock> ImageBlocks { get; set; }
-
         public static OcrData Empty()
         {
-            return new OcrData
-            {
-                Pages = new List<OcrPage>(),
-                ImageBlocks = new List<OcrImageBlock>()
-            };
+            return new OcrData {Pages = new List<OcrPage>()};
         }
 
         public static OcrData Load(string bookFolder)

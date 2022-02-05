@@ -1,5 +1,4 @@
 ﻿using System.Windows.Forms;
-using LeninSearch.Ocr.Model;
 
 namespace LeninSearch.Ocr
 {
@@ -15,6 +14,8 @@ namespace LeninSearch.Ocr
                 DialogResult = DialogResult.OK;
                 Close();
             };
+
+            Shown += (sender, args) => word_tb.Focus();
         }
     }
 }

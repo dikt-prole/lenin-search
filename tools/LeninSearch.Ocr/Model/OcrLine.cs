@@ -8,7 +8,7 @@ namespace LeninSearch.Ocr.Model
 {
     public class OcrLine
     {
-        public string FileName { get; set; }
+        //public string FileName { get; set; }
         public int LineIndex { get; set; }
         public int TopLeftX { get; set; }
         public int TopLeftY { get; set; }
@@ -18,20 +18,9 @@ namespace LeninSearch.Ocr.Model
         public OcrLabel? Label { get; set; }
         public List<OcrWord> Words { get; set; }
         public bool DisplayText { get; set; }
-        public int ImageIndex => int.Parse(new string(FileName).Where(char.IsNumber).ToArray());
 
         public Rectangle Rectangle => new Rectangle(TopLeftX, TopLeftY, BottomRightX - TopLeftX, BottomRightY - TopLeftY);
 
-        public Rectangle PageWideRectangle(int pageWidth)
-        {
-            return new Rectangle(0, TopLeftY, pageWidth, BottomRightY);
-        }
-
-        public override string ToString()
-        {
-            if (Label == null) return $"{FileName}-{LineIndex}";
-
-            return $"{FileName}-{LineIndex} ({Label})";
-        }
+        public Rectangle PageWideRectangle(int pageWidth) => new Rectangle(0, TopLeftY, pageWidth, BottomRightY - TopLeftY);
     }
 }

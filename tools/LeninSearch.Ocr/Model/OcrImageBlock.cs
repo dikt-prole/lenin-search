@@ -5,7 +5,6 @@ namespace LeninSearch.Ocr.Model
     public class OcrImageBlock
     {
         private const int DragPointSize = 20;
-        public string FileName { get; set; }
         public int TopLeftX { get; set; }
         public int TopLeftY { get; set; }
         public int BottomRightX { get; set; }
