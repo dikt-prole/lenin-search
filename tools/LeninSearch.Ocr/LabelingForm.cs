@@ -24,7 +24,11 @@ namespace LeninSearch.Ocr
 
         private OcrLabel? _mouseLeftLabel;
 
-        private readonly IOcrService _ocrService = new IntersectingLineMergerDecorator(new YandexVisionOcrLineService());
+        private readonly IOcrService _ocrService =
+            new FeatureSettingDecorator(
+            new IntersectingLineMergerDecorator(
+            new UncoveredWordsDecorator(
+            new YandexVisionOcrLineService())));
         //private readonly IOcrService _ocrService = new YandexVisionOcrLineService();
 
         private readonly Dictionary<Keys, OcrLabel?> _keyLabels = new Dictionary<Keys, OcrLabel?>
@@ -43,7 +47,7 @@ namespace LeninSearch.Ocr
         {
             InitializeComponent();
 
-            displayPages_btn.Click += DisplayPagesClick;
+            regenerateFeatures_btn.Click += RegenerateFeaturesClick;
 
             ocr_lb.SelectedIndexChanged += OcrLbOnSelectedIndexChanged;
             ocr_lb.KeyDown += OcrLbOnKeyDown;
@@ -100,7 +104,7 @@ namespace LeninSearch.Ocr
 
             if (dialog.ShowDialog() != DialogResult.OK) return;
 
-            var featuredLines = _ocrData.Pages.Where(dialog.PageMatch).SelectMany(p => p.Lines)
+            var featuredLines = _ocrData.Pages.Where(dialog.PageMatch).SelectMany(p => p.NonImageBlockLines)
                 .Where(b => b.Features != null)
                 .ToList();
 
@@ -154,7 +158,7 @@ namespace LeninSearch.Ocr
 
             MessageBox.Show($"Lines generated in {sw.Elapsed}", "Lines", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-            DisplayPagesClick(null, null);
+            RegenerateFeaturesClick(null, null);
 
             ocr_lb.SelectedIndex = 0;
         }
@@ -169,7 +173,17 @@ namespace LeninSearch.Ocr
 
             bookFolder_tb.Text = dialog.SelectedPath;
 
-            DisplayPagesClick(null, null);
+            ocr_lb.Items.Clear();
+
+            var fileNames = GetImageFiles(bookFolder_tb.Text)
+                .Select(Path.GetFileNameWithoutExtension)
+                .OrderBy(f => int.Parse(new string(Path.GetFileNameWithoutExtension(f).Where(char.IsNumber).ToArray())))
+                .ToList();
+
+            foreach (var fileName in fileNames)
+            {
+                ocr_lb.Items.Add(fileName);
+            }
         }
 
         private void TrainModelClick(object? sender, EventArgs e)
@@ -178,7 +192,7 @@ namespace LeninSearch.Ocr
 
             if (dialog.ShowDialog() != DialogResult.OK) return;
 
-            var labeledLines = _ocrData.Pages.Where(dialog.PageMatch).SelectMany(p => p.Lines)
+            var labeledLines = _ocrData.Pages.Where(dialog.PageMatch).SelectMany(p => p.NonImageBlockLines)
                 .Where(r => r.Label.HasValue && r.Features != null)
                 .ToList();
 
@@ -540,19 +554,17 @@ namespace LeninSearch.Ocr
             pictureBox1.Refresh();
         }
 
-        private void DisplayPagesClick(object? sender, EventArgs e)
+        private void RegenerateFeaturesClick(object? sender, EventArgs e)
         {
-            ocr_lb.Items.Clear();
-
-            var fileNames = GetImageFiles(bookFolder_tb.Text)
-                .Select(Path.GetFileNameWithoutExtension)
-                .OrderBy(f => int.Parse(new string(Path.GetFileNameWithoutExtension(f).Where(char.IsNumber).ToArray())))
-                .ToList();
-
-            foreach (var fileName in fileNames)
+            foreach (var page in _ocrData.Pages)
             {
-                ocr_lb.Items.Add(fileName);
+                foreach (var line in page.Lines)
+                {
+                    line.Features = OcrLineFeatures.Calculate(page, line);
+                }
             }
+
+            MessageBox.Show("Features were regenerated", "Features", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void OcrLbOnKeyDown(object sender, KeyEventArgs e)

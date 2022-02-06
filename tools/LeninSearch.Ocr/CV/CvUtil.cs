@@ -5,6 +5,7 @@ using System.Linq;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using Emgu.CV.Util;
 
 namespace LeninSearch.Ocr.CV
 {
@@ -101,17 +102,50 @@ namespace LeninSearch.Ocr.CV
             }
         }
 
-        private static int GetMinDistance(LineSegment2D l1, LineSegment2D l2)
+        public static IEnumerable<Rectangle> GetContourRectangles(string imageFile)
         {
-            var distances = new List<int>
-            {
-                Math.Abs(l1.P1.X - l2.P1.X),
-                Math.Abs(l1.P1.X - l2.P2.X),
-                Math.Abs(l1.P2.X - l2.P2.X),
-                Math.Abs(l1.P2.X - l2.P1.X)
-            };
+            using var image = new Bitmap(Image.FromFile(imageFile));
+            using var bgrImage = image.ToImage<Bgr, byte>();
+            using var invertedGray = bgrImage.Convert<Gray, byte>()
+                .SmoothGaussian(0, 0, 3, 3)
+                .Not()
+                .ThresholdBinary(new Gray(25), new Gray(255));
 
-            return distances.Min();
+            var contours = new VectorOfVectorOfPoint();
+            var hierarchy = new Mat();
+            CvInvoke.FindContours(invertedGray, contours, hierarchy, RetrType.External, ChainApproxMethod.ChainApproxSimple);
+            CvInvoke.DrawContours(bgrImage, contours, -1, new MCvScalar(255, 0, 0));
+
+            var rectangleSource = new List<Rectangle>();
+            for (var i = 0; i < contours.Size; i++)
+            {
+                var points = contours[i].ToArray();
+                var minX = points.Select(p => p.X).Min();
+                var maxX = points.Select(p => p.X).Max();
+                var minY = points.Select(p => p.Y).Min();
+                var maxY = points.Select(p => p.Y).Max();
+
+                var rect = new Rectangle(minX, minY, maxX - minX, maxY - minY);
+                rectangleSource.Add(rect);
+            }
+
+            while (rectangleSource.Any())
+            {
+                var attractor = rectangleSource[0];
+                rectangleSource.Remove(attractor);
+                var attracted = rectangleSource.Where(r => r.IntersectsWith(attractor)).ToList();
+                foreach (var r in attracted) rectangleSource.Remove(r);
+                attracted.Add(attractor);
+
+                var minX = attracted.Select(r => r.X).Min();
+                var maxX = attracted.Select(r => r.X + r.Width).Max();
+                var minY = attracted.Select(r => r.Y).Min();
+                var maxY = attracted.Select(r => r.Y + r.Height).Max();
+
+                var rect = new Rectangle(minX, minY, maxX - minX, maxY - minY);
+
+                if (rect.Width > 0 && rect.Height > 0) yield return rect;
+            }
         }
     }
 }

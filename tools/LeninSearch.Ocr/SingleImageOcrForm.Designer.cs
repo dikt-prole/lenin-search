@@ -34,7 +34,7 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.load_btn = new System.Windows.Forms.Button();
             this.ocr_btn = new System.Windows.Forms.Button();
-            this.lines_btn = new System.Windows.Forms.Button();
+            this.test_btn = new System.Windows.Forms.Button();
             this.file_tb = new System.Windows.Forms.TextBox();
             this.prev_btn = new System.Windows.Forms.Button();
             this.next_btn = new System.Windows.Forms.Button();
@@ -81,7 +81,7 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             this.tableLayoutPanel2.Controls.Add(this.load_btn, 0, 0);
             this.tableLayoutPanel2.Controls.Add(this.ocr_btn, 1, 0);
-            this.tableLayoutPanel2.Controls.Add(this.lines_btn, 2, 0);
+            this.tableLayoutPanel2.Controls.Add(this.test_btn, 2, 0);
             this.tableLayoutPanel2.Controls.Add(this.file_tb, 3, 0);
             this.tableLayoutPanel2.Controls.Add(this.prev_btn, 4, 0);
             this.tableLayoutPanel2.Controls.Add(this.next_btn, 5, 0);
@@ -114,15 +114,15 @@ namespace LeninSearch.Ocr
             this.ocr_btn.Text = "OCR";
             this.ocr_btn.UseVisualStyleBackColor = true;
             // 
-            // lines_btn
+            // test_btn
             // 
-            this.lines_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lines_btn.Location = new System.Drawing.Point(103, 3);
-            this.lines_btn.Name = "lines_btn";
-            this.lines_btn.Size = new System.Drawing.Size(44, 26);
-            this.lines_btn.TabIndex = 2;
-            this.lines_btn.Text = "Lines";
-            this.lines_btn.UseVisualStyleBackColor = true;
+            this.test_btn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.test_btn.Location = new System.Drawing.Point(103, 3);
+            this.test_btn.Name = "test_btn";
+            this.test_btn.Size = new System.Drawing.Size(44, 26);
+            this.test_btn.TabIndex = 2;
+            this.test_btn.Text = "Test";
+            this.test_btn.UseVisualStyleBackColor = true;
             // 
             // file_tb
             // 
@@ -179,7 +179,7 @@ namespace LeninSearch.Ocr
         private System.Windows.Forms.Button load_btn;
         private System.Windows.Forms.Button ocr_btn;
         private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.Button lines_btn;
+        private System.Windows.Forms.Button test_btn;
         private System.Windows.Forms.TextBox file_tb;
         private System.Windows.Forms.Button prev_btn;
         private System.Windows.Forms.Button next_btn;

@@ -14,6 +14,9 @@ using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using Emgu.CV.Util;
+using LeninSearch.Ocr.CV;
+using LeninSearch.Ocr.Service;
 using LeninSearch.Ocr.YandexVision;
 using LeninSearch.Ocr.YandexVision.OcrResponse;
 using Newtonsoft.Json;
@@ -22,15 +25,12 @@ namespace LeninSearch.Ocr
 {
     public partial class SingleImageOcrForm : Form
     {
-        private string _iamToken;
-        private readonly HttpClient _httpClient = new HttpClient();
-
         public SingleImageOcrForm()
         {
             InitializeComponent();
             load_btn.Click += Load_btnOnClick;
             ocr_btn.Click += Ocr_btnOnClick;
-            lines_btn.Click += Lines_btnOnClick;
+            test_btn.Click += TestClick;
             prev_btn.Click += Prev_btnOnClick;
             next_btn.Click += Next_btnOnClick;
         }
@@ -69,16 +69,24 @@ namespace LeninSearch.Ocr
             }
         }
 
-        private void Lines_btnOnClick(object? sender, EventArgs e)
+        private void TestClick(object? sender, EventArgs e)
         {
-            return;
+            var rects = CvUtil.GetContourRectangles(file_tb.Text).ToList();
+            var image = new Bitmap(Image.FromFile(file_tb.Text));
+            using var g = Graphics.FromImage(image);
+
+            foreach (var rect in rects) g.DrawRectangle(Pens.Red, rect);
+
+            pictureBox1.Image = image;
         }
 
         private async void Ocr_btnOnClick(object? sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(file_tb.Text)) return;
 
-            var lineService = new YandexVisionOcrLineService();
+            IOcrService lineService = new YandexVisionOcrLineService();
+            lineService = new UncoveredWordsDecorator(lineService);
+            lineService = new IntersectingLineMergerDecorator(lineService);
 
             var ocrResult = await lineService.GetOcrPageAsync(file_tb.Text);
             var page = ocrResult.Page;
@@ -87,17 +95,12 @@ namespace LeninSearch.Ocr
             var image = new Bitmap(Image.FromFile(file_tb.Text));
             using var g = Graphics.FromImage(image);
 
+            var color = Color.FromArgb(100, Color.Red);
+            using var brush = new SolidBrush(color);
             foreach (var line in page.Lines)
             {
-                g.DrawLine(Pens.Red, 0, line.TopLeftY, image.Width, line.TopLeftY);
-                g.DrawLine(Pens.Red, 0, line.BottomRightY, image.Width, line.BottomRightY);
+                g.FillRectangle(brush, line.Rectangle);
             }
-
-            using var pen = new Pen(Color.DarkViolet, 4);
-
-            g.DrawLine(pen, page.BottomDivider.LeftX, page.BottomDivider.Y, page.BottomDivider.RightX, page.BottomDivider.Y);
-            g.DrawLine(pen, page.TopDivider.LeftX, page.TopDivider.Y, page.TopDivider.RightX, page.TopDivider.Y);
-
 
             pictureBox1.Image = image;
         }
@@ -130,24 +133,6 @@ namespace LeninSearch.Ocr
             file_tb.Text = dialog.FileName;
 
             pictureBox1.Image = Image.FromFile(file_tb.Text);
-        }
-
-        private void RefreshIamToken()
-        {
-            var process = new Process
-            {
-                StartInfo =
-                {
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    FileName = @"C:\Users\vbncmx\yandex-cloud\bin\yc.exe",
-                    Arguments = "iam create-token",
-                    CreateNoWindow = true
-                }
-            };
-            process.Start();
-            _iamToken = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
         }
     }
 }

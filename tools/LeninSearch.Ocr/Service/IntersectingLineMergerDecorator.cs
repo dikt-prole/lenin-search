@@ -24,7 +24,8 @@ namespace LeninSearch.Ocr.Service
             for (var i = 0; i < page.Lines.Count; i++)
             {
                 var attractorLine = page.Lines[i];
-                var attractedLines = page.Lines.Skip(i + 1).Where(l => l.Rectangle.IntersectsWith(attractorLine.Rectangle)).ToArray();
+                var attractorPageWideRectangle = attractorLine.PageWideRectangle(page.Width);
+                var attractedLines = page.Lines.Skip(i + 1).Where(l => l.Rectangle.IntersectsWith(attractorPageWideRectangle)).ToArray();
                 if (attractedLines.Any())
                 {
                     page.MergeLines(attractorLine, attractedLines);

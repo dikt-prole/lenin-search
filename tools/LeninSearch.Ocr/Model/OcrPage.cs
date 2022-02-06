@@ -16,6 +16,8 @@ namespace LeninSearch.Ocr.Model
         public int Height { get; set; }
         public List<OcrImageBlock> ImageBlocks { get; set; }
         public int ImageIndex => int.Parse(new string(Filename.Where(char.IsNumber).ToArray()));
+        public List<OcrLine> NonImageBlockLines => Lines.Where(l =>
+            ImageBlocks == null || ImageBlocks.All(ib => !ib.Rectangle.IntersectsWith(l.Rectangle))).ToList();
 
         public void MergeLines(OcrLine intoLine, params OcrLine[] mergeLines)
         {

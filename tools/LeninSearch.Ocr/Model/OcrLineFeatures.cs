@@ -53,8 +53,9 @@ namespace LeninSearch.Ocr.Model
         {
             var lineRectangle = line.Rectangle;
             var pageWideRectangle = line.PageWideRectangle(page.Width);
-            var lineText = string.Join(" ", line.Words.Select(w => w.Text));
-            var lastChar = lineText.Last();
+            var lineText = line.Words?.Any() == true
+                ? string.Join(" ", line.Words.Select(w => w.Text))
+                : null;
             return new OcrLineFeatures
             {
                 // geometric features
@@ -71,11 +72,17 @@ namespace LeninSearch.Ocr.Model
                 WidthToHeightRatio = 1.0 * lineRectangle.Width / lineRectangle.Height,
 
                 // text features
-                PixelsPerSymbol = 1.0 * (line.BottomRightX - line.TopLeftX) / lineText.Length,
-                WordCount = line.Words.Count,
-                SymbolCount = lineText.Length,
-                StartsWithCapital = char.IsUpper(lineText[0]) ? 1 : 0,
-                EndsWithSymbol = Symbols.Contains(lastChar) ? 1 : 0,
+                PixelsPerSymbol = lineText == null
+                    ? 0
+                    : 1.0 * (line.BottomRightX - line.TopLeftX) / lineText.Length,
+                WordCount = line.Words?.Count ?? 0,
+                SymbolCount = lineText?.Length ?? 0,
+                StartsWithCapital = lineText == null 
+                    ? 0 
+                    : char.IsUpper(lineText[0]) ? 1 : 0,
+                EndsWithSymbol = lineText == null
+                    ? 0
+                    : Symbols.Contains(lineText.Last()) ? 1 : 0,
 
                 // other features
                 ImageIndex = page.ImageIndex

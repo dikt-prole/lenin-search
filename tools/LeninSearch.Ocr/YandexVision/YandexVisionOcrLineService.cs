@@ -111,17 +111,6 @@ namespace LeninSearch.Ocr.YandexVision
                 lineIndex++;
             }
 
-            foreach (var line in page.Lines)
-            {
-                line.Features = OcrLineFeatures.Calculate(page, line);
-
-                line.Label = line.Features.BelowTopDivider == 0
-                    ? OcrLabel.Garbage
-                    : line.Features.AboveBottomDivider == 0
-                        ? OcrLabel.Comment
-                        : OcrLabel.PMiddle;
-            }
-
             return (page, true, null);
         }
     }

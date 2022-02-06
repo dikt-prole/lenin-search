@@ -52,7 +52,7 @@ namespace LeninSearch.Ocr
             this.label8 = new System.Windows.Forms.Label();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.openBookFolder_btn = new System.Windows.Forms.Button();
-            this.displayPages_btn = new System.Windows.Forms.Button();
+            this.regenerateFeatures_btn = new System.Windows.Forms.Button();
             this.generateLines_btn = new System.Windows.Forms.Button();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.bookFolder_tb = new System.Windows.Forms.TextBox();
@@ -326,7 +326,7 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33F));
             this.tableLayoutPanel1.Controls.Add(this.openBookFolder_btn, 2, 0);
-            this.tableLayoutPanel1.Controls.Add(this.displayPages_btn, 2, 2);
+            this.tableLayoutPanel1.Controls.Add(this.regenerateFeatures_btn, 2, 2);
             this.tableLayoutPanel1.Controls.Add(this.generateLines_btn, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.progressBar1, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.bookFolder_tb, 0, 0);
@@ -360,15 +360,15 @@ namespace LeninSearch.Ocr
             this.openBookFolder_btn.Text = "Open book folder";
             this.openBookFolder_btn.UseVisualStyleBackColor = true;
             // 
-            // displayPages_btn
+            // regenerateFeatures_btn
             // 
-            this.displayPages_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.displayPages_btn.Location = new System.Drawing.Point(266, 41);
-            this.displayPages_btn.Name = "displayPages_btn";
-            this.displayPages_btn.Size = new System.Drawing.Size(125, 22);
-            this.displayPages_btn.TabIndex = 2;
-            this.displayPages_btn.Text = "Display Pages";
-            this.displayPages_btn.UseVisualStyleBackColor = true;
+            this.regenerateFeatures_btn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.regenerateFeatures_btn.Location = new System.Drawing.Point(266, 41);
+            this.regenerateFeatures_btn.Name = "regenerateFeatures_btn";
+            this.regenerateFeatures_btn.Size = new System.Drawing.Size(125, 22);
+            this.regenerateFeatures_btn.TabIndex = 2;
+            this.regenerateFeatures_btn.Text = "Regenerate Features";
+            this.regenerateFeatures_btn.UseVisualStyleBackColor = true;
             // 
             // generateLines_btn
             // 
@@ -489,7 +489,7 @@ namespace LeninSearch.Ocr
         private System.Windows.Forms.TextBox bookFolder_tb;
         private System.Windows.Forms.Button openBookFolder_btn;
         private System.Windows.Forms.Button generateLines_btn;
-        private System.Windows.Forms.Button displayPages_btn;
+        private System.Windows.Forms.Button regenerateFeatures_btn;
         private System.Windows.Forms.Button saveOcrData_btn;
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
