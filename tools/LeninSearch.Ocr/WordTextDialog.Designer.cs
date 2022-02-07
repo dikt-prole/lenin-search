@@ -1,7 +1,7 @@
 ﻿
 namespace LeninSearch.Ocr
 {
-    partial class AddWordDialog
+    partial class WordTextDialog
     {
         /// <summary>
         /// Required designer variable.
@@ -78,7 +78,7 @@ namespace LeninSearch.Ocr
             this.Controls.Add(this.tableLayoutPanel1);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "AddWordDialog";
+            this.Name = "WordTextDialog";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Add Word";
             this.tableLayoutPanel1.ResumeLayout(false);

@@ -29,7 +29,8 @@ namespace LeninSearch.Ocr.CV
 
             dividerLines = dividerLines.Where(dl => falseAreas.All(fa => !fa.Match(dl))).OrderByDescending(l => l.Length).ToList();
 
-            return dividerLines.FirstOrDefault() ?? new DividerLine(image.Height, 0, image.Width);
+            var bottomDividerY = dividerLines.FirstOrDefault()?.Y ?? image.Height - 40;
+            return new DividerLine(bottomDividerY, 20, image.Width - 20);
         }
 
         public static DividerLine GetTopDivider(string imageFile, List<FalseDividerArea> falseAreas)
@@ -50,7 +51,8 @@ namespace LeninSearch.Ocr.CV
 
             dividerLines = dividerLines.Where(dl => falseAreas.All(fa => !fa.Match(dl))).OrderByDescending(l => l.Length).ToList();
 
-            return dividerLines.FirstOrDefault() ?? new DividerLine(0, 0, image.Width);
+            var topDividerY = dividerLines.FirstOrDefault()?.Y ?? 40;
+            return new DividerLine(topDividerY, 20, image.Width - 20);
         }
 
         public static IEnumerable<DividerLine> GetAllDividerLines(Image<Bgr, Byte> bgrImage)
