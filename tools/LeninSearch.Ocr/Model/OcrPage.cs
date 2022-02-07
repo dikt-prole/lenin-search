@@ -45,5 +45,12 @@ namespace LeninSearch.Ocr.Model
         {
             return Lines.Where(l => l.Rectangle.IntersectsWith(rect)).ToList();
         }
+
+        public void ReindexLines()
+        {
+            if (Lines == null) return;
+
+            for (var i = 0; i < Lines.Count; i++) Lines[i].LineIndex = i;
+        }
     }
 }

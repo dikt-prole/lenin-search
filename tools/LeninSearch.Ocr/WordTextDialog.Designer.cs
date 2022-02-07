@@ -70,7 +70,7 @@ namespace LeninSearch.Ocr
             this.word_tb.Size = new System.Drawing.Size(270, 23);
             this.word_tb.TabIndex = 2;
             // 
-            // AddWordDialog
+            // WordTextDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -80,7 +80,7 @@ namespace LeninSearch.Ocr
             this.MinimizeBox = false;
             this.Name = "WordTextDialog";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Add Word";
+            this.Text = "Word Text";
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);

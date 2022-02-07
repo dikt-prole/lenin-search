@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Accord.MachineLearning.DecisionTrees;
+using Accord.Statistics.Kernels;
 using LeninSearch.Ocr.Model;
 using LeninSearch.Ocr.Service;
 using LeninSearch.Ocr.YandexVision;
@@ -342,7 +343,7 @@ namespace LeninSearch.Ocr
                 var xs = new List<int> { _selectionStartPoint.Value.X, e.Location.X }.OrderBy(i => i).ToList();
                 var ys = new List<int> { _selectionStartPoint.Value.Y, e.Location.Y }.OrderBy(i => i).ToList();
                 var rect = new Rectangle(xs[0], ys[0], xs[1] - xs[0], ys[1] - ys[0]);
-                var menu = ConstructPageMenu(page, rect);
+                var menu = GetPageMenu(page, rect);
                 menu.Show(pictureBox1, e.Location);
                 _selectionStartPoint = null;
             }
@@ -361,7 +362,7 @@ namespace LeninSearch.Ocr
             }
         }
 
-        private ContextMenuStrip ConstructPageMenu(OcrPage page, Rectangle rect)
+        private ContextMenuStrip GetPageMenu(OcrPage page, Rectangle rect)
         {
             var menu = new ContextMenuStrip();
 
@@ -381,11 +382,13 @@ namespace LeninSearch.Ocr
             // 2. editing section
             if (editing_rb.Checked || all_rb.Checked)
             {
-                menu.Items.Add("Show Line Text", null, (o, a) => SetDisplayText(rect, true));
-                menu.Items.Add("Hide Line Text", null, (o, a) => SetDisplayText(rect, false));
-                menu.Items.Add("Show Features", null, (o, a) => ShowLineFeatures(rect));
+                menu.Items.Add("Line Text Show/Hide", null, (o, a) => SwitchDisplayText(rect));
+                menu.Items.Add("Break Into Words", null, (o, a) => BreakIntoWords(rect));
                 menu.Items.Add("Merge Lines", null, (o, a) => MergeLines(rect));
                 menu.Items.Add("Add Word", null, (o, a) => AddWord(rect));
+                menu.Items.Add("Set Word Text", null, (o, a) => SetWordText(rect));
+                menu.Items.Add("Remove Line", null, (o, a) => RemoveLine(rect));
+                menu.Items.Add("Show Features", null, (o, a) => ShowLineFeatures(rect));
                 var commentLines = page.Lines.Where(l => l.Label == OcrLabel.Comment).ToList();
                 var bindWordMenuItem = new ToolStripMenuItem("Bind Word", null);
                 bindWordMenuItem.DropDownItems.Add("None", null, (o, a) => BindWordToCommentLine(rect, null));
@@ -508,7 +511,7 @@ namespace LeninSearch.Ocr
             ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
         }
 
-        private void SetDisplayText(Rectangle pbRectangle, bool displayText)
+        private void SwitchDisplayText(Rectangle pbRectangle)
         {
             var fileName = ocr_lb.SelectedItem as string;
             if (fileName == null) return;
@@ -516,7 +519,7 @@ namespace LeninSearch.Ocr
             if (page == null) return;
             var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
 
-            foreach (var line in page.GetIntersectingLines(originalRect)) line.DisplayText = displayText;
+            foreach (var line in page.GetIntersectingLines(originalRect)) line.DisplayText = !line.DisplayText;
 
             ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
         }
@@ -747,6 +750,91 @@ namespace LeninSearch.Ocr
             dialog.SetFeatures(intersectingLine.Features);
 
             dialog.ShowDialog();
+        }
+
+        private void BreakIntoWords(Rectangle pbRectangle)
+        {
+            var filename = ocr_lb.SelectedItem as string;
+            if (filename == null) return;
+            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
+            var page = _ocrData.GetPage(filename);
+            if (page == null) return;
+
+            var intersectingLine = page.Lines.FirstOrDefault(l => l.Rectangle.IntersectsWith(originalRect));
+
+            if (intersectingLine?.Words?.Any() != true) return;
+
+            var lineIndex = page.Lines.IndexOf(intersectingLine);
+
+            page.Lines.Remove(intersectingLine);
+
+            var wordLines = new List<OcrLine>();
+            foreach (var word in intersectingLine.Words)
+            {
+                var wordLine = new OcrLine
+                {
+                    TopLeftX = word.TopLeftX,
+                    TopLeftY = word.TopLeftY,
+                    BottomRightX = word.BottomRightX,
+                    BottomRightY = word.BottomRightY,
+                    DisplayText = true,
+                    Words = new List<OcrWord> { word },
+                    Label = intersectingLine.Label
+                };
+                wordLine.Features = OcrLineFeatures.Calculate(page, wordLine);
+                wordLines.Add(wordLine);
+            }
+
+            page.Lines.InsertRange(lineIndex, wordLines);
+
+            page.ReindexLines();
+
+            ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
+        }
+
+        private void SetWordText(Rectangle pbRectangle)
+        {
+            var filename = ocr_lb.SelectedItem as string;
+            if (filename == null) return;
+            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
+            var page = _ocrData.GetPage(filename);
+            if (page == null) return;
+
+            var intersectingLine = page.Lines.FirstOrDefault(l => l.Rectangle.IntersectsWith(originalRect));
+
+            if (intersectingLine?.Words?.Any() != true) return;
+
+            var intersectingWord = intersectingLine.Words.FirstOrDefault(w => w.Rectangle.IntersectsWith(originalRect));
+
+            if (intersectingWord == null) return;
+
+            var dialog = new WordTextDialog();
+
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+
+            intersectingWord.Text = dialog.WordText;
+            intersectingLine.DisplayText = true;
+
+            ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
+        }
+
+        private void RemoveLine(Rectangle pbRectangle)
+        {
+            var filename = ocr_lb.SelectedItem as string;
+            if (filename == null) return;
+            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
+            var page = _ocrData.GetPage(filename);
+            if (page == null) return;
+
+            var intersectingLine = page.Lines.FirstOrDefault(l => l.Rectangle.IntersectsWith(originalRect));
+
+            if (intersectingLine == null) return;
+
+            page.Lines.Remove(intersectingLine);
+
+            page.ReindexLines();
+
+            ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
         }
 
         private Pen GetPen(OcrLine line)
