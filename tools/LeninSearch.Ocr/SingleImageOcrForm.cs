@@ -84,8 +84,8 @@ namespace LeninSearch.Ocr
         {
             if (string.IsNullOrEmpty(file_tb.Text)) return;
 
-            IOcrService lineService = new YandexVisionOcrLineService();
-            lineService = new UncoveredWordsDecorator(lineService);
+            IOcrService lineService = new YandexVisionOcrLineService(); 
+            lineService = new UncoveredContourDecorator(uc => { }, lineService);
             lineService = new IntersectingLineMergerDecorator(lineService);
 
             var ocrResult = await lineService.GetOcrPageAsync(file_tb.Text);

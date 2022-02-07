@@ -24,12 +24,9 @@ namespace LeninSearch.Ocr
 
         private OcrLabel? _mouseLeftLabel;
 
-        private readonly IOcrService _ocrService =
-            new FeatureSettingDecorator(
-            new IntersectingLineMergerDecorator(
-            new UncoveredWordsDecorator(
-            new YandexVisionOcrLineService())));
-        //private readonly IOcrService _ocrService = new YandexVisionOcrLineService();
+        private readonly List<UncoveredContour> _uncoveredContours = new List<UncoveredContour>();
+
+        private readonly IOcrService _ocrService;
 
         private readonly Dictionary<Keys, OcrLabel?> _keyLabels = new Dictionary<Keys, OcrLabel?>
         {
@@ -85,6 +82,12 @@ namespace LeninSearch.Ocr
                 };
                 rowModel_flp.Controls.Add(propCheckbox);
             }
+
+            _ocrService =
+                new FeatureSettingDecorator(
+                    new IntersectingLineMergerDecorator(
+                        new UncoveredContourDecorator(uc => _uncoveredContours.Add(uc), 
+                            new YandexVisionOcrLineService())));
         }
 
         private Dictionary<string, bool> GetRowModel()
@@ -126,6 +129,8 @@ namespace LeninSearch.Ocr
             var dialog = new ImageScopeDialog();
             if (dialog.ShowDialog() != DialogResult.OK) return;
 
+            _uncoveredContours.Clear();
+
             var imageFiles = GetImageFiles(bookFolder_tb.Text)
                 .Where(f => dialog.ImageMatch(int.Parse(new string(Path.GetFileNameWithoutExtension(f).Where(char.IsNumber).ToArray()))))
                 .ToList();
@@ -158,9 +163,14 @@ namespace LeninSearch.Ocr
 
             MessageBox.Show($"Lines generated in {sw.Elapsed}", "Lines", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-            RegenerateFeaturesClick(null, null);
-
             ocr_lb.SelectedIndex = 0;
+
+            if (_uncoveredContours.Any())
+            {
+                var contoursDialog = new UncoveredContoursDialog();
+                contoursDialog.SetContours(_uncoveredContours);
+                contoursDialog.ShowDialog();
+            }
         }
 
         private void OpenBookFolderClick(object? sender, EventArgs e)
@@ -236,7 +246,7 @@ namespace LeninSearch.Ocr
             if (e.Button == MouseButtons.Left)
             {
                 var originalPoint = pictureBox1.ToOriginalPoint(e.Location);
-                var imageBlocks = page.ImageBlocks?.Where(ib => 
+                var imageBlocks = page.ImageBlocks?.Where(ib =>
                     ib.TopLeftRectangle.Contains(originalPoint) || ib.BottomRightRectangle.Contains(originalPoint))
                     .ToList() ?? new List<OcrImageBlock>();
                 _moveImageBlockDragPoint = null;
@@ -639,7 +649,7 @@ namespace LeninSearch.Ocr
                         using var brush = GetBrush(line);
                         g.FillRectangle(brush, line.Rectangle);
 
-                        
+
 
                         using var pen = GetPen(line);
                         g.DrawRectangle(pen, line.Rectangle);
