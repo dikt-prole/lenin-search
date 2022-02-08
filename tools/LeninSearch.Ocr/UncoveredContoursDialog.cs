@@ -22,15 +22,19 @@ namespace LeninSearch.Ocr
 
             ok_btn.Click += (sender, args) =>
             {
-                var contourControls = contours_flp.Controls.OfType<UncoveredContourControl>().ToList();
-                foreach (var ucc in contourControls)
-                {
-                    ucc.Contour.Word.Text = ucc.WordText;
-                }
-
+                SaveCurrentPage();
                 DialogResult = DialogResult.OK;
                 Close();
             };
+        }
+
+        private void SaveCurrentPage()
+        {
+            var contourControls = contours_flp.Controls.OfType<UncoveredContourControl>().ToList();
+            foreach (var ucc in contourControls)
+            {
+                ucc.Contour.Word.Text = ucc.WordText;
+            }
         }
 
         public void SetContours(List<UncoveredContour> contours)
@@ -65,6 +69,8 @@ namespace LeninSearch.Ocr
             foreach (var l in page_flp.Controls.OfType<LinkLabel>()) l.LinkColor = Color.Blue;
 
             link.LinkColor = Color.Red;
+
+            SaveCurrentPage();
 
             contours_flp.Controls.Clear();
 

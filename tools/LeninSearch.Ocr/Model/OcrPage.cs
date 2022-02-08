@@ -69,5 +69,26 @@ namespace LeninSearch.Ocr.Model
 
             for (var i = 0; i < Lines.Count; i++) Lines[i].LineIndex = i;
         }
+
+        public void CalculateLineDividerFeaturesAndLabels()
+        {
+            foreach (var line in Lines.Where(l => l.Features != null))
+            {
+                line.Features.BelowTopDivider = line.TopLeftY > TopDivider.Y ? 1 : 0;
+                line.Features.AboveBottomDivider = line.TopLeftY < BottomDivider.Y ? 1 : 0;
+                if (line.Features.BelowTopDivider == 0)
+                {
+                    line.Label = OcrLabel.Garbage;
+                }
+                else if (line.Features.AboveBottomDivider == 0)
+                {
+                    line.Label = OcrLabel.Comment;
+                }
+                else
+                {
+                    line.Label = OcrLabel.PMiddle;
+                }
+            }
+        }
     }
 }

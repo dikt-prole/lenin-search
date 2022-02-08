@@ -291,14 +291,7 @@ namespace LeninSearch.Ocr
                     _moveDragPoint = p =>
                     {
                         page.TopDivider.Y = p.Y;
-                        foreach (var line in page.Lines.Where(l => l.Features != null))
-                        {
-                            line.Features.BelowTopDivider = line.TopLeftY > page.TopDivider.Y ? 1 : 0;
-                            if (line.Features.BelowTopDivider == 0)
-                            {
-                                line.Label = OcrLabel.Garbage;
-                            }
-                        }
+                        page.CalculateLineDividerFeaturesAndLabels();
                         pictureBox1.Refresh();
                     };
                 }
@@ -307,14 +300,7 @@ namespace LeninSearch.Ocr
                     _moveDragPoint = p =>
                     {
                         page.BottomDivider.Y = p.Y;
-                        foreach (var line in page.Lines.Where(l => l.Features != null))
-                        {
-                            line.Features.AboveBottomDivider = line.TopLeftY < page.BottomDivider.Y ? 1 : 0;
-                            if (line.Features.AboveBottomDivider == 0)
-                            {
-                                line.Label = OcrLabel.Comment;
-                            }
-                        }
+                        page.CalculateLineDividerFeaturesAndLabels();
                         pictureBox1.Refresh();
                     };
                 }
