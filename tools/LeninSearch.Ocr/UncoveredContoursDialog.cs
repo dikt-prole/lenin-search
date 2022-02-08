@@ -1,12 +1,16 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using LeninSearch.Ocr.Model;
+using LinkLabel = System.Windows.Forms.LinkLabel;
 
 namespace LeninSearch.Ocr
 {
     public partial class UncoveredContoursDialog : Form
     {
+        private const int PageSize = 50;
+        private List<UncoveredContour> _contours;
         public UncoveredContoursDialog()
         {
             InitializeComponent();
@@ -31,10 +35,44 @@ namespace LeninSearch.Ocr
 
         public void SetContours(List<UncoveredContour> contours)
         {
+            _contours = contours;
             contours_flp.Controls.Clear();
-            foreach (var contour in contours)
+            page_flp.Controls.Clear();
+            var pageCount = contours.Count / PageSize + (contours.Count % PageSize > 0 ? 1 : 0);
+            for (var page = 0; page < pageCount; page++)
             {
-                var contourControl = new UncoveredContourControl {Width = contours_flp.Width - 26, Contour = contour};
+                var link = new LinkLabel
+                {
+                    Text = (page + 1).ToString(),
+                    LinkColor = Color.Blue,
+                    Margin = new Padding(3, 3, 3, 3),
+                    Font = new Font(Font.FontFamily, 12, FontStyle.Bold),
+                    Width = 15
+                };
+                link.LinkClicked += LinkOnLinkClicked;
+                page_flp.Controls.Add(link);
+            }
+
+            LinkOnLinkClicked(page_flp.Controls[0] as LinkLabel, null);
+        }
+
+        private void LinkOnLinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            var link = sender as LinkLabel;
+
+            if (link == null) return;
+
+            foreach (var l in page_flp.Controls.OfType<LinkLabel>()) l.LinkColor = Color.Blue;
+
+            link.LinkColor = Color.Red;
+
+            contours_flp.Controls.Clear();
+
+            var page = int.Parse(link.Text) - 1;
+            var pageContours = _contours.Skip(page * PageSize).Take(PageSize).ToList();
+            foreach (var contour in pageContours)
+            {
+                var contourControl = new UncoveredContourControl { Width = contours_flp.Width - 26, Contour = contour };
                 contours_flp.Controls.Add(contourControl);
             }
         }

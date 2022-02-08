@@ -11,21 +11,52 @@ namespace LeninSearch.Ocr.Model
     {
         private static readonly char[] Symbols = new[] {'.', '?', '!', ':'};
 
+        [JsonProperty("li")]
         public double LeftIndent { get; set; }
+
+        [JsonProperty("ri")]
         public double RightIndent { get; set; }
+
+        [JsonProperty("bi")]
         public double BottomIndent { get; set; }
+
+        [JsonProperty("ti")]
         public double TopIndent { get; set; }
+
+        [JsonProperty("btd")]
         public double BelowTopDivider { get; set; }
+
+        [JsonProperty("abd")]
         public double AboveBottomDivider { get; set; }
+
+        [JsonProperty("pps")]
         public double PixelsPerSymbol { get; set; }
+
+        [JsonProperty("w")]
         public double Width { get; set; }
+
+        [JsonProperty("h")]
         public double Height { get; set; }
+
+        [JsonProperty("whr")]
         public double WidthToHeightRatio { get; set; }
+
+        [JsonProperty("wc")]
         public double WordCount { get; set; }
+
+        [JsonProperty("sc")]
         public double SymbolCount { get; set; }
+
+        [JsonProperty("syc")]
         public double SameYCount { get; set; }
+
+        [JsonProperty("ii")]
         public double ImageIndex { get; set; }
+
+        [JsonProperty("swc")]
         public double StartsWithCapital { get; set; }
+
+        [JsonProperty("ews")]
         public double EndsWithSymbol { get; set; }
 
         public double[] ToFeatureRow(Dictionary<string, bool> rowModel)

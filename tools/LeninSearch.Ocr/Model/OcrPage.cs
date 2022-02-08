@@ -1,21 +1,38 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
 using System.Linq;
-using Accord.Math.Geometry;
+using LeninSearch.Ocr.CV;
+using Newtonsoft.Json;
 
 namespace LeninSearch.Ocr.Model
 {
     public class OcrPage
     {
+        [JsonProperty("fn")]
         public string Filename { get; set; }
+
+        [JsonProperty("td")]
         public DividerLine TopDivider { get; set; }
+
+        [JsonProperty("bd")]
         public DividerLine BottomDivider { get; set; }
+
+        [JsonProperty("lns")]
         public List<OcrLine> Lines { get; set; }
+
+        [JsonProperty("w")]
         public int Width { get; set; }
+
+        [JsonProperty("h")]
         public int Height { get; set; }
+
+        [JsonProperty("ibs")]
         public List<OcrImageBlock> ImageBlocks { get; set; }
+
+        [JsonIgnore]
         public int ImageIndex => int.Parse(new string(Filename.Where(char.IsNumber).ToArray()));
+
+        [JsonIgnore]
         public List<OcrLine> NonImageBlockLines => Lines.Where(l =>
             ImageBlocks == null || ImageBlocks.All(ib => !ib.Rectangle.IntersectsWith(l.Rectangle))).ToList();
 
