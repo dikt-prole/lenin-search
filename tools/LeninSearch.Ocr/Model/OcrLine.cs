@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
+using LeninSearch.Ocr.YandexVision.OcrResponse;
 using Newtonsoft.Json;
 
 namespace LeninSearch.Ocr.Model
@@ -40,5 +41,15 @@ namespace LeninSearch.Ocr.Model
         public Rectangle Rectangle => new Rectangle(TopLeftX, TopLeftY, BottomRightX - TopLeftX, BottomRightY - TopLeftY);
 
         public Rectangle PageWideRectangle(int pageWidth) => new Rectangle(0, TopLeftY, pageWidth, BottomRightY - TopLeftY);
+
+        public void FitRectangleToWords()
+        {
+            if (Words?.Any() != true) return;
+
+            TopLeftX = Words.Min(w => w.TopLeftX);
+            TopLeftY = Words.Min(w => w.TopLeftY);
+            BottomRightX = Words.Max(w => w.BottomRightX);
+            BottomRightY = Words.Max(w => w.BottomRightY);
+        }
     }
 }

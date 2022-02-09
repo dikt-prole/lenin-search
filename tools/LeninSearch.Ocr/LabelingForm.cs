@@ -476,23 +476,20 @@ namespace LeninSearch.Ocr
                 Text = dialog.WordText
             };
 
-            var line = new OcrLine
+            var wordLine = page.Lines.FirstOrDefault(l => l.PageWideRectangle(page.Width).IntersectsWith(word.Rectangle));
+
+            if (wordLine == null)
             {
-                TopLeftX = word.TopLeftX,
-                TopLeftY = word.TopLeftY,
-                BottomRightX = word.BottomRightX,
-                BottomRightY = word.BottomRightY,
-                Words = new List<OcrWord> { word },
-                DisplayText = true
-            };
-
-            line.Features = OcrLineFeatures.Calculate(page, line);
-
-            page.Lines.Add(line);
-
-            page.Lines = page.Lines.OrderBy(l => l.TopLeftY).ToList();
-
-            for (var i = 0; i < page.Lines.Count; i++) page.Lines[i].LineIndex = i;
+                wordLine = new OcrLine {Words = new List<OcrWord>( )};
+                page.Lines.Add(wordLine);
+                wordLine.Features = OcrLineFeatures.Calculate(page, wordLine);
+                page.Lines = page.Lines.OrderBy(l => l.TopLeftY).ToList();
+                for (var i = 0; i < page.Lines.Count; i++) page.Lines[i].LineIndex = i;
+            }
+            
+            wordLine.Words.Add(word);
+            wordLine.Words = wordLine.Words.OrderBy(w => w.TopLeftX).ToList();
+            wordLine.FitRectangleToWords();
 
             ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
         }
@@ -637,7 +634,6 @@ namespace LeninSearch.Ocr
                     using var g = Graphics.FromImage(image);
                     
                     using var textBrush = new SolidBrush(Color.DarkViolet);
-                    using var commentLinePen = new Pen(OcrPalette.GetColor(OcrLabel.Comment), 1);
 
                     var font = new Font(Font.FontFamily, 12, FontStyle.Bold);
 
@@ -649,28 +645,42 @@ namespace LeninSearch.Ocr
                         using var pen = GetPen(line);
                         g.DrawRectangle(pen, line.Rectangle);
 
-                        g.DrawString(line.LineIndex.ToString(), font, textBrush, line.BottomRightX + 1, line.TopLeftY);
+                        if (line.Label == OcrLabel.Comment)
+                        {
+                            g.DrawString(line.LineIndex.ToString(), font, textBrush, line.BottomRightX + 1, line.TopLeftY);
+                        }
+
+                        using var commentPen = new Pen(OcrPalette.GetColor(OcrLabel.Comment), 2);
+                        using var commentBrush = new SolidBrush(OcrPalette.GetColor(OcrLabel.Comment));
 
                         foreach (var word in line.Words ?? new List<OcrWord>())
                         {
                             if (word.CommentLineIndex != null)
                             {
                                 var commentLine = page.Lines[word.CommentLineIndex.Value];
-
-                                var verticalMinY = word.BottomRightY;
+                                var verticalMinY = word.CenterY + OcrSettings.WordCircleRadius;
                                 var verticalMaxY = commentLine.TopLeftY;
-                                var verticalX = (word.BottomRightX + word.TopLeftX) / 2;
-                                g.DrawLine(commentLinePen, verticalX, verticalMinY, verticalX, verticalMaxY);
+                                var verticalX = word.CenterX;
+                                g.DrawLine(commentPen, verticalX, verticalMinY, verticalX, verticalMaxY);
 
-                                var horizontalMinX = word.TopLeftX;
-                                var horizontalMaxX = word.BottomRightX;
-                                var horizontalY = word.BottomRightY;
-                                g.DrawLine(commentLinePen, horizontalMinX, horizontalY, horizontalMaxX, horizontalY);
+                                var textX = word.CenterX - OcrSettings.WordCircleRadius;
+                                var textY = word.CenterY - OcrSettings.WordCircleRadius;
+                                g.DrawString(word.Text, font, commentBrush, textX, textY);
                             }
 
-                            if (line.DisplayText)
+                            if (line.DisplayText && word.CommentLineIndex == null)
                             {
                                 g.DrawString(word.Text, font, textBrush, word.TopLeftX, line.TopLeftY - 15);
+                            }
+
+                            if (word.ContainsCommentLinkNumbers(OcrSettings.CommentLinkNumberMax) && (line.Label == OcrLabel.PStart ||
+                                                         line.Label == OcrLabel.PMiddle ||
+                                                         line.Label == OcrLabel.Title))
+                            {
+                                var ellipseX = word.CenterX - OcrSettings.WordCircleRadius;
+                                var ellipseY = word.CenterY - OcrSettings.WordCircleRadius;
+                                var ellipseSize = OcrSettings.WordCircleRadius * 2;
+                                g.DrawEllipse(commentPen, ellipseX, ellipseY, ellipseSize, ellipseSize);
                             }
                         }
                     }
@@ -707,16 +717,16 @@ namespace LeninSearch.Ocr
             var page = _ocrData.GetPage(filename);
             if (page == null) return;
 
-            var intersectingLine = page.Lines.FirstOrDefault(l => l.Rectangle.IntersectsWith(originalRect));
+            var touchPoint = originalRect.Location;
 
-            var word = intersectingLine?.Words?.FirstOrDefault(w => w.Rectangle.IntersectsWith(originalRect));
+            var word = page.Lines?.SelectMany(l => l.Words)?.FirstOrDefault(w => 
+                w.ContainsCommentLinkNumbers(OcrSettings.CommentLinkNumberMax) && w.IsInsideWordCircle(touchPoint));
 
             if (word != null)
             {
                 word.CommentLineIndex = commentLineIndex;
+                ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
             }
-
-            ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
         }
 
         private void ShowLineFeatures(Rectangle pbRectangle)
@@ -750,30 +760,7 @@ namespace LeninSearch.Ocr
 
             if (intersectingLine?.Words?.Any() != true) return;
 
-            var lineIndex = page.Lines.IndexOf(intersectingLine);
-
-            page.Lines.Remove(intersectingLine);
-
-            var wordLines = new List<OcrLine>();
-            foreach (var word in intersectingLine.Words)
-            {
-                var wordLine = new OcrLine
-                {
-                    TopLeftX = word.TopLeftX,
-                    TopLeftY = word.TopLeftY,
-                    BottomRightX = word.BottomRightX,
-                    BottomRightY = word.BottomRightY,
-                    DisplayText = true,
-                    Words = new List<OcrWord> { word },
-                    Label = intersectingLine.Label
-                };
-                wordLine.Features = OcrLineFeatures.Calculate(page, wordLine);
-                wordLines.Add(wordLine);
-            }
-
-            page.Lines.InsertRange(lineIndex, wordLines);
-
-            page.ReindexLines();
+            page.BreakIntoWords(intersectingLine);
 
             ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
         }
@@ -794,7 +781,7 @@ namespace LeninSearch.Ocr
 
             if (intersectingWord == null) return;
 
-            var dialog = new WordTextDialog();
+            var dialog = new WordTextDialog {WordText = intersectingWord.Text};
 
             if (dialog.ShowDialog() != DialogResult.OK) return;
 

@@ -9,11 +9,19 @@ namespace LeninSearch.Ocr
 {
     public partial class UncoveredContoursDialog : Form
     {
-        private const int PageSize = 50;
         private List<UncoveredContour> _contours;
         public UncoveredContoursDialog()
         {
             InitializeComponent();
+
+            pageSize_nud.Minimum = 20;
+            pageSize_nud.Maximum = 1000;
+            pageSize_nud.Value = 40;
+            pageSize_nud.ValueChanged += (sender, args) =>
+            {
+                if (_contours == null) return;
+                SetContours(_contours);
+            };
 
             contours_flp.SizeChanged += (sender, args) =>
             {
@@ -42,7 +50,8 @@ namespace LeninSearch.Ocr
             _contours = contours;
             contours_flp.Controls.Clear();
             page_flp.Controls.Clear();
-            var pageCount = contours.Count / PageSize + (contours.Count % PageSize > 0 ? 1 : 0);
+            var pageSize = (int)pageSize_nud.Value;
+            var pageCount = contours.Count / pageSize + (contours.Count % pageSize > 0 ? 1 : 0);
             for (var page = 0; page < pageCount; page++)
             {
                 var link = new LinkLabel
@@ -51,7 +60,7 @@ namespace LeninSearch.Ocr
                     LinkColor = Color.Blue,
                     Margin = new Padding(3, 3, 3, 3),
                     Font = new Font(Font.FontFamily, 12, FontStyle.Bold),
-                    Width = 15
+                    Width = 25
                 };
                 link.LinkClicked += LinkOnLinkClicked;
                 page_flp.Controls.Add(link);
@@ -75,7 +84,8 @@ namespace LeninSearch.Ocr
             contours_flp.Controls.Clear();
 
             var page = int.Parse(link.Text) - 1;
-            var pageContours = _contours.Skip(page * PageSize).Take(PageSize).ToList();
+            var pageSize = (int)pageSize_nud.Value;
+            var pageContours = _contours.Skip(page * pageSize).Take(pageSize).ToList();
             foreach (var contour in pageContours)
             {
                 var contourControl = new UncoveredContourControl { Width = contours_flp.Width - 26, Contour = contour };

@@ -104,6 +104,52 @@ namespace LeninSearch.Ocr.CV
             }
         }
 
+        public static IEnumerable<Rectangle> GetSmoothedContourRectangles(string imageFile)
+        {
+            using var image = new Bitmap(Image.FromFile(imageFile));
+            using var bgrImage = image.ToImage<Bgr, byte>();
+            using var invertedGray = bgrImage.Convert<Gray, byte>()
+                .SmoothGaussian(0, 0, 3, 3)
+                .Not()
+                .ThresholdBinary(new Gray(25), new Gray(255));
+
+            var contours = new VectorOfVectorOfPoint();
+            var hierarchy = new Mat();
+            CvInvoke.FindContours(invertedGray, contours, hierarchy, RetrType.External, ChainApproxMethod.ChainApproxSimple);
+            CvInvoke.DrawContours(bgrImage, contours, -1, new MCvScalar(255, 0, 0));
+
+            var rectangleSource = new List<Rectangle>();
+            for (var i = 0; i < contours.Size; i++)
+            {
+                var points = contours[i].ToArray();
+                var minX = points.Select(p => p.X).Min();
+                var maxX = points.Select(p => p.X).Max();
+                var minY = points.Select(p => p.Y).Min();
+                var maxY = points.Select(p => p.Y).Max();
+
+                var rect = new Rectangle(minX, minY, maxX - minX, maxY - minY);
+                rectangleSource.Add(rect);
+            }
+
+            while (rectangleSource.Any())
+            {
+                var attractor = rectangleSource[0];
+                rectangleSource.Remove(attractor);
+                var attracted = rectangleSource.Where(r => r.IntersectsWith(attractor)).ToList();
+                foreach (var r in attracted) rectangleSource.Remove(r);
+                attracted.Add(attractor);
+
+                var minX = attracted.Select(r => r.X).Min();
+                var maxX = attracted.Select(r => r.X + r.Width).Max();
+                var minY = attracted.Select(r => r.Y).Min();
+                var maxY = attracted.Select(r => r.Y + r.Height).Max();
+
+                var rect = new Rectangle(minX, minY, maxX - minX, maxY - minY);
+
+                if (rect.Width > 0 && rect.Height > 0) yield return rect;
+            }
+        }
+
         public static IEnumerable<Rectangle> GetContourRectangles(string imageFile)
         {
             using var image = new Bitmap(Image.FromFile(imageFile));

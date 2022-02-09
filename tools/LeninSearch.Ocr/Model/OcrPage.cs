@@ -38,21 +38,50 @@ namespace LeninSearch.Ocr.Model
 
         public void MergeLines(OcrLine intoLine, params OcrLine[] mergeLines)
         {
+            var commentLineIndexes = Lines.Where(l => l.Label == OcrLabel.Comment).ToDictionary(l => l.LineIndex, l => l);
+
             foreach (var line in mergeLines) Lines.Remove(line);
 
             var intersectingLines = new[] { intoLine }.Concat(mergeLines).ToList();
 
             if (intersectingLines.Count < 2) return;
 
+            intoLine.Words = intersectingLines.Where(l => l.Words != null).SelectMany(l => l.Words).OrderBy(w => w.TopLeftX).ToList();
+            intoLine.FitRectangleToWords();
+            ReindexLines();
+
+            var commentedWords = Lines.SelectMany(l => l.Words).Where(w => w.CommentLineIndex.HasValue).ToList();
+            foreach (var w in commentedWords) w.CommentLineIndex = commentLineIndexes[w.CommentLineIndex.Value].LineIndex;
+        }
+
+        public void BreakIntoWords(OcrLine line)
+        {
             var commentLineIndexes = Lines.Where(l => l.Label == OcrLabel.Comment).ToDictionary(l => l.LineIndex, l => l);
 
-            intoLine.Words = intersectingLines.Where(l => l.Words != null).SelectMany(l => l.Words).OrderBy(w => w.TopLeftX).ToList();
-            intoLine.TopLeftX = intersectingLines.Select(b => b.TopLeftX).Min();
-            intoLine.TopLeftY = intersectingLines.Select(b => b.TopLeftY).Min();
-            intoLine.BottomRightX = intersectingLines.Select(b => b.BottomRightX).Max();
-            intoLine.BottomRightY = intersectingLines.Select(b => b.BottomRightY).Max();
+            var lineIndex = Lines.IndexOf(line);
 
-            for (var i = 0; i < Lines.Count; i++) Lines[i].LineIndex = i;
+            Lines.Remove(line);
+
+            var wordLines = new List<OcrLine>();
+            foreach (var word in line.Words)
+            {
+                var wordLine = new OcrLine
+                {
+                    TopLeftX = word.TopLeftX,
+                    TopLeftY = word.TopLeftY,
+                    BottomRightX = word.BottomRightX,
+                    BottomRightY = word.BottomRightY,
+                    DisplayText = true,
+                    Words = new List<OcrWord> { word },
+                    Label = line.Label
+                };
+                wordLine.Features = OcrLineFeatures.Calculate(this, wordLine);
+                wordLines.Add(wordLine);
+            }
+
+            Lines.InsertRange(lineIndex, wordLines);
+
+            ReindexLines();
 
             var commentedWords = Lines.SelectMany(l => l.Words).Where(w => w.CommentLineIndex.HasValue).ToList();
             foreach (var w in commentedWords) w.CommentLineIndex = commentLineIndexes[w.CommentLineIndex.Value].LineIndex;

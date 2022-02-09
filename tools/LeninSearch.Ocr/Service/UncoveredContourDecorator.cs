@@ -26,10 +26,12 @@ namespace LeninSearch.Ocr.Service
 
             var page = result.Page;
 
-            var contourRectangles = CvUtil.GetContourRectangles(imageFile);
+            var contourRectangles = CvUtil.GetSmoothedContourRectangles(imageFile);
+
+            var allWords = page.Lines.Where(l => l.Words != null).SelectMany(l => l.Words);
 
             var uncoveredRectangles = contourRectangles
-                .Where(cr => page.Lines.All(l => !l.Rectangle.IntersectsWith(cr)))
+                .Where(cr => allWords.All(w => !w.Rectangle.IntersectsWith(cr)))
                 .Where(cr => page.Lines.Any(l => l.PageWideRectangle(page.Width).IntersectsWith(cr)))
                 .Where(cr => cr.Height > OcrSettings.UncoveredContourMinHeight)
                 .ToList();

@@ -34,8 +34,10 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.ok_btn = new System.Windows.Forms.Button();
             this.page_flp = new System.Windows.Forms.FlowLayoutPanel();
+            this.pageSize_nud = new System.Windows.Forms.NumericUpDown();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pageSize_nud)).BeginInit();
             this.SuspendLayout();
             // 
             // tableLayoutPanel1
@@ -67,18 +69,19 @@ namespace LeninSearch.Ocr
             // 
             // tableLayoutPanel2
             // 
-            this.tableLayoutPanel2.ColumnCount = 2;
+            this.tableLayoutPanel2.ColumnCount = 3;
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
-            this.tableLayoutPanel2.Controls.Add(this.ok_btn, 1, 0);
-            this.tableLayoutPanel2.Controls.Add(this.page_flp, 0, 0);
+            this.tableLayoutPanel2.Controls.Add(this.pageSize_nud, 0, 0);
+            this.tableLayoutPanel2.Controls.Add(this.ok_btn, 2, 0);
+            this.tableLayoutPanel2.Controls.Add(this.page_flp, 1, 0);
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel2.Location = new System.Drawing.Point(0, 649);
             this.tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(0);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             this.tableLayoutPanel2.RowCount = 1;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel2.Size = new System.Drawing.Size(855, 28);
             this.tableLayoutPanel2.TabIndex = 2;
             // 
@@ -96,11 +99,18 @@ namespace LeninSearch.Ocr
             // page_flp
             // 
             this.page_flp.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.page_flp.Location = new System.Drawing.Point(1, 1);
+            this.page_flp.Location = new System.Drawing.Point(101, 1);
             this.page_flp.Margin = new System.Windows.Forms.Padding(1);
             this.page_flp.Name = "page_flp";
-            this.page_flp.Size = new System.Drawing.Size(753, 26);
+            this.page_flp.Size = new System.Drawing.Size(653, 26);
             this.page_flp.TabIndex = 1;
+            // 
+            // pageSize_nud
+            // 
+            this.pageSize_nud.Location = new System.Drawing.Point(3, 3);
+            this.pageSize_nud.Name = "pageSize_nud";
+            this.pageSize_nud.Size = new System.Drawing.Size(94, 23);
+            this.pageSize_nud.TabIndex = 0;
             // 
             // UncoveredContoursDialog
             // 
@@ -113,6 +123,7 @@ namespace LeninSearch.Ocr
             this.Text = "Uncovered Contours";
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pageSize_nud)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -124,5 +135,6 @@ namespace LeninSearch.Ocr
         private System.Windows.Forms.FlowLayoutPanel contours_flp;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
         private System.Windows.Forms.FlowLayoutPanel page_flp;
+        private System.Windows.Forms.NumericUpDown pageSize_nud;
     }
 }
