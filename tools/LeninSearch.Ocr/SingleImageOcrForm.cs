@@ -71,7 +71,7 @@ namespace LeninSearch.Ocr
 
         private void TestClick(object? sender, EventArgs e)
         {
-            var rects = CvUtil.GetSmoothedContourRectangles(file_tb.Text).ToList();
+            var rects = CvUtil.GetContourRectangles(file_tb.Text).ToList();
             var image = new Bitmap(Image.FromFile(file_tb.Text));
             using var g = Graphics.FromImage(image);
 

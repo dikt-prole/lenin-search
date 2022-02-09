@@ -150,14 +150,14 @@ namespace LeninSearch.Ocr.CV
             }
         }
 
+        // todo: get small contours after smoothed contours
         public static IEnumerable<Rectangle> GetContourRectangles(string imageFile)
         {
             using var image = new Bitmap(Image.FromFile(imageFile));
             using var bgrImage = image.ToImage<Bgr, byte>();
             using var invertedGray = bgrImage.Convert<Gray, byte>()
-                .SmoothGaussian(0, 0, 3, 3)
-                .Not()
-                .ThresholdBinary(new Gray(25), new Gray(255));
+                .ThresholdBinary(new Gray(90), new Gray(255))
+                .Not();
 
             var contours = new VectorOfVectorOfPoint();
             var hierarchy = new Mat();

@@ -26,54 +26,47 @@ namespace LeninSearch.Ocr.Service
 
             var page = result.Page;
 
-            var contourRectangles = CvUtil.GetSmoothedContourRectangles(imageFile);
-
             var allWords = page.Lines.Where(l => l.Words != null).SelectMany(l => l.Words);
-
-            var uncoveredRectangles = contourRectangles
+            var smoothUncovered = CvUtil.GetSmoothedContourRectangles(imageFile)
                 .Where(cr => allWords.All(w => !w.Rectangle.IntersectsWith(cr)))
                 .Where(cr => page.Lines.Any(l => l.PageWideRectangle(page.Width).IntersectsWith(cr)))
-                .Where(cr => cr.Height > OcrSettings.UncoveredContourMinHeight)
+                .Where(cr => OcrSettings.UncoveredContourMinHeight <= cr.Height && cr.Height <= OcrSettings.UncoveredContourMaxHeight)
+                .Where(cr => cr.Width <= OcrSettings.UncoveredContourMaxWidth)
                 .ToList();
 
-            if (!uncoveredRectangles.Any()) return result;
-
-            foreach (var uncoveredRect in uncoveredRectangles)
+            foreach (var rect in smoothUncovered)
             {
-                var rectLine = new OcrLine
-                {
-                    TopLeftX = uncoveredRect.X,
-                    TopLeftY = uncoveredRect.Y,
-                    BottomRightX = uncoveredRect.X + uncoveredRect.Width,
-                    BottomRightY = uncoveredRect.Y + uncoveredRect.Height,
-                    DisplayText = true,
-                    Words = new List<OcrWord>
-                    {
-                        new OcrWord
-                        {
-                            TopLeftX = uncoveredRect.X,
-                            TopLeftY = uncoveredRect.Y,
-                            BottomRightX = uncoveredRect.X + uncoveredRect.Width,
-                            BottomRightY = uncoveredRect.Y + uncoveredRect.Height,
-                            Text = "X"
-                        }
-                    }
-                };
-
+                var rectLine = page.AddContourLine(rect);
                 var uncoveredContour = new UncoveredContour
                 {
                     ImageFile = imageFile,
-                    Rectangle = uncoveredRect,
+                    Rectangle = rect,
                     Word = rectLine.Words[0]
                 };
                 _uncoveredContourAction?.Invoke(uncoveredContour);
-
-                page.Lines.Add(rectLine);
             }
 
-            page.Lines = page.Lines.OrderBy(p => p.TopLeftY).ThenBy(p => p.TopLeftX).ToList();
+            allWords = page.Lines.Where(l => l.Words != null).SelectMany(l => l.Words);
+            var uncovered = CvUtil.GetContourRectangles(imageFile)
+                .Where(cr => allWords.All(w => !w.Rectangle.IntersectsWith(cr)))
+                .Where(cr => page.Lines.Any(l => l.PageWideRectangle(page.Width).IntersectsWith(cr)))
+                .Where(cr => OcrSettings.UncoveredContourMinHeight <= cr.Height  && cr.Height <= OcrSettings.UncoveredContourMaxHeight)
+                .Where(cr => cr.Width <= OcrSettings.UncoveredContourMaxWidth)
+                .ToList();
 
-            for (var i = 0; i < page.Lines.Count; i++) page.Lines[i].LineIndex = i;
+            foreach (var rect in uncovered)
+            {
+                var rectLine = page.AddContourLine(rect);
+                var uncoveredContour = new UncoveredContour
+                {
+                    ImageFile = imageFile,
+                    Rectangle = rect,
+                    Word = rectLine.Words[0]
+                };
+                _uncoveredContourAction?.Invoke(uncoveredContour);
+            }
+
+            page.ReindexLines();
 
             return result;
         }

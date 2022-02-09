@@ -119,5 +119,34 @@ namespace LeninSearch.Ocr.Model
                 }
             }
         }
+
+        public OcrLine AddContourLine(Rectangle rect)
+        {
+            var rectLine = new OcrLine
+            {
+                TopLeftX = rect.X,
+                TopLeftY = rect.Y,
+                BottomRightX = rect.X + rect.Width,
+                BottomRightY = rect.Y + rect.Height,
+                DisplayText = true,
+                Words = new List<OcrWord>
+                {
+                    new OcrWord
+                    {
+                        TopLeftX = rect.X,
+                        TopLeftY = rect.Y,
+                        BottomRightX = rect.X + rect.Width,
+                        BottomRightY = rect.Y + rect.Height,
+                        Text = "X"
+                    }
+                }
+            };
+
+            Lines.Add(rectLine);
+
+            Lines = Lines.OrderBy(p => p.TopLeftY).ThenBy(p => p.TopLeftX).ToList();
+
+            return rectLine;
+        }
     }
 }
