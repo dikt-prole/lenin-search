@@ -25,7 +25,7 @@ namespace LeninSearch.Ocr
                 var lineImage = image.Clone(lineRect, image.PixelFormat);
                 rectangle_pb.Width = lineImage.Width;
                 rectangle_pb.Image = lineImage;
-                size_lbl.Text = $"w: {_contour.Rectangle.Width}, h: {_contour.Rectangle.Height}";
+                size_lbl.Text = $"w: {_contour.Rectangle.Width}, h: {_contour.Rectangle.Height}, lbd: {_contour.Word.LineBottomDistance:F2}";
             }
         }
 

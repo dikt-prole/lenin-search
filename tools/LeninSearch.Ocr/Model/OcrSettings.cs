@@ -9,10 +9,13 @@ namespace LeninSearch.Ocr.Model
 
         public static class CommentLink
         {
-            public const int MinWidth = 4;
+            public const int MinWidth = 2;
             public const int MaxWidth = 9;
-            public const int MinHeight = 10;
-            public const int MaxHeight = 13;
+            public const int MinHeight = 9;
+            public const int MaxHeight = 14;
+
+            public const int MinLineBottomDistance = 6;
+            public const int MaxLineBottomDistance = 12;
 
             public static bool Match(Rectangle rect)
             {

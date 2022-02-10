@@ -653,8 +653,8 @@ namespace LeninSearch.Ocr
                             g.DrawString(line.LineIndex.ToString(), font, textBrush, line.BottomRightX + 1, line.TopLeftY);
                         }
 
-                        using var commentPen = new Pen(OcrPalette.GetColor(OcrLabel.Comment), 2);
-                        using var commentBrush = new SolidBrush(OcrPalette.GetColor(OcrLabel.Comment));
+                        using var commentLinkPen = new Pen(Color.Blue, 2);
+                        using var commentLinkBrush = new SolidBrush(Color.Blue);
 
                         foreach (var word in line.Words ?? new List<OcrWord>())
                         {
@@ -664,11 +664,11 @@ namespace LeninSearch.Ocr
                                 var verticalMinY = word.CenterY + OcrSettings.WordCircleRadius;
                                 var verticalMaxY = commentLine.TopLeftY;
                                 var verticalX = word.CenterX;
-                                g.DrawLine(commentPen, verticalX, verticalMinY, verticalX, verticalMaxY);
+                                g.DrawLine(commentLinkPen, verticalX, verticalMinY, verticalX, verticalMaxY);
 
                                 var textX = word.CenterX - OcrSettings.WordCircleRadius;
                                 var textY = word.CenterY - OcrSettings.WordCircleRadius;
-                                g.DrawString(word.Text, font, commentBrush, textX, textY);
+                                g.DrawString(word.Text, font, commentLinkBrush, textX, textY);
                             }
 
                             if (line.DisplayText && word.CommentLineIndex == null)
@@ -676,14 +676,13 @@ namespace LeninSearch.Ocr
                                 g.DrawString(word.Text, font, textBrush, word.TopLeftX, line.TopLeftY - 15);
                             }
 
-                            if (word.ContainsCommentLinkNumbers(OcrSettings.CommentLinkNumberMax) && (line.Label == OcrLabel.PStart ||
-                                                         line.Label == OcrLabel.PMiddle ||
-                                                         line.Label == OcrLabel.Title))
+                            if (word.ContainsCommentLinkNumbers(OcrSettings.CommentLinkNumberMax) && 
+                                (line.Label == OcrLabel.PStart || line.Label == OcrLabel.PMiddle || line.Label == OcrLabel.Title || line.Label == OcrLabel.Comment))
                             {
                                 var ellipseX = word.CenterX - OcrSettings.WordCircleRadius;
                                 var ellipseY = word.CenterY - OcrSettings.WordCircleRadius;
                                 var ellipseSize = OcrSettings.WordCircleRadius * 2;
-                                g.DrawEllipse(commentPen, ellipseX, ellipseY, ellipseSize, ellipseSize);
+                                g.DrawEllipse(commentLinkPen, ellipseX, ellipseY, ellipseSize, ellipseSize);
                             }
                         }
                     }

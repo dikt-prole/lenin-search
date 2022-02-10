@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using LeninSearch.Ocr.CV;
@@ -25,11 +26,8 @@ namespace LeninSearch.Ocr.Service
 
             var page = result.Page;
 
-            var allWords = page.Lines.Where(l => l.Words != null).SelectMany(l => l.Words);
             var smoothUncovered = CvUtil.GetSmoothedContourRectangles(imageFile)
-                .Where(cr => allWords.All(w => w.Rectangle.IntersectionPercent(cr) < 50))
-                .Where(cr => page.Lines.Any(l => l.PageWideRectangle(page.Width).IntersectsWith(cr)))
-                .Where(OcrSettings.CommentLink.Match)
+                .Where(cr => Match(cr, page))
                 .ToList();
 
             foreach (var rect in smoothUncovered)
@@ -47,6 +45,27 @@ namespace LeninSearch.Ocr.Service
             page.ReindexLines();
 
             return result;
+        }
+
+        private bool Match(Rectangle candidateRect, OcrPage page)
+        {
+            var allWords = page.Lines.Where(l => l.Words != null).SelectMany(l => l.Words);
+
+            if (allWords.Any(w => w.Rectangle.IntersectionPercent(candidateRect) > 50)) return false;
+
+            var line = page.Lines.FirstOrDefault(l => l.PageWideRectangle(page.Width).IntersectsWith(candidateRect));
+
+            if (line == null) return false;
+
+            var lineBottomDistance = line.BottomRightY - candidateRect.Y - candidateRect.Height;
+
+            if (lineBottomDistance > OcrSettings.CommentLink.MaxLineBottomDistance) return false;
+
+            if (lineBottomDistance < OcrSettings.CommentLink.MinLineBottomDistance) return false;
+
+            if (!OcrSettings.CommentLink.Match(candidateRect)) return false;
+
+            return true;
         }
     }
 }

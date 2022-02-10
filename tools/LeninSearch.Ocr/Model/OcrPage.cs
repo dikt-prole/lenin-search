@@ -50,6 +50,8 @@ namespace LeninSearch.Ocr.Model
             intoLine.FitRectangleToWords();
             ReindexLines();
 
+            foreach (var word in intoLine.Words) word.LineBottomDistance = intoLine.BottomRightY - word.BottomRightY;
+
             var commentedWords = Lines.SelectMany(l => l.Words).Where(w => w.CommentLineIndex.HasValue).ToList();
             foreach (var w in commentedWords) w.CommentLineIndex = commentLineIndexes[w.CommentLineIndex.Value].LineIndex;
         }
