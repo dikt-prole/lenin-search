@@ -109,7 +109,7 @@ namespace LeninSearch.Ocr.CV
             using var image = new Bitmap(Image.FromFile(imageFile));
             using var bgrImage = image.ToImage<Bgr, byte>();
             using var invertedGray = bgrImage.Convert<Gray, byte>()
-                .SmoothGaussian(0, 0, 3, 3)
+                .SmoothGaussian(0, 0, 1, 1)
                 .Not()
                 .ThresholdBinary(new Gray(25), new Gray(255));
 
@@ -155,9 +155,15 @@ namespace LeninSearch.Ocr.CV
         {
             using var image = new Bitmap(Image.FromFile(imageFile));
             using var bgrImage = image.ToImage<Bgr, byte>();
+
+            //using var invertedGray = bgrImage.Convert<Gray, byte>()
+            //    .ThresholdBinary(new Gray(90), new Gray(255))
+            //    .Not();
+
             using var invertedGray = bgrImage.Convert<Gray, byte>()
-                .ThresholdBinary(new Gray(90), new Gray(255))
-                .Not();
+                .SmoothGaussian(0, 0, 1, 1)
+                .Not()
+                .ThresholdBinary(new Gray(25), new Gray(255));
 
             var contours = new VectorOfVectorOfPoint();
             var hierarchy = new Mat();

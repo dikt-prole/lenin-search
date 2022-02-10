@@ -2,7 +2,7 @@
 
 namespace LeninSearch.Ocr.Model
 {
-    public class UncoveredContour
+    public class CommentLinkCandidate
     {
         public string ImageFile { get; set; }
         public OcrWord Word { get; set; }

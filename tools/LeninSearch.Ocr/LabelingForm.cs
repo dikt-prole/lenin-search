@@ -25,7 +25,7 @@ namespace LeninSearch.Ocr
 
         private OcrLabel? _mouseLeftLabel;
 
-        private readonly List<UncoveredContour> _uncoveredContours = new List<UncoveredContour>();
+        private readonly List<CommentLinkCandidate> _uncoveredContours = new List<CommentLinkCandidate>();
 
         private readonly IOcrService _ocrService;
 
@@ -89,7 +89,7 @@ namespace LeninSearch.Ocr
             _ocrService =
                 new FeatureSettingDecorator(
                     new IntersectingLineMergerDecorator(
-                        new UncoveredContourDecorator(uc => _uncoveredContours.Add(uc), 
+                        new CommentLinkNumberDecorator(uc => _uncoveredContours.Add(uc), 
                             new YandexVisionOcrLineService())));
         }
 
@@ -164,15 +164,18 @@ namespace LeninSearch.Ocr
 
             sw.Stop();
 
-            MessageBox.Show($"Lines generated in {sw.Elapsed}", "Lines", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
             ocr_lb.SelectedIndex = 0;
 
-            if (_uncoveredContours.Any())
+            var contoursDialog = new CommentLinkDialog();
+            contoursDialog.SetContours(_uncoveredContours);
+            contoursDialog.ShowDialog();
+
+            var removeWords = _uncoveredContours.Select(c => c.Word).Where(w => string.IsNullOrEmpty(w.Text)).ToList();
+            var lines = _ocrData.Pages.SelectMany(p => p.Lines).Where(l => l.Words != null);
+            foreach (var line in lines)
             {
-                var contoursDialog = new UncoveredContoursDialog();
-                contoursDialog.SetContours(_uncoveredContours);
-                contoursDialog.ShowDialog();
+                line.Words = line.Words.Except(removeWords).ToList();
+                line.FitRectangleToWords();
             }
         }
 

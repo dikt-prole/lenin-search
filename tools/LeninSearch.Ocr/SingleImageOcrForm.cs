@@ -48,7 +48,7 @@ namespace LeninSearch.Ocr
             if (currentIndex < files.Count - 1)
             {
                 file_tb.Text = files[currentIndex + 1];
-                pictureBox1.Image = Image.FromFile(file_tb.Text);
+                initial_pb.Image = Image.FromFile(file_tb.Text);
             }
         }
 
@@ -65,7 +65,7 @@ namespace LeninSearch.Ocr
             if (currentIndex > 0)
             {
                 file_tb.Text = files[currentIndex - 1];
-                pictureBox1.Image = Image.FromFile(file_tb.Text);
+                initial_pb.Image = Image.FromFile(file_tb.Text);
             }
         }
 
@@ -77,7 +77,7 @@ namespace LeninSearch.Ocr
 
             foreach (var rect in rects) g.DrawRectangle(Pens.Red, rect);
 
-            pictureBox1.Image = image;
+            processed_pb.Image = image;
         }
 
         private async void Ocr_btnOnClick(object? sender, EventArgs e)
@@ -85,7 +85,7 @@ namespace LeninSearch.Ocr
             if (string.IsNullOrEmpty(file_tb.Text)) return;
 
             IOcrService lineService = new YandexVisionOcrLineService(); 
-            lineService = new UncoveredContourDecorator(uc => { }, lineService);
+            lineService = new CommentLinkNumberDecorator(uc => { }, lineService);
             lineService = new IntersectingLineMergerDecorator(lineService);
 
             var ocrResult = await lineService.GetOcrPageAsync(file_tb.Text);
@@ -102,7 +102,7 @@ namespace LeninSearch.Ocr
                 g.FillRectangle(brush, line.Rectangle);
             }
 
-            pictureBox1.Image = image;
+            processed_pb.Image = image;
         }
 
         private void DrawBoundingBox(Graphics g, BoundingBox box, Color color)
@@ -132,7 +132,7 @@ namespace LeninSearch.Ocr
 
             file_tb.Text = dialog.FileName;
 
-            pictureBox1.Image = Image.FromFile(file_tb.Text);
+            initial_pb.Image = Image.FromFile(file_tb.Text);
         }
     }
 }

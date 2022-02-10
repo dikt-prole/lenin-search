@@ -137,7 +137,7 @@ namespace LeninSearch.Ocr.Model
                         TopLeftY = rect.Y,
                         BottomRightX = rect.X + rect.Width,
                         BottomRightY = rect.Y + rect.Height,
-                        Text = "X"
+                        Text = null
                     }
                 }
             };

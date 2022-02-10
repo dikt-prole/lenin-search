@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using LeninSearch.Ocr.Model;
-using LinkLabel = System.Windows.Forms.LinkLabel;
 
 namespace LeninSearch.Ocr
 {
-    public partial class UncoveredContoursDialog : Form
+    public partial class CommentLinkDialog : Form
     {
-        private List<UncoveredContour> _contours;
+        private List<CommentLinkCandidate> _contours;
 
         private int PageCount => _contours.Count / (int)pageSize_nud.Value + (_contours.Count % (int)pageSize_nud.Value > 0 ? 1 : 0);
 
-        public UncoveredContoursDialog()
+        public CommentLinkDialog()
         {
             InitializeComponent();
 
@@ -46,7 +44,7 @@ namespace LeninSearch.Ocr
 
             contours_flp.SizeChanged += (sender, args) =>
             {
-                foreach (var ucc in contours_flp.Controls.OfType<UncoveredContourControl>()) ucc.Width = contours_flp.Width - 26;
+                foreach (var ucc in contours_flp.Controls.OfType<CommentLinkControl>()) ucc.Width = contours_flp.Width - 26;
             };
 
             ok_btn.Click += (sender, args) =>
@@ -68,21 +66,21 @@ namespace LeninSearch.Ocr
             var pageContours = _contours.Skip(page * pageSize).Take(pageSize).ToList();
             foreach (var contour in pageContours)
             {
-                var contourControl = new UncoveredContourControl { Width = contours_flp.Width - 26, Contour = contour };
+                var contourControl = new CommentLinkControl { Width = contours_flp.Width - 26, Contour = contour };
                 contours_flp.Controls.Add(contourControl);
             }
         }
 
         private void SaveCurrentPage()
         {
-            var contourControls = contours_flp.Controls.OfType<UncoveredContourControl>().ToList();
+            var contourControls = contours_flp.Controls.OfType<CommentLinkControl>().ToList();
             foreach (var ucc in contourControls)
             {
                 ucc.Contour.Word.Text = ucc.WordText;
             }
         }
 
-        public void SetContours(List<UncoveredContour> contours)
+        public void SetContours(List<CommentLinkCandidate> contours)
         {
             _contours = contours;
             contours_flp.Controls.Clear();

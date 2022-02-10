@@ -1,7 +1,7 @@
 ﻿
 namespace LeninSearch.Ocr
 {
-    partial class UncoveredContoursDialog
+    partial class CommentLinkDialog
     {
         /// <summary>
         /// Required designer variable.
@@ -32,13 +32,13 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.contours_flp = new System.Windows.Forms.FlowLayoutPanel();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
-            this.pageSize_nud = new System.Windows.Forms.NumericUpDown();
-            this.ok_btn = new System.Windows.Forms.Button();
-            this.page_nud = new System.Windows.Forms.NumericUpDown();
-            this.totalPages_lbl = new System.Windows.Forms.Label();
-            this.next_btn = new System.Windows.Forms.Button();
-            this.prev_btn = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
+            this.ok_btn = new System.Windows.Forms.Button();
+            this.pageSize_nud = new System.Windows.Forms.NumericUpDown();
+            this.next_btn = new System.Windows.Forms.Button();
+            this.totalPages_lbl = new System.Windows.Forms.Label();
+            this.page_nud = new System.Windows.Forms.NumericUpDown();
+            this.prev_btn = new System.Windows.Forms.Button();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pageSize_nud)).BeginInit();
@@ -100,12 +100,15 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel2.Size = new System.Drawing.Size(855, 28);
             this.tableLayoutPanel2.TabIndex = 2;
             // 
-            // pageSize_nud
+            // label1
             // 
-            this.pageSize_nud.Location = new System.Drawing.Point(73, 3);
-            this.pageSize_nud.Name = "pageSize_nud";
-            this.pageSize_nud.Size = new System.Drawing.Size(44, 23);
-            this.pageSize_nud.TabIndex = 0;
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(3, 5);
+            this.label1.Margin = new System.Windows.Forms.Padding(3, 5, 3, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(58, 15);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "Page size:";
             // 
             // ok_btn
             // 
@@ -118,22 +121,12 @@ namespace LeninSearch.Ocr
             this.ok_btn.Text = "OK";
             this.ok_btn.UseVisualStyleBackColor = true;
             // 
-            // page_nud
+            // pageSize_nud
             // 
-            this.page_nud.Location = new System.Drawing.Point(383, 3);
-            this.page_nud.Name = "page_nud";
-            this.page_nud.Size = new System.Drawing.Size(44, 23);
-            this.page_nud.TabIndex = 2;
-            // 
-            // totalPages_lbl
-            // 
-            this.totalPages_lbl.AutoSize = true;
-            this.totalPages_lbl.Location = new System.Drawing.Point(433, 5);
-            this.totalPages_lbl.Margin = new System.Windows.Forms.Padding(3, 5, 3, 0);
-            this.totalPages_lbl.Name = "totalPages_lbl";
-            this.totalPages_lbl.Size = new System.Drawing.Size(33, 15);
-            this.totalPages_lbl.TabIndex = 3;
-            this.totalPages_lbl.Text = "of 99";
+            this.pageSize_nud.Location = new System.Drawing.Point(73, 3);
+            this.pageSize_nud.Name = "pageSize_nud";
+            this.pageSize_nud.Size = new System.Drawing.Size(44, 23);
+            this.pageSize_nud.TabIndex = 0;
             // 
             // next_btn
             // 
@@ -146,6 +139,23 @@ namespace LeninSearch.Ocr
             this.next_btn.Text = ">";
             this.next_btn.UseVisualStyleBackColor = true;
             // 
+            // totalPages_lbl
+            // 
+            this.totalPages_lbl.AutoSize = true;
+            this.totalPages_lbl.Location = new System.Drawing.Point(433, 5);
+            this.totalPages_lbl.Margin = new System.Windows.Forms.Padding(3, 5, 3, 0);
+            this.totalPages_lbl.Name = "totalPages_lbl";
+            this.totalPages_lbl.Size = new System.Drawing.Size(33, 15);
+            this.totalPages_lbl.TabIndex = 3;
+            this.totalPages_lbl.Text = "of 99";
+            // 
+            // page_nud
+            // 
+            this.page_nud.Location = new System.Drawing.Point(383, 3);
+            this.page_nud.Name = "page_nud";
+            this.page_nud.Size = new System.Drawing.Size(44, 23);
+            this.page_nud.TabIndex = 2;
+            // 
             // prev_btn
             // 
             this.prev_btn.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -157,25 +167,15 @@ namespace LeninSearch.Ocr
             this.prev_btn.Text = "<";
             this.prev_btn.UseVisualStyleBackColor = true;
             // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(3, 5);
-            this.label1.Margin = new System.Windows.Forms.Padding(3, 5, 3, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(58, 15);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "Page size:";
-            // 
-            // UncoveredContoursDialog
+            // CommentLinkDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(855, 677);
             this.Controls.Add(this.tableLayoutPanel1);
-            this.Name = "UncoveredContoursDialog";
+            this.Name = "CommentLinkDialog";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Uncovered Contours";
+            this.Text = "Identify Comment Link Numbers";
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel2.ResumeLayout(false);
             this.tableLayoutPanel2.PerformLayout();
