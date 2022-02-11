@@ -49,19 +49,6 @@ namespace LeninSearch.Ocr.Model
         [JsonIgnore]
         public int CenterY => (TopLeftY + BottomRightY) / 2;
 
-        public bool ContainsCommentLinkNumbers(int maxLinkNumber)
-        {
-            if (string.IsNullOrEmpty(Text)) return false;
-
-            var numberChars = Text.Where(char.IsNumber).ToArray();
-
-            if (!numberChars.Any()) return false;
-
-            var number = int.Parse(new string(numberChars));
-
-            return number <= maxLinkNumber;
-        } 
-
         public bool IsInsideWordCircle(Point point)
         {
             // dx^2 + dy^2 <= R^2

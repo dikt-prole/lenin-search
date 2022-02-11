@@ -7,6 +7,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Accord.MachineLearning.DecisionTrees;
 using Accord.Statistics.Kernels;
+using LeninSearch.Ocr.CV;
 using LeninSearch.Ocr.Model;
 using LeninSearch.Ocr.Service;
 using LeninSearch.Ocr.YandexVision;
@@ -24,8 +25,6 @@ namespace LeninSearch.Ocr
         private RandomForest _model;
 
         private OcrLabel? _mouseLeftLabel;
-
-        private readonly List<CommentLinkCandidate> _commentLinkCandidates = new List<CommentLinkCandidate>();
 
         private readonly IOcrService _ocrService;
 
@@ -89,8 +88,7 @@ namespace LeninSearch.Ocr
             _ocrService =
                 new FeatureSettingDecorator(
                     new IntersectingLineMergerDecorator(
-                        new CommentLinkNumberDecorator(uc => _commentLinkCandidates.Add(uc), OcrSettings.DefaultCommentLinkSettings,
-                            new YandexVisionOcrLineService())));
+                            new YandexVisionOcrLineService()));
         }
 
         private Dictionary<string, bool> GetRowModel()
@@ -132,8 +130,6 @@ namespace LeninSearch.Ocr
             var dialog = new ImageScopeDialog();
             if (dialog.ShowDialog() != DialogResult.OK) return;
 
-            _commentLinkCandidates.Clear();
-
             var imageFiles = GetImageFiles(bookFolder_tb.Text)
                 .Where(f => dialog.ImageMatch(int.Parse(new string(Path.GetFileNameWithoutExtension(f).Where(char.IsNumber).ToArray()))))
                 .ToList();
@@ -166,15 +162,32 @@ namespace LeninSearch.Ocr
 
             ocr_lb.SelectedIndex = 0;
 
+            var linkCandidates = new List<CommentLinkCandidate>();
+            var linkSettings = OcrSettings.DefaultCommentLinkSettings;
+            foreach (var page in _ocrData.Pages)
+            {
+                var imageFile = Directory.GetFiles(bookFolder_tb.Text)
+                    .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == page.Filename);
+                linkCandidates.AddRange(CvUtil.GetCommentLinkCandidates(imageFile, page, linkSettings));
+            }
+
             var contoursDialog = new CommentLinkDialog();
-            contoursDialog.SetContours(_commentLinkCandidates);
+            contoursDialog.SetContours(linkCandidates);
             contoursDialog.ShowDialog();
 
-            var removeWords = _commentLinkCandidates.Select(c => c.Word).Where(w => !w.IsCommentLinkNumber).ToList();
-            var lines = _ocrData.Pages.SelectMany(p => p.Lines).Where(l => l.Words != null);
-            foreach (var line in lines)
+            linkCandidates = linkCandidates.Where(lc => lc.Word.IsCommentLinkNumber).ToList();
+            foreach (var linkCandidate in linkCandidates)
             {
-                line.Words = line.Words.Except(removeWords).ToList();
+                var page = _ocrData.Pages.FirstOrDefault(p => p.Filename == linkCandidate.Filename);
+
+                if (page == null) continue;
+
+                var line = page.Lines.FirstOrDefault(l => l.PageWideRectangle(page.Width).IntersectsWith(linkCandidate.Rectangle));
+
+                if (line?.Words == null) continue;
+
+                line.Words.Add(linkCandidate.Word);
+                line.Words = line.Words.OrderBy(w => w.TopLeftX).ToList();
                 line.FitRectangleToWords();
             }
         }
@@ -721,7 +734,7 @@ namespace LeninSearch.Ocr
             var touchPoint = originalRect.Location;
 
             var word = page.Lines?.SelectMany(l => l.Words)?.FirstOrDefault(w => 
-                w.ContainsCommentLinkNumbers(OcrSettings.CommentLinkNumberMax) && w.IsInsideWordCircle(touchPoint));
+                w.IsCommentLinkNumber && w.IsInsideWordCircle(touchPoint));
 
             if (word != null)
             {

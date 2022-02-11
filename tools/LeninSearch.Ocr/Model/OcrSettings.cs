@@ -9,12 +9,14 @@ namespace LeninSearch.Ocr.Model
 
         public static readonly CommentLinkSettings DefaultCommentLinkSettings = new CommentLinkSettings
         {
-            MinWidth = 1,
+            MinWidth = 3,
             MaxWidth = 10,
-            MinHeight = 8,
+            MinHeight = 9,
             MaxHeight = 15,
             MinLineBottomDistance = 5,
-            MaxLineBottomDistance = 15
+            MaxLineBottomDistance = 15,
+            MaxLineTopDistance = 3,
+            MinLineTopDistance = -6
         };
     }
 }
