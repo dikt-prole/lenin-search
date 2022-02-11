@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,11 +11,13 @@ namespace LeninSearch.Ocr.Service
     public class CommentLinkNumberDecorator : IOcrService
     {
         private readonly IOcrService _serviceBase;
+        private readonly CommentLinkSettings _clSettings;
         private readonly Action<CommentLinkCandidate> _commentLinkAction;
 
-        public CommentLinkNumberDecorator(Action<CommentLinkCandidate> commentLinkAction, IOcrService serviceBase)
+        public CommentLinkNumberDecorator(Action<CommentLinkCandidate> commentLinkAction, CommentLinkSettings clSettings, IOcrService serviceBase)
         {
             _serviceBase = serviceBase;
+            _clSettings = clSettings;
             _commentLinkAction = commentLinkAction;
         }
 
@@ -49,21 +52,17 @@ namespace LeninSearch.Ocr.Service
 
         private bool Match(Rectangle candidateRect, OcrPage page)
         {
-            var allWords = page.Lines.Where(l => l.Words != null).SelectMany(l => l.Words);
-
-            if (allWords.Any(w => w.Rectangle.IntersectionPercent(candidateRect) > 50)) return false;
-
             var line = page.Lines.FirstOrDefault(l => l.PageWideRectangle(page.Width).IntersectsWith(candidateRect));
 
             if (line == null) return false;
 
             var lineBottomDistance = line.BottomRightY - candidateRect.Y - candidateRect.Height;
 
-            if (lineBottomDistance > OcrSettings.CommentLink.MaxLineBottomDistance) return false;
+            if (lineBottomDistance > _clSettings.MaxLineBottomDistance) return false;
 
-            if (lineBottomDistance < OcrSettings.CommentLink.MinLineBottomDistance) return false;
+            if (lineBottomDistance < _clSettings.MinLineBottomDistance) return false;
 
-            if (!OcrSettings.CommentLink.Match(candidateRect)) return false;
+            if (!_clSettings.SizeMatch(candidateRect)) return false;
 
             return true;
         }

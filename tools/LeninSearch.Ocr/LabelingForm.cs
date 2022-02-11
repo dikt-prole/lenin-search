@@ -25,7 +25,7 @@ namespace LeninSearch.Ocr
 
         private OcrLabel? _mouseLeftLabel;
 
-        private readonly List<CommentLinkCandidate> _uncoveredContours = new List<CommentLinkCandidate>();
+        private readonly List<CommentLinkCandidate> _commentLinkCandidates = new List<CommentLinkCandidate>();
 
         private readonly IOcrService _ocrService;
 
@@ -89,7 +89,7 @@ namespace LeninSearch.Ocr
             _ocrService =
                 new FeatureSettingDecorator(
                     new IntersectingLineMergerDecorator(
-                        new CommentLinkNumberDecorator(uc => _uncoveredContours.Add(uc), 
+                        new CommentLinkNumberDecorator(uc => _commentLinkCandidates.Add(uc), OcrSettings.DefaultCommentLinkSettings,
                             new YandexVisionOcrLineService())));
         }
 
@@ -132,7 +132,7 @@ namespace LeninSearch.Ocr
             var dialog = new ImageScopeDialog();
             if (dialog.ShowDialog() != DialogResult.OK) return;
 
-            _uncoveredContours.Clear();
+            _commentLinkCandidates.Clear();
 
             var imageFiles = GetImageFiles(bookFolder_tb.Text)
                 .Where(f => dialog.ImageMatch(int.Parse(new string(Path.GetFileNameWithoutExtension(f).Where(char.IsNumber).ToArray()))))
@@ -167,10 +167,10 @@ namespace LeninSearch.Ocr
             ocr_lb.SelectedIndex = 0;
 
             var contoursDialog = new CommentLinkDialog();
-            contoursDialog.SetContours(_uncoveredContours);
+            contoursDialog.SetContours(_commentLinkCandidates);
             contoursDialog.ShowDialog();
 
-            var removeWords = _uncoveredContours.Select(c => c.Word).Where(w => string.IsNullOrEmpty(w.Text)).ToList();
+            var removeWords = _commentLinkCandidates.Select(c => c.Word).Where(w => !w.IsCommentLinkNumber).ToList();
             var lines = _ocrData.Pages.SelectMany(p => p.Lines).Where(l => l.Words != null);
             foreach (var line in lines)
             {
@@ -676,8 +676,7 @@ namespace LeninSearch.Ocr
                                 g.DrawString(word.Text, font, textBrush, word.TopLeftX, line.TopLeftY - 15);
                             }
 
-                            if (word.ContainsCommentLinkNumbers(OcrSettings.CommentLinkNumberMax) && 
-                                (line.Label == OcrLabel.PStart || line.Label == OcrLabel.PMiddle || line.Label == OcrLabel.Title || line.Label == OcrLabel.Comment))
+                            if (word.IsCommentLinkNumber)
                             {
                                 var ellipseX = word.CenterX - OcrSettings.WordCircleRadius;
                                 var ellipseY = word.CenterY - OcrSettings.WordCircleRadius;

@@ -6,6 +6,7 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
+using LeninSearch.Ocr.Model;
 
 namespace LeninSearch.Ocr.CV
 {
@@ -200,6 +201,57 @@ namespace LeninSearch.Ocr.CV
 
                 if (rect.Width > 0 && rect.Height > 0) yield return rect;
             }
+        }
+
+        public static IEnumerable<CommentLinkCandidate> GetCommentLinkCandidates(string imageFile, OcrPage page, CommentLinkSettings settings)
+        {
+            var rects = GetSmoothedContourRectangles(imageFile).ToList();
+            foreach (var rect in rects)
+            {
+                var line = page.Lines.FirstOrDefault(l => l.PageWideRectangle(page.Width).IntersectsWith(rect));
+
+                if (line == null) continue;
+
+                if (!settings.SizeMatch(rect)) continue;
+
+                var lineBottomDistance = line.BottomRightY - rect.Y - rect.Height;
+                var lineTopDistance = rect.Y - line.TopLeftY;
+
+                if (!settings.LineDistanceMatch(lineBottomDistance, lineTopDistance)) continue;
+
+                var clCandidate = new CommentLinkCandidate
+                {
+                    ImageFile = imageFile,
+                    Rectangle = rect,
+                    Word = new OcrWord
+                    {
+                        TopLeftX = rect.X,
+                        TopLeftY = rect.Y,
+                        BottomRightX = rect.X + rect.Width,
+                        BottomRightY = rect.Y + rect.Height,
+                        LineBottomDistance = lineBottomDistance
+                    }
+                };
+
+                yield return clCandidate;
+            }
+        }
+
+        private static bool CommentLinkMatch(Rectangle candidateRect, OcrPage page, CommentLinkSettings settings)
+        {
+            var line = page.Lines.FirstOrDefault(l => l.PageWideRectangle(page.Width).IntersectsWith(candidateRect));
+
+            if (line == null) return false;
+
+            var lineBottomDistance = line.BottomRightY - candidateRect.Y - candidateRect.Height;
+
+            if (lineBottomDistance > settings.MaxLineBottomDistance) return false;
+
+            if (lineBottomDistance < settings.MinLineBottomDistance) return false;
+
+            if (!settings.SizeMatch(candidateRect)) return false;
+
+            return true;
         }
     }
 }

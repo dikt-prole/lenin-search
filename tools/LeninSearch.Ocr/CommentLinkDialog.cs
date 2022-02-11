@@ -77,6 +77,7 @@ namespace LeninSearch.Ocr
             foreach (var ucc in contourControls)
             {
                 ucc.Contour.Word.Text = ucc.WordText;
+                ucc.Contour.Word.IsCommentLinkNumber = !string.IsNullOrEmpty(ucc.WordText);
             }
         }
 
