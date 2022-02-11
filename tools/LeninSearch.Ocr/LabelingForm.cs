@@ -32,7 +32,6 @@ namespace LeninSearch.Ocr
         {
             {Keys.S, OcrLabel.PStart},
             {Keys.M, OcrLabel.PMiddle},
-            {Keys.E, OcrLabel.PEnd},
             {Keys.C, OcrLabel.Comment},
             {Keys.T, OcrLabel.Title},
             {Keys.A, OcrLabel.Image},
@@ -54,7 +53,6 @@ namespace LeninSearch.Ocr
             none_panel.BackColor = OcrPalette.GetColor(null);
             pstart_panel.BackColor = OcrPalette.GetColor(OcrLabel.PStart);
             pmiddle_panel.BackColor = OcrPalette.GetColor(OcrLabel.PMiddle);
-            pend_panel.BackColor = OcrPalette.GetColor(OcrLabel.PEnd);
             comment_panel.BackColor = OcrPalette.GetColor(OcrLabel.Comment);
             title_panel.BackColor = OcrPalette.GetColor(OcrLabel.Title);
             image_panel.BackColor = OcrPalette.GetColor(OcrLabel.Image);
@@ -236,9 +234,17 @@ namespace LeninSearch.Ocr
                 NumberOfTrees = 20
             };
 
-            _model = teacher.Learn(inputs, outputs);
-
-            MessageBox.Show($"Model trained on {labeledLines.Count} examples", "Model", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            try
+            {
+                _model = teacher.Learn(inputs, outputs);
+                MessageBox.Show($"Model trained on {labeledLines.Count} examples", "Model", MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            catch (Exception exc)
+            {
+                MessageBox.Show(exc.Message, "Error", MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
         }
 
         private void SaveOcrDataClick(object? sender, EventArgs e)
@@ -387,19 +393,11 @@ namespace LeninSearch.Ocr
                 menu.Items.Add("Line Text Show/Hide", null, (o, a) => SwitchDisplayText(rect));
                 menu.Items.Add("Break Into Words", null, (o, a) => BreakIntoWords(rect));
                 menu.Items.Add("Merge Lines", null, (o, a) => MergeLines(rect));
-                menu.Items.Add("Add Word", null, (o, a) => AddWord(rect));
+                menu.Items.Add("Add Word", null, (o, a) => AddWord(rect, false));
+                menu.Items.Add("Add Comment Link", null, (o, a) => AddWord(rect, true));
                 menu.Items.Add("Set Word Text", null, (o, a) => SetWordText(rect));
                 menu.Items.Add("Remove Line", null, (o, a) => RemoveLine(rect));
                 menu.Items.Add("Show Features", null, (o, a) => ShowLineFeatures(rect));
-                var commentLines = page.Lines.Where(l => l.Label == OcrLabel.Comment).ToList();
-                var bindWordMenuItem = new ToolStripMenuItem("Bind Word", null);
-                bindWordMenuItem.DropDownItems.Add("None", null, (o, a) => BindWordToCommentLine(rect, null));
-                foreach (var commentLine in commentLines)
-                {
-                    bindWordMenuItem.DropDownItems.Add($"Comment Line {commentLine.LineIndex}", null,
-                        (o, a) => BindWordToCommentLine(rect, commentLine.LineIndex));
-                }
-                menu.Items.Add(bindWordMenuItem);
 
                 if (all_rb.Checked) menu.Items.Add(new ToolStripSeparator());
             }
@@ -472,7 +470,7 @@ namespace LeninSearch.Ocr
             e.Graphics.FillRectangle(dividerBrush, bottomDividerDragRectangle);
         }
 
-        private void AddWord(Rectangle pbRectangle)
+        private void AddWord(Rectangle pbRectangle, bool isCommentLink)
         {
             var fileName = ocr_lb.SelectedItem as string;
             if (fileName == null) return;
@@ -489,7 +487,8 @@ namespace LeninSearch.Ocr
                 TopLeftY = originalRect.Y,
                 BottomRightX = originalRect.X + originalRect.Width,
                 BottomRightY = originalRect.Y + originalRect.Height,
-                Text = dialog.WordText
+                Text = dialog.WordText,
+                IsCommentLinkNumber = isCommentLink
             };
 
             var wordLine = page.Lines.FirstOrDefault(l => l.PageWideRectangle(page.Width).IntersectsWith(word.Rectangle));
@@ -608,9 +607,6 @@ namespace LeninSearch.Ocr
             pmiddle_panel.BorderStyle = label == OcrLabel.PMiddle
                 ? BorderStyle.Fixed3D
                 : BorderStyle.None;
-            pend_panel.BorderStyle = label == OcrLabel.PEnd
-                ? BorderStyle.Fixed3D
-                : BorderStyle.None;
             comment_panel.BorderStyle = label == OcrLabel.Comment
                 ? BorderStyle.Fixed3D
                 : BorderStyle.None;
@@ -671,20 +667,7 @@ namespace LeninSearch.Ocr
 
                         foreach (var word in line.Words ?? new List<OcrWord>())
                         {
-                            if (word.CommentLineIndex != null)
-                            {
-                                var commentLine = page.Lines[word.CommentLineIndex.Value];
-                                var verticalMinY = word.CenterY + OcrSettings.WordCircleRadius;
-                                var verticalMaxY = commentLine.TopLeftY;
-                                var verticalX = word.CenterX;
-                                g.DrawLine(commentLinkPen, verticalX, verticalMinY, verticalX, verticalMaxY);
-
-                                var textX = word.CenterX - OcrSettings.WordCircleRadius;
-                                var textY = word.CenterY - OcrSettings.WordCircleRadius;
-                                g.DrawString(word.Text, font, commentLinkBrush, textX, textY);
-                            }
-
-                            if (line.DisplayText && word.CommentLineIndex == null)
+                            if (line.DisplayText)
                             {
                                 g.DrawString(word.Text, font, textBrush, word.TopLeftX, line.TopLeftY - 15);
                             }
@@ -721,26 +704,6 @@ namespace LeninSearch.Ocr
             page.MergeLines(intersectingLines[0], intersectingLines.Skip(1).ToArray());
 
             ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
-        }
-
-        private void BindWordToCommentLine(Rectangle pbRectangle, int? commentLineIndex)
-        {
-            var filename = ocr_lb.SelectedItem as string;
-            if (filename == null) return;
-            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
-            var page = _ocrData.GetPage(filename);
-            if (page == null) return;
-
-            var touchPoint = originalRect.Location;
-
-            var word = page.Lines?.SelectMany(l => l.Words)?.FirstOrDefault(w => 
-                w.IsCommentLinkNumber && w.IsInsideWordCircle(touchPoint));
-
-            if (word != null)
-            {
-                word.CommentLineIndex = commentLineIndex;
-                ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
-            }
         }
 
         private void ShowLineFeatures(Rectangle pbRectangle)

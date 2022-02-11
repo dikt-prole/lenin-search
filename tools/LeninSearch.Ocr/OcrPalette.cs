@@ -13,10 +13,9 @@ namespace LeninSearch.Ocr
             {
                 case OcrLabel.PStart:
                     return Color.Green;
+
                 case OcrLabel.PMiddle:
                     return Color.MediumAquamarine;
-                case OcrLabel.PEnd:
-                    return Color.LimeGreen;
 
                 case OcrLabel.Garbage:
                     return Color.Brown;

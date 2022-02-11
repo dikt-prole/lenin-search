@@ -28,9 +28,6 @@ namespace LeninSearch.Ocr.Model
         [JsonProperty("bld")]
         public bool Bold { get; set; }
 
-        [JsonProperty("cli")]
-        public int? CommentLineIndex { get; set; }
-
         [JsonProperty("lbd")]
         public double LineBottomDistance { get; set; }
 
@@ -39,6 +36,12 @@ namespace LeninSearch.Ocr.Model
 
         [JsonProperty("cln")]
         public bool IsCommentLinkNumber { get; set; }
+
+        [JsonIgnore]
+        public int Width => BottomRightX - TopLeftX;
+
+        [JsonIgnore]
+        public int Height => BottomRightY - TopLeftY;
 
         [JsonIgnore]
         public Rectangle Rectangle => new Rectangle(TopLeftX, TopLeftY, BottomRightX - TopLeftX, BottomRightY - TopLeftY);

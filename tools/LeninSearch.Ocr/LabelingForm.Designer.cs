@@ -36,7 +36,6 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel6 = new System.Windows.Forms.TableLayoutPanel();
             this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.none_panel = new System.Windows.Forms.Panel();
@@ -47,7 +46,6 @@ namespace LeninSearch.Ocr
             this.comment_panel = new System.Windows.Forms.Panel();
             this.label7 = new System.Windows.Forms.Label();
             this.pmiddle_panel = new System.Windows.Forms.Panel();
-            this.pend_panel = new System.Windows.Forms.Panel();
             this.image_panel = new System.Windows.Forms.Panel();
             this.label8 = new System.Windows.Forms.Label();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
@@ -154,7 +152,6 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 12.5F));
             this.tableLayoutPanel6.Controls.Add(this.label6, 11, 0);
             this.tableLayoutPanel6.Controls.Add(this.label5, 9, 0);
-            this.tableLayoutPanel6.Controls.Add(this.label4, 7, 0);
             this.tableLayoutPanel6.Controls.Add(this.label3, 5, 0);
             this.tableLayoutPanel6.Controls.Add(this.label2, 3, 0);
             this.tableLayoutPanel6.Controls.Add(this.none_panel, 0, 0);
@@ -165,7 +162,6 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel6.Controls.Add(this.comment_panel, 8, 0);
             this.tableLayoutPanel6.Controls.Add(this.label7, 13, 0);
             this.tableLayoutPanel6.Controls.Add(this.pmiddle_panel, 4, 0);
-            this.tableLayoutPanel6.Controls.Add(this.pend_panel, 6, 0);
             this.tableLayoutPanel6.Controls.Add(this.image_panel, 12, 0);
             this.tableLayoutPanel6.Controls.Add(this.label8, 15, 0);
             this.tableLayoutPanel6.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -196,16 +192,6 @@ namespace LeninSearch.Ocr
             this.label5.Size = new System.Drawing.Size(57, 22);
             this.label5.TabIndex = 9;
             this.label5.Text = "Comment (C)";
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(313, 6);
-            this.label4.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(51, 15);
-            this.label4.TabIndex = 8;
-            this.label4.Text = "PEnd (E)";
             // 
             // label3
             // 
@@ -299,15 +285,6 @@ namespace LeninSearch.Ocr
             this.pmiddle_panel.Name = "pmiddle_panel";
             this.pmiddle_panel.Size = new System.Drawing.Size(18, 18);
             this.pmiddle_panel.TabIndex = 12;
-            // 
-            // pend_panel
-            // 
-            this.pend_panel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pend_panel.Location = new System.Drawing.Point(287, 5);
-            this.pend_panel.Margin = new System.Windows.Forms.Padding(5);
-            this.pend_panel.Name = "pend_panel";
-            this.pend_panel.Size = new System.Drawing.Size(18, 18);
-            this.pend_panel.TabIndex = 14;
             // 
             // image_panel
             // 
@@ -569,7 +546,6 @@ namespace LeninSearch.Ocr
         private System.Windows.Forms.Panel title_panel;
         private System.Windows.Forms.Panel garbage_panel;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
@@ -587,7 +563,6 @@ namespace LeninSearch.Ocr
         private System.Windows.Forms.Button applyModel_btn;
         private System.Windows.Forms.Panel pmiddle_panel;
         private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.Panel pend_panel;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.FlowLayoutPanel rowModel_flp;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;

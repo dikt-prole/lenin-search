@@ -38,8 +38,6 @@ namespace LeninSearch.Ocr.Model
 
         public void MergeLines(OcrLine intoLine, params OcrLine[] mergeLines)
         {
-            var commentLineIndexes = Lines.Where(l => l.Label == OcrLabel.Comment).ToDictionary(l => l.LineIndex, l => l);
-
             foreach (var line in mergeLines) Lines.Remove(line);
 
             var intersectingLines = new[] { intoLine }.Concat(mergeLines).ToList();
@@ -51,15 +49,10 @@ namespace LeninSearch.Ocr.Model
             ReindexLines();
 
             foreach (var word in intoLine.Words) word.LineBottomDistance = intoLine.BottomRightY - word.BottomRightY;
-
-            var commentedWords = Lines.SelectMany(l => l.Words).Where(w => w.CommentLineIndex.HasValue).ToList();
-            foreach (var w in commentedWords) w.CommentLineIndex = commentLineIndexes[w.CommentLineIndex.Value].LineIndex;
         }
 
         public void BreakIntoWords(OcrLine line)
         {
-            var commentLineIndexes = Lines.Where(l => l.Label == OcrLabel.Comment).ToDictionary(l => l.LineIndex, l => l);
-
             var lineIndex = Lines.IndexOf(line);
 
             Lines.Remove(line);
@@ -84,9 +77,6 @@ namespace LeninSearch.Ocr.Model
             Lines.InsertRange(lineIndex, wordLines);
 
             ReindexLines();
-
-            var commentedWords = Lines.SelectMany(l => l.Words).Where(w => w.CommentLineIndex.HasValue).ToList();
-            foreach (var w in commentedWords) w.CommentLineIndex = commentLineIndexes[w.CommentLineIndex.Value].LineIndex;
         }
 
         public List<OcrLine> GetIntersectingLines(Rectangle rect)

@@ -85,8 +85,12 @@ namespace LeninSearch.Ocr.Model
             var lineRectangle = line.Rectangle;
             var pageWideRectangle = line.PageWideRectangle(page.Width);
             var lineText = line.Words?.Any(w => !string.IsNullOrEmpty(w.Text)) == true
-                ? string.Join(" ", line.Words.Select(w => w.Text))
+                ? string.Join("", line.Words.Select(w => w.Text))
                 : null;
+            var totalWordWidth = line.Words?.Any() != true
+                ? 0
+                : 1.0 * line.Words.Sum(w => w.Width);
+
             return new OcrLineFeatures
             {
                 // geometric features
@@ -105,7 +109,7 @@ namespace LeninSearch.Ocr.Model
                 // text features
                 PixelsPerSymbol = string.IsNullOrEmpty(lineText)
                     ? 0
-                    : 1.0 * (line.BottomRightX - line.TopLeftX) / lineText.Length,
+                    : totalWordWidth / lineText.Length,
                 WordCount = line.Words?.Count ?? 0,
                 SymbolCount = lineText?.Length ?? 0,
                 StartsWithCapital = string.IsNullOrEmpty(lineText)
