@@ -13,31 +13,33 @@ namespace LeninSearch.Script.Scripts
         public string Arguments => "book-folders";
         public void Execute(params string[] input)
         {
-            var bookFolders = input;
-            var blockService = new YandexVisionOcrBlockService();
-            foreach (var bookFolder in bookFolders)
-            {
-                Console.WriteLine($"Processing book folder: {bookFolder}");
-                var sw = new Stopwatch(); sw.Start();
-                var ocrData = OcrData.Empty();
-                var imageFiles = Directory.GetFiles(bookFolder)
-                    .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg"));
-                foreach (var imageFile in imageFiles)
-                {
-                    var featureBlocksResult = blockService.GetBlocksAsync(imageFile).Result;
-                    if (!featureBlocksResult.Success)
-                    {
-                        Console.WriteLine(featureBlocksResult.Error);
-                        return;
-                    }
+            throw new NotImplementedException();
 
-                    ocrData.FeaturedBlocks.AddRange(featureBlocksResult.Blocks);
-                }
+            //var bookFolders = input;
+            //var blockService = new YandexVisionOcrLineService();
+            //foreach (var bookFolder in bookFolders)
+            //{
+            //    Console.WriteLine($"Processing book folder: {bookFolder}");
+            //    var sw = new Stopwatch(); sw.Start();
+            //    var ocrData = OcrData.Empty();
+            //    var imageFiles = Directory.GetFiles(bookFolder)
+            //        .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg"));
+            //    foreach (var imageFile in imageFiles)
+            //    {
+            //        var linesResult = blockService.GetOcrPageAsync(imageFile).Result;
+            //        if (!linesResult.Success)
+            //        {
+            //            Console.WriteLine(linesResult.Error);
+            //            return;
+            //        }
 
-                ocrData.Save(bookFolder);
-                sw.Stop();
-                Console.WriteLine($"Ready in {sw.Elapsed}");
-            }
+            //        ocrData.Lines.AddRange(linesResult.Lines);
+            //    }
+
+            //    ocrData.Save(bookFolder);
+            //    sw.Stop();
+            //    Console.WriteLine($"Ready in {sw.Elapsed}");
+            //}
         }
     }
 }

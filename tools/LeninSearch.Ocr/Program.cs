@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace LeninSearch.Ocr
@@ -17,8 +14,8 @@ namespace LeninSearch.Ocr
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            //Application.Run(new SingleImageOcrForm());
-            Application.Run(new LabelingForm());
+            Application.Run(new SingleImageOcrForm());
+            //Application.Run(new LabelingForm());
         }
     }
 }

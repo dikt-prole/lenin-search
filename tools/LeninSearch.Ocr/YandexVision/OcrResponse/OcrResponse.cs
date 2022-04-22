@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using LeninSearch.Ocr.Model;
@@ -13,7 +14,9 @@ namespace LeninSearch.Ocr.YandexVision.OcrResponse
 
         public Point Point()
         {
-            return new Point(int.Parse(X), int.Parse(Y));
+            int.TryParse(X, out var x);
+            int.TryParse(Y, out var y);
+            return new Point(x, y);
         }
     }
 
@@ -93,7 +96,6 @@ namespace LeninSearch.Ocr.YandexVision.OcrResponse
             var bottomRight = BoundingBox.BottomRight.Point();
             return new OcrWord
             {
-                Id = Guid.NewGuid(),
                 TopLeftX = topLeft.X,
                 TopLeftY = topLeft.Y,
                 BottomRightX = bottomRight.X,
@@ -115,7 +117,6 @@ namespace LeninSearch.Ocr.YandexVision.OcrResponse
             var bottomRight = BoundingBox.BottomRight.Point();
             return new OcrLine
             {
-                Id = Guid.NewGuid(),
                 TopLeftX = topLeft.X,
                 TopLeftY = topLeft.Y,
                 BottomRightX = bottomRight.X,

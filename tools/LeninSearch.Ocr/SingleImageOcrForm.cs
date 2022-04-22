@@ -13,7 +13,13 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.Stitching;
 using Emgu.CV.Structure;
+using Emgu.CV.Util;
+using LeninSearch.Ocr.CV;
+using LeninSearch.Ocr.Model;
+using LeninSearch.Ocr.Service;
+using LeninSearch.Ocr.YandexVision;
 using LeninSearch.Ocr.YandexVision.OcrResponse;
 using Newtonsoft.Json;
 
@@ -21,102 +27,128 @@ namespace LeninSearch.Ocr
 {
     public partial class SingleImageOcrForm : Form
     {
-        private string _imageFile;
-        private string _iamToken;
-        private readonly HttpClient _httpClient = new HttpClient();
-
+        private OcrPage _ocrPage;
         public SingleImageOcrForm()
         {
             InitializeComponent();
             load_btn.Click += Load_btnOnClick;
             ocr_btn.Click += Ocr_btnOnClick;
-            lines_btn.Click += Lines_btnOnClick;
+            test_btn.Click += TestClick;
+            prev_btn.Click += Prev_btnOnClick;
+            next_btn.Click += Next_btnOnClick;
+            processed_pb.MouseDown += ProcessedOnMouseDown;
         }
 
-        private void Lines_btnOnClick(object? sender, EventArgs e)
+        private void ProcessedOnMouseDown(object sender, MouseEventArgs e)
         {
-            var tl = CvUtil.GetTopDividerLine(_imageFile);
-            var bl = CvUtil.GetBottomDividerLine(_imageFile);
+            if (_ocrPage == null) return;
 
-            var image = new Bitmap(Image.FromFile(_imageFile));
+            var originalPoint = processed_pb.ToOriginalPoint(e.Location);
 
+            var word = _ocrPage.Lines.Where(l => l.Words != null)
+                .SelectMany(l => l.Words)
+                .FirstOrDefault(w => w.IsCommentLinkNumber && w.IsInsideWordCircle(originalPoint));
+
+            if (word == null) return;
+
+            var message = JsonConvert.SerializeObject(word, Formatting.Indented);
+
+            MessageBox.Show(message, "Word info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void Next_btnOnClick(object? sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(file_tb.Text)) return;
+
+            var directory = Path.GetDirectoryName(file_tb.Text);
+
+            var files = Directory.GetFiles(directory).Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg")).ToList();
+
+            var currentIndex = files.IndexOf(file_tb.Text);
+
+            if (currentIndex < files.Count - 1)
+            {
+                file_tb.Text = files[currentIndex + 1];
+                initial_pb.Image = Image.FromFile(file_tb.Text);
+            }
+        }
+
+        private void Prev_btnOnClick(object? sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(file_tb.Text)) return;
+
+            var directory = Path.GetDirectoryName(file_tb.Text);
+
+            var files = Directory.GetFiles(directory).Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg")).ToList();
+
+            var currentIndex = files.IndexOf(file_tb.Text);
+
+            if (currentIndex > 0)
+            {
+                file_tb.Text = files[currentIndex - 1];
+                initial_pb.Image = Image.FromFile(file_tb.Text);
+            }
+        }
+
+        private void TestClick(object? sender, EventArgs e)
+        {
+            var rects = CvUtil.GetContourRectangles(file_tb.Text).ToList();
+            var image = new Bitmap(Image.FromFile(file_tb.Text));
             using var g = Graphics.FromImage(image);
 
-            g.DrawLine(Pens.Red, tl.LeftX, tl.Y, tl.RightX, tl.Y);
-            g.DrawLine(Pens.Red, bl.LeftX, bl.Y, bl.RightX, bl.Y);
+            foreach (var rect in rects) g.DrawRectangle(Pens.Red, rect);
 
-            pictureBox1.Image = image;
-        }
-
-        private int GetMinDistance(LineSegment2D l1, LineSegment2D l2)
-        {
-            var distances = new List<int>
-            {
-                Math.Abs(l1.P1.X - l2.P1.X),
-                Math.Abs(l1.P1.X - l2.P2.X),
-                Math.Abs(l1.P2.X - l2.P2.X),
-                Math.Abs(l1.P2.X - l2.P1.X)
-            };
-
-            return distances.Min();
+            processed_pb.Image = image;
         }
 
         private async void Ocr_btnOnClick(object? sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(_imageFile)) return;
+            if (string.IsNullOrEmpty(file_tb.Text)) return;
 
-            if (string.IsNullOrEmpty(_iamToken)) RefreshIamToken();
-
-            var imageBytes = File.ReadAllBytes(_imageFile);
-
-            var ocrRequest = YtVisionRequest.Ocr(imageBytes);
-
-            var ocrRequestJson = JsonConvert.SerializeObject(ocrRequest, Formatting.Indented);
-
-            var apiKey = Environment.GetEnvironmentVariable("YandexApiKey");
-
-            var request = new HttpRequestMessage
+            var clSettings = new CommentLinkSettings
             {
-                RequestUri = new Uri("https://vision.api.cloud.yandex.net/vision/v1/batchAnalyze"),
-                Method = HttpMethod.Post,
-                Headers =
-                {
-                    {HttpRequestHeader.ContentType.ToString(), "application/json"},
-                    {HttpRequestHeader.Authorization.ToString(), $"Api-Key {apiKey}"}
-                },
-                Content = new StringContent(ocrRequestJson)
+                MinWidth = 3,
+                MaxWidth = 10,
+                MinHeight = 9,
+                MaxHeight = 15,
+                MinLineBottomDistance = 5,
+                MaxLineBottomDistance = 15,
+                MaxLineTopDistance = 3,
+                MinLineTopDistance = -6
             };
+            var ocrService =
+                new FeatureSettingDecorator(
+                    new IntersectingLineMergerDecorator(
+                            new YandexVisionOcrLineService()));
 
-            var response = await _httpClient.SendAsync(request);
+            var ocrResult = await ocrService.GetOcrPageAsync(file_tb.Text);
+            _ocrPage = ocrResult.Page;
 
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                MessageBox.Show($"Response code: {response.StatusCode}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+            var clCandidates = CvUtil.GetCommentLinkCandidates(file_tb.Text, _ocrPage, clSettings).ToList();
 
-            var responseJson = await response.Content.ReadAsStringAsync();
-
-            var ocrResponse = JsonConvert.DeserializeObject<OcrResponse>(responseJson);
-
-            var blocks = ocrResponse.Results[0].Results[0].TextDetection.Pages[0].Blocks;
+            var commentLinkWords = clCandidates.Select(c => c.Word).ToList();
+            foreach (var clw in commentLinkWords) clw.IsCommentLinkNumber = true;
 
             // draw blocks on an image
-            var image = new Bitmap(Image.FromFile(_imageFile));
-            using (var g = Graphics.FromImage(image))
-            {
-                foreach (var block in blocks)
-                {
-                    foreach (var line in block.Lines)
-                    {
-                        DrawBoundingBox(g, line.BoundingBox, Color.Red);
-                    }
+            var image = new Bitmap(Image.FromFile(file_tb.Text));
+            using var g = Graphics.FromImage(image);
 
-                    DrawBoundingBox(g, block.BoundingBox, Color.Blue);
-                }
+            using var lineBrush = new SolidBrush(Color.FromArgb(100, Color.Red));
+            using var commentLinkPen = new Pen(Color.Blue, 2);
+            foreach (var line in _ocrPage.Lines)
+            {
+                g.FillRectangle(lineBrush, line.Rectangle);
             }
 
-            pictureBox1.Image = image;
+            foreach (var word in commentLinkWords)
+            {
+                var circleX = word.CenterX - OcrSettings.WordCircleRadius;
+                var circleY = word.CenterY - OcrSettings.WordCircleRadius;
+                var diameter = OcrSettings.WordCircleRadius * 2;
+                g.DrawEllipse(commentLinkPen, circleX, circleY, diameter, diameter);
+            }
+
+            processed_pb.Image = image;
         }
 
         private void DrawBoundingBox(Graphics g, BoundingBox box, Color color)
@@ -144,28 +176,9 @@ namespace LeninSearch.Ocr
 
             if (dialog.ShowDialog() != DialogResult.OK) return;
 
-            _imageFile = dialog.FileName;
+            file_tb.Text = dialog.FileName;
 
-
-            pictureBox1.Image = Image.FromFile(_imageFile);
-        }
-
-        private void RefreshIamToken()
-        {
-            var process = new Process
-            {
-                StartInfo =
-                {
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    FileName = @"C:\Users\vbncmx\yandex-cloud\bin\yc.exe",
-                    Arguments = "iam create-token",
-                    CreateNoWindow = true
-                }
-            };
-            process.Start();
-            _iamToken = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
+            initial_pb.Image = Image.FromFile(file_tb.Text);
         }
     }
 }
