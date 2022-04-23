@@ -15,4 +15,10 @@
     <ProjectReference Include="..\Tools\LeninSearch.Ocr\LeninSearch.Ocr.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="fb2template.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

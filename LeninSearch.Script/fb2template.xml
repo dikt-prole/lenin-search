@@ -35,6 +35,7 @@
       </p>
       <image l:href="#i_001.jpg"/>
     </section>-->
+    [body]
   </body>
   <body name="notes">
     <!--<section id="n_1">
@@ -43,6 +44,7 @@
       </title>
       <p>{comment-text}</p>
     </section>-->
+    [body-notes]
   </body>
   <!-- <binary content-type="image/jpeg" id="i_001.jpg">{base64-bytes}</binary> -->
 </FictionBook>
