@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using LeninSearch.Ocr.Model;
 using LeninSearch.Script.Scripts.Models;
 
@@ -20,6 +21,48 @@ namespace LeninSearch.Script.Scripts
 
             // 1. load ocr data
             var ocrData = OcrData.Load(ocrBookFolder);
+
+            // 2. massage ocr data
+
+            // 2.1 paragraph should start and end on the same page
+            for (var pageIndex = 1; pageIndex < ocrData.Pages.Count; pageIndex++)
+            {
+                var middleLines = ocrData.Pages[pageIndex].Lines
+                    .Where(l => l.Label == OcrLabel.PStart || l.Label == OcrLabel.PMiddle)
+                    .TakeWhile(l => l.Label == OcrLabel.PMiddle)
+                    .ToList();
+
+                if (!middleLines.Any()) continue;
+
+                for (var reversePageIndex = pageIndex - 1; reversePageIndex >= 0; reversePageIndex--)
+                {
+                    if (ocrData.Pages[reversePageIndex].Lines.Any(l => l.Label == OcrLabel.PStart))
+                    {
+                        foreach (var middleLine in middleLines)
+                        {
+                            ocrData.Pages[pageIndex].Lines.Remove(middleLine);
+                            ocrData.Pages[reversePageIndex].Lines.Add(middleLine);
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            // 2.2 multiline titles should be on single line
+            foreach (var page in ocrData.Pages)
+            {
+                for (var lineIndex = 0; lineIndex < page.Lines.Count - 1; lineIndex++)
+                {
+                    if (page.Lines[lineIndex].Label == OcrLabel.Title &&
+                        page.Lines[lineIndex + 1].Label == OcrLabel.Title)
+                    {
+                        page.Lines[lineIndex].Words.AddRange(page.Lines[lineIndex + 1].Words);
+                        page.Lines.RemoveAt(lineIndex + 1);
+                        lineIndex--;
+                    }
+                }
+            }
 
             // 2. go through pages and create sections, notes & images
             var sections = new List<List<Fb2Line>>();
@@ -55,7 +98,7 @@ namespace LeninSearch.Script.Scripts
                             if (currentParagraphLineFb2 == null)
                                 throw new Exception($"Page {pageIndex}: expected not null current paragraph line. Check that paragraph start goes after title");
 
-                            currentParagraphLineFb2.Words.AddRange(currentLine.Words);
+                            currentParagraphLineFb2.Lines.Add(currentLine);
                         }
                     }
                 }
@@ -65,8 +108,15 @@ namespace LeninSearch.Script.Scripts
             }
 
             // 3. construct body xml
-            var sectionXmls = sections.Select(s => string.Join(Environment.NewLine, s.Select(l => l.GetXml()))).ToList();
-            var bodyXml = string.Join(Environment.NewLine, sectionXmls);
+            var sectionsSb = new StringBuilder();
+            for (var sectionIndex = 0; sectionIndex < sections.Count; sectionIndex++)
+            {
+                var sectionXml =
+                    $"<section idx=\"{sectionIndex}\">{Environment.NewLine}{string.Join(Environment.NewLine, sections[sectionIndex].Select(l => l.GetXml()))}{Environment.NewLine}</section>";
+                sectionsSb.Append(sectionXml);
+                sectionsSb.Append(Environment.NewLine);
+            }
+            var bodyXml = sectionsSb.ToString();
 
             // 4. load and fill template
             var template = File.ReadAllText("fb2template.xml");
