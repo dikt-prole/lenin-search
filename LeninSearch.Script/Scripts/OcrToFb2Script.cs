@@ -93,21 +93,21 @@ namespace LeninSearch.Script.Scripts
 
             // 3. go through pages and create sections & images
             var sections = new List<List<Fb2Line>>();
+            var imageIndex = 1;
             for (var pageIndex = 0; pageIndex < ocrData.Pages.Count; pageIndex++)
             {
                 var page = ocrData.Pages[pageIndex];
-                var pageParagraphLinesFb2 = new List<Fb2Line>();
-                var pageImageLinesFb2 = new List<Fb2Line>();
 
-                var paragraphOcrLines = page.Lines.Where(l => l.Label == OcrLabel.PStart || l.Label == OcrLabel.PMiddle || l.Label == OcrLabel.Title).ToList();
-                if (paragraphOcrLines.Any())
+                var pageParagraphLinesFb2 = new List<Fb2Line>();
+                var ocrTextLines = page.Lines.Where(l => l.Label == OcrLabel.PStart || l.Label == OcrLabel.PMiddle || l.Label == OcrLabel.Title).ToList();
+                if (ocrTextLines.Any())
                 {
-                    var currentParagraphLineFb2 = Fb2Line.Construct(paragraphOcrLines[0]);
+                    var currentParagraphLineFb2 = Fb2Line.Construct(ocrTextLines[0]);
                     pageParagraphLinesFb2.Add(currentParagraphLineFb2);
 
-                    for (var paragraphOcrLineIndex = 1; paragraphOcrLineIndex < paragraphOcrLines.Count; paragraphOcrLineIndex++)
+                    for (var paragraphOcrLineIndex = 1; paragraphOcrLineIndex < ocrTextLines.Count; paragraphOcrLineIndex++)
                     {
-                        var currentLine = paragraphOcrLines[paragraphOcrLineIndex];
+                        var currentLine = ocrTextLines[paragraphOcrLineIndex];
 
                         if (currentLine.Label == OcrLabel.PStart)
                         {
@@ -127,6 +127,14 @@ namespace LeninSearch.Script.Scripts
                             currentParagraphLineFb2.Lines.Add(currentLine);
                         }
                     }
+                }
+
+                var pageImageLinesFb2 = new List<Fb2Line>();
+                foreach (var imageBlock in page.ImageBlocks)
+                {
+                    var imageBlockFb2 = Fb2Line.Construct(imageBlock, ocrBookFolder, pageIndex, imageIndex);
+                    pageImageLinesFb2.Add(imageBlockFb2);
+                    imageIndex++;
                 }
 
                 var section = pageParagraphLinesFb2.Concat(pageImageLinesFb2).OrderBy(l => l.TopLeftY).ToList();
@@ -181,13 +189,25 @@ namespace LeninSearch.Script.Scripts
             }
             var bodyNotesXml = notesSb.ToString();
 
-            // 5. load and fill template
+            // 7. construct binary content
+            var imageLines = sections.SelectMany(s => s.Where(l => l.Type == Fb2LineType.Image)).ToList();
+            var imagesSb = new StringBuilder();
+            foreach (var imageLine in imageLines)
+            {
+                var binaryContentItemXml = $"<binary content-type=\"image/jpeg\" id=\"i_{imageLine.ImageIndex}.jpg\">{imageLine.ImageBase64}</binary>";
+                imagesSb.Append(binaryContentItemXml);
+                imagesSb.Append(Environment.NewLine);
+            }
+            var binaryContentXml = imagesSb.ToString();
+
+            // 8. load and fill template
             var template = File.ReadAllText("fb2template.xml");
             var fb2Xml = template
                 .Replace(Tokens.Body, bodyXml)
-                .Replace(Tokens.BodyNotes, bodyNotesXml);
+                .Replace(Tokens.BodyNotes, bodyNotesXml)
+                .Replace(Tokens.BinaryContent, binaryContentXml);
 
-            // 6. write fb2 file
+            // 9. write fb2 file
             File.WriteAllText(fb2Path, fb2Xml);
         }
 
@@ -221,6 +241,8 @@ namespace LeninSearch.Script.Scripts
             public const string Body = "[body]";
 
             public const string BodyNotes = "[body-notes]";
+
+            public const string BinaryContent = "[binary-content]";
         }
     }
 
