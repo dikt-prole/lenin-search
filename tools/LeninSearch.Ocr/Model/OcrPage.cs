@@ -140,5 +140,15 @@ namespace LeninSearch.Ocr.Model
 
             return rectLine;
         }
+
+        public IEnumerable<OcrLine> GetLabeledLines(params OcrLabel[] labels)
+        {
+            foreach (var line in Lines)
+            {
+                if (line.Label == null) continue;
+
+                if (labels.Contains(line.Label.Value)) yield return line;
+            }
+        }
     }
 }

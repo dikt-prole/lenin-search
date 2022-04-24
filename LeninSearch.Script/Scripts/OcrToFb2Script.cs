@@ -12,6 +12,7 @@ namespace LeninSearch.Script.Scripts
     {
         public string Id => "ocr-to-fb2";
         public string Arguments => "ocr-book-folder, fb2-path";
+
         public void Execute(params string[] input)
         {
             //var ocrBookFolder = input[0];
@@ -24,7 +25,33 @@ namespace LeninSearch.Script.Scripts
 
             // 2. massage ocr data
 
-            // 2.1 paragraph should start and end on the same page
+            // 2.1 throughout note labeling (1-100, not 1-2 on each page)
+            var processedLinkedTextWords = new List<OcrWord>();
+            for (var pageIndex = 1; pageIndex < ocrData.Pages.Count; pageIndex++)
+            {
+                var page = ocrData.Pages[pageIndex];
+                var commentLines = page.GetLabeledLines(OcrLabel.Comment).ToList();
+                var textLines = page.GetLabeledLines(OcrLabel.Title, OcrLabel.PStart, OcrLabel.PMiddle).ToList();
+
+                foreach (var commentLine in commentLines)
+                {
+                    var linkedCommentWord = commentLine.Words.FirstOrDefault(w => w.IsCommentLinkNumber);
+                    if (linkedCommentWord == null) continue;
+
+                    var linkedTextWord = textLines.SelectMany(l => l.Words)
+                        .FirstOrDefault(w => w.IsCommentLinkNumber &&
+                                             w.Text == linkedCommentWord.Text &&
+                                             !processedLinkedTextWords.Contains(w));
+                    if (linkedTextWord == null) continue;
+
+                    var linkText = (processedLinkedTextWords.Count + 1).ToString();
+                    linkedCommentWord.Text = linkText;
+                    linkedTextWord.Text = linkText;
+                    processedLinkedTextWords.Add(linkedTextWord);
+                }
+            }
+
+            // 2.2 paragraph should start and end on the same page
             for (var pageIndex = 1; pageIndex < ocrData.Pages.Count; pageIndex++)
             {
                 var middleLines = ocrData.Pages[pageIndex].Lines
@@ -49,7 +76,7 @@ namespace LeninSearch.Script.Scripts
                 }
             }
 
-            // 2.2 multiline titles should be on single line
+            // 2.3 multiline titles should be on single line
             foreach (var page in ocrData.Pages)
             {
                 for (var lineIndex = 0; lineIndex < page.Lines.Count - 1; lineIndex++)
@@ -64,9 +91,8 @@ namespace LeninSearch.Script.Scripts
                 }
             }
 
-            // 2. go through pages and create sections, notes & images
+            // 3. go through pages and create sections & images
             var sections = new List<List<Fb2Line>>();
-            var notes = new List<string>();
             for (var pageIndex = 0; pageIndex < ocrData.Pages.Count; pageIndex++)
             {
                 var page = ocrData.Pages[pageIndex];
@@ -107,7 +133,7 @@ namespace LeninSearch.Script.Scripts
                 sections.Add(section);
             }
 
-            // 3. construct body xml
+            // 4. construct body xml
             var sectionsSb = new StringBuilder();
             for (var sectionIndex = 0; sectionIndex < sections.Count; sectionIndex++)
             {
@@ -118,11 +144,50 @@ namespace LeninSearch.Script.Scripts
             }
             var bodyXml = sectionsSb.ToString();
 
-            // 4. load and fill template
-            var template = File.ReadAllText("fb2template.xml");
-            var fb2Xml = template.Replace(Tokens.Body, bodyXml).Replace(Tokens.BodyNotes, "");
+            // 5. go through pages and create notes
+            var notes = new List<Fb2Line>();
+            for (var pageIndex = 1; pageIndex < ocrData.Pages.Count; pageIndex++)
+            {
+                var page = ocrData.Pages[pageIndex];
+                var commentLines = page.GetLabeledLines(OcrLabel.Comment).ToList();
+                if (commentLines.Any())
+                {
+                    var currentCommentLineFb2 = Fb2Line.Construct(commentLines[0]);
+                    notes.Add(currentCommentLineFb2);
+                    for (var commentLineIndex = 1; commentLineIndex < commentLines.Count; commentLineIndex++)
+                    {
+                        var commentLine = commentLines[commentLineIndex];
+                        var commentLinkWord = commentLine.Words.FirstOrDefault(w => w.IsCommentLinkNumber);
+                        if (commentLinkWord != null)
+                        {
+                            currentCommentLineFb2 = Fb2Line.Construct(commentLine);
+                            notes.Add(currentCommentLineFb2);
+                        }
+                        else
+                        {
+                            currentCommentLineFb2.Lines.Add(commentLine);
+                        }
+                    }
+                }
+            }
 
-            // 5. write fb2 file
+            // 6. construct body-notes
+            var notesSb = new StringBuilder();
+            foreach (var note in notes)
+            {
+                var sectionXml = note.GetXml();
+                notesSb.Append(sectionXml);
+                notesSb.Append(Environment.NewLine);
+            }
+            var bodyNotesXml = notesSb.ToString();
+
+            // 5. load and fill template
+            var template = File.ReadAllText("fb2template.xml");
+            var fb2Xml = template
+                .Replace(Tokens.Body, bodyXml)
+                .Replace(Tokens.BodyNotes, bodyNotesXml);
+
+            // 6. write fb2 file
             File.WriteAllText(fb2Path, fb2Xml);
         }
 

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Accord.Math.Geometry;
 using LeninSearch.Ocr.Model;
 
 namespace LeninSearch.Script.Scripts.Models
@@ -17,19 +18,29 @@ namespace LeninSearch.Script.Scripts.Models
             foreach (var line in Lines)
             {
                 var lastWord = line.Words.Last();
-                var currentLineEndedWithDash = Type == Fb2LineType.Paragraph && lastWord.Text.EndsWith('-');
+                var currentLineEndedWithDash = (Type == Fb2LineType.Paragraph || Type == Fb2LineType.Comment) && 
+                                               lastWord.Text.EndsWith('-');
 
                 if (currentLineEndedWithDash) lastWord.Text = lastWord.Text.TrimEnd('-');
 
                 if (!lastLineEndedWithDash) sb.Append(" ");
 
-                sb.Append(string.Join(" ", line.Words.Select(w => w.Text)));
+                sb.Append(string.Join(" ", line.Words.Select(GetWordXml)));
 
                 lastLineEndedWithDash = currentLineEndedWithDash;
             }
 
             return sb.ToString();
         }
+
+        public string GetWordXml(OcrWord word)
+        {
+            if (Type != Fb2LineType.Comment && word.IsCommentLinkNumber) 
+                return $"<a l:href=\"#n_{word.Text}\" type=\"note\">[{word.Text}]</a>";
+
+            return word.Text;
+        }
+
         public string GetXml()
         {
             switch (Type)
@@ -38,6 +49,11 @@ namespace LeninSearch.Script.Scripts.Models
                     return $"<p>{GetText()}</p>";
                 case Fb2LineType.Title:
                     return $"<title><p>{GetText()}</p></title>";
+                case Fb2LineType.Comment:
+                    var linkWord = Lines.SelectMany(l => l.Words).FirstOrDefault(w => w.IsCommentLinkNumber);
+                    return linkWord == null 
+                        ? null 
+                        : $"<section id=\"n_{linkWord.Text}\"><title><p>{linkWord.Text}</p></title><p>{GetText()}</p></section>";
             }
 
             return null;
@@ -49,7 +65,9 @@ namespace LeninSearch.Script.Scripts.Models
             {
                 Type = line.Label == OcrLabel.Title 
                     ? Fb2LineType.Title 
-                    : Fb2LineType.Paragraph,
+                    : line.Label == OcrLabel.Comment
+                        ? Fb2LineType.Comment
+                        : Fb2LineType.Paragraph,
                 Lines = new List<OcrLine> { line },
                 TopLeftY = line.TopLeftY
             };
@@ -60,6 +78,6 @@ namespace LeninSearch.Script.Scripts.Models
 
     public enum Fb2LineType
     {
-        Paragraph, Image, Title
+        Paragraph, Image, Title, Comment
     }
 }
