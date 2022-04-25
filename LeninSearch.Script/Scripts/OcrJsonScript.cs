@@ -10,7 +10,7 @@ namespace LeninSearch.Script.Scripts
     public class OcrJsonScript : IScript
     {
         public string Id => "ocr-json";
-        public string Arguments => "book-folders";
+        public string Arguments => "image";
         public void Execute(params string[] input)
         {
             throw new NotImplementedException();

@@ -85,6 +85,9 @@ namespace LeninSearch.Ocr
         {
             _contours = contours;
             contours_flp.Controls.Clear();
+
+            if (!_contours.Any()) return;
+
             page_nud.Maximum = PageCount;
             page_nud.Value = 1;
             totalPages_lbl.Text = $"of {PageCount}";
