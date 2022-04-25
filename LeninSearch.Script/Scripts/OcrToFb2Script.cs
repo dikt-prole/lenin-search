@@ -24,72 +24,8 @@ namespace LeninSearch.Script.Scripts
             var ocrData = OcrData.Load(ocrBookFolder);
 
             // 2. massage ocr data
-
-            // 2.1 throughout note labeling (1-100, not 1-2 on each page)
-            var processedLinkedTextWords = new List<OcrWord>();
-            for (var pageIndex = 1; pageIndex < ocrData.Pages.Count; pageIndex++)
-            {
-                var page = ocrData.Pages[pageIndex];
-                var commentLines = page.GetLabeledLines(OcrLabel.Comment).ToList();
-                var textLines = page.GetLabeledLines(OcrLabel.Title, OcrLabel.PStart, OcrLabel.PMiddle).ToList();
-
-                foreach (var commentLine in commentLines)
-                {
-                    var linkedCommentWord = commentLine.Words.FirstOrDefault(w => w.IsCommentLinkNumber);
-                    if (linkedCommentWord == null) continue;
-
-                    var linkedTextWord = textLines.SelectMany(l => l.Words)
-                        .FirstOrDefault(w => w.IsCommentLinkNumber &&
-                                             w.Text == linkedCommentWord.Text &&
-                                             !processedLinkedTextWords.Contains(w));
-                    if (linkedTextWord == null) continue;
-
-                    var linkText = (processedLinkedTextWords.Count + 1).ToString();
-                    linkedCommentWord.Text = linkText;
-                    linkedTextWord.Text = linkText;
-                    processedLinkedTextWords.Add(linkedTextWord);
-                }
-            }
-
-            // 2.2 paragraph should start and end on the same page
-            for (var pageIndex = 1; pageIndex < ocrData.Pages.Count; pageIndex++)
-            {
-                var middleLines = ocrData.Pages[pageIndex].Lines
-                    .Where(l => l.Label == OcrLabel.PStart || l.Label == OcrLabel.PMiddle)
-                    .TakeWhile(l => l.Label == OcrLabel.PMiddle)
-                    .ToList();
-
-                if (!middleLines.Any()) continue;
-
-                for (var reversePageIndex = pageIndex - 1; reversePageIndex >= 0; reversePageIndex--)
-                {
-                    if (ocrData.Pages[reversePageIndex].Lines.Any(l => l.Label == OcrLabel.PStart))
-                    {
-                        foreach (var middleLine in middleLines)
-                        {
-                            ocrData.Pages[pageIndex].Lines.Remove(middleLine);
-                            ocrData.Pages[reversePageIndex].Lines.Add(middleLine);
-                        }
-
-                        break;
-                    }
-                }
-            }
-
-            // 2.3 multiline titles should be on single line
-            foreach (var page in ocrData.Pages)
-            {
-                for (var lineIndex = 0; lineIndex < page.Lines.Count - 1; lineIndex++)
-                {
-                    if (page.Lines[lineIndex].Label == OcrLabel.Title &&
-                        page.Lines[lineIndex + 1].Label == OcrLabel.Title)
-                    {
-                        page.Lines[lineIndex].Words.AddRange(page.Lines[lineIndex + 1].Words);
-                        page.Lines.RemoveAt(lineIndex + 1);
-                        lineIndex--;
-                    }
-                }
-            }
+            FixCommentRelatedStuff(ocrData);
+            FixTextRelatedStuff(ocrData);
 
             // 3. go through pages and create sections & images
             var sections = new List<List<Fb2Line>>();
@@ -209,6 +145,119 @@ namespace LeninSearch.Script.Scripts
 
             // 9. write fb2 file
             File.WriteAllText(fb2Path, fb2Xml);
+        }
+
+        private static void FixCommentRelatedStuff(OcrData ocrData)
+        {
+            // 1. throughout note labeling (1-100, not 1-2 on each page)
+            var processedLinkedTextWords = new List<OcrWord>();
+            for (var pageIndex = 1; pageIndex < ocrData.Pages.Count; pageIndex++)
+            {
+                var page = ocrData.Pages[pageIndex];
+                var commentLines = page.GetLabeledLines(OcrLabel.Comment).ToList();
+                var textLines = page.GetLabeledLines(OcrLabel.Title, OcrLabel.PStart, OcrLabel.PMiddle).ToList();
+
+                foreach (var commentLine in commentLines)
+                {
+                    var linkedCommentWord = commentLine.Words.FirstOrDefault(w => w.IsCommentLinkNumber);
+                    if (linkedCommentWord == null) continue;
+
+                    var linkedTextWord = textLines.SelectMany(l => l.Words)
+                        .FirstOrDefault(w => w.IsCommentLinkNumber &&
+                                             w.Text == linkedCommentWord.Text &&
+                                             !processedLinkedTextWords.Contains(w));
+                    if (linkedTextWord == null)
+                        continue;
+
+                    var linkText = (processedLinkedTextWords.Count + 1).ToString();
+                    linkedCommentWord.Text = linkText;
+                    linkedTextWord.Text = linkText;
+                    processedLinkedTextWords.Add(linkedTextWord);
+                }
+            }
+
+            // 2. comment should start and end on the same page
+            for (var pageIndex = 1; pageIndex < ocrData.Pages.Count; pageIndex++)
+            {
+                var middleLines = ocrData.Pages[pageIndex].GetLabeledLines(OcrLabel.Comment)
+                    .TakeWhile(l => l.Words.All(w => !w.IsCommentLinkNumber))
+                    .ToList();
+
+                if (!middleLines.Any()) continue;
+
+                for (var reversePageIndex = pageIndex - 1; reversePageIndex >= 0; reversePageIndex--)
+                {
+                    if (ocrData.Pages[reversePageIndex].GetLabeledLines(OcrLabel.Comment).Any())
+                    {
+                        foreach (var middleLine in middleLines)
+                        {
+                            ocrData.Pages[pageIndex].Lines.Remove(middleLine);
+                            ocrData.Pages[reversePageIndex].Lines.Add(middleLine);
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            // 3. If there is no comment, then do not count the word linked
+            foreach (var page in ocrData.Pages)
+            {
+                var commentedWords = page.GetLabeledLines(OcrLabel.PStart, OcrLabel.PMiddle, OcrLabel.Title)
+                    .SelectMany(l => l.Words)
+                    .Where(w => w.IsCommentLinkNumber)
+                    .ToList();
+                var commentWords = page.GetLabeledLines(OcrLabel.Comment)
+                    .SelectMany(l => l.Words)
+                    .Where(w => w.IsCommentLinkNumber)
+                    .ToList();
+
+                foreach (var commentedWord in commentedWords) 
+                    commentedWord.IsCommentLinkNumber = commentWords.Any(w => w.Text == commentedWord.Text);
+            }
+        }
+
+        private static void FixTextRelatedStuff(OcrData ocrData)
+        {
+            // 1. paragraph should start and end on the same page
+            for (var pageIndex = 1; pageIndex < ocrData.Pages.Count; pageIndex++)
+            {
+                var middleLines = ocrData.Pages[pageIndex].Lines
+                    .Where(l => l.Label == OcrLabel.PStart || l.Label == OcrLabel.PMiddle)
+                    .TakeWhile(l => l.Label == OcrLabel.PMiddle)
+                    .ToList();
+
+                if (!middleLines.Any()) continue;
+
+                for (var reversePageIndex = pageIndex - 1; reversePageIndex >= 0; reversePageIndex--)
+                {
+                    if (ocrData.Pages[reversePageIndex].Lines.Any(l => l.Label == OcrLabel.PStart))
+                    {
+                        foreach (var middleLine in middleLines)
+                        {
+                            ocrData.Pages[pageIndex].Lines.Remove(middleLine);
+                            ocrData.Pages[reversePageIndex].Lines.Add(middleLine);
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            // 2. multiline titles should be on single line
+            foreach (var page in ocrData.Pages)
+            {
+                for (var lineIndex = 0; lineIndex < page.Lines.Count - 1; lineIndex++)
+                {
+                    if (page.Lines[lineIndex].Label == OcrLabel.Title &&
+                        page.Lines[lineIndex + 1].Label == OcrLabel.Title)
+                    {
+                        page.Lines[lineIndex].Words.AddRange(page.Lines[lineIndex + 1].Words);
+                        page.Lines.RemoveAt(lineIndex + 1);
+                        lineIndex--;
+                    }
+                }
+            }
         }
 
         private static class Tokens
