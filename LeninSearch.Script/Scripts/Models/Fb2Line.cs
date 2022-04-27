@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -89,23 +90,19 @@ namespace LeninSearch.Script.Scripts.Models
             return fb2Line;
         }
 
-        public static Fb2Line Construct(OcrImageBlock imageBlock, string bookFolder, int pageIndex, int imageIndex)
+        public static Fb2Line Construct(OcrImageBlock imageBlock, string bookFolder, OcrPage page, int imageIndex)
         {
             try
             {
-
-
                 var fb2Line = new Fb2Line
                 {
                     Type = Fb2LineType.Image,
                     TopLeftY = imageBlock.TopLeftY
                 };
 
-                var imageFiles = Directory.GetFiles(bookFolder)
-                    .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg"))
-                    .ToArray();
+                var imagePath = Directory.GetFiles(bookFolder).SingleOrDefault(f => Path.GetFileNameWithoutExtension(f) == page.Filename);
 
-                var imagePath = imageFiles[pageIndex];
+                if (imagePath == null) throw new Exception($"Image file '{page.Filename}' not found");
 
                 using var bitmap = new Bitmap(Image.FromFile(imagePath));
 
@@ -113,7 +110,13 @@ namespace LeninSearch.Script.Scripts.Models
 
                 using var stream = new MemoryStream();
 
-                imageBitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
+                imageBitmap.Save(stream, ImageFormat.Jpeg);
+
+#if DEBUG
+                var tempImagePath = Path.Combine(Path.GetTempPath(), $"i_{imageIndex}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.jpg");
+                imageBitmap.Save(tempImagePath, ImageFormat.Jpeg);
+                Debug.WriteLine($"Image {imageIndex} saved to '{tempImagePath}'");
+#endif
 
                 var imageBytes = stream.ToArray();
 
@@ -125,7 +128,7 @@ namespace LeninSearch.Script.Scripts.Models
             }
             catch (Exception exc)
             {
-                Debug.WriteLine($"Exception on page {pageIndex}: {exc.Message}");
+                Debug.WriteLine($"Exception on page {page.ImageIndex}: {exc.Message}");
                 throw;
             }
         }

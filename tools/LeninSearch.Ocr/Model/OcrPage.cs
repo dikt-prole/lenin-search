@@ -38,6 +38,11 @@ namespace LeninSearch.Ocr.Model
         public List<OcrLine> NonImageBlockLines => Lines.Where(l =>
             ImageBlocks == null || ImageBlocks.All(ib => !ib.Rectangle.IntersectsWith(l.Rectangle))).ToList();
 
+        public override string ToString()
+        {
+            return $"Filename: {Filename}, Lines: {Lines?.Count ?? 0}";
+        }
+
         public void MergeLines(OcrLine intoLine, params OcrLine[] mergeLines)
         {
             foreach (var line in mergeLines) Lines.Remove(line);

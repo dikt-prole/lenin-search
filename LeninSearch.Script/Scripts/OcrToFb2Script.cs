@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Accord.Diagnostics;
 using LeninSearch.Ocr.Model;
 using LeninSearch.Script.Scripts.Models;
+using Debug = System.Diagnostics.Debug;
 
 namespace LeninSearch.Script.Scripts
 {
@@ -17,8 +19,8 @@ namespace LeninSearch.Script.Scripts
         {
             //var ocrBookFolder = input[0];
             //var fb2Path = input[1];
-            var ocrBookFolder = @"D:\Repo\lenin-search\corpus\ocr\pavlov-v1\t02-1";
-            var fb2Path = @"D:\Repo\lenin-search\corpus\orig\pavlov\t02-1.fb2";
+            var ocrBookFolder = @"D:\Repo\lenin-search\corpus\ocr\pavlov-v1\t03-1";
+            var fb2Path = @"D:\Repo\lenin-search\corpus\orig\pavlov\t03-1.fb2";
 
             // 1. load ocr data
             var ocrData = OcrData.Load(ocrBookFolder);
@@ -72,10 +74,12 @@ namespace LeninSearch.Script.Scripts
                 var pageImageLinesFb2 = new List<Fb2Line>();
                 foreach (var imageBlock in page.ImageBlocks)
                 {
-                    var imageBlockFb2 = Fb2Line.Construct(imageBlock, ocrBookFolder, pageIndex, imageIndex);
+                    var imageBlockFb2 = Fb2Line.Construct(imageBlock, ocrBookFolder, page, imageIndex);
                     pageImageLinesFb2.Add(imageBlockFb2);
                     imageIndex++;
                 }
+
+                //Debug.WriteLine($"[{pageIndex}] text lines: {pageParagraphLinesFb2.Count}, image lines: {pageImageLinesFb2.Count}");
 
                 var section = pageParagraphLinesFb2.Concat(pageImageLinesFb2).OrderBy(l => l.TopLeftY).ToList();
                 sections.Add(section);
@@ -94,9 +98,8 @@ namespace LeninSearch.Script.Scripts
 
             // 5. go through pages and create notes
             var notes = new List<Fb2Line>();
-            for (var pageIndex = 1; pageIndex < ocrPages.Count; pageIndex++)
+            foreach (var page in ocrPages)
             {
-                var page = ocrPages[pageIndex];
                 var commentLines = page.GetLabeledLines(OcrLabel.Comment).ToList();
                 if (commentLines.Any())
                 {
