@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Accord.MachineLearning.DecisionTrees;
 using Accord.Statistics.Kernels;
@@ -135,29 +136,36 @@ namespace LeninSearch.Ocr
 
             _ocrData.Pages = new List<OcrPage>();
 
-            var sw = new Stopwatch(); sw.Start();
-
             progressBar1.Minimum = 0;
             progressBar1.Maximum = imageFiles.Count;
             progressBar1.Value = 0;
 
-            for (var i = 0; i < imageFiles.Count; i++)
+            var batchSize = 10;
+            var imageFileBatches = imageFiles.ChunkBy(batchSize);
+            for (var batchIndex = 0; batchIndex < imageFileBatches.Count; batchIndex++)
             {
-                var imageFile = imageFiles[i];
+                var batch = imageFileBatches[batchIndex];
+                var tasks = batch.Select(imageFile => _ocrService.GetOcrPageAsync(imageFile));
 
-                var result = await _ocrService.GetOcrPageAsync(imageFile);
-                if (!result.Success)
+                var imageFileSw = new Stopwatch(); imageFileSw.Start();
+
+                var results = await Task.WhenAll(tasks);
+                progressBar1.Value = batchSize * batchIndex + batch.Count;
+                if (results.Any(r => !r.Success))
                 {
-                    MessageBox.Show(result.Error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(results.First(r => !r.Success).Error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
+                _ocrData.Pages.AddRange(results.Select(r => r.Page));
 
-                _ocrData.Pages.Add(result.Page);
+                imageFileSw.Stop();
 
-                progressBar1.Value = i + 1;
+                var waitDelta = 1000 - imageFileSw.Elapsed.TotalMilliseconds;
+                if (waitDelta > 0)
+                {
+                    await Task.Delay(1 + (int)waitDelta);
+                }
             }
-
-            sw.Stop();
 
             ocr_lb.SelectedIndex = 0;
 
@@ -189,9 +197,12 @@ namespace LeninSearch.Ocr
             // find link number contours
             var linkNumberMatch = new CommentLinkNumberMatch();
             var linkNumberContours = uncoveredContours.Except(lineStartContours).Where(linkNumberMatch.Match).ToList();
-            var contoursDialog = new UncoveredContourDialog();
-            contoursDialog.SetContours(linkNumberContours);
-            contoursDialog.ShowDialog();
+            var linkNumberDialog = new UncoveredContourDialog
+            {
+                Text = "Mark uncovered link numbers"
+            };
+            linkNumberDialog.SetContours(linkNumberContours);
+            linkNumberDialog.ShowDialog();
             linkNumberContours = linkNumberContours.Where(lc => !string.IsNullOrEmpty(lc.Word.Text)).ToList();
             foreach (var contour in linkNumberContours)
             {

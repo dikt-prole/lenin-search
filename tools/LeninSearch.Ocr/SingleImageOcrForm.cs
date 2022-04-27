@@ -18,6 +18,7 @@ using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using LeninSearch.Ocr.CV;
 using LeninSearch.Ocr.Model;
+using LeninSearch.Ocr.Model.UncoveredContourMatches;
 using LeninSearch.Ocr.Service;
 using LeninSearch.Ocr.YandexVision;
 using LeninSearch.Ocr.YandexVision.OcrResponse;
@@ -124,7 +125,7 @@ namespace LeninSearch.Ocr
             var ocrResult = await ocrService.GetOcrPageAsync(file_tb.Text);
             _ocrPage = ocrResult.Page;
 
-            var clCandidates = CvUtil.GetCommentLinkCandidates(file_tb.Text, _ocrPage, clSettings).ToList();
+            var clCandidates = CvUtil.GetCommentLinkCandidates(file_tb.Text, _ocrPage, new CommentLinkNumberMatch()).ToList();
 
             var commentLinkWords = clCandidates.Select(c => c.Word).ToList();
             foreach (var clw in commentLinkWords) clw.IsCommentLinkNumber = true;
