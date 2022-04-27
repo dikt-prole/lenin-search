@@ -88,7 +88,8 @@ namespace LeninSearch.Ocr
             _ocrService =
                 new FeatureSettingDecorator(
                     new IntersectingLineMergerDecorator(
-                            new YandexVisionOcrLineService()));
+                        new OcrServiceRetryDecorator(
+                            new YandexVisionOcrLineService())));
         }
 
         private Dictionary<string, bool> GetRowModel()
@@ -171,12 +172,11 @@ namespace LeninSearch.Ocr
 
             // find uncovered contours
             var uncoveredContours = new List<UncoveredContour>();
-            var allMatch = new AllMatch();
             foreach (var page in _ocrData.Pages)
             {
                 var imageFile = Directory.GetFiles(bookFolder_tb.Text)
                     .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == page.Filename);
-                uncoveredContours.AddRange(CvUtil.GetCommentLinkCandidates(imageFile, page, allMatch));
+                uncoveredContours.AddRange(CvUtil.GetUncoveredContours(imageFile, page));
             }
 
             // find line start contours
@@ -193,20 +193,24 @@ namespace LeninSearch.Ocr
             {
                 lineStartMatch.Apply(_ocrData, contour);
             }
+            uncoveredContours = uncoveredContours.Except(lineStartContours).ToList();
 
             // find link number contours
             var linkNumberMatch = new CommentLinkNumberMatch();
-            var linkNumberContours = uncoveredContours.Except(lineStartContours).Where(linkNumberMatch.Match).ToList();
-            var linkNumberDialog = new UncoveredContourDialog
+            var linkNumberContours = uncoveredContours.Where(linkNumberMatch.Match).ToList();
+            if (linkNumberContours.Any())
             {
-                Text = "Mark uncovered link numbers"
-            };
-            linkNumberDialog.SetContours(linkNumberContours);
-            linkNumberDialog.ShowDialog();
-            linkNumberContours = linkNumberContours.Where(lc => !string.IsNullOrEmpty(lc.Word.Text)).ToList();
-            foreach (var contour in linkNumberContours)
-            {
-                linkNumberMatch.Apply(_ocrData, contour);
+                var linkNumberDialog = new UncoveredContourDialog
+                {
+                    Text = "Mark uncovered link numbers"
+                };
+                linkNumberDialog.SetContours(linkNumberContours);
+                linkNumberDialog.ShowDialog();
+                linkNumberContours = linkNumberContours.Where(lc => !string.IsNullOrEmpty(lc.Word.Text)).ToList();
+                foreach (var contour in linkNumberContours)
+                {
+                    linkNumberMatch.Apply(_ocrData, contour);
+                }
             }
         }
 

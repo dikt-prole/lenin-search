@@ -204,7 +204,7 @@ namespace LeninSearch.Ocr.CV
             }
         }
 
-        public static IEnumerable<UncoveredContour> GetCommentLinkCandidates(string imageFile, OcrPage page, IUncoveredContourMatch contourMatch)
+        public static IEnumerable<UncoveredContour> GetUncoveredContours(string imageFile, OcrPage page)
         {
             var rects = GetSmoothedContourRectangles(imageFile).ToList();
             foreach (var rect in rects)
@@ -227,10 +227,6 @@ namespace LeninSearch.Ocr.CV
                         LineTopDistance = rect.Y - line.TopLeftY
                     }
                 };
-
-                if (!contourMatch.Match(contour)) continue;
-
-                
 
                 yield return contour;
             }

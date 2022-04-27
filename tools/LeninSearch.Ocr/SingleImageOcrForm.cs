@@ -125,7 +125,7 @@ namespace LeninSearch.Ocr
             var ocrResult = await ocrService.GetOcrPageAsync(file_tb.Text);
             _ocrPage = ocrResult.Page;
 
-            var clCandidates = CvUtil.GetCommentLinkCandidates(file_tb.Text, _ocrPage, new CommentLinkNumberMatch()).ToList();
+            var clCandidates = CvUtil.GetUncoveredContours(file_tb.Text, _ocrPage).ToList();
 
             var commentLinkWords = clCandidates.Select(c => c.Word).ToList();
             foreach (var clw in commentLinkWords) clw.IsCommentLinkNumber = true;

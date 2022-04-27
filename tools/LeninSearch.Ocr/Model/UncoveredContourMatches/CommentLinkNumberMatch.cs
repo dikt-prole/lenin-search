@@ -8,8 +8,8 @@ namespace LeninSearch.Ocr.Model.UncoveredContourMatches
         {
             if (contour.Word.LineBottomDistance > 15) return false;
             if (contour.Word.LineBottomDistance < 5) return false;
-            if (contour.Word.LineBottomDistance > 3) return false;
-            if (contour.Word.LineBottomDistance < -6) return false;
+            if (contour.Word.LineTopDistance > 3) return false;
+            if (contour.Word.LineTopDistance < -6) return false;
 
             return (3 <= contour.Rectangle.Width && contour.Rectangle.Width <= 10) &&
                    (9 <= contour.Rectangle.Height && contour.Rectangle.Height <= 15);
