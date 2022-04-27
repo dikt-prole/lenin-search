@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using LeninSearch.Ocr.CV;
 using Newtonsoft.Json;
@@ -30,7 +31,8 @@ namespace LeninSearch.Ocr.Model
         public List<OcrImageBlock> ImageBlocks { get; set; }
 
         [JsonIgnore]
-        public int ImageIndex => int.Parse(new string(Filename.Where(char.IsNumber).ToArray()));
+        public int ImageIndex => int.Parse(new string((Path.GetFileNameWithoutExtension(Filename) ?? string.Empty)
+            .Where(char.IsNumber).ToArray()));
 
         [JsonIgnore]
         public List<OcrLine> NonImageBlockLines => Lines.Where(l =>

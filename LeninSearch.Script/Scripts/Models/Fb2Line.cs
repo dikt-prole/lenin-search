@@ -16,6 +16,12 @@ namespace LeninSearch.Script.Scripts.Models
         public Fb2LineType Type { get; set; }
         public int ImageIndex { get; set; }
         public string ImageBase64 { get; set; }
+        public string TextPreview => Lines?.Any() == true ? GetText() : null;
+
+        public override string ToString()
+        {
+            return $"[{Type}]: {TextPreview}";
+        }
 
         public string GetText()
         {

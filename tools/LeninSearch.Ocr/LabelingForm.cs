@@ -662,22 +662,20 @@ namespace LeninSearch.Ocr
                             g.DrawString(line.LineIndex.ToString(), font, textBrush, line.BottomRightX + 1, line.TopLeftY);
                         }
 
-                        using var commentLinkPen = new Pen(Color.Blue, 2);
-                        using var commentLinkBrush = new SolidBrush(Color.Blue);
+                        using var commentLinkBrush = new SolidBrush(Color.FromArgb(100, 0, 0, 255));
+                        using var commentLinkPen = new Pen(Color.Blue, 1);
+                        using var linkTextBrush = new SolidBrush(Color.White);
 
                         foreach (var word in line.Words ?? new List<OcrWord>())
                         {
-                            if (line.DisplayText)
-                            {
-                                g.DrawString(word.Text, font, textBrush, word.TopLeftX, line.TopLeftY - 15);
-                            }
-
                             if (word.IsCommentLinkNumber)
                             {
-                                var ellipseX = word.CenterX - OcrSettings.WordCircleRadius;
-                                var ellipseY = word.CenterY - OcrSettings.WordCircleRadius;
+                                var ellipseX = word.BottomRightX;
+                                var ellipseY = word.TopLeftY - OcrSettings.WordCircleRadius * 2;
                                 var ellipseSize = OcrSettings.WordCircleRadius * 2;
-                                g.DrawEllipse(commentLinkPen, ellipseX, ellipseY, ellipseSize, ellipseSize);
+                                g.FillEllipse(commentLinkBrush, ellipseX, ellipseY, ellipseSize, ellipseSize);
+                                g.DrawString(word.Text, font, linkTextBrush, ellipseX + 6, ellipseY + 4);
+                                g.DrawRectangle(commentLinkPen, word.Rectangle);
                             }
                         }
                     }

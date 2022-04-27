@@ -42,6 +42,14 @@ namespace LeninSearch.Ocr.Model
 
         public Rectangle PageWideRectangle(int pageWidth) => new Rectangle(0, TopLeftY, pageWidth, BottomRightY - TopLeftY);
 
+        [JsonIgnore]
+        public string TextPreview => Words?.Any() == true ? string.Join(" ", Words.Select(w => w.Text)) : null;
+
+        public override string ToString()
+        {
+            return $"[{Label}]: {TextPreview}";
+        }
+
         public void FitRectangleToWords()
         {
             if (Words?.Any() != true) return;
