@@ -7,6 +7,7 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using LeninSearch.Ocr.Model;
+using LeninSearch.Ocr.Model.UncoveredContourMatches;
 
 namespace LeninSearch.Ocr.CV
 {
@@ -203,7 +204,7 @@ namespace LeninSearch.Ocr.CV
             }
         }
 
-        public static IEnumerable<CommentLinkCandidate> GetCommentLinkCandidates(string imageFile, OcrPage page, CommentLinkSettings settings)
+        public static IEnumerable<UncoveredContour> GetCommentLinkCandidates(string imageFile, OcrPage page, IUncoveredContourMatch contourMatch)
         {
             var rects = GetSmoothedContourRectangles(imageFile).ToList();
             foreach (var rect in rects)
@@ -212,14 +213,7 @@ namespace LeninSearch.Ocr.CV
 
                 if (line == null) continue;
 
-                if (!settings.SizeMatch(rect)) continue;
-
-                var lineBottomDistance = line.BottomRightY - rect.Y - rect.Height;
-                var lineTopDistance = rect.Y - line.TopLeftY;
-
-                if (!settings.LineDistanceMatch(lineBottomDistance, lineTopDistance)) continue;
-
-                var clCandidate = new CommentLinkCandidate
+                var contour = new UncoveredContour
                 {
                     ImageFile = imageFile,
                     Rectangle = rect,
@@ -229,11 +223,16 @@ namespace LeninSearch.Ocr.CV
                         TopLeftY = rect.Y,
                         BottomRightX = rect.X + rect.Width,
                         BottomRightY = rect.Y + rect.Height,
-                        LineBottomDistance = lineBottomDistance
+                        LineBottomDistance = line.BottomRightY - rect.Y - rect.Height,
+                        LineTopDistance = rect.Y - line.TopLeftY
                     }
                 };
 
-                yield return clCandidate;
+                if (!contourMatch.Match(contour)) continue;
+
+                
+
+                yield return contour;
             }
         }
 

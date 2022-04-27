@@ -1,7 +1,7 @@
 ﻿
 namespace LeninSearch.Ocr
 {
-    partial class CommentLinkDialog
+    partial class UncoveredContourDialog
     {
         /// <summary>
         /// Required designer variable.
@@ -173,7 +173,7 @@ namespace LeninSearch.Ocr
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(855, 677);
             this.Controls.Add(this.tableLayoutPanel1);
-            this.Name = "CommentLinkDialog";
+            this.Name = "UncoveredContourDialog";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Identify Comment Link Numbers";
             this.tableLayoutPanel1.ResumeLayout(false);

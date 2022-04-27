@@ -3,7 +3,7 @@ using System.IO;
 
 namespace LeninSearch.Ocr.Model
 {
-    public class CommentLinkCandidate
+    public class UncoveredContour
     {
         public string ImageFile { get; set; }
         public OcrWord Word { get; set; }

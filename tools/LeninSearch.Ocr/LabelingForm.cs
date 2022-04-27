@@ -9,6 +9,7 @@ using Accord.MachineLearning.DecisionTrees;
 using Accord.Statistics.Kernels;
 using LeninSearch.Ocr.CV;
 using LeninSearch.Ocr.Model;
+using LeninSearch.Ocr.Model.UncoveredContourMatches;
 using LeninSearch.Ocr.Service;
 using LeninSearch.Ocr.YandexVision;
 
@@ -160,33 +161,41 @@ namespace LeninSearch.Ocr
 
             ocr_lb.SelectedIndex = 0;
 
-            var linkCandidates = new List<CommentLinkCandidate>();
-            var linkSettings = OcrSettings.DefaultCommentLinkSettings;
+            // find uncovered contours
+            var uncoveredContours = new List<UncoveredContour>();
+            var allMatch = new AllMatch();
             foreach (var page in _ocrData.Pages)
             {
                 var imageFile = Directory.GetFiles(bookFolder_tb.Text)
                     .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == page.Filename);
-                linkCandidates.AddRange(CvUtil.GetCommentLinkCandidates(imageFile, page, linkSettings));
+                uncoveredContours.AddRange(CvUtil.GetCommentLinkCandidates(imageFile, page, allMatch));
             }
 
-            var contoursDialog = new CommentLinkDialog();
-            contoursDialog.SetContours(linkCandidates);
-            contoursDialog.ShowDialog();
-
-            linkCandidates = linkCandidates.Where(lc => lc.Word.IsCommentLinkNumber).ToList();
-            foreach (var linkCandidate in linkCandidates)
+            // find line start contours
+            var lineStartMatch = new LineStartMatch();
+            var lineStartContours = uncoveredContours.Where(lineStartMatch.Match).ToList();
+            var lineStartDialog = new UncoveredContourDialog
             {
-                var page = _ocrData.Pages.FirstOrDefault(p => p.Filename == linkCandidate.Filename);
+                Text = "Mark uncovered line starts"
+            };
+            lineStartDialog.SetContours(lineStartContours);
+            lineStartDialog.ShowDialog();
+            lineStartContours = lineStartContours.Where(lc => !string.IsNullOrEmpty(lc.Word.Text)).ToList();
+            foreach (var contour in lineStartContours)
+            {
+                lineStartMatch.Apply(_ocrData, contour);
+            }
 
-                if (page == null) continue;
-
-                var line = page.Lines.FirstOrDefault(l => l.PageWideRectangle(page.Width).IntersectsWith(linkCandidate.Rectangle));
-
-                if (line?.Words == null) continue;
-
-                line.Words.Add(linkCandidate.Word);
-                line.Words = line.Words.OrderBy(w => w.TopLeftX).ToList();
-                line.FitRectangleToWords();
+            // find link number contours
+            var linkNumberMatch = new CommentLinkNumberMatch();
+            var linkNumberContours = uncoveredContours.Except(lineStartContours).Where(linkNumberMatch.Match).ToList();
+            var contoursDialog = new UncoveredContourDialog();
+            contoursDialog.SetContours(linkNumberContours);
+            contoursDialog.ShowDialog();
+            linkNumberContours = linkNumberContours.Where(lc => !string.IsNullOrEmpty(lc.Word.Text)).ToList();
+            foreach (var contour in linkNumberContours)
+            {
+                linkNumberMatch.Apply(_ocrData, contour);
             }
         }
 

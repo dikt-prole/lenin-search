@@ -12,9 +12,9 @@ namespace LeninSearch.Ocr.Service
     {
         private readonly IOcrService _serviceBase;
         private readonly CommentLinkSettings _clSettings;
-        private readonly Action<CommentLinkCandidate> _commentLinkAction;
+        private readonly Action<UncoveredContour> _commentLinkAction;
 
-        public CommentLinkNumberDecorator(Action<CommentLinkCandidate> commentLinkAction, CommentLinkSettings clSettings, IOcrService serviceBase)
+        public CommentLinkNumberDecorator(Action<UncoveredContour> commentLinkAction, CommentLinkSettings clSettings, IOcrService serviceBase)
         {
             _serviceBase = serviceBase;
             _clSettings = clSettings;
@@ -36,7 +36,7 @@ namespace LeninSearch.Ocr.Service
             foreach (var rect in smoothUncovered)
             {
                 var rectLine = page.AddContourLine(rect);
-                var clCandidate = new CommentLinkCandidate
+                var clCandidate = new UncoveredContour
                 {
                     ImageFile = imageFile,
                     Rectangle = rect,

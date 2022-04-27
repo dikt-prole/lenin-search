@@ -6,19 +6,19 @@ using LeninSearch.Ocr.Model;
 
 namespace LeninSearch.Ocr
 {
-    public partial class CommentLinkDialog : Form
+    public partial class UncoveredContourDialog : Form
     {
-        private List<CommentLinkCandidate> _contours;
+        private List<UncoveredContour> _contours;
 
         private int PageCount => _contours.Count / (int)pageSize_nud.Value + (_contours.Count % (int)pageSize_nud.Value > 0 ? 1 : 0);
 
-        public CommentLinkDialog()
+        public UncoveredContourDialog()
         {
             InitializeComponent();
 
             pageSize_nud.Minimum = 20;
             pageSize_nud.Maximum = 1000;
-            pageSize_nud.Value = 28;
+            pageSize_nud.Value = 27;
             pageSize_nud.ValueChanged += (sender, args) =>
             {
                 if (_contours == null) return;
@@ -77,11 +77,10 @@ namespace LeninSearch.Ocr
             foreach (var ucc in contourControls)
             {
                 ucc.Contour.Word.Text = ucc.WordText;
-                ucc.Contour.Word.IsCommentLinkNumber = !string.IsNullOrEmpty(ucc.WordText);
             }
         }
 
-        public void SetContours(List<CommentLinkCandidate> contours)
+        public void SetContours(List<UncoveredContour> contours)
         {
             _contours = contours;
             contours_flp.Controls.Clear();

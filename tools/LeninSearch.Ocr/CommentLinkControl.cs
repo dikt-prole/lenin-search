@@ -9,9 +9,9 @@ namespace LeninSearch.Ocr
     public partial class CommentLinkControl : UserControl
     {
         public string WordText => word_tb.Text;
-        private CommentLinkCandidate _contour;
+        private UncoveredContour _contour;
 
-        public CommentLinkCandidate Contour
+        public UncoveredContour Contour
         {
             get => _contour;
             set
