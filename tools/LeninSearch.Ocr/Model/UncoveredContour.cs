@@ -7,6 +7,7 @@ namespace LeninSearch.Ocr.Model
     {
         public string ImageFile { get; set; }
         public OcrWord Word { get; set; }
+        public OcrPage Page { get; set; }
         public Rectangle Rectangle { get; set; }
         public string Filename => Path.GetFileNameWithoutExtension(ImageFile);
     }

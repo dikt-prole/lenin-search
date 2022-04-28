@@ -229,7 +229,7 @@ namespace LeninSearch.Ocr
             ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
         }
 
-        private void FindUncoveredClick(object sender, EventArgs e)
+        private void UncoveredLinksClick(object sender, EventArgs e)
         {
             var dialog = new ImageScopeDialog();
             if (dialog.ShowDialog() != DialogResult.OK) return;
@@ -246,31 +246,6 @@ namespace LeninSearch.Ocr
                 var imageFile = Directory.GetFiles(bookFolder_tb.Text)
                     .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == page.Filename);
                 uncoveredContours.AddRange(CvUtil.GetUncoveredContours(imageFile, page));
-            }
-
-            // find line start contours
-            var lineStartMatch = new LineStartMatch();
-            var lineStartContours = uncoveredContours.Where(lineStartMatch.Match).ToList();
-            if (lineStartContours.Any())
-            {
-                var lineStartDialog = new UncoveredContourDialog
-                {
-                    Text = "Mark uncovered line starts"
-                };
-                lineStartDialog.SetContours(lineStartContours);
-                lineStartDialog.ShowDialog();
-                lineStartContours = lineStartContours.Where(lc => !string.IsNullOrEmpty(lc.Word.Text)).ToList();
-                foreach (var contour in lineStartContours)
-                {
-                    lineStartMatch.Apply(_ocrData, contour);
-                }
-
-                uncoveredContours = uncoveredContours.Except(lineStartContours).ToList();
-            }
-            else
-            {
-                MessageBox.Show("Uncovered line start contours were not found", "Uncovered line start contours",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
 
             // find link number contours
@@ -916,6 +891,99 @@ namespace LeninSearch.Ocr
             return Directory.GetFiles(folder)
                 .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg"))
                 .ToArray();
+        }
+
+        private void BreakByDistantClick(object sender, EventArgs e)
+        {
+            var filename = ocr_lb.SelectedItem as string;
+            if (filename == null) return;
+            var page = _ocrData.GetPage(filename);
+            if (page == null) return;
+            var lines = page.Lines.ToArray();
+            foreach (var line in lines)
+            {
+                page.BreakLineByDistantWord(line, 20);
+            }
+
+            ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
+        }
+
+        private void UncoveredStartsClick(object sender, EventArgs e)
+        {
+            var dialog = new ImageScopeDialog();
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+
+            var pages = _ocrData.Pages.OrderBy(p => p.ImageIndex)
+                .Skip(dialog.MinImageIndex)
+                .Take(1 + dialog.MaxImageIndex - dialog.MinImageIndex)
+                .ToList();
+
+            // find uncovered contours
+            var uncoveredContours = new List<UncoveredContour>();
+            foreach (var page in pages)
+            {
+                var imageFile = Directory.GetFiles(bookFolder_tb.Text)
+                    .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == page.Filename);
+                uncoveredContours.AddRange(CvUtil.GetUncoveredContours(imageFile, page));
+            }
+
+            // find line start contours
+            var lineStartMatch = new LineStartMatch();
+            var lineStartContours = uncoveredContours.Where(lineStartMatch.Match).ToList();
+            if (lineStartContours.Any())
+            {
+                var lineStartDialog = new UncoveredContourDialog
+                {
+                    Text = "Mark uncovered line starts"
+                };
+                lineStartDialog.SetContours(lineStartContours);
+                lineStartDialog.ShowDialog();
+                lineStartContours = lineStartContours.Where(lc => !string.IsNullOrEmpty(lc.Word.Text)).ToList();
+                foreach (var contour in lineStartContours)
+                {
+                    lineStartMatch.Apply(_ocrData, contour);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Uncovered line start contours were not found", "Uncovered line start contours",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void RemoveLinksClick(object sender, EventArgs e)
+        {
+            var dialog = new ImageScopeDialog();
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+
+            var pages = _ocrData.Pages.OrderBy(p => p.ImageIndex)
+                .Skip(dialog.MinImageIndex)
+                .Take(1 + dialog.MaxImageIndex - dialog.MinImageIndex)
+                .ToList();
+
+            foreach (var page in pages)
+            {
+                var lines = page.Lines.ToList();
+                foreach (var line in lines)
+                {
+                    var words = line.Words?.ToList() ?? new List<OcrWord>();
+
+                    var linkWords = words.Where(w => w.IsCommentLinkNumber).ToList();
+
+                    if (!linkWords.Any()) continue;
+
+                    if (linkWords.Count == words.Count)
+                    {
+                        page.Lines.Remove(line);
+                        continue;
+                    }
+
+                    foreach (var linkWord in linkWords)
+                    {
+                        line.Words.Remove(linkWord);
+                    }
+                }
+            }
         }
     }
 }

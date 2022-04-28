@@ -213,8 +213,6 @@ namespace LeninSearch.Ocr.CV
 
                 if (line == null) continue;
 
-                if (line.Rectangle.IntersectsWith(rect)) continue;
-
                 var contour = new UncoveredContour
                 {
                     ImageFile = imageFile,

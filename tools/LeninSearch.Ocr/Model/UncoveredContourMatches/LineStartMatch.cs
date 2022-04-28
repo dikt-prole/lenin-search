@@ -6,6 +6,12 @@ namespace LeninSearch.Ocr.Model.UncoveredContourMatches
     {
         public bool Match(UncoveredContour uncoveredContour)
         {
+            var page = uncoveredContour.Page;
+
+            var line = page.Lines.FirstOrDefault(l => l.PageWideRectangle(page.Width).IntersectsWith(uncoveredContour.Rectangle));
+
+            if (line != null && line.Rectangle.IntersectsWith(uncoveredContour.Rectangle)) return false;
+
             if (uncoveredContour.Word.TopLeftX > 50) return false;
 
             if (uncoveredContour.Rectangle.Width > 15) return false;

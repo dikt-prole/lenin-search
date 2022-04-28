@@ -60,13 +60,16 @@ namespace LeninSearch.Ocr
             this.rowModel_flp = new System.Windows.Forms.FlowLayoutPanel();
             this.regeneratePage_btn = new System.Windows.Forms.Button();
             this.generateLines_btn = new System.Windows.Forms.Button();
-            this.findUncovered_btn = new System.Windows.Forms.Button();
+            this.uncoveredLinks_btn = new System.Windows.Forms.Button();
+            this.breakByDistant_btn = new System.Windows.Forms.Button();
+            this.uncoveredStarts_btn = new System.Windows.Forms.Button();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.label9 = new System.Windows.Forms.Label();
             this.labeling_rb = new System.Windows.Forms.RadioButton();
             this.editing_rb = new System.Windows.Forms.RadioButton();
             this.imageBlocks_rb = new System.Windows.Forms.RadioButton();
             this.all_rb = new System.Windows.Forms.RadioButton();
+            this.removeLinks_btn = new System.Windows.Forms.Button();
             this.tableLayoutPanel3.SuspendLayout();
             this.tableLayoutPanel4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -320,29 +323,35 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel1.Controls.Add(this.trainModel_btn, 0, 3);
             this.tableLayoutPanel1.Controls.Add(this.applyModel_btn, 1, 3);
             this.tableLayoutPanel1.Controls.Add(this.generateImageBlocks_btn, 2, 3);
-            this.tableLayoutPanel1.Controls.Add(this.rowModel_flp, 0, 5);
+            this.tableLayoutPanel1.Controls.Add(this.rowModel_flp, 0, 6);
             this.tableLayoutPanel1.Controls.Add(this.regeneratePage_btn, 1, 4);
             this.tableLayoutPanel1.Controls.Add(this.generateLines_btn, 0, 4);
-            this.tableLayoutPanel1.Controls.Add(this.findUncovered_btn, 2, 4);
+            this.tableLayoutPanel1.Controls.Add(this.uncoveredLinks_btn, 2, 4);
+            this.tableLayoutPanel1.Controls.Add(this.breakByDistant_btn, 0, 5);
+            this.tableLayoutPanel1.Controls.Add(this.uncoveredStarts_btn, 2, 5);
+            this.tableLayoutPanel1.Controls.Add(this.removeLinks_btn, 1, 5);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(1087, 3);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 6;
+            this.tableLayoutPanel1.RowCount = 7;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 10F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(394, 551);
             this.tableLayoutPanel1.TabIndex = 4;
             // 
             // openBookFolder_btn
             // 
             this.openBookFolder_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.openBookFolder_btn.Location = new System.Drawing.Point(266, 3);
+            this.openBookFolder_btn.Location = new System.Drawing.Point(264, 1);
+            this.openBookFolder_btn.Margin = new System.Windows.Forms.Padding(1);
             this.openBookFolder_btn.Name = "openBookFolder_btn";
-            this.openBookFolder_btn.Size = new System.Drawing.Size(125, 22);
+            this.openBookFolder_btn.Size = new System.Drawing.Size(129, 26);
             this.openBookFolder_btn.TabIndex = 1;
             this.openBookFolder_btn.Text = "Open book folder";
             this.openBookFolder_btn.UseVisualStyleBackColor = true;
@@ -350,9 +359,10 @@ namespace LeninSearch.Ocr
             // regenerateFeatures_btn
             // 
             this.regenerateFeatures_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.regenerateFeatures_btn.Location = new System.Drawing.Point(266, 41);
+            this.regenerateFeatures_btn.Location = new System.Drawing.Point(264, 39);
+            this.regenerateFeatures_btn.Margin = new System.Windows.Forms.Padding(1);
             this.regenerateFeatures_btn.Name = "regenerateFeatures_btn";
-            this.regenerateFeatures_btn.Size = new System.Drawing.Size(125, 22);
+            this.regenerateFeatures_btn.Size = new System.Drawing.Size(129, 26);
             this.regenerateFeatures_btn.TabIndex = 2;
             this.regenerateFeatures_btn.Text = "Regenerate Features";
             this.regenerateFeatures_btn.UseVisualStyleBackColor = true;
@@ -379,9 +389,10 @@ namespace LeninSearch.Ocr
             // saveOcrData_btn
             // 
             this.saveOcrData_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.saveOcrData_btn.Location = new System.Drawing.Point(136, 41);
+            this.saveOcrData_btn.Location = new System.Drawing.Point(134, 39);
+            this.saveOcrData_btn.Margin = new System.Windows.Forms.Padding(1);
             this.saveOcrData_btn.Name = "saveOcrData_btn";
-            this.saveOcrData_btn.Size = new System.Drawing.Size(124, 22);
+            this.saveOcrData_btn.Size = new System.Drawing.Size(128, 26);
             this.saveOcrData_btn.TabIndex = 3;
             this.saveOcrData_btn.Text = "Save Ocr Data";
             this.saveOcrData_btn.UseVisualStyleBackColor = true;
@@ -389,9 +400,10 @@ namespace LeninSearch.Ocr
             // trainModel_btn
             // 
             this.trainModel_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.trainModel_btn.Location = new System.Drawing.Point(3, 69);
+            this.trainModel_btn.Location = new System.Drawing.Point(1, 67);
+            this.trainModel_btn.Margin = new System.Windows.Forms.Padding(1);
             this.trainModel_btn.Name = "trainModel_btn";
-            this.trainModel_btn.Size = new System.Drawing.Size(127, 22);
+            this.trainModel_btn.Size = new System.Drawing.Size(131, 26);
             this.trainModel_btn.TabIndex = 5;
             this.trainModel_btn.Text = "Train Model";
             this.trainModel_btn.UseVisualStyleBackColor = true;
@@ -399,9 +411,10 @@ namespace LeninSearch.Ocr
             // applyModel_btn
             // 
             this.applyModel_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.applyModel_btn.Location = new System.Drawing.Point(136, 69);
+            this.applyModel_btn.Location = new System.Drawing.Point(134, 67);
+            this.applyModel_btn.Margin = new System.Windows.Forms.Padding(1);
             this.applyModel_btn.Name = "applyModel_btn";
-            this.applyModel_btn.Size = new System.Drawing.Size(124, 22);
+            this.applyModel_btn.Size = new System.Drawing.Size(128, 26);
             this.applyModel_btn.TabIndex = 7;
             this.applyModel_btn.Text = "Apply Model";
             this.applyModel_btn.UseVisualStyleBackColor = true;
@@ -409,9 +422,10 @@ namespace LeninSearch.Ocr
             // generateImageBlocks_btn
             // 
             this.generateImageBlocks_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.generateImageBlocks_btn.Location = new System.Drawing.Point(266, 69);
+            this.generateImageBlocks_btn.Location = new System.Drawing.Point(264, 67);
+            this.generateImageBlocks_btn.Margin = new System.Windows.Forms.Padding(1);
             this.generateImageBlocks_btn.Name = "generateImageBlocks_btn";
-            this.generateImageBlocks_btn.Size = new System.Drawing.Size(125, 22);
+            this.generateImageBlocks_btn.Size = new System.Drawing.Size(129, 26);
             this.generateImageBlocks_btn.TabIndex = 6;
             this.generateImageBlocks_btn.Text = "Generate IBs";
             this.generateImageBlocks_btn.UseVisualStyleBackColor = true;
@@ -421,17 +435,18 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel1.SetColumnSpan(this.rowModel_flp, 3);
             this.rowModel_flp.Dock = System.Windows.Forms.DockStyle.Fill;
             this.rowModel_flp.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.rowModel_flp.Location = new System.Drawing.Point(3, 125);
+            this.rowModel_flp.Location = new System.Drawing.Point(3, 153);
             this.rowModel_flp.Name = "rowModel_flp";
-            this.rowModel_flp.Size = new System.Drawing.Size(388, 423);
+            this.rowModel_flp.Size = new System.Drawing.Size(388, 395);
             this.rowModel_flp.TabIndex = 8;
             // 
             // regeneratePage_btn
             // 
             this.regeneratePage_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.regeneratePage_btn.Location = new System.Drawing.Point(136, 97);
+            this.regeneratePage_btn.Location = new System.Drawing.Point(134, 95);
+            this.regeneratePage_btn.Margin = new System.Windows.Forms.Padding(1);
             this.regeneratePage_btn.Name = "regeneratePage_btn";
-            this.regeneratePage_btn.Size = new System.Drawing.Size(124, 22);
+            this.regeneratePage_btn.Size = new System.Drawing.Size(128, 26);
             this.regeneratePage_btn.TabIndex = 9;
             this.regeneratePage_btn.Text = "Regenerate Page";
             this.regeneratePage_btn.UseVisualStyleBackColor = true;
@@ -440,23 +455,49 @@ namespace LeninSearch.Ocr
             // generateLines_btn
             // 
             this.generateLines_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.generateLines_btn.Location = new System.Drawing.Point(3, 97);
+            this.generateLines_btn.Location = new System.Drawing.Point(1, 95);
+            this.generateLines_btn.Margin = new System.Windows.Forms.Padding(1);
             this.generateLines_btn.Name = "generateLines_btn";
-            this.generateLines_btn.Size = new System.Drawing.Size(127, 22);
+            this.generateLines_btn.Size = new System.Drawing.Size(131, 26);
             this.generateLines_btn.TabIndex = 0;
             this.generateLines_btn.Text = "Generate Lines";
             this.generateLines_btn.UseVisualStyleBackColor = true;
             // 
-            // findUncovered_btn
+            // uncoveredLinks_btn
             // 
-            this.findUncovered_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.findUncovered_btn.Location = new System.Drawing.Point(266, 97);
-            this.findUncovered_btn.Name = "findUncovered_btn";
-            this.findUncovered_btn.Size = new System.Drawing.Size(125, 22);
-            this.findUncovered_btn.TabIndex = 10;
-            this.findUncovered_btn.Text = "Find Uncovered";
-            this.findUncovered_btn.UseVisualStyleBackColor = true;
-            this.findUncovered_btn.Click += new System.EventHandler(this.FindUncoveredClick);
+            this.uncoveredLinks_btn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.uncoveredLinks_btn.Location = new System.Drawing.Point(264, 95);
+            this.uncoveredLinks_btn.Margin = new System.Windows.Forms.Padding(1);
+            this.uncoveredLinks_btn.Name = "uncoveredLinks_btn";
+            this.uncoveredLinks_btn.Size = new System.Drawing.Size(129, 26);
+            this.uncoveredLinks_btn.TabIndex = 10;
+            this.uncoveredLinks_btn.Text = "Uncovered Links";
+            this.uncoveredLinks_btn.UseVisualStyleBackColor = true;
+            this.uncoveredLinks_btn.Click += new System.EventHandler(this.UncoveredLinksClick);
+            // 
+            // breakByDistant_btn
+            // 
+            this.breakByDistant_btn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.breakByDistant_btn.Location = new System.Drawing.Point(1, 123);
+            this.breakByDistant_btn.Margin = new System.Windows.Forms.Padding(1);
+            this.breakByDistant_btn.Name = "breakByDistant_btn";
+            this.breakByDistant_btn.Size = new System.Drawing.Size(131, 26);
+            this.breakByDistant_btn.TabIndex = 11;
+            this.breakByDistant_btn.Text = "Break By Distant";
+            this.breakByDistant_btn.UseVisualStyleBackColor = true;
+            this.breakByDistant_btn.Click += new System.EventHandler(this.BreakByDistantClick);
+            // 
+            // uncoveredStarts_btn
+            // 
+            this.uncoveredStarts_btn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.uncoveredStarts_btn.Location = new System.Drawing.Point(264, 123);
+            this.uncoveredStarts_btn.Margin = new System.Windows.Forms.Padding(1);
+            this.uncoveredStarts_btn.Name = "uncoveredStarts_btn";
+            this.uncoveredStarts_btn.Size = new System.Drawing.Size(129, 26);
+            this.uncoveredStarts_btn.TabIndex = 12;
+            this.uncoveredStarts_btn.Text = "Uncovered Starts";
+            this.uncoveredStarts_btn.UseVisualStyleBackColor = true;
+            this.uncoveredStarts_btn.Click += new System.EventHandler(this.UncoveredStartsClick);
             // 
             // tableLayoutPanel2
             // 
@@ -537,6 +578,18 @@ namespace LeninSearch.Ocr
             this.all_rb.Text = "All";
             this.all_rb.UseVisualStyleBackColor = true;
             // 
+            // removeLinks_btn
+            // 
+            this.removeLinks_btn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.removeLinks_btn.Location = new System.Drawing.Point(134, 123);
+            this.removeLinks_btn.Margin = new System.Windows.Forms.Padding(1);
+            this.removeLinks_btn.Name = "removeLinks_btn";
+            this.removeLinks_btn.Size = new System.Drawing.Size(128, 26);
+            this.removeLinks_btn.TabIndex = 13;
+            this.removeLinks_btn.Text = "Remove Links";
+            this.removeLinks_btn.UseVisualStyleBackColor = true;
+            this.removeLinks_btn.Click += new System.EventHandler(this.RemoveLinksClick);
+            // 
             // LabelingForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -596,6 +649,9 @@ namespace LeninSearch.Ocr
         private System.Windows.Forms.RadioButton imageBlocks_rb;
         private System.Windows.Forms.RadioButton all_rb;
         private System.Windows.Forms.Button regeneratePage_btn;
-        private System.Windows.Forms.Button findUncovered_btn;
+        private System.Windows.Forms.Button uncoveredLinks_btn;
+        private System.Windows.Forms.Button breakByDistant_btn;
+        private System.Windows.Forms.Button uncoveredStarts_btn;
+        private System.Windows.Forms.Button removeLinks_btn;
     }
 }

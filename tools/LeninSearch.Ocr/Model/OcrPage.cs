@@ -58,7 +58,7 @@ namespace LeninSearch.Ocr.Model
             foreach (var word in intoLine.Words) word.LineBottomDistance = intoLine.BottomRightY - word.BottomRightY;
         }
 
-        public void BreakIntoWords(OcrLine line)
+        public List<OcrLine> BreakIntoWords(OcrLine line)
         {
             var lineIndex = Lines.IndexOf(line);
 
@@ -84,6 +84,37 @@ namespace LeninSearch.Ocr.Model
             Lines.InsertRange(lineIndex, wordLines);
 
             ReindexLines();
+
+            return wordLines;
+        }
+
+        public void BreakLineByDistantWord(OcrLine line, int maxDistance)
+        {
+            var words = line.Words.OrderBy(w => w.TopLeftX).ToList();
+
+            if (words.Count < 2) return;
+
+            for (var wordIndex = 1; wordIndex < words.Count; wordIndex++)
+            {
+                var distance = words[wordIndex].TopLeftX - words[wordIndex - 1].BottomRightX;
+                if (distance > maxDistance)
+                {
+                    var leftWords = words.Take(wordIndex).ToList();
+                    var rightWords = words.Except(leftWords).ToList();
+                    var lines = BreakIntoWords(line);
+                    var leftLines = lines.Where(l => leftWords.Contains(l.Words[0])).ToList();
+                    var rightLines = lines.Except(leftLines).ToList();
+                    if (leftLines.Count > 1)
+                    {
+                        MergeLines(leftLines[0], leftLines.Skip(1).ToArray());
+                    }
+                    if (rightLines.Count > 1)
+                    {
+                        MergeLines(rightLines[0], rightLines.Skip(1).ToArray());
+                    }
+                    return;
+                }
+            }
         }
 
         public List<OcrLine> GetIntersectingLines(Rectangle rect)
