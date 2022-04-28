@@ -44,7 +44,7 @@ namespace LeninSearch.Ocr
 
             contours_flp.SizeChanged += (sender, args) =>
             {
-                foreach (var ucc in contours_flp.Controls.OfType<CommentLinkControl>()) ucc.Width = contours_flp.Width - 26;
+                foreach (var ucc in contours_flp.Controls.OfType<UncoveredContourControl>()) ucc.Width = contours_flp.Width - 26;
             };
 
             ok_btn.Click += (sender, args) =>
@@ -66,14 +66,17 @@ namespace LeninSearch.Ocr
             var pageContours = _contours.Skip(page * pageSize).Take(pageSize).ToList();
             foreach (var contour in pageContours)
             {
-                var contourControl = new CommentLinkControl { Width = contours_flp.Width - 26, Contour = contour };
+                var contourControl = new UncoveredContourControl { Width = contours_flp.Width - 26, Contour = contour };
+                contourControl.Navigation += ControlOnNavigation;
                 contours_flp.Controls.Add(contourControl);
             }
+
+            (contours_flp.Controls[0] as UncoveredContourControl).FocusWordTextBox();
         }
 
         private void SaveCurrentPage()
         {
-            var contourControls = contours_flp.Controls.OfType<CommentLinkControl>().ToList();
+            var contourControls = contours_flp.Controls.OfType<UncoveredContourControl>().ToList();
             foreach (var ucc in contourControls)
             {
                 ucc.Contour.Word.Text = ucc.WordText;
@@ -83,14 +86,56 @@ namespace LeninSearch.Ocr
         public void SetContours(List<UncoveredContour> contours)
         {
             _contours = contours;
-            contours_flp.Controls.Clear();
-
-            if (!_contours.Any()) return;
+            ClearContourControls();
 
             page_nud.Maximum = PageCount;
             page_nud.Value = 1;
             totalPages_lbl.Text = $"of {PageCount}";
             PageValueChanged(null, null);
+        }
+
+        private void ClearContourControls()
+        {
+            var controls = contours_flp.Controls.OfType<UncoveredContourControl>().ToList();
+            foreach (var control in controls)
+            {
+                contours_flp.Controls.Remove(control);
+                control.Navigation -= ControlOnNavigation;
+                control.Dispose();
+            }
+        }
+
+        private void ControlOnNavigation(object sender, Keys e)
+        {
+            var currentControl = sender as UncoveredContourControl;
+            var currentIndex = contours_flp.Controls.IndexOf(currentControl);
+            switch (e)
+            {
+                case Keys.Up:
+                    if (currentIndex > 0)
+                    {
+                        (contours_flp.Controls[currentIndex - 1] as UncoveredContourControl).FocusWordTextBox();
+                    }
+                    return;
+                case Keys.Down:
+                    if (currentIndex < contours_flp.Controls.Count - 1)
+                    {
+                        (contours_flp.Controls[currentIndex + 1] as UncoveredContourControl).FocusWordTextBox();
+                    }
+                    return;
+                case Keys.Left:
+                    if (page_nud.Value > 1)
+                    {
+                        page_nud.Value = page_nud.Value - 1;
+                    }
+                    return;
+                case Keys.Right:
+                    if (page_nud.Value < page_nud.Maximum)
+                    {
+                        page_nud.Value = page_nud.Value + 1;
+                    }
+                    return;
+            }
         }
     }
 }

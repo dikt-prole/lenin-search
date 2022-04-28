@@ -126,38 +126,25 @@ namespace LeninSearch.Ocr
             MessageBox.Show("Model applied", "Model", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        private async void GenerateLinesClick(object? sender, EventArgs e)
+        private static async Task<(List<OcrPage> Pages, bool Success, string Error)> BatchOcr(IOcrService ocrService, List<string> imageFiles, Action<int> progressAction)
         {
-            var dialog = new ImageScopeDialog();
-            if (dialog.ShowDialog() != DialogResult.OK) return;
-
-            var imageFiles = GetImageFiles(bookFolder_tb.Text)
-                .Where(f => dialog.ImageMatch(int.Parse(new string(Path.GetFileNameWithoutExtension(f).Where(char.IsNumber).ToArray()))))
-                .ToList();
-
-            _ocrData.Pages = new List<OcrPage>();
-
-            progressBar1.Minimum = 0;
-            progressBar1.Maximum = imageFiles.Count;
-            progressBar1.Value = 0;
-
+            var pages = new List<OcrPage>();
             var batchSize = 10;
             var imageFileBatches = imageFiles.ChunkBy(batchSize);
             for (var batchIndex = 0; batchIndex < imageFileBatches.Count; batchIndex++)
             {
                 var batch = imageFileBatches[batchIndex];
-                var tasks = batch.Select(imageFile => _ocrService.GetOcrPageAsync(imageFile));
+                var tasks = batch.Select(ocrService.GetOcrPageAsync);
 
                 var imageFileSw = new Stopwatch(); imageFileSw.Start();
 
                 var results = await Task.WhenAll(tasks);
-                progressBar1.Value = batchSize * batchIndex + batch.Count;
+                progressAction(batchSize * batchIndex + batch.Count);
                 if (results.Any(r => !r.Success))
                 {
-                    MessageBox.Show(results.First(r => !r.Success).Error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
+                    return (null, false, results.First(r => !r.Success).Error);
                 }
-                _ocrData.Pages.AddRange(results.Select(r => r.Page));
+                pages.AddRange(results.Select(r => r.Page));
 
                 imageFileSw.Stop();
 
@@ -168,11 +155,93 @@ namespace LeninSearch.Ocr
                 }
             }
 
-            ocr_lb.SelectedIndex = 0;
+            return (pages, true, null);
+        }
+
+        private static async Task<(List<OcrPage> Pages, bool Success, string Error)> SequentialOcr(IOcrService ocrService, List<string> imageFiles, Action<int> progressAction)
+        {
+            var pages = new List<OcrPage>();
+            for (var imageIndex = 0; imageIndex < imageFiles.Count; imageIndex++)
+            {
+                var result = await ocrService.GetOcrPageAsync(imageFiles[imageIndex]);
+                progressAction(imageIndex + 1);
+                if (!result.Success)
+                {
+                    return (null, false, result.Error);
+                }
+                pages.Add(result.Page);
+
+            }
+
+            return (pages, true, null);
+        }
+
+        private async void GenerateLinesClick(object? sender, EventArgs e)
+        {
+            var dialog = new ImageScopeDialog();
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+
+            var imageFiles = GetImageFiles(bookFolder_tb.Text)
+                .Where(f => dialog.ImageMatch(int.Parse(new string(Path.GetFileNameWithoutExtension(f).Where(char.IsNumber).ToArray()))))
+                .ToList();
+
+            _ocrData.Pages ??= new List<OcrPage>();
+
+            progressBar1.Minimum = 0;
+            progressBar1.Maximum = imageFiles.Count;
+            progressBar1.Value = 0;
+
+            //var ocrResult = await BatchOcr(_ocrService, imageFiles, progress => progressBar1.Value = progress);
+            var ocrResult = await SequentialOcr(_ocrService, imageFiles, progress => progressBar1.Value = progress);
+            if (!ocrResult.Success)
+            {
+                MessageBox.Show(ocrResult.Error, "Ocr Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // replace old pages with new pages
+            _ocrData.Pages.RemoveAll(p => ocrResult.Pages.Any(pp => pp.Filename == p.Filename));
+            _ocrData.Pages.AddRange(ocrResult.Pages);
+
+            MessageBox.Show("Ocr completed", "Ocr", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private async void RegeneratePageClick(object sender, EventArgs e)
+        {
+            await RegeneratePage();
+        }
+
+        private async Task RegeneratePage()
+        {
+            var filename = ocr_lb.SelectedItem as string;
+            var imageFile = Directory.GetFiles(bookFolder_tb.Text)
+                .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == filename);
+            var ocrResult = await _ocrService.GetOcrPageAsync(imageFile);
+            if (!ocrResult.Success)
+            {
+                MessageBox.Show(ocrResult.Error, "Ocr Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            _ocrData.Pages.RemoveAll(p => p.Filename == filename);
+            _ocrData.Pages.Add(ocrResult.Page);
+
+            ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
+        }
+
+        private void FindUncoveredClick(object sender, EventArgs e)
+        {
+            var dialog = new ImageScopeDialog();
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+
+            var pages = _ocrData.Pages.OrderBy(p => p.ImageIndex)
+                .Skip(dialog.MinImageIndex)
+                .Take(1 + dialog.MaxImageIndex - dialog.MinImageIndex)
+                .ToList();
 
             // find uncovered contours
             var uncoveredContours = new List<UncoveredContour>();
-            foreach (var page in _ocrData.Pages)
+            foreach (var page in pages)
             {
                 var imageFile = Directory.GetFiles(bookFolder_tb.Text)
                     .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == page.Filename);
@@ -182,18 +251,27 @@ namespace LeninSearch.Ocr
             // find line start contours
             var lineStartMatch = new LineStartMatch();
             var lineStartContours = uncoveredContours.Where(lineStartMatch.Match).ToList();
-            var lineStartDialog = new UncoveredContourDialog
+            if (lineStartContours.Any())
             {
-                Text = "Mark uncovered line starts"
-            };
-            lineStartDialog.SetContours(lineStartContours);
-            lineStartDialog.ShowDialog();
-            lineStartContours = lineStartContours.Where(lc => !string.IsNullOrEmpty(lc.Word.Text)).ToList();
-            foreach (var contour in lineStartContours)
-            {
-                lineStartMatch.Apply(_ocrData, contour);
+                var lineStartDialog = new UncoveredContourDialog
+                {
+                    Text = "Mark uncovered line starts"
+                };
+                lineStartDialog.SetContours(lineStartContours);
+                lineStartDialog.ShowDialog();
+                lineStartContours = lineStartContours.Where(lc => !string.IsNullOrEmpty(lc.Word.Text)).ToList();
+                foreach (var contour in lineStartContours)
+                {
+                    lineStartMatch.Apply(_ocrData, contour);
+                }
+
+                uncoveredContours = uncoveredContours.Except(lineStartContours).ToList();
             }
-            uncoveredContours = uncoveredContours.Except(lineStartContours).ToList();
+            else
+            {
+                MessageBox.Show("Uncovered line start contours were not found", "Uncovered line start contours",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
 
             // find link number contours
             var linkNumberMatch = new CommentLinkNumberMatch();
@@ -211,6 +289,11 @@ namespace LeninSearch.Ocr
                 {
                     linkNumberMatch.Apply(_ocrData, contour);
                 }
+            }
+            else
+            {
+                MessageBox.Show("Uncovered link number contours were not found", "Uncovered link number contours",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -613,8 +696,13 @@ namespace LeninSearch.Ocr
             MessageBox.Show("Features were regenerated", "Features", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        private void OcrLbOnKeyDown(object sender, KeyEventArgs e)
+        private async void OcrLbOnKeyDown(object sender, KeyEventArgs e)
         {
+            if (e.KeyCode == Keys.R)
+            {
+                await RegeneratePage();
+            }
+
             if (!_keyLabels.ContainsKey(e.KeyCode)) return;
 
             var label = _keyLabels[e.KeyCode];

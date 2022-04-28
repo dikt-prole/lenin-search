@@ -51,7 +51,6 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.openBookFolder_btn = new System.Windows.Forms.Button();
             this.regenerateFeatures_btn = new System.Windows.Forms.Button();
-            this.generateLines_btn = new System.Windows.Forms.Button();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.bookFolder_tb = new System.Windows.Forms.TextBox();
             this.saveOcrData_btn = new System.Windows.Forms.Button();
@@ -59,6 +58,9 @@ namespace LeninSearch.Ocr
             this.applyModel_btn = new System.Windows.Forms.Button();
             this.generateImageBlocks_btn = new System.Windows.Forms.Button();
             this.rowModel_flp = new System.Windows.Forms.FlowLayoutPanel();
+            this.regeneratePage_btn = new System.Windows.Forms.Button();
+            this.generateLines_btn = new System.Windows.Forms.Button();
+            this.findUncovered_btn = new System.Windows.Forms.Button();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.label9 = new System.Windows.Forms.Label();
             this.labeling_rb = new System.Windows.Forms.RadioButton();
@@ -312,26 +314,26 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33F));
             this.tableLayoutPanel1.Controls.Add(this.openBookFolder_btn, 2, 0);
             this.tableLayoutPanel1.Controls.Add(this.regenerateFeatures_btn, 2, 2);
-            this.tableLayoutPanel1.Controls.Add(this.generateLines_btn, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.progressBar1, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.bookFolder_tb, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.saveOcrData_btn, 1, 2);
             this.tableLayoutPanel1.Controls.Add(this.trainModel_btn, 0, 3);
             this.tableLayoutPanel1.Controls.Add(this.applyModel_btn, 1, 3);
             this.tableLayoutPanel1.Controls.Add(this.generateImageBlocks_btn, 2, 3);
-            this.tableLayoutPanel1.Controls.Add(this.rowModel_flp, 0, 4);
+            this.tableLayoutPanel1.Controls.Add(this.rowModel_flp, 0, 5);
+            this.tableLayoutPanel1.Controls.Add(this.regeneratePage_btn, 1, 4);
+            this.tableLayoutPanel1.Controls.Add(this.generateLines_btn, 0, 4);
+            this.tableLayoutPanel1.Controls.Add(this.findUncovered_btn, 2, 4);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(1087, 3);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 5;
+            this.tableLayoutPanel1.RowCount = 6;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 10F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(394, 551);
             this.tableLayoutPanel1.TabIndex = 4;
             // 
@@ -354,16 +356,6 @@ namespace LeninSearch.Ocr
             this.regenerateFeatures_btn.TabIndex = 2;
             this.regenerateFeatures_btn.Text = "Regenerate Features";
             this.regenerateFeatures_btn.UseVisualStyleBackColor = true;
-            // 
-            // generateLines_btn
-            // 
-            this.generateLines_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.generateLines_btn.Location = new System.Drawing.Point(3, 41);
-            this.generateLines_btn.Name = "generateLines_btn";
-            this.generateLines_btn.Size = new System.Drawing.Size(127, 22);
-            this.generateLines_btn.TabIndex = 0;
-            this.generateLines_btn.Text = "Generate Lines";
-            this.generateLines_btn.UseVisualStyleBackColor = true;
             // 
             // progressBar1
             // 
@@ -429,10 +421,42 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel1.SetColumnSpan(this.rowModel_flp, 3);
             this.rowModel_flp.Dock = System.Windows.Forms.DockStyle.Fill;
             this.rowModel_flp.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.rowModel_flp.Location = new System.Drawing.Point(3, 97);
+            this.rowModel_flp.Location = new System.Drawing.Point(3, 125);
             this.rowModel_flp.Name = "rowModel_flp";
-            this.rowModel_flp.Size = new System.Drawing.Size(388, 451);
+            this.rowModel_flp.Size = new System.Drawing.Size(388, 423);
             this.rowModel_flp.TabIndex = 8;
+            // 
+            // regeneratePage_btn
+            // 
+            this.regeneratePage_btn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.regeneratePage_btn.Location = new System.Drawing.Point(136, 97);
+            this.regeneratePage_btn.Name = "regeneratePage_btn";
+            this.regeneratePage_btn.Size = new System.Drawing.Size(124, 22);
+            this.regeneratePage_btn.TabIndex = 9;
+            this.regeneratePage_btn.Text = "Regenerate Page";
+            this.regeneratePage_btn.UseVisualStyleBackColor = true;
+            this.regeneratePage_btn.Click += new System.EventHandler(this.RegeneratePageClick);
+            // 
+            // generateLines_btn
+            // 
+            this.generateLines_btn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.generateLines_btn.Location = new System.Drawing.Point(3, 97);
+            this.generateLines_btn.Name = "generateLines_btn";
+            this.generateLines_btn.Size = new System.Drawing.Size(127, 22);
+            this.generateLines_btn.TabIndex = 0;
+            this.generateLines_btn.Text = "Generate Lines";
+            this.generateLines_btn.UseVisualStyleBackColor = true;
+            // 
+            // findUncovered_btn
+            // 
+            this.findUncovered_btn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.findUncovered_btn.Location = new System.Drawing.Point(266, 97);
+            this.findUncovered_btn.Name = "findUncovered_btn";
+            this.findUncovered_btn.Size = new System.Drawing.Size(125, 22);
+            this.findUncovered_btn.TabIndex = 10;
+            this.findUncovered_btn.Text = "Find Uncovered";
+            this.findUncovered_btn.UseVisualStyleBackColor = true;
+            this.findUncovered_btn.Click += new System.EventHandler(this.FindUncoveredClick);
             // 
             // tableLayoutPanel2
             // 
@@ -571,5 +595,7 @@ namespace LeninSearch.Ocr
         private System.Windows.Forms.RadioButton editing_rb;
         private System.Windows.Forms.RadioButton imageBlocks_rb;
         private System.Windows.Forms.RadioButton all_rb;
+        private System.Windows.Forms.Button regeneratePage_btn;
+        private System.Windows.Forms.Button findUncovered_btn;
     }
 }
