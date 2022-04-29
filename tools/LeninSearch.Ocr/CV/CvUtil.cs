@@ -217,6 +217,7 @@ namespace LeninSearch.Ocr.CV
                 {
                     ImageFile = imageFile,
                     Rectangle = rect,
+                    Page = page,
                     Word = new OcrWord
                     {
                         TopLeftX = rect.X,

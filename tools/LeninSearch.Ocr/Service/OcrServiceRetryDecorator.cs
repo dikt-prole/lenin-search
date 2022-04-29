@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Windows.Forms.VisualStyles;
 using LeninSearch.Ocr.Model;
 using Polly;
 using Polly.Retry;
@@ -21,8 +22,15 @@ namespace LeninSearch.Ocr.Service
             bool success = false;
             string error = null;
 
+            var backoff = new[]
+            {
+                TimeSpan.FromSeconds(5),
+                TimeSpan.FromSeconds(10),
+                TimeSpan.FromSeconds(15)
+            };
+
             await Policy.Handle<Exception>()
-                .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(1))
+                .WaitAndRetryAsync(backoff)
                 .ExecuteAsync(async () =>
                 {
                     var result = await _serviceBase.GetOcrPageAsync(imageFile);

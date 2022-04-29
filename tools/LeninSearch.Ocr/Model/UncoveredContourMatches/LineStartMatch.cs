@@ -14,9 +14,9 @@ namespace LeninSearch.Ocr.Model.UncoveredContourMatches
 
             if (uncoveredContour.Word.TopLeftX > 50) return false;
 
-            if (uncoveredContour.Rectangle.Width > 15) return false;
+            if (uncoveredContour.Rectangle.Width > 22) return false;
 
-            if (uncoveredContour.Rectangle.Height > 20) return false;
+            if (uncoveredContour.Rectangle.Height > 25) return false;
 
             return true;
         }
