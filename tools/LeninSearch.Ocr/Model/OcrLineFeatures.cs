@@ -1,16 +1,12 @@
 ﻿using System.Collections.Generic;
-using System.Drawing.Text;
 using Newtonsoft.Json;
 using System.Linq;
 using System.Reflection;
-using Emgu.CV.Aruco;
 
 namespace LeninSearch.Ocr.Model
 {
     public class OcrLineFeatures
     {
-        private static readonly char[] Symbols = new[] {'.', '?', '!', ':'};
-
         [JsonProperty("li")]
         public double LeftIndent { get; set; }
 
@@ -29,35 +25,17 @@ namespace LeninSearch.Ocr.Model
         [JsonProperty("abd")]
         public double AboveBottomDivider { get; set; }
 
-        [JsonProperty("pps")]
-        public double PixelsPerSymbol { get; set; }
-
         [JsonProperty("w")]
         public double Width { get; set; }
 
         [JsonProperty("h")]
         public double Height { get; set; }
 
-        [JsonProperty("whr")]
-        public double WidthToHeightRatio { get; set; }
-
-        [JsonProperty("wc")]
-        public double WordCount { get; set; }
-
-        [JsonProperty("sc")]
-        public double SymbolCount { get; set; }
-
-        [JsonProperty("syc")]
-        public double SameYCount { get; set; }
-
-        [JsonProperty("ii")]
-        public double ImageIndex { get; set; }
-
         [JsonProperty("swc")]
         public double StartsWithCapital { get; set; }
 
-        [JsonProperty("ews")]
-        public double EndsWithSymbol { get; set; }
+        [JsonProperty("cp")]
+        public double CapitalPercentage { get; set; }
 
         public double[] ToFeatureRow(Dictionary<string, bool> rowModel)
         {
@@ -75,21 +53,12 @@ namespace LeninSearch.Ocr.Model
             return rowValues.ToArray();
         }
 
-        public OcrLineFeatures Copy()
-        {
-            return JsonConvert.DeserializeObject<OcrLineFeatures>(JsonConvert.SerializeObject(this));
-        }
-
         public static OcrLineFeatures Calculate(OcrPage page, OcrLine line)
         {
             var lineRectangle = line.Rectangle;
-            var pageWideRectangle = line.PageWideRectangle(page.Width);
             var lineText = line.Words?.Any(w => !string.IsNullOrEmpty(w.Text)) == true
-                ? string.Join("", line.Words.Select(w => w.Text))
+                ? string.Join(" ", line.Words.Select(w => w.Text))
                 : null;
-            var totalWordWidth = line.Words?.Any() != true
-                ? 0
-                : 1.0 * line.Words.Sum(w => w.Width);
 
             return new OcrLineFeatures
             {
@@ -102,25 +71,12 @@ namespace LeninSearch.Ocr.Model
                 AboveBottomDivider = page.BottomDivider.Y > line.TopLeftY ? 1 : 0,
                 Width = lineRectangle.Width,
                 Height = lineRectangle.Height,
-                SameYCount = page.Lines.Count(pl =>
-                    pl != line && pageWideRectangle.IntersectsWith(pl.PageWideRectangle(page.Width))),
-                WidthToHeightRatio = 1.0 * lineRectangle.Width / lineRectangle.Height,
 
                 // text features
-                PixelsPerSymbol = string.IsNullOrEmpty(lineText)
-                    ? 0
-                    : totalWordWidth / lineText.Length,
-                WordCount = line.Words?.Count ?? 0,
-                SymbolCount = lineText?.Length ?? 0,
                 StartsWithCapital = string.IsNullOrEmpty(lineText)
                     ? 0 
                     : char.IsUpper(lineText[0]) ? 1 : 0,
-                EndsWithSymbol = lineText == null
-                    ? 0
-                    : Symbols.Contains(lineText.Last()) ? 1 : 0,
-
-                // other features
-                ImageIndex = page.ImageIndex
+                CapitalPercentage = (100.0 * lineText?.Count(char.IsUpper) ?? 0) / (lineText?.Length ?? 1)
             };
         }
 
@@ -129,9 +85,6 @@ namespace LeninSearch.Ocr.Model
             var props = typeof(OcrLineFeatures).GetProperties(BindingFlags.Instance | BindingFlags.Public);
 
             var rowModel = props.ToDictionary(p => p.Name, p => true);
-
-            rowModel[nameof(EndsWithSymbol)] = false;
-            rowModel[nameof(PixelsPerSymbol)] = false;
 
             return rowModel;
         }

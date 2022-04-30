@@ -63,13 +63,14 @@ namespace LeninSearch.Ocr
             this.uncoveredLinks_btn = new System.Windows.Forms.Button();
             this.breakByDistant_btn = new System.Windows.Forms.Button();
             this.uncoveredStarts_btn = new System.Windows.Forms.Button();
+            this.removeLinks_btn = new System.Windows.Forms.Button();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.label9 = new System.Windows.Forms.Label();
             this.labeling_rb = new System.Windows.Forms.RadioButton();
             this.editing_rb = new System.Windows.Forms.RadioButton();
             this.imageBlocks_rb = new System.Windows.Forms.RadioButton();
             this.all_rb = new System.Windows.Forms.RadioButton();
-            this.removeLinks_btn = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             this.tableLayoutPanel3.SuspendLayout();
             this.tableLayoutPanel4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -330,6 +331,7 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel1.Controls.Add(this.breakByDistant_btn, 0, 5);
             this.tableLayoutPanel1.Controls.Add(this.uncoveredStarts_btn, 2, 5);
             this.tableLayoutPanel1.Controls.Add(this.removeLinks_btn, 1, 5);
+            this.tableLayoutPanel1.Controls.Add(this.button1, 0, 2);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(1087, 3);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -499,6 +501,18 @@ namespace LeninSearch.Ocr
             this.uncoveredStarts_btn.UseVisualStyleBackColor = true;
             this.uncoveredStarts_btn.Click += new System.EventHandler(this.UncoveredStartsClick);
             // 
+            // removeLinks_btn
+            // 
+            this.removeLinks_btn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.removeLinks_btn.Location = new System.Drawing.Point(134, 123);
+            this.removeLinks_btn.Margin = new System.Windows.Forms.Padding(1);
+            this.removeLinks_btn.Name = "removeLinks_btn";
+            this.removeLinks_btn.Size = new System.Drawing.Size(128, 26);
+            this.removeLinks_btn.TabIndex = 13;
+            this.removeLinks_btn.Text = "Remove Links";
+            this.removeLinks_btn.UseVisualStyleBackColor = true;
+            this.removeLinks_btn.Click += new System.EventHandler(this.RemoveLinksClick);
+            // 
             // tableLayoutPanel2
             // 
             this.tableLayoutPanel2.ColumnCount = 1;
@@ -578,17 +592,17 @@ namespace LeninSearch.Ocr
             this.all_rb.Text = "All";
             this.all_rb.UseVisualStyleBackColor = true;
             // 
-            // removeLinks_btn
+            // button1
             // 
-            this.removeLinks_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.removeLinks_btn.Location = new System.Drawing.Point(134, 123);
-            this.removeLinks_btn.Margin = new System.Windows.Forms.Padding(1);
-            this.removeLinks_btn.Name = "removeLinks_btn";
-            this.removeLinks_btn.Size = new System.Drawing.Size(128, 26);
-            this.removeLinks_btn.TabIndex = 13;
-            this.removeLinks_btn.Text = "Remove Links";
-            this.removeLinks_btn.UseVisualStyleBackColor = true;
-            this.removeLinks_btn.Click += new System.EventHandler(this.RemoveLinksClick);
+            this.button1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.button1.Location = new System.Drawing.Point(1, 39);
+            this.button1.Margin = new System.Windows.Forms.Padding(1);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(131, 26);
+            this.button1.TabIndex = 14;
+            this.button1.Text = "Train - Apply Model";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.TrainApplyModelClick);
             // 
             // LabelingForm
             // 
@@ -653,5 +667,6 @@ namespace LeninSearch.Ocr
         private System.Windows.Forms.Button breakByDistant_btn;
         private System.Windows.Forms.Button uncoveredStarts_btn;
         private System.Windows.Forms.Button removeLinks_btn;
+        private System.Windows.Forms.Button button1;
     }
 }

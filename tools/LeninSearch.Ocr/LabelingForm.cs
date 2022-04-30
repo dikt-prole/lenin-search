@@ -1,4 +1,10 @@
-﻿using System;
+﻿using Accord.MachineLearning.DecisionTrees;
+using LeninSearch.Ocr.CV;
+using LeninSearch.Ocr.Model;
+using LeninSearch.Ocr.Model.UncoveredContourMatches;
+using LeninSearch.Ocr.Service;
+using LeninSearch.Ocr.YandexVision;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -6,13 +12,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Accord.MachineLearning.DecisionTrees;
-using Accord.Statistics.Kernels;
-using LeninSearch.Ocr.CV;
-using LeninSearch.Ocr.Model;
-using LeninSearch.Ocr.Model.UncoveredContourMatches;
-using LeninSearch.Ocr.Service;
-using LeninSearch.Ocr.YandexVision;
 
 namespace LeninSearch.Ocr
 {
@@ -983,6 +982,63 @@ namespace LeninSearch.Ocr
                         line.Words.Remove(linkWord);
                     }
                 }
+            }
+        }
+
+        private void TrainApplyModelClick(object sender, EventArgs e)
+        {
+            var filename = ocr_lb.SelectedItem as string;
+            if (filename == null) return;
+            var page = _ocrData.GetPage(filename);
+            if (page == null) return;
+
+            var dialog = new ModelScopeDialog
+            {
+                ImageIndex = page.ImageIndex,
+                TakeBefore = 20,
+                TakeAfter = 1000
+            };
+
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+
+            var labeledLines = _ocrData.Pages.Where(dialog.BeforePageMatch).SelectMany(p => p.NonImageBlockLines)
+                .Where(r => r.Label.HasValue && r.Features != null)
+                .ToList();
+
+            var rowModel = GetRowModel();
+
+            double[][] inputs = labeledLines.Select(l => l.Features.ToFeatureRow(rowModel)).ToArray();
+            int[] outputs = labeledLines.Select(l => (int)l.Label).ToArray();
+
+            Accord.Math.Random.Generator.Seed = 1;
+            var teacher = new RandomForestLearning
+            {
+                NumberOfTrees = 20
+            };
+
+            try
+            {
+                _model = teacher.Learn(inputs, outputs);
+
+                var featuredLines = _ocrData.Pages.Where(dialog.AfterPageMatch).SelectMany(p => p.NonImageBlockLines)
+                    .Where(b => b.Features != null)
+                    .ToList();
+
+                var applyInputs = featuredLines.Select(l => l.Features.ToFeatureRow(rowModel)).ToArray();
+                var predicted = _model.Decide(inputs);
+
+                for (var i = 0; i < featuredLines.Count; i++)
+                {
+                    featuredLines[i].Label = (OcrLabel)predicted[i];
+                }
+
+                MessageBox.Show("Model trained and applied", "Model", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            }
+            catch (Exception exc)
+            {
+                MessageBox.Show(exc.Message, "Error", MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
         }
     }

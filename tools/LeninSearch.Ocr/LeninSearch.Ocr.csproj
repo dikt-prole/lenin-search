@@ -24,6 +24,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="ModelScopeDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="ImageScopeDialog.cs">
       <SubType>Form</SubType>
     </Compile>
