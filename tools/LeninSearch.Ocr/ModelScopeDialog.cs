@@ -26,7 +26,7 @@ namespace LeninSearch.Ocr
         {
             InitializeComponent();
 
-            imageIndex_nud.Minimum = 1;
+            imageIndex_nud.Minimum = 0;
             imageIndex_nud.Maximum = 10000;
             imageIndex_nud.Value = 0;
             imageIndex_nud.ReadOnly = true;

@@ -12,11 +12,11 @@ namespace LeninSearch.Ocr.Model.UncoveredContourMatches
 
             if (line != null && line.Rectangle.IntersectsWith(uncoveredContour.Rectangle)) return false;
 
-            if (uncoveredContour.Word.TopLeftX > 50) return false;
+            if (uncoveredContour.Word.TopLeftX > 100) return false;
 
-            if (uncoveredContour.Rectangle.Width > 22) return false;
+            if (uncoveredContour.Rectangle.Width > 25) return false;
 
-            if (uncoveredContour.Rectangle.Height > 25) return false;
+            if (uncoveredContour.Rectangle.Height > 30) return false;
 
             return true;
         }

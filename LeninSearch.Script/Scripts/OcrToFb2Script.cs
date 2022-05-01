@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Accord.Diagnostics;
 using LeninSearch.Ocr.Model;
 using LeninSearch.Script.Scripts.Models;
-using Debug = System.Diagnostics.Debug;
 
 namespace LeninSearch.Script.Scripts
 {
@@ -19,8 +17,8 @@ namespace LeninSearch.Script.Scripts
         {
             //var ocrBookFolder = input[0];
             //var fb2Path = input[1];
-            var ocrBookFolder = @"D:\Repo\lenin-search\corpus\ocr\pavlov-v1\t03-2";
-            var fb2Path = @"D:\Repo\lenin-search\corpus\orig\pavlov\t03-2.fb2";
+            var ocrBookFolder = @"D:\Repo\lenin-search\corpus\ocr\pavlov-v1\t04";
+            var fb2Path = @"D:\Repo\lenin-search\corpus\orig\pavlov\t04.fb2";
 
             // 1. load ocr data
             var ocrData = OcrData.Load(ocrBookFolder);

@@ -64,13 +64,13 @@ namespace LeninSearch.Ocr
             this.breakByDistant_btn = new System.Windows.Forms.Button();
             this.uncoveredStarts_btn = new System.Windows.Forms.Button();
             this.removeLinks_btn = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.label9 = new System.Windows.Forms.Label();
             this.labeling_rb = new System.Windows.Forms.RadioButton();
             this.editing_rb = new System.Windows.Forms.RadioButton();
             this.imageBlocks_rb = new System.Windows.Forms.RadioButton();
             this.all_rb = new System.Windows.Forms.RadioButton();
-            this.button1 = new System.Windows.Forms.Button();
             this.tableLayoutPanel3.SuspendLayout();
             this.tableLayoutPanel4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -513,6 +513,18 @@ namespace LeninSearch.Ocr
             this.removeLinks_btn.UseVisualStyleBackColor = true;
             this.removeLinks_btn.Click += new System.EventHandler(this.RemoveLinksClick);
             // 
+            // button1
+            // 
+            this.button1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.button1.Location = new System.Drawing.Point(1, 39);
+            this.button1.Margin = new System.Windows.Forms.Padding(1);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(131, 26);
+            this.button1.TabIndex = 14;
+            this.button1.Text = "Train - Apply Model";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.TrainApplyModelClick);
+            // 
             // tableLayoutPanel2
             // 
             this.tableLayoutPanel2.ColumnCount = 1;
@@ -591,18 +603,6 @@ namespace LeninSearch.Ocr
             this.all_rb.TabStop = true;
             this.all_rb.Text = "All";
             this.all_rb.UseVisualStyleBackColor = true;
-            // 
-            // button1
-            // 
-            this.button1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.button1.Location = new System.Drawing.Point(1, 39);
-            this.button1.Margin = new System.Windows.Forms.Padding(1);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(131, 26);
-            this.button1.TabIndex = 14;
-            this.button1.Text = "Train - Apply Model";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.TrainApplyModelClick);
             // 
             // LabelingForm
             // 

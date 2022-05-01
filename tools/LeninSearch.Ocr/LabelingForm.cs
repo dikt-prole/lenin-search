@@ -1025,7 +1025,7 @@ namespace LeninSearch.Ocr
                     .ToList();
 
                 var applyInputs = featuredLines.Select(l => l.Features.ToFeatureRow(rowModel)).ToArray();
-                var predicted = _model.Decide(inputs);
+                var predicted = _model.Decide(applyInputs);
 
                 for (var i = 0; i < featuredLines.Count; i++)
                 {
