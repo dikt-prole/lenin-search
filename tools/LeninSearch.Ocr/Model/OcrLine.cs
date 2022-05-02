@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Reflection;
-using LeninSearch.Ocr.YandexVision.OcrResponse;
 using Newtonsoft.Json;
 
 namespace LeninSearch.Ocr.Model
@@ -36,6 +33,9 @@ namespace LeninSearch.Ocr.Model
 
         [JsonProperty("dst")]
         public bool DisplayText { get; set; }
+
+        [JsonProperty("tlv")]
+        public int? TitleLevel { get; set; }
 
         [JsonIgnore]
         public Rectangle Rectangle => new Rectangle(TopLeftX, TopLeftY, BottomRightX - TopLeftX, BottomRightY - TopLeftY);

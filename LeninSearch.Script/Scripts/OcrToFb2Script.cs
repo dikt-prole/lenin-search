@@ -29,19 +29,19 @@ namespace LeninSearch.Script.Scripts
             FixCommentRelatedStuff(ocrData);
             FixTextRelatedStuff(ocrData);
 
-            // 3. go through pages and create sections & images
-            var sections = new List<List<Fb2Line>>();
+            // 3. go through pages and create fb2 lines (paragraphs, titles, images)
+            var fb2Lines = new List<Fb2Line>();
             var imageIndex = 1;
             for (var pageIndex = 0; pageIndex < ocrPages.Count; pageIndex++)
             {
                 var page = ocrPages[pageIndex];
 
-                var pageParagraphLinesFb2 = new List<Fb2Line>();
+                var textLinesFb2 = new List<Fb2Line>();
                 var ocrTextLines = page.Lines.Where(l => l.Label == OcrLabel.PStart || l.Label == OcrLabel.PMiddle || l.Label == OcrLabel.Title).ToList();
                 if (ocrTextLines.Any())
                 {
                     var currentParagraphLineFb2 = Fb2Line.Construct(ocrTextLines[0]);
-                    pageParagraphLinesFb2.Add(currentParagraphLineFb2);
+                    textLinesFb2.Add(currentParagraphLineFb2);
 
                     for (var paragraphOcrLineIndex = 1; paragraphOcrLineIndex < ocrTextLines.Count; paragraphOcrLineIndex++)
                     {
@@ -50,11 +50,11 @@ namespace LeninSearch.Script.Scripts
                         if (currentLine.Label == OcrLabel.PStart)
                         {
                             currentParagraphLineFb2 = Fb2Line.Construct(currentLine);
-                            pageParagraphLinesFb2.Add(currentParagraphLineFb2);
+                            textLinesFb2.Add(currentParagraphLineFb2);
                         }
                         else if (currentLine.Label == OcrLabel.Title)
                         {
-                            pageParagraphLinesFb2.Add(Fb2Line.Construct(currentLine));
+                            textLinesFb2.Add(Fb2Line.Construct(currentLine));
                             currentParagraphLineFb2 = null;
                         }
                         else
@@ -69,30 +69,60 @@ namespace LeninSearch.Script.Scripts
                     }
                 }
 
-                var pageImageLinesFb2 = new List<Fb2Line>();
+                var imageFb2Lines = new List<Fb2Line>();
                 foreach (var imageBlock in page.ImageBlocks)
                 {
                     var imageBlockFb2 = Fb2Line.Construct(imageBlock, ocrBookFolder, page, imageIndex);
-                    pageImageLinesFb2.Add(imageBlockFb2);
+                    imageFb2Lines.Add(imageBlockFb2);
                     imageIndex++;
                 }
 
-                //Debug.WriteLine($"[{pageIndex}] text lines: {pageParagraphLinesFb2.Count}, image lines: {pageImageLinesFb2.Count}");
+                var lines = textLinesFb2.Concat(imageFb2Lines).OrderBy(l => l.TopLeftY).ToList();
 
-                var section = pageParagraphLinesFb2.Concat(pageImageLinesFb2).OrderBy(l => l.TopLeftY).ToList();
-                sections.Add(section);
+                fb2Lines.AddRange(lines);
+            }
+
+            // 4. construct fb2 tags
+            var topmostTag = new Fb2Tag
+            {
+                TitleLevel = -1,
+                Children = new List<Fb2Tag>()
+            };
+            var parentTag = topmostTag;
+            foreach (var fb2Line in fb2Lines)
+            {
+                if (fb2Line.Type == Fb2LineType.Title)
+                {
+                    var titleTagParent = parentTag;
+                    while (titleTagParent.TitleLevel >= fb2Line.TitleLevel)
+                    {
+                        titleTagParent = titleTagParent.Parent;
+                    }
+
+                    var titleTag = new Fb2Tag
+                    {
+                        TitleLevel = fb2Line.TitleLevel,
+                        Fb2Line = fb2Line,
+                        Children = new List<Fb2Tag>(),
+                        Parent = titleTagParent
+                    };
+                    titleTagParent.Children.Add(titleTag);
+                    parentTag = titleTag;
+                }
+                else
+                {
+                    parentTag.Children.Add(new Fb2Tag {Fb2Line = fb2Line});
+                }
             }
 
             // 4. construct body xml
-            var sectionsSb = new StringBuilder();
-            for (var sectionIndex = 0; sectionIndex < sections.Count; sectionIndex++)
+            var tagsSb = new StringBuilder();
+            foreach (var tag in topmostTag.Children)
             {
-                var sectionXml =
-                    $"<section idx=\"{sectionIndex}\">{Environment.NewLine}{string.Join(Environment.NewLine, sections[sectionIndex].Select(l => l.GetXml()))}{Environment.NewLine}</section>";
-                sectionsSb.Append(sectionXml);
-                sectionsSb.Append(Environment.NewLine);
+                tagsSb.Append(tag.GetXml());
+                tagsSb.Append(Environment.NewLine);
             }
-            var bodyXml = sectionsSb.ToString();
+            var bodyXml = tagsSb.ToString();
 
             // 5. go through pages and create notes
             var notes = new List<Fb2Line>();
@@ -131,7 +161,7 @@ namespace LeninSearch.Script.Scripts
             var bodyNotesXml = notesSb.ToString();
 
             // 7. construct binary content
-            var imageLines = sections.SelectMany(s => s.Where(l => l.Type == Fb2LineType.Image)).ToList();
+            var imageLines = fb2Lines.Where(l => l.Type == Fb2LineType.Image).ToList();
             var imagesSb = new StringBuilder();
             foreach (var imageLine in imageLines)
             {
