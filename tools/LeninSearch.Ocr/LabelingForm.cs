@@ -471,7 +471,6 @@ namespace LeninSearch.Ocr
             // 2. editing section
             if (editing_rb.Checked || all_rb.Checked)
             {
-                menu.Items.Add("Line Text Show/Hide", null, (o, a) => SwitchDisplayText(rect));
                 menu.Items.Add("Break Into Words", null, (o, a) => BreakIntoWords(rect));
                 menu.Items.Add("Merge Lines", null, (o, a) => MergeLines(rect));
                 menu.Items.Add("Add Word", null, (o, a) => AddWord(rect, false));
@@ -479,6 +478,14 @@ namespace LeninSearch.Ocr
                 menu.Items.Add("Set Word Text", null, (o, a) => SetWordText(rect));
                 menu.Items.Add("Remove Line", null, (o, a) => RemoveLine(rect));
                 menu.Items.Add("Show Features", null, (o, a) => ShowLineFeatures(rect));
+                var setTitleLevelItem = new ToolStripMenuItem("Set Title Level");
+                for (var i = 0; i < 5; i++)
+                {
+                    var level = i;
+                    setTitleLevelItem.DropDownItems.Add($"Level {level}", null, (o, a) => SetTitleLevel(rect, level));
+
+                }
+                menu.Items.Add(setTitleLevelItem);
 
                 if (all_rb.Checked) menu.Items.Add(new ToolStripSeparator());
             }
@@ -732,7 +739,6 @@ namespace LeninSearch.Ocr
                     using var g = Graphics.FromImage(image);
                     
                     using var textBrush = new SolidBrush(Color.DarkViolet);
-
                     var font = new Font(Font.FontFamily, 12, FontStyle.Bold);
 
                     foreach (var line in page.Lines)
@@ -743,9 +749,9 @@ namespace LeninSearch.Ocr
                         using var pen = GetPen(line);
                         g.DrawRectangle(pen, line.Rectangle);
 
-                        if (line.Label == OcrLabel.Comment)
+                        if (line.Label == OcrLabel.Title && line.TitleLevel.HasValue)
                         {
-                            g.DrawString(line.LineIndex.ToString(), font, textBrush, line.BottomRightX + 1, line.TopLeftY);
+                            g.DrawString(line.TitleLevel.ToString(), font, textBrush, line.BottomRightX + 10, line.TopLeftY);
                         }
 
                         using var commentLinkBrush = new SolidBrush(Color.FromArgb(100, 0, 0, 255));
@@ -867,6 +873,23 @@ namespace LeninSearch.Ocr
             page.Lines.Remove(intersectingLine);
 
             page.ReindexLines();
+
+            ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
+        }
+
+        private void SetTitleLevel(Rectangle pbRectangle, int level)
+        {
+            var filename = ocr_lb.SelectedItem as string;
+            if (filename == null) return;
+            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
+            var page = _ocrData.GetPage(filename);
+            if (page == null) return;
+
+            var intersectingLines = page.Lines.Where(l => l.Rectangle.IntersectsWith(originalRect) && l.Label == OcrLabel.Title);
+            foreach (var intersectingLine in intersectingLines)
+            {
+                intersectingLine.TitleLevel = level;
+            }
 
             ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
         }

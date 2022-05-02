@@ -25,13 +25,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeninSearch.Api.Health", "L
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeninSearch.YtEditor", "LeninSearch.YtEditor\LeninSearch.YtEditor.csproj", "{7355617E-AF44-4D1A-9287-DDE0410DF568}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeninSearch.Script", "LeninSearch.Script\LeninSearch.Script.csproj", "{4835BB6E-1FEC-437F-9464-3D2EB175C921}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{0F9557FA-B423-434D-A67E-7F54A7000789}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeninSearch.JsonHeadings", "tools\LeninSearch.JsonHeadings\LeninSearch.JsonHeadings.csproj", "{518C9BFE-E146-4EED-BA08-7CE547E84D49}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeninSearch.Ocr", "Tools\LeninSearch.Ocr\LeninSearch.Ocr.csproj", "{78D4EB8A-C5EA-4FCC-BBF7-4246D32CCA47}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeninSearch.Ocr", "Tools\LeninSearch.Ocr\LeninSearch.Ocr.csproj", "{78D4EB8A-C5EA-4FCC-BBF7-4246D32CCA47}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeninSearch.Script", "tools\LeninSearch.Script\LeninSearch.Script.csproj", "{9B668992-1F0A-4D3F-81B5-8A6388A47A11}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -109,14 +109,6 @@ Global
 		{7355617E-AF44-4D1A-9287-DDE0410DF568}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7355617E-AF44-4D1A-9287-DDE0410DF568}.Release|x86.ActiveCfg = Release|Any CPU
 		{7355617E-AF44-4D1A-9287-DDE0410DF568}.Release|x86.Build.0 = Release|Any CPU
-		{4835BB6E-1FEC-437F-9464-3D2EB175C921}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4835BB6E-1FEC-437F-9464-3D2EB175C921}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4835BB6E-1FEC-437F-9464-3D2EB175C921}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{4835BB6E-1FEC-437F-9464-3D2EB175C921}.Debug|x86.Build.0 = Debug|Any CPU
-		{4835BB6E-1FEC-437F-9464-3D2EB175C921}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4835BB6E-1FEC-437F-9464-3D2EB175C921}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4835BB6E-1FEC-437F-9464-3D2EB175C921}.Release|x86.ActiveCfg = Release|Any CPU
-		{4835BB6E-1FEC-437F-9464-3D2EB175C921}.Release|x86.Build.0 = Release|Any CPU
 		{518C9BFE-E146-4EED-BA08-7CE547E84D49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{518C9BFE-E146-4EED-BA08-7CE547E84D49}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{518C9BFE-E146-4EED-BA08-7CE547E84D49}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -133,6 +125,14 @@ Global
 		{78D4EB8A-C5EA-4FCC-BBF7-4246D32CCA47}.Release|Any CPU.Build.0 = Release|Any CPU
 		{78D4EB8A-C5EA-4FCC-BBF7-4246D32CCA47}.Release|x86.ActiveCfg = Release|Any CPU
 		{78D4EB8A-C5EA-4FCC-BBF7-4246D32CCA47}.Release|x86.Build.0 = Release|Any CPU
+		{9B668992-1F0A-4D3F-81B5-8A6388A47A11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B668992-1F0A-4D3F-81B5-8A6388A47A11}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B668992-1F0A-4D3F-81B5-8A6388A47A11}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9B668992-1F0A-4D3F-81B5-8A6388A47A11}.Debug|x86.Build.0 = Debug|Any CPU
+		{9B668992-1F0A-4D3F-81B5-8A6388A47A11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B668992-1F0A-4D3F-81B5-8A6388A47A11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B668992-1F0A-4D3F-81B5-8A6388A47A11}.Release|x86.ActiveCfg = Release|Any CPU
+		{9B668992-1F0A-4D3F-81B5-8A6388A47A11}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -140,6 +140,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{518C9BFE-E146-4EED-BA08-7CE547E84D49} = {0F9557FA-B423-434D-A67E-7F54A7000789}
 		{78D4EB8A-C5EA-4FCC-BBF7-4246D32CCA47} = {0F9557FA-B423-434D-A67E-7F54A7000789}
+		{9B668992-1F0A-4D3F-81B5-8A6388A47A11} = {0F9557FA-B423-434D-A67E-7F54A7000789}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {27A69325-2595-45B4-A1D9-4525BB5ED08E}

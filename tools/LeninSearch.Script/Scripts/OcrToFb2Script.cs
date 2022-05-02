@@ -54,6 +54,11 @@ namespace LeninSearch.Script.Scripts
                         }
                         else if (currentLine.Label == OcrLabel.Title)
                         {
+                            if (currentLine.TitleLevel == null)
+                            {
+                                throw new Exception(
+                                    $"Title line does not have title level assigned on page {pageIndex}");
+                            }
                             textLinesFb2.Add(Fb2Line.Construct(currentLine));
                             currentParagraphLineFb2 = null;
                         }
@@ -93,8 +98,13 @@ namespace LeninSearch.Script.Scripts
             {
                 if (fb2Line.Type == Fb2LineType.Title)
                 {
+                    if (fb2Line.TitleLevel == null)
+                    {
+                        throw new Exception(
+                            $"Title line does not have title level assigned on fb2Line: {fb2Line.GetText()}");
+                    }
                     var titleTagParent = parentTag;
-                    while (titleTagParent.TitleLevel >= fb2Line.TitleLevel)
+                    while (titleTagParent.TitleLevel >= fb2Line.TitleLevel.Value)
                     {
                         titleTagParent = titleTagParent.Parent;
                     }

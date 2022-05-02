@@ -11,8 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\LeninSearch.Standard.Core\LeninSearch.Standard.Core.csproj" />
-    <ProjectReference Include="..\Tools\LeninSearch.Ocr\LeninSearch.Ocr.csproj" />
+    <ProjectReference Include="..\..\LeninSearch.Standard.Core\LeninSearch.Standard.Core.csproj" />
+    <ProjectReference Include="..\LeninSearch.Ocr\LeninSearch.Ocr.csproj" />
   </ItemGroup>
 
   <ItemGroup>

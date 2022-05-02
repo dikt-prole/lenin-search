@@ -13,7 +13,7 @@ namespace LeninSearch.Script.Scripts.Models
     public class Fb2Line
     {
         public int TopLeftY { get; set; }
-        public int TitleLevel => Lines.First().TitleLevel.Value;
+        public int? TitleLevel => Lines?.FirstOrDefault()?.TitleLevel;
         public List<OcrLine> Lines { get; set; }
         public Fb2LineType Type { get; set; }
         public int ImageIndex { get; set; }
