@@ -30,6 +30,9 @@ namespace LeninSearch.Ocr.Model
         [JsonProperty("ibs")]
         public List<OcrImageBlock> ImageBlocks { get; set; }
 
+        [JsonProperty("tbs")]
+        public List<OcrTitleBlock> TitleBlocks { get; set; }
+
         [JsonIgnore]
         public int ImageIndex => int.Parse(new string((Path.GetFileNameWithoutExtension(Filename) ?? string.Empty)
             .Where(char.IsNumber).ToArray()));
@@ -186,6 +189,16 @@ namespace LeninSearch.Ocr.Model
                 if (line.Label == null) continue;
 
                 if (labels.Contains(line.Label.Value)) yield return line;
+            }
+        }
+
+        public IEnumerable<OcrLine> GetExcludingLabels(params OcrLabel[] labels)
+        {
+            foreach (var line in Lines)
+            {
+                if (line.Label == null) continue;
+
+                if (!labels.Contains(line.Label.Value)) yield return line;
             }
         }
     }

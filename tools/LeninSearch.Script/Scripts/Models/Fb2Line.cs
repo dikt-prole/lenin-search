@@ -13,7 +13,8 @@ namespace LeninSearch.Script.Scripts.Models
     public class Fb2Line
     {
         public int TopLeftY { get; set; }
-        public int? TitleLevel => Lines?.FirstOrDefault()?.TitleLevel;
+        public int TitleLevel { get; set; }
+        public string TitleText { get; set; }
         public List<OcrLine> Lines { get; set; }
         public Fb2LineType Type { get; set; }
         public int ImageIndex { get; set; }
@@ -27,24 +28,31 @@ namespace LeninSearch.Script.Scripts.Models
 
         public string GetText()
         {
-            var sb = new StringBuilder();
-            var lastLineEndedWithDash = false;
-            foreach (var line in Lines)
+            switch (Type)
             {
-                var lastWord = line.Words.Last();
-                var currentLineEndedWithDash = (Type == Fb2LineType.Paragraph || Type == Fb2LineType.Comment) &&
-                                               lastWord.Text.EndsWith('-');
+                case Fb2LineType.Title:
+                    return TitleText;
+                case Fb2LineType.Image:
+                    return null;
+                default:
+                    var sb = new StringBuilder();
+                    var lastLineEndedWithDash = false;
+                    foreach (var line in Lines)
+                    {
+                        var lastWord = line.Words.Last();
+                        var currentLineEndedWithDash = (Type == Fb2LineType.Paragraph || Type == Fb2LineType.Comment) &&
+                                                       lastWord.Text.EndsWith('-');
 
-                if (currentLineEndedWithDash) lastWord.Text = lastWord.Text.TrimEnd('-');
+                        if (currentLineEndedWithDash) lastWord.Text = lastWord.Text.TrimEnd('-');
 
-                if (!lastLineEndedWithDash) sb.Append(" ");
+                        if (!lastLineEndedWithDash) sb.Append(" ");
 
-                sb.Append(string.Join(" ", line.Words.Select(GetWordXml)));
+                        sb.Append(string.Join(" ", line.Words.Select(GetWordXml)));
 
-                lastLineEndedWithDash = currentLineEndedWithDash;
+                        lastLineEndedWithDash = currentLineEndedWithDash;
+                    }
+                    return sb.ToString();
             }
-
-            return sb.ToString();
         }
 
         public string GetWordXml(OcrWord word)
@@ -113,12 +121,6 @@ namespace LeninSearch.Script.Scripts.Models
 
                 imageBitmap.Save(stream, ImageFormat.Jpeg);
 
-#if DEBUG
-                var tempImagePath = Path.Combine(Path.GetTempPath(), $"i_{imageIndex}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.jpg");
-                imageBitmap.Save(tempImagePath, ImageFormat.Jpeg);
-                Debug.WriteLine($"Image {imageIndex} saved to '{tempImagePath}'");
-#endif
-
                 var imageBytes = stream.ToArray();
 
                 fb2Line.ImageBase64 = Convert.ToBase64String(imageBytes);
@@ -132,6 +134,17 @@ namespace LeninSearch.Script.Scripts.Models
                 Debug.WriteLine($"Exception on page {page.ImageIndex}: {exc.Message}");
                 throw;
             }
+        }
+
+        public static Fb2Line Construct(OcrTitleBlock titleBlock)
+        {
+            return new Fb2Line
+            {
+                Type = Fb2LineType.Title,
+                TitleLevel = titleBlock.TitleLevel,
+                TitleText = titleBlock.TitleText,
+                TopLeftY = titleBlock.TopLeftY
+            };
         }
     }
 

@@ -69,7 +69,7 @@ namespace LeninSearch.Ocr
             this.label9 = new System.Windows.Forms.Label();
             this.labeling_rb = new System.Windows.Forms.RadioButton();
             this.editing_rb = new System.Windows.Forms.RadioButton();
-            this.imageBlocks_rb = new System.Windows.Forms.RadioButton();
+            this.blocks_rb = new System.Windows.Forms.RadioButton();
             this.all_rb = new System.Windows.Forms.RadioButton();
             this.tableLayoutPanel3.SuspendLayout();
             this.tableLayoutPanel4.SuspendLayout();
@@ -532,7 +532,7 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel2.Controls.Add(this.label9, 0, 0);
             this.tableLayoutPanel2.Controls.Add(this.labeling_rb, 0, 1);
             this.tableLayoutPanel2.Controls.Add(this.editing_rb, 0, 2);
-            this.tableLayoutPanel2.Controls.Add(this.imageBlocks_rb, 0, 3);
+            this.tableLayoutPanel2.Controls.Add(this.blocks_rb, 0, 3);
             this.tableLayoutPanel2.Controls.Add(this.all_rb, 0, 4);
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel2.Location = new System.Drawing.Point(183, 3);
@@ -580,17 +580,17 @@ namespace LeninSearch.Ocr
             this.editing_rb.Text = "Editing";
             this.editing_rb.UseVisualStyleBackColor = true;
             // 
-            // imageBlocks_rb
+            // blocks_rb
             // 
-            this.imageBlocks_rb.AutoSize = true;
-            this.imageBlocks_rb.Location = new System.Drawing.Point(5, 79);
-            this.imageBlocks_rb.Margin = new System.Windows.Forms.Padding(5, 3, 3, 3);
-            this.imageBlocks_rb.Name = "imageBlocks_rb";
-            this.imageBlocks_rb.Size = new System.Drawing.Size(95, 19);
-            this.imageBlocks_rb.TabIndex = 3;
-            this.imageBlocks_rb.TabStop = true;
-            this.imageBlocks_rb.Text = "Image Blocks";
-            this.imageBlocks_rb.UseVisualStyleBackColor = true;
+            this.blocks_rb.AutoSize = true;
+            this.blocks_rb.Location = new System.Drawing.Point(5, 79);
+            this.blocks_rb.Margin = new System.Windows.Forms.Padding(5, 3, 3, 3);
+            this.blocks_rb.Name = "blocks_rb";
+            this.blocks_rb.Size = new System.Drawing.Size(130, 19);
+            this.blocks_rb.TabIndex = 3;
+            this.blocks_rb.TabStop = true;
+            this.blocks_rb.Text = "Blocks (Image/Title)";
+            this.blocks_rb.UseVisualStyleBackColor = true;
             // 
             // all_rb
             // 
@@ -660,7 +660,7 @@ namespace LeninSearch.Ocr
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.RadioButton labeling_rb;
         private System.Windows.Forms.RadioButton editing_rb;
-        private System.Windows.Forms.RadioButton imageBlocks_rb;
+        private System.Windows.Forms.RadioButton blocks_rb;
         private System.Windows.Forms.RadioButton all_rb;
         private System.Windows.Forms.Button regeneratePage_btn;
         private System.Windows.Forms.Button uncoveredLinks_btn;

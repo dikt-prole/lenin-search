@@ -37,7 +37,7 @@ namespace LeninSearch.Script.Scripts
                 var page = ocrPages[pageIndex];
 
                 var textLinesFb2 = new List<Fb2Line>();
-                var ocrTextLines = page.Lines.Where(l => l.Label == OcrLabel.PStart || l.Label == OcrLabel.PMiddle || l.Label == OcrLabel.Title).ToList();
+                var ocrTextLines = page.Lines.Where(l => l.Label == OcrLabel.PStart || l.Label == OcrLabel.PMiddle).ToList();
                 if (ocrTextLines.Any())
                 {
                     var currentParagraphLineFb2 = Fb2Line.Construct(ocrTextLines[0]);
@@ -52,23 +52,8 @@ namespace LeninSearch.Script.Scripts
                             currentParagraphLineFb2 = Fb2Line.Construct(currentLine);
                             textLinesFb2.Add(currentParagraphLineFb2);
                         }
-                        else if (currentLine.Label == OcrLabel.Title)
-                        {
-                            if (currentLine.TitleLevel == null)
-                            {
-                                throw new Exception(
-                                    $"Title line does not have title level assigned on page {pageIndex}");
-                            }
-                            textLinesFb2.Add(Fb2Line.Construct(currentLine));
-                            currentParagraphLineFb2 = null;
-                        }
                         else
                         {
-                            if (currentParagraphLineFb2 == null)
-                            {
-                                throw new Exception(
-                                    $"Page {pageIndex}: expected not null current paragraph line. Check that paragraph start goes after title");
-                            }
                             currentParagraphLineFb2.Lines.Add(currentLine);
                         }
                     }
@@ -82,7 +67,16 @@ namespace LeninSearch.Script.Scripts
                     imageIndex++;
                 }
 
-                var lines = textLinesFb2.Concat(imageFb2Lines).OrderBy(l => l.TopLeftY).ToList();
+                var titleFb2Lines = new List<Fb2Line>();
+                foreach (var titleBlock in page.TitleBlocks ?? new List<OcrTitleBlock>())
+                {
+                    titleFb2Lines.Add(Fb2Line.Construct(titleBlock));
+                }
+
+                var lines = textLinesFb2
+                    .Concat(imageFb2Lines)
+                    .Concat(titleFb2Lines)
+                    .OrderBy(l => l.TopLeftY).ToList();
 
                 fb2Lines.AddRange(lines);
             }
@@ -98,13 +92,8 @@ namespace LeninSearch.Script.Scripts
             {
                 if (fb2Line.Type == Fb2LineType.Title)
                 {
-                    if (fb2Line.TitleLevel == null)
-                    {
-                        throw new Exception(
-                            $"Title line does not have title level assigned on fb2Line: {fb2Line.GetText()}");
-                    }
                     var titleTagParent = parentTag;
-                    while (titleTagParent.TitleLevel >= fb2Line.TitleLevel.Value)
+                    while (titleTagParent.TitleLevel >= fb2Line.TitleLevel)
                     {
                         titleTagParent = titleTagParent.Parent;
                     }
@@ -289,21 +278,6 @@ namespace LeninSearch.Script.Scripts
                         }
 
                         break;
-                    }
-                }
-            }
-
-            // 2. multiline titles should be on single line
-            foreach (var page in ocrPages)
-            {
-                for (var lineIndex = 0; lineIndex < page.Lines.Count - 1; lineIndex++)
-                {
-                    if (page.Lines[lineIndex].Label == OcrLabel.Title &&
-                        page.Lines[lineIndex + 1].Label == OcrLabel.Title)
-                    {
-                        page.Lines[lineIndex].Words.AddRange(page.Lines[lineIndex + 1].Words);
-                        page.Lines.RemoveAt(lineIndex + 1);
-                        lineIndex--;
                     }
                 }
             }

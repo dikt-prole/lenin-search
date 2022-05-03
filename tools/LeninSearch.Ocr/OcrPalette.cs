@@ -34,5 +34,6 @@ namespace LeninSearch.Ocr
         }
 
         public static Color ImageBlockColor => Color.Coral;
+        public static Color TitleBlockColor => Color.HotPink;
     }
 }

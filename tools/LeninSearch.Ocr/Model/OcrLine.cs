@@ -34,9 +34,6 @@ namespace LeninSearch.Ocr.Model
         [JsonProperty("dst")]
         public bool DisplayText { get; set; }
 
-        [JsonProperty("tlv")]
-        public int? TitleLevel { get; set; }
-
         [JsonIgnore]
         public Rectangle Rectangle => new Rectangle(TopLeftX, TopLeftY, BottomRightX - TopLeftX, BottomRightY - TopLeftY);
 
