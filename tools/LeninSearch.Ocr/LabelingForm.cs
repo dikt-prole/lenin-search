@@ -714,6 +714,8 @@ namespace LeninSearch.Ocr
 
             if (dialog.ShowDialog() != DialogResult.OK) return;
 
+            var commentWords = titleLines.SelectMany(l => l.Words).Where(w => w.IsCommentLinkNumber).ToList();
+
             var titleBlock = new OcrTitleBlock
             {
                 TopLeftX = originalRect.X,
@@ -721,7 +723,13 @@ namespace LeninSearch.Ocr
                 BottomRightX = originalRect.X + originalRect.Size.Width,
                 BottomRightY = originalRect.Y + originalRect.Size.Height,
                 TitleLevel = dialog.TitleLevel,
-                TitleText = dialog.TitleText
+                TitleText = dialog.TitleText,
+                CommentLinks = commentWords.Select(w => 
+                    new OcrWord
+                    {
+                        Text = w.Text,
+                        IsCommentLinkNumber = true
+                    }).ToList()
             };
 
             page.TitleBlocks ??= new List<OcrTitleBlock>();

@@ -191,19 +191,31 @@ namespace LeninSearch.Script.Scripts
             {
                 var page = ocrPages[pageIndex];
                 var commentLines = page.GetLabeledLines(OcrLabel.Comment).ToList();
-                var textLines = page.GetLabeledLines(OcrLabel.Title, OcrLabel.PStart, OcrLabel.PMiddle).ToList();
+                var textLines = page.GetLabeledLines(OcrLabel.PStart, OcrLabel.PMiddle).ToList();
+
+                var titleBlockLinkedTextWords = page.TitleBlocks == null
+                    ? new List<OcrWord>()
+                    : page.TitleBlocks.Where(tb => tb.CommentLinks != null).SelectMany(tb => tb.CommentLinks);
+
+                var linkedTextWords = textLines
+                    .SelectMany(l => l.Words)
+                    .Concat(titleBlockLinkedTextWords)
+                    .Where(w => w.IsCommentLinkNumber)
+                    .ToList();
 
                 foreach (var commentLine in commentLines)
                 {
                     var linkedCommentWord = commentLine.Words.FirstOrDefault(w => w.IsCommentLinkNumber);
                     if (linkedCommentWord == null) continue;
 
-                    var linkedTextWord = textLines.SelectMany(l => l.Words)
-                        .FirstOrDefault(w => w.IsCommentLinkNumber &&
-                                             w.Text == linkedCommentWord.Text &&
-                                             !processedLinkedTextWords.Contains(w));
+                    var linkedTextWord = linkedTextWords.FirstOrDefault(w => 
+                        w.Text == linkedCommentWord.Text && !processedLinkedTextWords.Contains(w));
+
                     if (linkedTextWord == null)
+                    {
+                        linkedCommentWord.IsCommentLinkNumber = false;
                         continue;
+                    }
 
                     var linkText = (processedLinkedTextWords.Count + 1).ToString();
                     linkedCommentWord.Text = linkText;
@@ -237,20 +249,20 @@ namespace LeninSearch.Script.Scripts
             }
 
             // 3. If there is no comment, then do not count the word linked
-            foreach (var page in ocrPages)
-            {
-                var commentedWords = page.GetLabeledLines(OcrLabel.PStart, OcrLabel.PMiddle, OcrLabel.Title)
-                    .SelectMany(l => l.Words)
-                    .Where(w => w.IsCommentLinkNumber)
-                    .ToList();
-                var commentWords = page.GetLabeledLines(OcrLabel.Comment)
-                    .SelectMany(l => l.Words)
-                    .Where(w => w.IsCommentLinkNumber)
-                    .ToList();
+            //foreach (var page in ocrPages)
+            //{
+            //    var commentedWords = page.GetLabeledLines(OcrLabel.PStart, OcrLabel.PMiddle, OcrLabel.Title)
+            //        .SelectMany(l => l.Words)
+            //        .Where(w => w.IsCommentLinkNumber)
+            //        .ToList();
+            //    var commentWords = page.GetLabeledLines(OcrLabel.Comment)
+            //        .SelectMany(l => l.Words)
+            //        .Where(w => w.IsCommentLinkNumber)
+            //        .ToList();
 
-                foreach (var commentedWord in commentedWords) 
-                    commentedWord.IsCommentLinkNumber = commentWords.Any(w => w.Text == commentedWord.Text);
-            }
+            //    foreach (var commentedWord in commentedWords) 
+            //        commentedWord.IsCommentLinkNumber = commentWords.Any(w => w.Text == commentedWord.Text);
+            //}
         }
 
         private static void FixTextRelatedStuff(OcrData ocrData)

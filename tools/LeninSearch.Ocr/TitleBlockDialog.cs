@@ -33,6 +33,7 @@ namespace LeninSearch.Ocr
                 DialogResult = DialogResult.OK;
                 Close();
             };
+            Shown += (sender, args) => titleText_tb.Focus();
         }
     }
 }

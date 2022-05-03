@@ -15,6 +15,7 @@ namespace LeninSearch.Script.Scripts.Models
         public int TopLeftY { get; set; }
         public int TitleLevel { get; set; }
         public string TitleText { get; set; }
+        public List<OcrWord> TitleCommentLinks { get; set; }
         public List<OcrLine> Lines { get; set; }
         public Fb2LineType Type { get; set; }
         public int ImageIndex { get; set; }
@@ -70,7 +71,10 @@ namespace LeninSearch.Script.Scripts.Models
                 case Fb2LineType.Paragraph:
                     return $"<p>{GetText()}</p>";
                 case Fb2LineType.Title:
-                    return $"<title><p>{GetText()}</p></title>";
+                    var titleCommentLinks = TitleCommentLinks == null
+                        ? null
+                        : string.Join("", TitleCommentLinks.Select(ttl => $"<a l:href=\"#n_{ttl.Text}\" type=\"note\">[{ttl.Text}]</a>"));
+                    return $"<title><p>{GetText()}</p>{titleCommentLinks}</title>";
                 case Fb2LineType.Image:
                     return $"<image l:href=\"#i_{ImageIndex}.jpg\"/>";
                 case Fb2LineType.Comment:
@@ -143,7 +147,8 @@ namespace LeninSearch.Script.Scripts.Models
                 Type = Fb2LineType.Title,
                 TitleLevel = titleBlock.TitleLevel,
                 TitleText = titleBlock.TitleText,
-                TopLeftY = titleBlock.TopLeftY
+                TopLeftY = titleBlock.TopLeftY,
+                TitleCommentLinks = titleBlock.CommentLinks
             };
         }
     }
