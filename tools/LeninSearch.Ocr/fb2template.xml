@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<FictionBook xmlns:l="http://www.w3.org/1999/xlink" xmlns="http://www.gribuser.ru/xml/fictionbook/2.0">
+  <description>
+    <title-info>
+      <genre>[genre]</genre>
+      <author>
+        <first-name>[author-first-name]</first-name>
+        <last-name>[author-last-name]</last-name>
+        <middle-name>[author-middle-name]</middle-name>
+        <id>[book-id]</id>
+      </author>
+      <book-title>[book-title]</book-title>
+      <annotation>
+        <p>[book-annotation]</p>
+      </annotation>
+      <lang>ru</lang>
+    </title-info>
+    <document-info>
+      <author>
+        <first-name>[doc-author-first-name]</first-name>
+        <last-name>[doc-author-last-name]</last-name>
+      </author>
+      <program-used>LeninSearch Ocr to FB2 Script</program-used>
+      <id>[doc-id]</id>
+      <version>[doc-version]</version>
+    </document-info>
+  </description>
+  <body>
+    [body]
+  </body>
+  <body name="Примечания">
+    [body-notes]
+  </body>
+  [binary-content]
+</FictionBook>
+

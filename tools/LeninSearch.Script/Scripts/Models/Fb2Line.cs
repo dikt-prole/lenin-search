@@ -81,7 +81,7 @@ namespace LeninSearch.Script.Scripts.Models
                     var linkWord = Lines.SelectMany(l => l.Words).FirstOrDefault(w => w.IsCommentLinkNumber);
                     return linkWord == null
                         ? null
-                        : $"<section id=\"n_{linkWord.Text}\"><title><p>{linkWord.Text}</p></title><p>{GetText()}</p></section>";
+                        : $"<p id=\"n_{linkWord.Text}\">[{linkWord.Text}] {GetText()}</p>";
             }
 
             return null;

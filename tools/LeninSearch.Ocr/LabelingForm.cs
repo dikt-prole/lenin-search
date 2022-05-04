@@ -44,13 +44,8 @@ namespace LeninSearch.Ocr
         {
             InitializeComponent();
 
-            regenerateFeatures_btn.Click += RegenerateFeaturesClick;
-
             ocr_lb.SelectedIndexChanged += OcrLbOnSelectedIndexChanged;
             ocr_lb.KeyDown += OcrLbOnKeyDown;
-            trainModel_btn.Click += TrainModelClick;
-            applyModel_btn.Click += ApplyModelClick;
-
             none_panel.BackColor = OcrPalette.GetColor(null);
             pstart_panel.BackColor = OcrPalette.GetColor(OcrLabel.PStart);
             pmiddle_panel.BackColor = OcrPalette.GetColor(OcrLabel.PMiddle);
@@ -1131,6 +1126,51 @@ namespace LeninSearch.Ocr
             {
                 MessageBox.Show(exc.Message, "Error", MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
+            }
+        }
+
+        private void GenerateFb2Click(object sender, EventArgs e)
+        {
+            var templateDialog = new Fb2Dialog();
+
+            if (templateDialog.ShowDialog() != DialogResult.OK) return;
+
+            var saveFileDialog = new SaveFileDialog
+            {
+                Filter = "FB2 files|*.fb2"
+            };
+
+            if (saveFileDialog.ShowDialog() != DialogResult.OK) return;
+
+            var service = new Fb2Service();
+
+            var template = File.ReadAllText("fb2template.xml");
+            var templateData = templateDialog.TemplateData;
+            template = template
+                .Replace("[book-id]", templateData.BookId)
+                .Replace("[book-title]", templateData.BookTitle)
+                .Replace("[book-annotation]", templateData.BookAnnotation)
+                .Replace("[genre]", templateData.BookGenre)
+                .Replace("[author-first-name]", templateData.BookAuthorFirstName)
+                .Replace("[author-last-name]", templateData.BookAuthorLastName)
+                .Replace("[author-middle-name]", templateData.BookAuthorMiddleName)
+                .Replace("[doc-author-first-name]", templateData.DocAuthorFirstName)
+                .Replace("[doc-author-last-name]", templateData.DocAuthorLastName)
+                .Replace("[doc-id]", templateData.DocId)
+                .Replace("[doc-version]", templateData.DocVersion);
+
+            try
+            {
+                service.GenerateFb2File(bookFolder_tb.Text, saveFileDialog.FileName, template);
+                if (MessageBox.Show("FB2 file was generated fine. Do you want to open the file?", "FB2",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    Process.Start(saveFileDialog.FileName);
+                }
+            }
+            catch (Exception exc)
+            {
+                MessageBox.Show(exc.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

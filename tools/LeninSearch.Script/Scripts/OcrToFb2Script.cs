@@ -17,11 +17,11 @@ namespace LeninSearch.Script.Scripts
         {
             //var ocrBookFolder = input[0];
             //var fb2Path = input[1];
-            var ocrBookFolder = @"D:\Repo\lenin-search\corpus\ocr\pavlov-v1\t03-2";
-            var fb2Path = @"D:\Repo\lenin-search\corpus\orig\pavlov\t03-2.fb2";
+            var ocrFolder = @"D:\Repo\lenin-search\corpus\ocr\pavlov-v1\t03-2";
+            var fb2File = @"D:\Repo\lenin-search\corpus\orig\pavlov\t03-2.fb2";
 
             // 1. load ocr data
-            var ocrData = OcrData.Load(ocrBookFolder);
+            var ocrData = OcrData.Load(ocrFolder);
 
             var ocrPages = ocrData.Pages.OrderBy(p => p.ImageIndex).ToList();
 
@@ -62,7 +62,7 @@ namespace LeninSearch.Script.Scripts
                 var imageFb2Lines = new List<Fb2Line>();
                 foreach (var imageBlock in page.ImageBlocks)
                 {
-                    var imageBlockFb2 = Fb2Line.Construct(imageBlock, ocrBookFolder, page, imageIndex);
+                    var imageBlockFb2 = Fb2Line.Construct(imageBlock, ocrFolder, page, imageIndex);
                     imageFb2Lines.Add(imageBlockFb2);
                     imageIndex++;
                 }
@@ -180,7 +180,7 @@ namespace LeninSearch.Script.Scripts
                 .Replace(Tokens.BinaryContent, binaryContentXml);
 
             // 9. write fb2 file
-            File.WriteAllText(fb2Path, fb2Xml);
+            File.WriteAllText(fb2File, fb2Xml);
         }
 
         private static List<OcrWord> FixCommentRelatedStuff(OcrData ocrData)

@@ -50,21 +50,18 @@ namespace LeninSearch.Ocr
             this.label8 = new System.Windows.Forms.Label();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.openBookFolder_btn = new System.Windows.Forms.Button();
-            this.regenerateFeatures_btn = new System.Windows.Forms.Button();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.bookFolder_tb = new System.Windows.Forms.TextBox();
             this.saveOcrData_btn = new System.Windows.Forms.Button();
-            this.trainModel_btn = new System.Windows.Forms.Button();
-            this.applyModel_btn = new System.Windows.Forms.Button();
-            this.generateImageBlocks_btn = new System.Windows.Forms.Button();
             this.rowModel_flp = new System.Windows.Forms.FlowLayoutPanel();
             this.regeneratePage_btn = new System.Windows.Forms.Button();
-            this.generateLines_btn = new System.Windows.Forms.Button();
             this.uncoveredLinks_btn = new System.Windows.Forms.Button();
             this.breakByDistant_btn = new System.Windows.Forms.Button();
             this.uncoveredStarts_btn = new System.Windows.Forms.Button();
             this.removeLinks_btn = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
+            this.generateLines_btn = new System.Windows.Forms.Button();
+            this.generateFb2_btn = new System.Windows.Forms.Button();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.label9 = new System.Windows.Forms.Label();
             this.labeling_rb = new System.Windows.Forms.RadioButton();
@@ -96,7 +93,7 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel3.Name = "tableLayoutPanel3";
             this.tableLayoutPanel3.RowCount = 1;
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel3.Size = new System.Drawing.Size(1484, 557);
+            this.tableLayoutPanel3.Size = new System.Drawing.Size(1170, 557);
             this.tableLayoutPanel3.TabIndex = 1;
             // 
             // ocr_lb
@@ -123,7 +120,7 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel4.RowCount = 2;
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
-            this.tableLayoutPanel4.Size = new System.Drawing.Size(754, 557);
+            this.tableLayoutPanel4.Size = new System.Drawing.Size(440, 557);
             this.tableLayoutPanel4.TabIndex = 3;
             // 
             // pictureBox1
@@ -132,7 +129,7 @@ namespace LeninSearch.Ocr
             this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pictureBox1.Location = new System.Drawing.Point(3, 3);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(748, 523);
+            this.pictureBox1.Size = new System.Drawing.Size(434, 523);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox1.TabIndex = 1;
             this.pictureBox1.TabStop = false;
@@ -176,46 +173,46 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel6.Name = "tableLayoutPanel6";
             this.tableLayoutPanel6.RowCount = 1;
             this.tableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel6.Size = new System.Drawing.Size(754, 28);
+            this.tableLayoutPanel6.Size = new System.Drawing.Size(440, 28);
             this.tableLayoutPanel6.TabIndex = 2;
             // 
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(501, 6);
+            this.label6.Location = new System.Drawing.Point(306, 6);
             this.label6.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(46, 15);
+            this.label6.Size = new System.Drawing.Size(21, 22);
             this.label6.TabIndex = 11;
             this.label6.Text = "Title (T)";
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(407, 6);
+            this.label5.Location = new System.Drawing.Point(251, 6);
             this.label5.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(57, 22);
+            this.label5.Size = new System.Drawing.Size(20, 22);
             this.label5.TabIndex = 9;
             this.label5.Text = "Comment (C)";
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(219, 6);
+            this.label3.Location = new System.Drawing.Point(141, 6);
             this.label3.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(54, 22);
+            this.label3.Size = new System.Drawing.Size(21, 22);
             this.label3.TabIndex = 7;
             this.label3.Text = "PMiddle (M)";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(125, 6);
+            this.label2.Location = new System.Drawing.Point(86, 6);
             this.label2.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(55, 15);
+            this.label2.Size = new System.Drawing.Size(21, 22);
             this.label2.TabIndex = 6;
             this.label2.Text = "PStart (S)";
             // 
@@ -231,7 +228,7 @@ namespace LeninSearch.Ocr
             // pstart_panel
             // 
             this.pstart_panel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pstart_panel.Location = new System.Drawing.Point(99, 5);
+            this.pstart_panel.Location = new System.Drawing.Point(60, 5);
             this.pstart_panel.Margin = new System.Windows.Forms.Padding(5);
             this.pstart_panel.Name = "pstart_panel";
             this.pstart_panel.Size = new System.Drawing.Size(18, 18);
@@ -240,7 +237,7 @@ namespace LeninSearch.Ocr
             // garbage_panel
             // 
             this.garbage_panel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.garbage_panel.Location = new System.Drawing.Point(663, 5);
+            this.garbage_panel.Location = new System.Drawing.Point(390, 5);
             this.garbage_panel.Margin = new System.Windows.Forms.Padding(5);
             this.garbage_panel.Name = "garbage_panel";
             this.garbage_panel.Size = new System.Drawing.Size(18, 18);
@@ -252,14 +249,14 @@ namespace LeninSearch.Ocr
             this.label1.Location = new System.Drawing.Point(31, 6);
             this.label1.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(56, 15);
+            this.label1.Size = new System.Drawing.Size(21, 22);
             this.label1.TabIndex = 5;
             this.label1.Text = "None (N)";
             // 
             // title_panel
             // 
             this.title_panel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.title_panel.Location = new System.Drawing.Point(475, 5);
+            this.title_panel.Location = new System.Drawing.Point(280, 5);
             this.title_panel.Margin = new System.Windows.Forms.Padding(5);
             this.title_panel.Name = "title_panel";
             this.title_panel.Size = new System.Drawing.Size(18, 18);
@@ -267,7 +264,7 @@ namespace LeninSearch.Ocr
             // 
             // comment_panel
             // 
-            this.comment_panel.Location = new System.Drawing.Point(381, 5);
+            this.comment_panel.Location = new System.Drawing.Point(225, 5);
             this.comment_panel.Margin = new System.Windows.Forms.Padding(5);
             this.comment_panel.Name = "comment_panel";
             this.comment_panel.Size = new System.Drawing.Size(18, 18);
@@ -276,17 +273,17 @@ namespace LeninSearch.Ocr
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(595, 6);
+            this.label7.Location = new System.Drawing.Point(361, 6);
             this.label7.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(59, 15);
+            this.label7.Size = new System.Drawing.Size(21, 22);
             this.label7.TabIndex = 13;
             this.label7.Text = "Image (A)";
             // 
             // pmiddle_panel
             // 
             this.pmiddle_panel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pmiddle_panel.Location = new System.Drawing.Point(193, 5);
+            this.pmiddle_panel.Location = new System.Drawing.Point(115, 5);
             this.pmiddle_panel.Margin = new System.Windows.Forms.Padding(5);
             this.pmiddle_panel.Name = "pmiddle_panel";
             this.pmiddle_panel.Size = new System.Drawing.Size(18, 18);
@@ -294,7 +291,7 @@ namespace LeninSearch.Ocr
             // 
             // image_panel
             // 
-            this.image_panel.Location = new System.Drawing.Point(569, 5);
+            this.image_panel.Location = new System.Drawing.Point(335, 5);
             this.image_panel.Margin = new System.Windows.Forms.Padding(5);
             this.image_panel.Name = "image_panel";
             this.image_panel.Size = new System.Drawing.Size(18, 18);
@@ -303,10 +300,10 @@ namespace LeninSearch.Ocr
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(689, 6);
+            this.label8.Location = new System.Drawing.Point(416, 6);
             this.label8.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(54, 22);
+            this.label8.Size = new System.Drawing.Size(21, 22);
             this.label8.TabIndex = 15;
             this.label8.Text = "Garbage (G)";
             // 
@@ -317,23 +314,20 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33F));
             this.tableLayoutPanel1.Controls.Add(this.openBookFolder_btn, 2, 0);
-            this.tableLayoutPanel1.Controls.Add(this.regenerateFeatures_btn, 2, 2);
             this.tableLayoutPanel1.Controls.Add(this.progressBar1, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.bookFolder_tb, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.saveOcrData_btn, 1, 2);
-            this.tableLayoutPanel1.Controls.Add(this.trainModel_btn, 0, 3);
-            this.tableLayoutPanel1.Controls.Add(this.applyModel_btn, 1, 3);
-            this.tableLayoutPanel1.Controls.Add(this.generateImageBlocks_btn, 2, 3);
             this.tableLayoutPanel1.Controls.Add(this.rowModel_flp, 0, 6);
             this.tableLayoutPanel1.Controls.Add(this.regeneratePage_btn, 1, 4);
-            this.tableLayoutPanel1.Controls.Add(this.generateLines_btn, 0, 4);
             this.tableLayoutPanel1.Controls.Add(this.uncoveredLinks_btn, 2, 4);
             this.tableLayoutPanel1.Controls.Add(this.breakByDistant_btn, 0, 5);
             this.tableLayoutPanel1.Controls.Add(this.uncoveredStarts_btn, 2, 5);
             this.tableLayoutPanel1.Controls.Add(this.removeLinks_btn, 1, 5);
             this.tableLayoutPanel1.Controls.Add(this.button1, 0, 2);
+            this.tableLayoutPanel1.Controls.Add(this.generateLines_btn, 2, 2);
+            this.tableLayoutPanel1.Controls.Add(this.generateFb2_btn, 0, 4);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(1087, 3);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(773, 3);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 7;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
@@ -357,17 +351,6 @@ namespace LeninSearch.Ocr
             this.openBookFolder_btn.TabIndex = 1;
             this.openBookFolder_btn.Text = "Open book folder";
             this.openBookFolder_btn.UseVisualStyleBackColor = true;
-            // 
-            // regenerateFeatures_btn
-            // 
-            this.regenerateFeatures_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.regenerateFeatures_btn.Location = new System.Drawing.Point(264, 39);
-            this.regenerateFeatures_btn.Margin = new System.Windows.Forms.Padding(1);
-            this.regenerateFeatures_btn.Name = "regenerateFeatures_btn";
-            this.regenerateFeatures_btn.Size = new System.Drawing.Size(129, 26);
-            this.regenerateFeatures_btn.TabIndex = 2;
-            this.regenerateFeatures_btn.Text = "Regenerate Features";
-            this.regenerateFeatures_btn.UseVisualStyleBackColor = true;
             // 
             // progressBar1
             // 
@@ -399,39 +382,6 @@ namespace LeninSearch.Ocr
             this.saveOcrData_btn.Text = "Save Ocr Data";
             this.saveOcrData_btn.UseVisualStyleBackColor = true;
             // 
-            // trainModel_btn
-            // 
-            this.trainModel_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.trainModel_btn.Location = new System.Drawing.Point(1, 67);
-            this.trainModel_btn.Margin = new System.Windows.Forms.Padding(1);
-            this.trainModel_btn.Name = "trainModel_btn";
-            this.trainModel_btn.Size = new System.Drawing.Size(131, 26);
-            this.trainModel_btn.TabIndex = 5;
-            this.trainModel_btn.Text = "Train Model";
-            this.trainModel_btn.UseVisualStyleBackColor = true;
-            // 
-            // applyModel_btn
-            // 
-            this.applyModel_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.applyModel_btn.Location = new System.Drawing.Point(134, 67);
-            this.applyModel_btn.Margin = new System.Windows.Forms.Padding(1);
-            this.applyModel_btn.Name = "applyModel_btn";
-            this.applyModel_btn.Size = new System.Drawing.Size(128, 26);
-            this.applyModel_btn.TabIndex = 7;
-            this.applyModel_btn.Text = "Apply Model";
-            this.applyModel_btn.UseVisualStyleBackColor = true;
-            // 
-            // generateImageBlocks_btn
-            // 
-            this.generateImageBlocks_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.generateImageBlocks_btn.Location = new System.Drawing.Point(264, 67);
-            this.generateImageBlocks_btn.Margin = new System.Windows.Forms.Padding(1);
-            this.generateImageBlocks_btn.Name = "generateImageBlocks_btn";
-            this.generateImageBlocks_btn.Size = new System.Drawing.Size(129, 26);
-            this.generateImageBlocks_btn.TabIndex = 6;
-            this.generateImageBlocks_btn.Text = "Generate IBs";
-            this.generateImageBlocks_btn.UseVisualStyleBackColor = true;
-            // 
             // rowModel_flp
             // 
             this.tableLayoutPanel1.SetColumnSpan(this.rowModel_flp, 3);
@@ -453,17 +403,6 @@ namespace LeninSearch.Ocr
             this.regeneratePage_btn.Text = "Regenerate Page";
             this.regeneratePage_btn.UseVisualStyleBackColor = true;
             this.regeneratePage_btn.Click += new System.EventHandler(this.RegeneratePageClick);
-            // 
-            // generateLines_btn
-            // 
-            this.generateLines_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.generateLines_btn.Location = new System.Drawing.Point(1, 95);
-            this.generateLines_btn.Margin = new System.Windows.Forms.Padding(1);
-            this.generateLines_btn.Name = "generateLines_btn";
-            this.generateLines_btn.Size = new System.Drawing.Size(131, 26);
-            this.generateLines_btn.TabIndex = 0;
-            this.generateLines_btn.Text = "Generate Lines";
-            this.generateLines_btn.UseVisualStyleBackColor = true;
             // 
             // uncoveredLinks_btn
             // 
@@ -524,6 +463,29 @@ namespace LeninSearch.Ocr
             this.button1.Text = "Train - Apply Model";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.TrainApplyModelClick);
+            // 
+            // generateLines_btn
+            // 
+            this.generateLines_btn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.generateLines_btn.Location = new System.Drawing.Point(264, 39);
+            this.generateLines_btn.Margin = new System.Windows.Forms.Padding(1);
+            this.generateLines_btn.Name = "generateLines_btn";
+            this.generateLines_btn.Size = new System.Drawing.Size(129, 26);
+            this.generateLines_btn.TabIndex = 0;
+            this.generateLines_btn.Text = "Generate Lines";
+            this.generateLines_btn.UseVisualStyleBackColor = true;
+            // 
+            // generateFb2_btn
+            // 
+            this.generateFb2_btn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.generateFb2_btn.Location = new System.Drawing.Point(1, 95);
+            this.generateFb2_btn.Margin = new System.Windows.Forms.Padding(1);
+            this.generateFb2_btn.Name = "generateFb2_btn";
+            this.generateFb2_btn.Size = new System.Drawing.Size(131, 26);
+            this.generateFb2_btn.TabIndex = 15;
+            this.generateFb2_btn.Text = "Generate FB2";
+            this.generateFb2_btn.UseVisualStyleBackColor = true;
+            this.generateFb2_btn.Click += new System.EventHandler(this.GenerateFb2Click);
             // 
             // tableLayoutPanel2
             // 
@@ -608,7 +570,7 @@ namespace LeninSearch.Ocr
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1484, 557);
+            this.ClientSize = new System.Drawing.Size(1170, 557);
             this.Controls.Add(this.tableLayoutPanel3);
             this.Name = "LabelingForm";
             this.Text = "LabelingForm";
@@ -645,13 +607,9 @@ namespace LeninSearch.Ocr
         private System.Windows.Forms.TextBox bookFolder_tb;
         private System.Windows.Forms.Button openBookFolder_btn;
         private System.Windows.Forms.Button generateLines_btn;
-        private System.Windows.Forms.Button regenerateFeatures_btn;
         private System.Windows.Forms.Button saveOcrData_btn;
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
-        private System.Windows.Forms.Button trainModel_btn;
-        private System.Windows.Forms.Button generateImageBlocks_btn;
-        private System.Windows.Forms.Button applyModel_btn;
         private System.Windows.Forms.Panel pmiddle_panel;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;
@@ -668,5 +626,6 @@ namespace LeninSearch.Ocr
         private System.Windows.Forms.Button uncoveredStarts_btn;
         private System.Windows.Forms.Button removeLinks_btn;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button generateFb2_btn;
     }
 }

@@ -38,4 +38,10 @@
     </Compile>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="fb2template.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
