@@ -33,8 +33,9 @@ namespace LeninSearch.Ocr
             this.ok_btn = new System.Windows.Forms.Button();
             this.titleText_tb = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
-            this.level_nud = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
+            this.level_nud = new System.Windows.Forms.NumericUpDown();
+            this.toUpperCase_btn = new System.Windows.Forms.Button();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.level_nud)).BeginInit();
@@ -88,6 +89,7 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel2.Controls.Add(this.label1, 0, 0);
             this.tableLayoutPanel2.Controls.Add(this.level_nud, 1, 0);
+            this.tableLayoutPanel2.Controls.Add(this.toUpperCase_btn, 2, 0);
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel2.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(0);
@@ -96,13 +98,6 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel2.Size = new System.Drawing.Size(636, 28);
             this.tableLayoutPanel2.TabIndex = 2;
-            // 
-            // level_nud
-            // 
-            this.level_nud.Location = new System.Drawing.Point(53, 3);
-            this.level_nud.Name = "level_nud";
-            this.level_nud.Size = new System.Drawing.Size(74, 23);
-            this.level_nud.TabIndex = 0;
             // 
             // label1
             // 
@@ -113,6 +108,25 @@ namespace LeninSearch.Ocr
             this.label1.Size = new System.Drawing.Size(37, 15);
             this.label1.TabIndex = 1;
             this.label1.Text = "Level:";
+            // 
+            // level_nud
+            // 
+            this.level_nud.Location = new System.Drawing.Point(53, 3);
+            this.level_nud.Name = "level_nud";
+            this.level_nud.Size = new System.Drawing.Size(74, 23);
+            this.level_nud.TabIndex = 0;
+            // 
+            // toUpperCase_btn
+            // 
+            this.toUpperCase_btn.Dock = System.Windows.Forms.DockStyle.Left;
+            this.toUpperCase_btn.Location = new System.Drawing.Point(131, 1);
+            this.toUpperCase_btn.Margin = new System.Windows.Forms.Padding(1);
+            this.toUpperCase_btn.Name = "toUpperCase_btn";
+            this.toUpperCase_btn.Size = new System.Drawing.Size(100, 26);
+            this.toUpperCase_btn.TabIndex = 2;
+            this.toUpperCase_btn.Text = "To Upper Case";
+            this.toUpperCase_btn.UseVisualStyleBackColor = true;
+            this.toUpperCase_btn.Click += new System.EventHandler(this.ToUpperCaseClick);
             // 
             // TitleBlockDialog
             // 
@@ -142,5 +156,6 @@ namespace LeninSearch.Ocr
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
         private System.Windows.Forms.NumericUpDown level_nud;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button toUpperCase_btn;
     }
 }

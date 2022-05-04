@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 
 namespace LeninSearch.Ocr
@@ -34,6 +29,16 @@ namespace LeninSearch.Ocr
                 Close();
             };
             Shown += (sender, args) => titleText_tb.Focus();
+        }
+
+        private void ToUpperCaseClick(object sender, EventArgs e)
+        {
+            var selectionStart = titleText_tb.SelectionStart;
+            var selectionLength = titleText_tb.SelectionLength;
+
+            titleText_tb.Text = titleText_tb.Text.Substring(0, selectionStart) +
+                                titleText_tb.Text.Substring(selectionStart, selectionLength).ToUpper() +
+                                titleText_tb.Text.Substring(selectionStart + selectionLength);
         }
     }
 }
