@@ -2,51 +2,35 @@
 <FictionBook xmlns:l="http://www.w3.org/1999/xlink" xmlns="http://www.gribuser.ru/xml/fictionbook/2.0">
   <description>
     <title-info>
-      <genre>[genre]</genre>
+      <genre>физиология</genre>
       <author>
-        <first-name>[book-author-first-name]</first-name>
-        <last-name>[book-author-last-name]</last-name>
-        <middle-name>[book-author-middle-name]</middle-name>
-        <id>[book-id]</id>
+        <first-name>Иван</first-name>
+        <last-name>Павлов</last-name>
+        <middle-name>Петрович</middle-name>
+        <id>FA564C95-C031-4F7B-82B1-9325D9F25ED6</id>
       </author>
-      <book-title>[book-title]</book-title>
+      <book-title>Павлов И.П. Полное собрание сочинений, том 4</book-title>
       <annotation>
-        <p>[book-annotation]</p>
+        <p>Павлов И.П. Полное собрание сочинений, том 4</p>
       </annotation>
-      <lang>[book-language]</lang>
+      <lang>ru</lang>
     </title-info>
     <document-info>
       <author>
-        <first-name>[doc-author-first-name]</first-name>
-        <last-name>[doc-author-last-name]</last-name>
+        <first-name>Anton</first-name>
+        <last-name>Maiorov</last-name>
       </author>
       <program-used>LeninSearch Ocr to FB2 Script</program-used>
-      <id>[doc-id]</id>
-      <version>[doc-version]</version>
+      <id>8DA66A1B-4940-4046-9EF9-3C09C5D4BEEF</id>
+      <version>1</version>
     </document-info>
   </description>
   <body>
-    <!--<section>
-      <title>
-        <p>{title-text}</p>
-      </title>
-      <p>
-        {paragraph-text} <a l:href="#n_1" type="note">[1]</a>
-      </p>
-      <image l:href="#i_001.jpg"/>
-    </section>-->
     [body]
   </body>
   <body name="notes">
-    <!--<section id="n_1">
-      <title>
-        <p>1</p>
-      </title>
-      <p>{comment-text}</p>
-    </section>-->
     [body-notes]
   </body>
-  <!-- <binary content-type="image/jpeg" id="i_001.jpg">{base64-bytes}</binary> -->
   [binary-content]
 </FictionBook>
 

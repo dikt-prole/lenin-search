@@ -26,7 +26,7 @@ namespace LeninSearch.Script.Scripts
             var ocrPages = ocrData.Pages.OrderBy(p => p.ImageIndex).ToList();
 
             // 2. massage ocr data
-            FixCommentRelatedStuff(ocrData);
+            var emptyLinks = FixCommentRelatedStuff(ocrData);
             FixTextRelatedStuff(ocrData);
 
             // 3. go through pages and create fb2 lines (paragraphs, titles, images)
@@ -153,6 +153,8 @@ namespace LeninSearch.Script.Scripts
             var notesSb = new StringBuilder();
             foreach (var note in notes)
             {
+                if (note.Lines.Any(l => l.Words.Any(w => emptyLinks.Contains(w)))) continue;
+
                 var sectionXml = note.GetXml();
                 notesSb.Append(sectionXml);
                 notesSb.Append(Environment.NewLine);
@@ -181,8 +183,10 @@ namespace LeninSearch.Script.Scripts
             File.WriteAllText(fb2Path, fb2Xml);
         }
 
-        private static void FixCommentRelatedStuff(OcrData ocrData)
+        private static List<OcrWord> FixCommentRelatedStuff(OcrData ocrData)
         {
+            var emptyLinks = new List<OcrWord>();
+
             var ocrPages = ocrData.Pages.OrderBy(p => p.ImageIndex).ToList();
 
             // 1. throughout note labeling (1-100, not 1-2 on each page)
@@ -213,7 +217,7 @@ namespace LeninSearch.Script.Scripts
 
                     if (linkedTextWord == null)
                     {
-                        linkedCommentWord.IsCommentLinkNumber = false;
+                        emptyLinks.Add(linkedCommentWord);
                         continue;
                     }
 
@@ -248,21 +252,7 @@ namespace LeninSearch.Script.Scripts
                 }
             }
 
-            // 3. If there is no comment, then do not count the word linked
-            //foreach (var page in ocrPages)
-            //{
-            //    var commentedWords = page.GetLabeledLines(OcrLabel.PStart, OcrLabel.PMiddle, OcrLabel.Title)
-            //        .SelectMany(l => l.Words)
-            //        .Where(w => w.IsCommentLinkNumber)
-            //        .ToList();
-            //    var commentWords = page.GetLabeledLines(OcrLabel.Comment)
-            //        .SelectMany(l => l.Words)
-            //        .Where(w => w.IsCommentLinkNumber)
-            //        .ToList();
-
-            //    foreach (var commentedWord in commentedWords) 
-            //        commentedWord.IsCommentLinkNumber = commentWords.Any(w => w.Text == commentedWord.Text);
-            //}
+            return emptyLinks;
         }
 
         private static void FixTextRelatedStuff(OcrData ocrData)
