@@ -1163,7 +1163,11 @@ namespace LeninSearch.Ocr
                 if (MessageBox.Show("FB2 file was generated fine. Do you want to open the file?", "FB2",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
-                    Process.Start(saveFileDialog.FileName);
+                    using Process process = new Process
+                    {
+                        StartInfo = {FileName = "explorer", Arguments = "\"" + saveFileDialog.FileName + "\""}
+                    };
+                    process.Start();
                 }
             }
             catch (Exception exc)
