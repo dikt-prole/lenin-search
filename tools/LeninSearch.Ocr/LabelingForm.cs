@@ -40,6 +40,8 @@ namespace LeninSearch.Ocr
             {Keys.N, null}
         };
 
+        private readonly TitleBlockDialog _titleBlockDialog = new TitleBlockDialog();
+
         public LabelingForm()
         {
             InitializeComponent();
@@ -701,13 +703,9 @@ namespace LeninSearch.Ocr
 
             var text = string.Join(" ", titleLines.Select(l => string.Join(" ", l.Words.Select(w => w.Text))));
 
-            var dialog = new TitleBlockDialog
-            {
-                TitleText = text.ToLower(),
-                TitleLevel = 0
-            };
+            _titleBlockDialog.TitleText = text.ToLower();
 
-            if (dialog.ShowDialog() != DialogResult.OK) return;
+            if (_titleBlockDialog.ShowDialog() != DialogResult.OK) return;
 
             var commentWords = titleLines.SelectMany(l => l.Words).Where(w => w.IsCommentLinkNumber).ToList();
 
@@ -717,8 +715,8 @@ namespace LeninSearch.Ocr
                 TopLeftY = originalRect.Y,
                 BottomRightX = originalRect.X + originalRect.Size.Width,
                 BottomRightY = originalRect.Y + originalRect.Size.Height,
-                TitleLevel = dialog.TitleLevel,
-                TitleText = dialog.TitleText,
+                TitleLevel = _titleBlockDialog.TitleLevel,
+                TitleText = _titleBlockDialog.TitleText,
                 CommentLinks = commentWords.Select(w => 
                     new OcrWord
                     {
