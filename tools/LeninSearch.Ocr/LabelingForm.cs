@@ -1160,15 +1160,16 @@ namespace LeninSearch.Ocr
             try
             {
                 service.GenerateFb2File(bookFolder_tb.Text, saveFileDialog.FileName, template);
+
                 if (MessageBox.Show("FB2 file was generated fine. Do you want to open the file?", "FB2",
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) 
+                    return;
+
+                using var process = new Process
                 {
-                    using Process process = new Process
-                    {
-                        StartInfo = {FileName = "explorer", Arguments = "\"" + saveFileDialog.FileName + "\""}
-                    };
-                    process.Start();
-                }
+                    StartInfo = {FileName = "explorer", Arguments = $"\"{saveFileDialog.FileName}\""}
+                };
+                process.Start();
             }
             catch (Exception exc)
             {
