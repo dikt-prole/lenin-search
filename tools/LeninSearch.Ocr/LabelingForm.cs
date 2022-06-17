@@ -519,6 +519,7 @@ namespace LeninSearch.Ocr
             if (blocks_rb.Checked || all_rb.Checked)
             {
                 menu.Items.Add("Add Image Block", null, (o, a) => AddImageBlock(rect));
+                menu.Items.Add("Add Page Wide Image Block", null, (o, a) => AddPageWideImageBlock(rect));
                 menu.Items.Add("Remove Image Block", null, (o, a) => RemoveImageBlock(rect));
                 menu.Items.Add("Add Title Block", null, (o, a) => AddTitleBlock(rect));
                 menu.Items.Add("Remove Title Block", null, (o, a) => RemoveTitleBlock(rect));
@@ -653,7 +654,7 @@ namespace LeninSearch.Ocr
             ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
         }
 
-        private void AddImageBlock(Rectangle pbRectangle)
+        private void AddPageWideImageBlock(Rectangle pbRectangle)
         {
             var fileName = ocr_lb.SelectedItem as string;
             if (fileName == null) return;
@@ -667,6 +668,30 @@ namespace LeninSearch.Ocr
                 TopLeftX = 20,
                 TopLeftY = originalRect.Y,
                 BottomRightX = page.Width - 20,
+                BottomRightY = originalRect.Y + originalRect.Size.Height
+            };
+
+            page.ImageBlocks.Add(imageBlock);
+
+            foreach (var line in page.GetIntersectingLines(imageBlock.Rectangle)) line.Label = OcrLabel.Image;
+
+            ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
+        }
+
+        private void AddImageBlock(Rectangle pbRectangle)
+        {
+            var fileName = ocr_lb.SelectedItem as string;
+            if (fileName == null) return;
+            var page = _ocrData.GetPage(fileName);
+            if (page == null) return;
+
+            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
+
+            var imageBlock = new OcrImageBlock
+            {
+                TopLeftX = originalRect.X,
+                TopLeftY = originalRect.Y,
+                BottomRightX = originalRect.X + originalRect.Width,
                 BottomRightY = originalRect.Y + originalRect.Size.Height
             };
 
@@ -703,7 +728,11 @@ namespace LeninSearch.Ocr
 
             var text = string.Join(" ", titleLines.Select(l => string.Join(" ", l.Words.Select(w => w.Text))));
 
-            _titleBlockDialog.TitleText = text.ToLower();
+            text = text.ToLower();
+
+            text = text[0].ToString().ToUpper() + text.Substring(1);
+
+            _titleBlockDialog.TitleText = text;
 
             if (_titleBlockDialog.ShowDialog() != DialogResult.OK) return;
 
@@ -869,7 +898,16 @@ namespace LeninSearch.Ocr
 
             var intersectingLines = page.Lines.Where(l => l.Rectangle.IntersectsWith(originalRect)).ToList();
 
-            page.MergeLines(intersectingLines[0], intersectingLines.Skip(1).ToArray());
+            while (intersectingLines.Any())
+            {
+                var mergeRectangle = intersectingLines[0].PageWideRectangle(page.Width);
+                var linesToMerge = intersectingLines.Where(l => l.Rectangle.IntersectsWith(mergeRectangle)).ToList();
+                foreach (var line in linesToMerge)
+                {
+                    intersectingLines.Remove(line);
+                }
+                page.MergeLines(linesToMerge[0], linesToMerge.Skip(1).ToArray());
+            }
 
             ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
         }
@@ -901,11 +939,12 @@ namespace LeninSearch.Ocr
             var page = _ocrData.GetPage(filename);
             if (page == null) return;
 
-            var intersectingLine = page.Lines.FirstOrDefault(l => l.Rectangle.IntersectsWith(originalRect));
+            var intersectingLines = page.Lines.Where(l => l.Rectangle.IntersectsWith(originalRect)).ToList();
 
-            if (intersectingLine?.Words?.Any() != true) return;
-
-            page.BreakIntoWords(intersectingLine);
+            foreach (var intersectingLine in intersectingLines)
+            {
+                page.BreakIntoWords(intersectingLine);
+            }
 
             ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
         }
