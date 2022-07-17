@@ -53,6 +53,19 @@ namespace LeninSearch.Ocr.Model
             return rowValues.ToArray();
         }
 
+        public double[] ToFeatureRow()
+        {
+            var rowValues = new double[]
+            {
+                LeftIndent,
+                RightIndent,
+                Width,
+                StartsWithCapital
+            };
+
+            return rowValues;
+        }
+
         public static OcrLineFeatures Calculate(OcrPage page, OcrLine line)
         {
             var lineRectangle = line.Rectangle;

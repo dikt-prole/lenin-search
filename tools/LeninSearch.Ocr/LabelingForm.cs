@@ -732,6 +732,8 @@ namespace LeninSearch.Ocr
 
             text = text[0].ToString().ToUpper() + text.Substring(1);
 
+            text = InitialsToUpper(text);
+
             _titleBlockDialog.TitleText = text;
 
             if (_titleBlockDialog.ShowDialog() != DialogResult.OK) return;
@@ -761,6 +763,29 @@ namespace LeninSearch.Ocr
             foreach (var line in titleLines) line.Label = OcrLabel.Title;
 
             ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
+        }
+
+        private string InitialsToUpper(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return text;
+
+            var spaceSplit = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            var words = new List<string>();
+
+            foreach (var s in spaceSplit)
+            {
+                if (s.Length == 2 && s.EndsWith('.'))
+                {
+                    words.Add(s.ToUpper());
+                }
+                else
+                {
+                    words.Add(s);
+                }
+            }
+
+            return string.Join(' ', words);
         }
 
         private void RemoveTitleBlock(Rectangle pbRectangle)
@@ -1130,7 +1155,7 @@ namespace LeninSearch.Ocr
 
             var rowModel = GetRowModel();
 
-            double[][] inputs = labeledLines.Select(l => l.Features.ToFeatureRow(rowModel)).ToArray();
+            double[][] inputs = labeledLines.Select(l => l.Features.ToFeatureRow()).ToArray();
             int[] outputs = labeledLines.Select(l => (int)l.Label).ToArray();
 
             Accord.Math.Random.Generator.Seed = 1;
@@ -1148,7 +1173,7 @@ namespace LeninSearch.Ocr
                     .Where(b => b.Features != null)
                     .ToList();
 
-                var applyInputs = featuredLines.Select(l => l.Features.ToFeatureRow(rowModel)).ToArray();
+                var applyInputs = featuredLines.Select(l => l.Features.ToFeatureRow()).ToArray();
                 var predicted = _model.Decide(applyInputs);
 
                 for (var i = 0; i < featuredLines.Count; i++)

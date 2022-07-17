@@ -72,7 +72,8 @@ namespace LeninSearch.Ocr.Model.Fb2
                 case Fb2LineType.Title:
                     var titleCommentLinks = TitleCommentLinks == null
                         ? null
-                        : string.Join("", TitleCommentLinks.Select(ttl => $"<a l:href=\"#n_{ttl.Text}\" type=\"note\">[{ttl.Text}]</a>"));
+                        : string.Join("", TitleCommentLinks
+                            .Select(ttl => $"<a l:href=\"#n_{ttl.Text}\" type=\"note\">[{ttl.Text}]</a>"));
                     return $"<title><p>{GetText()}</p>{titleCommentLinks}</title>";
                 case Fb2LineType.Image:
                     return $"<image l:href=\"#i_{ImageIndex}.jpg\"/>";

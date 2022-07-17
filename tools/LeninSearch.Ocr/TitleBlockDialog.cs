@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Windows.Forms;
+using LeninSearch.Ocr.Controls;
 
 namespace LeninSearch.Ocr
 {
@@ -7,8 +9,18 @@ namespace LeninSearch.Ocr
     {
         public string TitleText
         {
-            get => titleText_tb.Text;
-            set => titleText_tb.Text = value;
+            get => string.Join(' ', tokens_flp.Controls.OfType<TitleTokenControl>().Select(c => c.Text));
+            set
+            {
+                tokens_flp.Controls.Clear();
+                var spaceSplit = value.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                foreach (var s in spaceSplit)
+                {
+                    var tokenControl = new TitleTokenControl();
+                    tokenControl.Text = s;
+                    tokens_flp.Controls.Add(tokenControl);
+                }
+            }
         }
 
         public int TitleLevel
@@ -28,17 +40,6 @@ namespace LeninSearch.Ocr
                 DialogResult = DialogResult.OK;
                 Close();
             };
-            Shown += (sender, args) => titleText_tb.Focus();
-        }
-
-        private void ToUpperCaseClick(object sender, EventArgs e)
-        {
-            var selectionStart = titleText_tb.SelectionStart;
-            var selectionLength = titleText_tb.SelectionLength;
-
-            titleText_tb.Text = titleText_tb.Text.Substring(0, selectionStart) +
-                                titleText_tb.Text.Substring(selectionStart, selectionLength).ToUpper() +
-                                titleText_tb.Text.Substring(selectionStart + selectionLength);
         }
     }
 }
