@@ -46,7 +46,7 @@ namespace LeninSearch.Xam
 
             _lsiProvider = new CachedLsiProvider();
             _corpusSearch = new SwitchCorpusSearch(_lsiProvider,
-                Settings.OnlineSearch.Host, Settings.OnlineSearch.Port, Settings.OnlineSearch.TimeoutMs,
+                Settings.Web.Host, Settings.Web.Port, Settings.Web.TimeoutMs,
                 Settings.TokenIndexCountCutoff, Settings.ResultCountCutoff);
             //_corpusSearch = new OfflineCorpusSearch(_lsiProvider, Settings.TokenIndexCountCutoff, Settings.ResultCountCutoff);
 

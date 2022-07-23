@@ -12,13 +12,13 @@ namespace LeninSearch.Xam.Core
 {
     public class ApiService
     {
-        private HttpClient _httpClient = new HttpClient();
+        private HttpClient _httpClient = new HttpClient { Timeout = TimeSpan.FromMilliseconds(Settings.Web.TimeoutMs) };
 
         public async Task<(List<CorpusItem> Summary, bool Success, string Error)> GetSummaryAsync(int lsiVersion)
         {
             try
             {
-                var summaryJson = await _httpClient.GetStringAsync("http://151.248.121.154:5000/corpus/summary");
+                var summaryJson = await _httpClient.GetStringAsync(Settings.Web.SummaryUrl);
 
                 var corpusItems = JsonConvert.DeserializeObject<List<CorpusItem>>(summaryJson);
 
@@ -38,7 +38,9 @@ namespace LeninSearch.Xam.Core
         {
             try
             {
-                var link = $"http://151.248.121.154:5000/corpus/file?corpusId={corpusId}&file={file}";
+                var link = Settings.Web.CorpusFileLink
+                    .Replace("[corpusId]", corpusId)
+                    .Replace("[file]", file);
 
                 var response = await _httpClient.GetAsync(link);
 

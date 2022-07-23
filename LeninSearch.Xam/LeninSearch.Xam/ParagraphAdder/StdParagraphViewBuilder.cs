@@ -121,10 +121,13 @@ namespace LeninSearch.Xam.ParagraphAdder
                         ? Settings.ImageFile(state.CorpusId, lsiSpan.ImageIndex)
                         : lsiSpan.GetText(dictionaryWords),
                     TextColor = TextColor(lsiSpan.Type),
-                    FontFamily = paragraph.IsHeading 
-                        ? Settings.UI.Font.Bold 
-                        : FontFamily(lsiSpan.Type),
-                    TextDecorations = Xamarin.Forms.TextDecorations.None,
+                    FontAttributes = paragraph.IsHeading
+                        ? FontAttributes.Bold
+                        : GetFontAttributes(lsiSpan.Type),
+                    //FontFamily = paragraph.IsHeading 
+                    //    ? Settings.UI.Font.Bold 
+                    //    : FontFamily(lsiSpan.Type),
+                    TextDecorations = TextDecorations.None,
                     FontSize = Settings.UI.Font.ReadingFontSize
                 };
 
@@ -205,7 +208,7 @@ namespace LeninSearch.Xam.ParagraphAdder
 
             var commentLabel = new ExtendedLabel
             {
-                FontFamily = Settings.UI.Font.Regular,
+                //FontFamily = Settings.UI.Font.Regular,
                 FontSize = Settings.UI.Font.SmallFontSize,
                 TextColor = Color.Black,
                 HorizontalOptions = LayoutOptions.FillAndExpand,
@@ -226,23 +229,20 @@ namespace LeninSearch.Xam.ParagraphAdder
 
             return wrapperStack;
         }
-        private string FontFamily(LsiSpanType spanType)
+
+        private FontAttributes GetFontAttributes(LsiSpanType spanType)
         {
             switch (spanType)
             {
-                case LsiSpanType.Plain:
-                case LsiSpanType.Comment:
-                    return Settings.UI.Font.Regular;
                 case LsiSpanType.Strong:
                 case LsiSpanType.SearchResult:
-                    return Settings.UI.Font.Bold;
+                    return FontAttributes.Bold;
                 case LsiSpanType.Emphasis:
-                    return Settings.UI.Font.Italic;
+                    return FontAttributes.Italic;
             }
 
-            return Settings.UI.Font.Regular;
+            return FontAttributes.None;
         }
-
         private Color TextColor(LsiSpanType spanType)
         {
             switch (spanType)
