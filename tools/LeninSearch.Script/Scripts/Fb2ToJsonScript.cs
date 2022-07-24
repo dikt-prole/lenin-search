@@ -5,7 +5,6 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Xml;
-using LeninSearch.Standard.Core;
 using Newtonsoft.Json;
 using Formatting = Newtonsoft.Json.Formatting;
 using JsonCommentData = LeninSearch.Standard.Core.Corpus.Json.JsonCommentData;
@@ -71,13 +70,21 @@ namespace LeninSearch.Script.Scripts
                 var bodyStart = fb2Xml.IndexOf("<body");
                 var bodyEnd = fb2Xml.IndexOf("</body>");
                 var bodyXml = fb2Xml.Substring(bodyStart, bodyEnd - bodyStart + 7);
+
+                var debugIndex = 762800;
+                if (bodyXml.Length >= debugIndex + 25)
+                {
+                    var debugString = bodyXml.Substring(debugIndex - 25, 50);
+                    System.Diagnostics.Debug.WriteLine(fileName + " : " + debugString);
+                }
+
                 var bodyDoc = new XmlDocument();
                 bodyDoc.LoadXml(bodyXml);
                 var bodyRoot = bodyDoc.DocumentElement;
                 var commentIds = new List<string>();
                 foreach (XmlNode node in bodyRoot.ChildNodes)
                 {
-                    HandleFb2Node(node, jsonFileData, imageIds, commentIds, fileName);
+                    HandleFb2Node(node, jsonFileData, imageIds, commentIds, fileName, 0);
                 }
 
                 // 2. save images
@@ -157,7 +164,7 @@ namespace LeninSearch.Script.Scripts
             }
         }
 
-        private void HandleFb2Node(XmlNode node, JsonFileData jsonFileData, List<string> imageIds, List<string> commentIds, string fileName)
+        private void HandleFb2Node(XmlNode node, JsonFileData jsonFileData, List<string> imageIds, List<string> commentIds, string fileName, byte sectionLevel)
         {
             var sectionNodeId = node.Attributes["id"]?.Value;
 
@@ -174,7 +181,7 @@ namespace LeninSearch.Script.Scripts
                     jsonFileData.Headings.Add(new JsonHeading
                     {
                         Index = (ushort)(jsonFileData.Pars.Count - 1),
-                        Level = 0,
+                        Level = sectionLevel,
                         Text = titleParagraph.Text
                     });
                     break;
@@ -193,7 +200,7 @@ namespace LeninSearch.Script.Scripts
                     var childNodes = node.ChildNodes;
                     foreach (XmlNode childNode in childNodes)
                     {
-                        HandleFb2Node(childNode, jsonFileData, imageIds, commentIds, fileName);
+                        HandleFb2Node(childNode, jsonFileData, imageIds, commentIds, fileName, (byte)(sectionLevel + 1));
                     }
                     break;
             }

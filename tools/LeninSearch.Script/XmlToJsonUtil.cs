@@ -128,10 +128,10 @@ namespace LeninSearch.Script
 
         public static XmlNode GetCommentNode(string xml, string commentId)
         {
-            var startToken = $"<section id=\"{commentId}\"";
+            var startToken = $"<p id=\"{commentId}\"";
             var startIndex = xml.IndexOf(startToken);
             if (startIndex == -1) return null;
-            var endToken = "</section>";
+            var endToken = "</p>";
             var endIndex = xml.IndexOf(endToken, startIndex);
             if (endIndex == -1) return null;
             endIndex += endToken.Length;
