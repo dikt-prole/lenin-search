@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.Linq;
 using LeninSearch.Standard.Core.Corpus.Lsi;
 
@@ -22,6 +20,19 @@ namespace LeninSearch.Standard.Core.Search
             return SearchParagraphData(lsiData.WordParagraphData, query);
         }
 
+        public List<ParagraphSearchResult> SearchParagraphs(LsiData lsiData, List<SearchQuery> queries)
+        {
+            var totalResults = new List<ParagraphSearchResult>();
+            foreach (var query in queries.OrderByDescending(q => q.Priority))
+            {
+                var excludeParagraphs = totalResults.Select(r => r.ParagraphIndex).ToHashSet();
+                var queryResults = SearchParagraphData(lsiData.WordParagraphData, query, null, excludeParagraphs);
+                totalResults.AddRange(queryResults);
+            }
+
+            return totalResults;
+        }
+
         public List<ParagraphSearchResult> SearchHeadings(LsiData lsiData, SearchQuery query)
         {
             var headingIndexes = lsiData.Headings.Select(hd => hd.Index).ToHashSet();
@@ -33,7 +44,21 @@ namespace LeninSearch.Standard.Core.Search
             return searchResult;
         }
 
-        public List<ParagraphSearchResult> SearchParagraphData(Dictionary<uint, List<LsWordParagraphData>> wordParagraphData, SearchQuery query)
+        public List<ParagraphSearchResult> SearchHeadings(LsiData lsiData, List<SearchQuery> queries)
+        {
+            var totalResults = new List<ParagraphSearchResult>();
+            var onlyParagraphs = lsiData.Headings.Select(hd => hd.Index).ToHashSet();
+            foreach (var query in queries.OrderByDescending(q => q.Priority))
+            {
+                var excludeParagraphs = totalResults.Select(r => r.ParagraphIndex).ToHashSet();
+                var queryResults = SearchParagraphData(lsiData.WordParagraphData, query, onlyParagraphs, excludeParagraphs);
+                totalResults.AddRange(queryResults);
+            }
+
+            return totalResults;
+        }
+
+        public List<ParagraphSearchResult> SearchParagraphData(Dictionary<uint, List<LsWordParagraphData>> wordParagraphData, SearchQuery query, HashSet<ushort> onlyParagraphs = null, HashSet<ushort> excludeParagraphs = null)
         {
             var result = new List<ParagraphSearchResult>();
 
@@ -51,14 +76,22 @@ namespace LeninSearch.Standard.Core.Search
                 }
             }
 
-            var tokeWordParagraphPartSw = new Stopwatch(); tokeWordParagraphPartSw.Start();
-
             var tokenParagraphWordDatas = new Dictionary<SearchToken, Dictionary<ushort, List<WordData>>>();
             foreach (var searchToken in allTokens)
             {
                 var wordDatas = searchToken.WordIndexes.SelectMany(
                     wordIndex => wordParagraphData[wordIndex].Select(wpd =>
                         new WordData(wordIndex, wpd.ParagraphIndex, wpd.WordPosition)));
+
+                if (onlyParagraphs?.Any() == true)
+                {
+                    wordDatas = wordDatas.Where(wd => onlyParagraphs.Contains(wd.ParagraphIndex));
+                }
+
+                if (excludeParagraphs?.Any() == true)
+                {
+                    wordDatas = wordDatas.Where(wd => !excludeParagraphs.Contains(wd.ParagraphIndex));
+                }
 
                 var paragraphWordGroups = wordDatas.GroupBy(wd => wd.ParagraphIndex);
 
