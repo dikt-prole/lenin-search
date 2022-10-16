@@ -7,6 +7,7 @@ using NUnit.Framework;
 
 namespace LeninSearch.Standard.Core.Tests
 {
+    /*
     public class LsIndexDataTests
     {        
         [TestCase("D:\\Repo\\lenin-search\\corpus\\ls_index\\main\\v2\\lenin-t39.lsi", 114)]
@@ -85,4 +86,5 @@ namespace LeninSearch.Standard.Core.Tests
             Assert.That(paragraphText, Contains.Substring(stringToken));
         }
     }
+    */
 }

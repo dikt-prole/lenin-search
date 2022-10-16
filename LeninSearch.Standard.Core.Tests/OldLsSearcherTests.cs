@@ -11,6 +11,7 @@ using LeninSearch.Standard.Core.Search.OldSearch;
 
 namespace LeninSearch.Standard.Core.Tests
 {
+    /*
     public class OldLsSearcherTests
     {
         private OldLsSearcher _lsSearcher;
@@ -108,4 +109,5 @@ namespace LeninSearch.Standard.Core.Tests
             Assert.That(searchResult.Select(r => r.ParagraphIndex).Distinct().Count(), Is.EqualTo(searchResult.Count));
         }
     }
+    */
 }

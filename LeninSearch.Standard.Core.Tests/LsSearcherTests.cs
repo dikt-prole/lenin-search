@@ -10,6 +10,7 @@ using System.Diagnostics;
 
 namespace LeninSearch.Standard.Core.Tests
 {
+    /*
     public class LsSearcherTests
     {
         private LsSearcher _lsSearcher;
@@ -130,4 +131,5 @@ namespace LeninSearch.Standard.Core.Tests
             Assert.Pass($"Finised in {newSw.ElapsedMilliseconds} ms");
         }
     }
+    */
 }
