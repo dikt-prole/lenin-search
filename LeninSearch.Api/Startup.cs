@@ -1,5 +1,6 @@
 using LeninSearch.Api.Services;
 using LeninSearch.Standard.Core.Search;
+using LeninSearch.Standard.Core.Search.TokenVarying;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Caching.Memory;
@@ -24,7 +25,9 @@ namespace LeninSearch.Api
             services.AddControllers().AddNewtonsoftJson();
 
             // precached
-            var lsIndexDataProvider = new PrecachedLsiProvider().Load(50);
+            var lsIndexDataProvider = new PrecachedLsiProvider().Load(100);
+            services.AddSingleton<ISearchQueryFactory, SearchQueryFactory>();
+            services.AddSingleton<ITokenVariantProvider, PorterTokenVariantProvider>();
             services.AddSingleton<ILsiProvider>(sp => lsIndexDataProvider);
             services.AddSingleton<IMemoryCache, MemoryCache>();
         }

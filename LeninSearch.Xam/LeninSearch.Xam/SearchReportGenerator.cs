@@ -11,9 +11,9 @@ using LeninSearch.Xam.Core;
 
 namespace LeninSearch.Xam
 {
-    public static class FishGenerator
+    public static class SearchReportGenerator
     {
-        public static string GenerateSearchReportHtmlFile(PartialParagraphSearchResult ppsr, CorpusItem ci, string query, ILsiProvider lsiProvider)
+        public static string GenerateSearchReportHtmlFile(SearchResult ppsr, CorpusItem ci, string query, ILsiProvider lsiProvider)
         {
             try
             {
@@ -28,14 +28,14 @@ namespace LeninSearch.Xam
                 var fishHtml = $"<h1>Lenin Search Report - {ci.Name} ({query})</h1>";
                 var resultIndex = 1;
 
-                foreach (var file in ppsr.Files())
+                foreach (var file in ppsr.GetAllFiles())
                 {
                     var cfi = ci.GetFileByPath(file);
                     var lsiData = lsiProvider.GetLsiData(ci.Id, file);
                     var words = lsiProvider.Words(ci.Id);
 
                     fishHtml += $"<h2>{cfi.Name}</h2>";
-                    var fileResults = ppsr.FileResults(file);
+                    var fileResults = ppsr.GetUnitsByFile(file);
                     foreach (var searchResult in fileResults)
                     {
                         var paragraph = lsiData.Paragraphs[searchResult.ParagraphIndex];

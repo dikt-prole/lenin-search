@@ -1,7 +1,6 @@
 ﻿using Android.App;
 using Android.Content.PM;
 using Android.Runtime;
-using Android.Views;
 using Android.OS;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
@@ -15,8 +14,7 @@ namespace LeninSearch.Xam.Droid
         Icon = "@drawable/icon", 
         Theme = "@style/MainTheme", 
         ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation,
-        ScreenOrientation = ScreenOrientation.Portrait,
-        WindowSoftInputMode = SoftInput.StateAlwaysHidden)]
+        ScreenOrientation = ScreenOrientation.Portrait)]
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
         private App _app;
@@ -43,8 +41,6 @@ namespace LeninSearch.Xam.Droid
             _app = new App(_globalEvents);
 
             LoadApplication(_app);
-
-            Window.SetSoftInputMode(SoftInput.StateAlwaysHidden);
         }        
 
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Permission[] grantResults)

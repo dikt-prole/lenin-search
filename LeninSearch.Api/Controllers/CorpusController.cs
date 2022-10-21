@@ -7,9 +7,9 @@ using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using LeninSearch.Standard.Core;
 using LeninSearch.Standard.Core.Api;
 using LeninSearch.Standard.Core.Corpus;
-using LeninSearch.Standard.Core.Corpus.Json;
 using LeninSearch.Standard.Core.Search;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
@@ -23,80 +23,75 @@ namespace LeninSearch.Api.Controllers
         private readonly ILogger<CorpusController> _logger;
         private readonly ILsiProvider _lsiProvider;
         private readonly IMemoryCache _memoryCache;
+        private readonly ISearchQueryFactory _searchQueryFactory;
         private readonly LsSearcher _searcher;
+        private readonly SearchQueryCleaner _cleaner;
 
-        public CorpusController(ILogger<CorpusController> logger, ILsiProvider lsiProvider, IMemoryCache memoryCache)
+        public CorpusController(ILogger<CorpusController> logger, ILsiProvider lsiProvider, IMemoryCache memoryCache, ISearchQueryFactory searchQueryFactory)
         {
             _logger = logger;
             _lsiProvider = lsiProvider;
             _memoryCache = memoryCache;
+            _searchQueryFactory = searchQueryFactory;
             _searcher = new LsSearcher(int.MaxValue, 100);
+            _cleaner = new SearchQueryCleaner();
         }
 
-        [HttpPost("lssearch")]
-        public async Task<CorpusSearchResponse> Search([FromBody] CorpusSearchRequestNew request)
+        [HttpPost("ls-search")]
+        public async Task<CorpusSearchResponse> Search([FromBody] CorpusSearchRequest request)
         {
-            var requestJson = JsonConvert.SerializeObject(request);
+            request.Query = _cleaner.Clean(request.Query);
 
-            _logger.LogInformation($"received search request: {requestJson}");
+            var cacheKey = JsonConvert.SerializeObject(request, Formatting.None);
 
-            if (_memoryCache.TryGetValue(requestJson, out var responseCache))
+            _logger.LogInformation($"received search request: {cacheKey}");
+
+            if (_memoryCache.TryGetValue(cacheKey, out var responseCache))
             {
-                _logger.LogInformation($"using cached response for request: {requestJson}");
-
+                _logger.LogInformation($"using cached response for request: {JsonConvert.SerializeObject(request, Formatting.Indented)}");
                 return responseCache as CorpusSearchResponse;;
             }
 
             var validator = new CorpusSearchRequestValidator();
 
             var validationMessage = validator.Validate(request);
-
             if (validationMessage != null)
             {
-                _logger.LogError($"validation error for request '{requestJson}': {validationMessage}");
+                _logger.LogError($"validation error for request '{JsonConvert.SerializeObject(request, Formatting.Indented)}': {validationMessage}");
                 throw new ValidationException(validationMessage);
             }
 
             try
             {
                 var corpusItem = _lsiProvider.GetCorpusItem(request.CorpusId);
-
                 var dictionary = _lsiProvider.GetDictionary(request.CorpusId);
 
-                var searchQuery = SearchQuery.Construct(request.Query, dictionary.Words);
+                var searchQueries = _searchQueryFactory.Construct(request.Query, dictionary.Words, request.Mode).ToList();
 
                 var lsiFiles = corpusItem.Files.Where(f => f.Path.EndsWith(".lsi")).ToList();
 
-                var tasks = lsiFiles.Select(cfi => Task.Run(() =>
+                var tasks = lsiFiles.Select(cfi => Task.Run(() => InnerSearch(request.CorpusId, cfi.Path, searchQueries, dictionary)));
+
+                var unitTuples = (await Task.WhenAll(tasks)).SelectMany(ut => ut);
+
+                var response = new CorpusSearchResponse { Units = new Dictionary<string, Dictionary<string, List<SearchResultUnitResponse>>>() };
+
+                foreach (var unitTuple in unitTuples)
                 {
-                    var lsi = _lsiProvider.GetLsiData(request.CorpusId, cfi.Path);
-
-                    var searchResults = searchQuery.QueryType == SearchQueryType.Heading
-                        ? _searcher.SearchHeadings(lsi, searchQuery)
-                        : _searcher.SearchParagraphs(lsi, searchQuery);
-
-                    foreach (var searchResult in searchResults)
+                    if (!response.Units.ContainsKey(unitTuple.File))
                     {
-                        searchResult.File = cfi.Path;
-                        if (searchQuery.QueryType == SearchQueryType.Heading)
-                        {
-                            searchResult.Text = lsi.Paragraphs[searchResult.ParagraphIndex].GetText(dictionary.Words);
-                        }
+                        response.Units.Add(unitTuple.File, new Dictionary<string, List<SearchResultUnitResponse>>());
                     }
 
-                    return searchResults;
-                }));
+                    if (!response.Units[unitTuple.File].ContainsKey(unitTuple.Query.Text))
+                    {
+                        response.Units[unitTuple.File][unitTuple.Query.Text] = new List<SearchResultUnitResponse>();
+                    }
 
-                var results = await Task.WhenAll(tasks);
+                    response.Units[unitTuple.File][unitTuple.Query.Text].Add(SearchResultUnitResponse.FromSearchResultUnit(unitTuple.Unit));
+                }
 
-                var completeSearchResults = results.SelectMany(r => r).ToList();
-
-                var response = new CorpusSearchResponse
-                {
-                    Results = completeSearchResults.Select(r => ParagraphSearchResponse.From(r, corpusItem)).ToList()
-                };
-
-                _memoryCache.Set(requestJson, response, TimeSpan.FromHours(1));
+                _memoryCache.Set(cacheKey, response, TimeSpan.FromHours(1));
 
                 return response;
             }
@@ -107,34 +102,27 @@ namespace LeninSearch.Api.Controllers
             }
         }
 
-        [HttpPost("search")]
-        public async Task<CorpusSearchResponse> Search([FromBody] CorpusSearchRequest request)
+        private List<(SearchUnit Unit, string File, SearchQuery Query)> InnerSearch(string corpusId, string file, List<SearchQuery> queries, LsDictionary dictionary)
         {
-            string corpusId = null;
-            switch (request.CorpusName)
+            var result = new List<(SearchUnit Unit, string File, SearchQuery Query)>();
+            var lsiData = _lsiProvider.GetLsiData(corpusId, file);
+            var corpusFileItem = _lsiProvider.GetCorpusItem(corpusId).GetFileByPath(file);
+            var excludedParagraphs = new HashSet<ushort>();
+            foreach (var searchQuery in queries)
             {
-                case "Ленин ПСС":
-                    corpusId = "lenin-v1";
-                    break;
-                case "Сталин ПСС":
-                    corpusId = "stalin-v1";
-                    break;
-                case "Маркс-Энгельс ПСС":
-                    corpusId = "marx-engels-v1";
-                    break;
-                case "Гегель Наука Логики":
-                    corpusId = "hegel-v1";
-                    break;
+                var units = _searcher.Search(lsiData, searchQuery, excludedParagraphs);
+
+                foreach (var unit in units)
+                {
+                    unit.SetPreviewAndTitle(lsiData, corpusFileItem, dictionary);
+                }
+
+                excludedParagraphs.UnionWith(units.Select(u => u.ParagraphIndex));
             }
 
-            var lsRequest = new CorpusSearchRequestNew
-            {
-                CorpusId = corpusId,
-                Query = request.Query
-            };
-
-            return await Search(lsRequest);
+            return result;
         }
+
 
         [HttpGet("summary")]
         public List<CorpusItem> GetCorpusSummary()

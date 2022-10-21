@@ -1,9 +1,11 @@
-﻿namespace LeninSearch.Standard.Core.Api
+﻿using LeninSearch.Standard.Core.Search;
+
+namespace LeninSearch.Standard.Core.Api
 {
     public class CorpusSearchRequest
     {
-        public string CorpusName{ get; set; }
-        public int CorpusVersion { get; set; }
+        public string CorpusId { get; set; }
         public string Query { get; set; }
+        public SearchMode Mode { get; set; }
     }
 }

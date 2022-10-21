@@ -24,17 +24,20 @@ namespace LeninSearch.Xam.ParagraphAdder
 
         public View Build(LsiParagraph p, State state, string[] dictionaryWords)
         {
+            throw new NotImplementedException();
+
+            /*
             try
             {
-                ParagraphSearchResult searchResult = null;
-                var searchResults = state.PartialParagraphSearchResult?.FileResults(state.ReadingFile);
-                if (searchResults?.Any() == true && state.CurrentParagraphResultIndex >= 0)
+                SearchUnit searchUnit = null;
+                var searchResults = state.SearchResult?.FileResults(state.ReadingFile);
+                if (searchResults?.Any() == true && state.CurrentSearchUnitIndex >= 0)
                 {
-                    searchResult = searchResults[state.CurrentParagraphResultIndex];
+                    searchUnit = searchResults[state.CurrentSearchUnitIndex];
                 }
 
                 View view = null;
-                var lsiSpans = p.GetSpans(searchResult);
+                var lsiSpans = p.GetSpans(searchUnit);
 
                 // 1. the whole paragraph is an image
                 if (p.IsImage)
@@ -63,6 +66,7 @@ namespace LeninSearch.Xam.ParagraphAdder
                 Debug.WriteLine(e);
                 throw;
             }
+            */
         }
 
         private View Build_Image(string corpusId, ushort imageIndex)

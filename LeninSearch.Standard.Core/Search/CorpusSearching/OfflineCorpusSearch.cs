@@ -1,78 +1,79 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 using LeninSearch.Standard.Core.Corpus;
-using LeninSearch.Standard.Core.Corpus.Json;
+using LeninSearch.Standard.Core.Corpus.Lsi;
 
 namespace LeninSearch.Standard.Core.Search.CorpusSearching
 {
     public class OfflineCorpusSearch : ICorpusSearch
     {
         private readonly ILsiProvider _lsiProvider;
+        private readonly ISearchQueryFactory _queryFactory;
         private readonly LsSearcher _searcher;
 
-        private Dictionary<string, SearchQuery> _queryCache = new Dictionary<string, SearchQuery>();
-        public OfflineCorpusSearch(ILsiProvider lsiProvider, int tokenIndexCountCutoff = int.MaxValue, int resultCountCutoff = int.MaxValue)
+        private Dictionary<string, List<SearchQuery>> _queryCache = new Dictionary<string, List<SearchQuery>>();
+        public OfflineCorpusSearch(ILsiProvider lsiProvider, ISearchQueryFactory queryFactory, int tokenIndexCountCutoff = int.MaxValue, int resultCountCutoff = int.MaxValue)
         {
             _lsiProvider = lsiProvider;
+            _queryFactory = queryFactory;
             _searcher = new LsSearcher(tokenIndexCountCutoff, resultCountCutoff);
         }
 
-        public Task<PartialParagraphSearchResult> SearchAsync(string corpusId, string query, string lastSearchedFilePath)
+        public Task<SearchResult> SearchAsync(string corpusId, string query, SearchMode mode)
         {
             var corpusItem = _lsiProvider.GetCorpusItem(corpusId);
-            var dictionary = _lsiProvider.GetDictionary(corpusId).Words;
-
-            var searchQuery = _queryCache.ContainsKey(query) ? _queryCache[query] : SearchQuery.Construct(query, dictionary);
-            if (!_queryCache.ContainsKey(query))
+            var dictionary = _lsiProvider.GetDictionary(corpusId);
+            var queryKey = $"{query}={mode}";
+            if (!_queryCache.ContainsKey(queryKey))
             {
-                _queryCache.Add(query, searchQuery);
+                var cacheQueries = _queryFactory.Construct(query, dictionary.Words, mode).OrderBy(q => q.Priority).ToList();
+                foreach (var searchQuery in cacheQueries)
+                {
+                    searchQuery.Mode = mode;
+                }
+                _queryCache.Add(queryKey, cacheQueries);
             }
 
-            var partialResult = new PartialParagraphSearchResult
-            {
-                IsSearchComplete = false,
-                SearchResults = new List<ParagraphSearchResult>()
-            };
+            var searchQueries = _queryCache[queryKey];
+
+            var result = new SearchResult { Units = new Dictionary<string, Dictionary<string, List<SearchUnit>>>() };
 
             var corpusFileItems = corpusItem.LsiFiles();
 
-            var searchItems = lastSearchedFilePath == null
-                ? corpusFileItems
-                : corpusFileItems.SkipWhile(cfi => cfi.Path != lastSearchedFilePath).Skip(1).ToList();
-
-            foreach (var cfi in searchItems)
+            foreach (var cfi in corpusFileItems)
             {
-                var results = SearchCorpusFileItem(corpusId, cfi, searchQuery, dictionary);
-                if (results.Count > 0)
+                var queryUnits = new Dictionary<string, List<SearchUnit>>();
+                var lsiData = _lsiProvider.GetLsiData(corpusId, cfi.Path);
+                var excludeParagraphs = new HashSet<ushort>();
+                foreach (var searchQuery in searchQueries)
                 {
-                    partialResult.SearchResults.AddRange(results);
-                    partialResult.LastCorpusFile = cfi.Path;
-                    return Task.FromResult(partialResult);
+                    var units = InnerSearch(lsiData, searchQuery, dictionary, cfi, excludeParagraphs);
+                    if (units.Any())
+                    {
+                        queryUnits.Add(searchQuery.Text, units);
+                        excludeParagraphs.UnionWith(units.Select(u => u.ParagraphIndex));
+                    }
+                }
+
+                if (queryUnits.Any())
+                {
+                    result.Units.Add(cfi.Path, queryUnits);
                 }
             }
 
-            partialResult.IsSearchComplete = true;
-
-            return Task.FromResult(partialResult);
+            return Task.FromResult(result);
         }
 
-        private List<ParagraphSearchResult> SearchCorpusFileItem(string corpusId, CorpusFileItem cfi, SearchQuery searchQuery, string[] dictionary)
+        private List<SearchUnit> InnerSearch(LsiData lsiData, SearchQuery searchQuery, 
+            LsDictionary dictionary, CorpusFileItem corpusFileItem, HashSet<ushort> excludeParagraphs)
         {
-            var lsiData = _lsiProvider.GetLsiData(corpusId, cfi.Path);
-
-            var results = searchQuery.IsHeading
-                ? _searcher.SearchHeadings(lsiData, searchQuery)
-                : _searcher.SearchParagraphs(lsiData, searchQuery);
+            var results = _searcher.Search(lsiData, searchQuery, excludeParagraphs);
 
             foreach (var r in results)
             {
-                r.File = cfi.Path;
-                if (searchQuery.IsHeading)
-                {
-                    var heading = lsiData.HeadingParagraphs.First(h => h.Index == r.ParagraphIndex);
-                    r.Text = heading.GetText(dictionary);
-                }
+                r.SetPreviewAndTitle(lsiData, corpusFileItem, dictionary);
             }
 
             return results;

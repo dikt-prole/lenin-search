@@ -55,6 +55,8 @@ namespace LeninSearch.Xam
 
             public const int HeaderStackAutoHideMs = 5000;
             public static Color MainColor => Color.FromRgb(214, 24, 31);
+
+            public const string MainColorHex = "#D6181F";
             public static bool OldAndroidJustification { get; set; }
 
             public const int SummaryLineLength = 85;

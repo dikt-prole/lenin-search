@@ -5,7 +5,7 @@ using LeninSearch.Standard.Core.Search.TokenVarying;
 
 namespace LeninSearch.Standard.Core.Search
 {
-    public class SearchQueryFactory
+    public class SearchQueryFactory : ISearchQueryFactory
     {
         private readonly ITokenVariantProvider _tokenVariantProvider;
 
@@ -14,7 +14,7 @@ namespace LeninSearch.Standard.Core.Search
             _tokenVariantProvider = tokenVariantProvider;
         }
 
-        public IEnumerable<SearchQuery> Construct(string queryText, string[] dictionary)
+        public IEnumerable<SearchQuery> Construct(string queryText, string[] dictionary, SearchMode mode)
         {
             if (string.IsNullOrEmpty(queryText))
             {
@@ -23,7 +23,7 @@ namespace LeninSearch.Standard.Core.Search
 
             if (queryText.Contains('*') || queryText.Contains('+'))
             {
-                yield return SearchQuery.Construct(queryText, dictionary);
+                yield return SearchQuery.Construct(queryText, dictionary, mode);
                 yield break;
             }
 
@@ -37,7 +37,7 @@ namespace LeninSearch.Standard.Core.Search
 
             foreach (var variedSplit in variedSplits)
             {
-                var variedQuery = SearchQuery.Construct(string.Join(' ', variedSplit.Tokens), dictionary);
+                var variedQuery = SearchQuery.Construct(string.Join(' ', variedSplit.Tokens), dictionary, mode);
                 variedQuery.Priority = variedSplit.Priority;
 
                 yield return variedQuery;
@@ -48,7 +48,7 @@ namespace LeninSearch.Standard.Core.Search
                         .Concat(new[] { "+" })
                         .Concat(variedSplit.Tokens.Skip(tokenIndex));
 
-                    var variedWithPlusQuery = SearchQuery.Construct(string.Join(' ', variedWithPlusTokens), dictionary);
+                    var variedWithPlusQuery = SearchQuery.Construct(string.Join(' ', variedWithPlusTokens), dictionary, mode);
 
                     variedWithPlusQuery.Priority = (ushort)(variedSplit.Priority + 10 * (variedSplit.Tokens.Length - tokenIndex));
 

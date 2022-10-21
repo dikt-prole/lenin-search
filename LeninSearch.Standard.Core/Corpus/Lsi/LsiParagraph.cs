@@ -40,20 +40,20 @@ namespace LeninSearch.Standard.Core.Corpus.Lsi
         public List<LsiCommentData> Comments { get; set; }
         public bool HasComments => Comments.Any();
 
-        public List<LsiSpan> GetSpans(ParagraphSearchResult searchResult)
+        public List<LsiSpan> GetSpans(SearchUnit searchUnit)
         {
             var spans = new List<LsiSpan>();
 
             if (WordIndexes.Count == 0) return spans;
 
-            var zeroWordData = GetWordData(0, searchResult);
+            var zeroWordData = GetWordData(0, searchUnit);
             var zeroSpan = ConstructSpan(zeroWordData.SpanType, zeroWordData.CommentIndex, zeroWordData.InlineImageIndex);
             zeroSpan.WordIndexes.Add(WordIndexes[0]);
             spans.Add(zeroSpan);
 
             for (ushort wordPosition = 1; wordPosition < WordIndexes.Count; wordPosition++)
             {
-                var wordData = GetWordData(wordPosition, searchResult);
+                var wordData = GetWordData(wordPosition, searchUnit);
                 var lastSpan = spans.Last();
 
                 if (lastSpan.Type == wordData.SpanType && lastSpan.WordIndexes != null)
@@ -74,9 +74,9 @@ namespace LeninSearch.Standard.Core.Corpus.Lsi
             return spans;
         }
 
-        private (LsiSpanType SpanType, ushort InlineImageIndex, ushort CommentIndex) GetWordData(ushort wordPosition, ParagraphSearchResult searchResult)
+        private (LsiSpanType SpanType, ushort InlineImageIndex, ushort CommentIndex) GetWordData(ushort wordPosition, SearchUnit searchUnit)
         {
-            if (searchResult?.WordIndexChains[0].WordIndexes.Contains(WordIndexes[wordPosition]) == true)
+            if (searchUnit?.WordIndexChains[0].WordIndexes.Contains(WordIndexes[wordPosition]) == true)
             {
                 return (LsiSpanType.SearchResult, 0, 0);
             }

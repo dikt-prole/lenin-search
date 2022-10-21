@@ -77,8 +77,7 @@ namespace LeninSearch.Xam
 
                 if (leaveOnlyCorpusSelection)
                 {
-                    state.PartialParagraphSearchResult = null;
-                    state.CurrentParagraphResultIndex = -1;
+                    state.SearchResult = null;
                     state.SearchQuery = null;
                     state.ReadingFile = null;
                 }
@@ -95,7 +94,6 @@ namespace LeninSearch.Xam
             return new State
             {
                 CorpusId = corpusItem.Id,
-                CurrentParagraphResultIndex = -1,
                 ReadingFile = null,
                 SearchQuery = null
             };

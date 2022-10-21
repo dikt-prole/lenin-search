@@ -6,12 +6,12 @@ namespace LeninSearch.Standard.Core.Search.OldSearch
 {
     public class OldLsSearcher
     {
-        public List<ParagraphSearchResult> SearchParagraphs(LsiData lsiData, SearchQuery query)
+        public List<SearchUnit> SearchParagraphs(LsiData lsiData, SearchQuery query)
         {
             return SearchParagraphData(lsiData.WordParagraphData, query);
         }
 
-        public List<ParagraphSearchResult> SearchHeadings(LsiData lsiData, SearchQuery query)
+        public List<SearchUnit> SearchHeadings(LsiData lsiData, SearchQuery query)
         {
             var headingIndexes = lsiData.Headings.Select(hd => hd.Index).ToHashSet();
 
@@ -22,7 +22,7 @@ namespace LeninSearch.Standard.Core.Search.OldSearch
             return searchResult;
         }
 
-        public List<ParagraphSearchResult> SearchParagraphData(Dictionary<uint, List<LsWordParagraphData>> wordParagraphData, SearchQuery query)
+        public List<SearchUnit> SearchParagraphData(Dictionary<uint, List<LsWordParagraphData>> wordParagraphData, SearchQuery query)
         {
             query = query.Copy();
 
@@ -32,7 +32,7 @@ namespace LeninSearch.Standard.Core.Search.OldSearch
                 token.WordIndexes = token.WordIndexes.Where(wordParagraphData.ContainsKey).ToList();
                 if (token.WordIndexes.Count == 0)
                 {
-                    return new List<ParagraphSearchResult>();
+                    return new List<SearchUnit>();
                 }
             }
 
@@ -55,7 +55,7 @@ namespace LeninSearch.Standard.Core.Search.OldSearch
                 }
             }
 
-            var searchResults = new List<ParagraphSearchResult>();
+            var searchResults = new List<SearchUnit>();
             var orderedCount = query.Ordered.Count;
             if (orderedCount > 0)
             {
@@ -89,7 +89,7 @@ namespace LeninSearch.Standard.Core.Search.OldSearch
                         var searchResult = searchResults.FirstOrDefault(r => r.ParagraphIndex == paragraphIndex);
                         if (searchResult == null)
                         {
-                            searchResult = new ParagraphSearchResult(paragraphIndex);                            
+                            searchResult = new SearchUnit(paragraphIndex);                            
                             searchResults.Add(searchResult);
                         }
 
@@ -109,7 +109,7 @@ namespace LeninSearch.Standard.Core.Search.OldSearch
                         var searchResult = searchResults.FirstOrDefault(r => r.ParagraphIndex == paragraphIndex);
                         if (searchResult == null)
                         {
-                            searchResult = new ParagraphSearchResult(paragraphIndex);
+                            searchResult = new SearchUnit(paragraphIndex);
                             searchResults.Add(searchResult);
                         }
 

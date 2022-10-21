@@ -1,6 +1,6 @@
 ﻿namespace LeninSearch.Standard.Core.Search
 {
-    public enum SearchQueryType
+    public enum SearchMode
     {
         Paragraph = 0, Heading = 1
     }
