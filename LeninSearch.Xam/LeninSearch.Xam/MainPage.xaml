@@ -9,19 +9,16 @@
              x:Class="LeninSearch.Xam.MainPage">
     <ContentPage.Resources>
         <ControlTemplate x:Key="TabItemTemplate">
-            <Grid>
-                <ImageButton
+            <ImageButton
                         InputTransparent="True"
                         Source="{TemplateBinding CurrentIcon}"
-                        Padding="0"
+                        Margin="0, 3, 0, 3"
                         HorizontalOptions="Center"
-                        VerticalOptions="Center"
+                        VerticalOptions="Start"
                         BackgroundColor="White"
-                        HeightRequest="20"
-                        WidthRequest="20"
-                        Margin="5">
-                </ImageButton>
-            </Grid>
+                        HeightRequest="19"
+                        WidthRequest="19">
+            </ImageButton>
         </ControlTemplate>
     </ContentPage.Resources>
     <StackLayout Orientation="Vertical" Spacing="0">
@@ -46,25 +43,26 @@
                 </StackLayout>
                 <StackLayout HorizontalOptions="FillAndExpand" HeightRequest="1" BackgroundColor="#D6181F"></StackLayout>
             </StackLayout>
+            <!-- todo: fix TabStripHeight (Xamarin Community Toolkit bug) -->
             <views:TabView
-            x:Name="InitialTabs"
-            TabStripPlacement="Bottom"
-            TabStripBackgroundColor="White"
-            TabIndicatorPlacement="Top"
-            TabIndicatorColor="#D6181F"
-            TabIndicatorHeight="1"
-            TabStripHeight="20"
-            Padding="0"
-            Margin="0"
-            TabContentBackgroundColor="White">
-
+                x:Name="InitialTabs"
+                TabStripPlacement="Bottom"
+                TabStripBackgroundColor="White"
+                TabIndicatorPlacement="Top"
+                TabIndicatorColor="#D6181F"
+                TabIndicatorHeight="1"
+                TabStripHeight="48"
+                Padding="0"
+                Margin="0, 0, 0, -23"
+                TabContentBackgroundColor="White"
+                BackgroundColor="White">
                 <views:TabViewItem Icon="corpus.png" ControlTemplate="{StaticResource TabItemTemplate}">
                     <StackLayout Orientation="Vertical">
                         <StackLayout Orientation="Vertical" x:Name="CorpusTab" VerticalOptions="FillAndExpand"></StackLayout>
-                        <StackLayout Orientation="Horizontal">
+                        <!--<StackLayout Orientation="Horizontal">
                             <StackLayout HorizontalOptions="FillAndExpand"></StackLayout>
                             <ImageButton Source="download.png" x:Name="CorpusRefreshButton" HorizontalOptions="End" HeightRequest="32" WidthRequest="32" BackgroundColor="White"></ImageButton>
-                        </StackLayout>
+                        </StackLayout>-->
                     </StackLayout>
 
                 </views:TabViewItem>
@@ -95,7 +93,6 @@
                 </views:TabViewItem>
 
             </views:TabView>
-            
         </StackLayout>
     </StackLayout>
 </ContentPage>

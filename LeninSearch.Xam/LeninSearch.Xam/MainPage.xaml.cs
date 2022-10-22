@@ -67,7 +67,7 @@ namespace LeninSearch.Xam
             };
 
             // updates
-            CorpusRefreshButton.Clicked += async (sender, args) => await ShowUpdates();
+            //CorpusRefreshButton.Clicked += async (sender, args) => await ShowUpdates();
 
             // search entry
             SearchEntry.Text = "диктатура пролетариата";
