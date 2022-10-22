@@ -7,6 +7,23 @@
              xmlns:views="http://xamarin.com/schemas/2020/toolkit"
              mc:Ignorable="d"
              x:Class="LeninSearch.Xam.MainPage">
+    <ContentPage.Resources>
+        <ControlTemplate x:Key="TabItemTemplate">
+            <Grid>
+                <ImageButton
+                        InputTransparent="True"
+                        Source="{TemplateBinding CurrentIcon}"
+                        Padding="0"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                        BackgroundColor="White"
+                        HeightRequest="20"
+                        WidthRequest="20"
+                        Margin="5">
+                </ImageButton>
+            </Grid>
+        </ControlTemplate>
+    </ContentPage.Resources>
     <StackLayout Orientation="Vertical" Spacing="0">
         <StackLayout Spacing="0" Orientation="Vertical" x:Name="PlayerLayout" VerticalOptions="FillAndExpand" BackgroundColor="Black" IsVisible="False">
             <StackLayout Orientation="Horizontal" VerticalOptions="Start" BackgroundColor="#D6181F">
@@ -27,32 +44,21 @@
                     <ImageButton Padding="0" x:Name="CorpusButton" WidthRequest="48" HeightRequest="48" Source="lenin.png" BackgroundColor="White" HorizontalOptions="Start" Margin="0"></ImageButton>
                     <Entry x:Name="SearchEntry" Placeholder="Введите запрос" ReturnType="Search" HorizontalOptions="FillAndExpand" Margin="0" FontSize="Small" TextColor="Black" MinimumWidthRequest="100"></Entry>
                 </StackLayout>
-                <StackLayout HorizontalOptions="FillAndExpand" HeightRequest="2" BackgroundColor="#D6181F"></StackLayout>
-                <StackLayout x:Name="TextBar" HeightRequest="24" Orientation="Vertical" HorizontalOptions="Fill" Spacing="0">
-                    <StackLayout Orientation="Horizontal" Spacing="0">
-                        <StackLayout WidthRequest="48" HeightRequest="24" BackgroundColor="#D6181F" HorizontalOptions="Start" Spacing="0">
-                            <Label Margin="0" HorizontalOptions="Center" VerticalOptions="Center" FontSize="Small"  x:Name="PrevLabel" TextColor="White"></Label>
-                        </StackLayout>
-                        <StackLayout HorizontalOptions="FillAndExpand" BackgroundColor="#D6181F" HeightRequest="24">
-                            <Label Margin="0" HorizontalOptions="Center" VerticalOptions="Center" FontSize="Small" TextColor="White" Text="просмотр результатов поиска" x:Name="SearchResultTitle"></Label>
-                        </StackLayout>
-                        <StackLayout WidthRequest="48" HeightRequest="24" BackgroundColor="#D6181F" HorizontalOptions="End" Spacing="0">
-                            <Label Margin="0" VerticalOptions="Center" HorizontalOptions="Center" FontSize="Small" x:Name="NextLabel" TextColor="White"></Label>
-                        </StackLayout>
-                    </StackLayout>
-                </StackLayout>
+                <StackLayout HorizontalOptions="FillAndExpand" HeightRequest="1" BackgroundColor="#D6181F"></StackLayout>
             </StackLayout>
             <views:TabView
             x:Name="InitialTabs"
-            TabStripPlacement="Top"
+            TabStripPlacement="Bottom"
             TabStripBackgroundColor="White"
-            TabStripHeight="40"
+            TabIndicatorPlacement="Top"
             TabIndicatorColor="#D6181F"
+            TabIndicatorHeight="1"
+            TabStripHeight="20"
+            Padding="0"
+            Margin="0"
             TabContentBackgroundColor="White">
 
-                <views:TabViewItem
-                Text="КОРПУС"
-                TextColor="Black">
+                <views:TabViewItem Icon="corpus.png" ControlTemplate="{StaticResource TabItemTemplate}">
                     <StackLayout Orientation="Vertical">
                         <StackLayout Orientation="Vertical" x:Name="CorpusTab" VerticalOptions="FillAndExpand"></StackLayout>
                         <StackLayout Orientation="Horizontal">
@@ -63,37 +69,33 @@
 
                 </views:TabViewItem>
 
-                <views:TabViewItem
-                Text="ЗАКЛАДКИ"
-                TextColor="Black">
+                <views:TabViewItem Icon="corpus.png" ControlTemplate="{StaticResource TabItemTemplate}">
                     <StackLayout Orientation="Vertical" x:Name="BookmarkTab"></StackLayout>
                 </views:TabViewItem>
 
-                <views:TabViewItem
-                Text="ИСТОРИЯ"
-                TextColor="Black">
-                    <StackLayout Orientation="Vertical" x:Name="HistoryTab"></StackLayout>
+                <views:TabViewItem Icon="corpus.png" ControlTemplate="{StaticResource TabItemTemplate}">
+                    <ListView x:Name="SearchResultsView" HasUnevenRows="True" VerticalOptions="FillAndExpand" BackgroundColor="White" HorizontalOptions="FillAndExpand" CachingStrategy="RetainElement">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <ViewCell Height="55">
+                                    <StackLayout Orientation="Vertical" Spacing="0">
+                                        <Label TextColor="#D6181F" Margin="5, 5, 0, 0" FontSize="Small" Text="{Binding Title}"></Label>
+                                        <Label TextColor="Black" Margin="5, 0, 0, 0" FontSize="Micro" LineBreakMode="WordWrap" Text="{Binding Preview}"></Label>
+                                    </StackLayout>
+                                </ViewCell>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
                 </views:TabViewItem>
 
-                <views:TabViewItem
-                Text="ОБУЧЕНИЕ"
-                TextColor="Black">
-                    <StackLayout Orientation="Vertical" x:Name="LearningTab"></StackLayout>
+                <views:TabViewItem Icon="corpus.png" ControlTemplate="{StaticResource TabItemTemplate}">
+                </views:TabViewItem>
+
+                <views:TabViewItem Icon="corpus.png" ControlTemplate="{StaticResource TabItemTemplate}">
                 </views:TabViewItem>
 
             </views:TabView>
-            <ListView x:Name="SearchResultsView" HasUnevenRows="True" VerticalOptions="FillAndExpand" BackgroundColor="White" HorizontalOptions="FillAndExpand" CachingStrategy="RetainElement">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <ViewCell Height="55">
-                            <StackLayout Orientation="Vertical" Spacing="0">
-                                <Label TextColor="#D6181F" Margin="5, 5, 0, 0" FontSize="Small" Text="{Binding Title}"></Label>
-                                <Label TextColor="Black" Margin="5, 0, 0, 0" FontSize="Micro" LineBreakMode="WordWrap" Text="{Binding Preview}"></Label>
-                            </StackLayout>
-                        </ViewCell>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
+            
         </StackLayout>
     </StackLayout>
 </ContentPage>

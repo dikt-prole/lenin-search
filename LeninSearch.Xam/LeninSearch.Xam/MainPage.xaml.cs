@@ -18,6 +18,7 @@ using LeninSearch.Xam.Controls;
 using LeninSearch.Xam.Core;
 using LeninSearch.Xam.ParagraphAdder;
 using Xamarin.CommunityToolkit.ObjectModel;
+using Xamarin.CommunityToolkit.UI.Views;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 using Label = Xamarin.Forms.Label;
@@ -86,13 +87,9 @@ namespace LeninSearch.Xam
             };
             _paragraphViewBuilder = _textMenuDecorator;
 
-            // text menu
-            HideTextBar();
-
             // player
             PlayerView.HeightRequest = Settings.UI.BrowserViewHeight;
             PlayerStopButton.Clicked += (sender, args) => StopVideoPlay();
-            _searchResultTitleSpan = AttachCommandToLabel(SearchResultTitle, new Command(async () => await DisplaySearchSummary()));
 
             PopulateInitialTabs();
         }
@@ -602,45 +599,10 @@ namespace LeninSearch.Xam
             }
         }
 
-        private void PopulateLearningTab()
-        {
-            LearningTab.Children.Clear();
-
-            foreach (var video in Settings.Learning)
-            {
-                var hyperlink = ConstructHyperlinkButton(video.Item1, Settings.UI.Font.NormalFontSize,
-                    async () => await Browser.OpenAsync(video.Item2));
-                hyperlink.Margin = new Thickness(20, 20, 0, 0);
-                LearningTab.Children.Add(hyperlink);
-            }
-        }
-
-        private void PopulateHistoryTab()
-        {
-            HistoryTab.Children.Clear();
-
-            var history = HistoryRepo.GetHistory();
-
-            foreach (var historyItem in history)
-            {
-                var hyperlink = ConstructHyperlinkButton($"{historyItem.Query} ({historyItem.CorpusName})", Settings.UI.Font.NormalFontSize,
-                    () =>
-                    {
-                        _state.CorpusId = historyItem.CorpusId;
-                        CorpusButton.Source = Settings.IconFile(historyItem.CorpusId);
-                        SearchEntry.Text = historyItem.Query;
-                    });
-                hyperlink.Margin = new Thickness(20, 20, 0, 0);
-                HistoryTab.Children.Add(hyperlink);
-            }
-        }
-
         private void PopulateInitialTabs()
         {
             PopulateCorpusTab();
             PopulateBookmarksTab();
-            PopulateLearningTab();
-            PopulateHistoryTab();
         }
 
         private void StartVideoPlay(string videoId, ushort offset)
@@ -686,7 +648,6 @@ namespace LeninSearch.Xam
         {
             if (!_state.IsWatchingSearchResults()) return;
 
-            HideTextBar();
             StopVideoPlay();
 
             /*
@@ -762,10 +723,6 @@ namespace LeninSearch.Xam
             StopVideoPlay();
             PopulateInitialTabs();
             _state.ReadingFile = null;
-            HideTextBar();
-            //ScrollWrapper.IsVisible = false;
-            InitialTabs.SelectedIndex = 0;
-            InitialTabs.IsVisible = true;
             await RebuildScroll(false);
         }
 
@@ -777,15 +734,6 @@ namespace LeninSearch.Xam
         private async Task AnimateAppear(View view)
         {
             await view.FadeTo(1, Settings.UI.AppearMs, Easing.Linear);
-        }
-
-        private void HideTextBar()
-        {
-            if (TextBar.Height == 0) return;
-
-            var animation = new Animation(f => TextBar.HeightRequest = f, TextBar.Height, 0, Easing.SinInOut);
-
-            animation.Commit(TextBar, "hideTextBar", 200);
         }
 
         private void ShowTextBar(LsiParagraph lsiParagraph)
@@ -1129,7 +1077,6 @@ namespace LeninSearch.Xam
         {
             _state.ReadingFile = null;
 
-            HideTextBar();
             StopVideoPlay();
 
             /*
@@ -1197,7 +1144,6 @@ namespace LeninSearch.Xam
 
             // 1. Initial stuff
             StopVideoPlay();
-            InitialTabs.IsVisible = false;
             _state.SearchQuery = SearchEntry.Text;
             _state.SearchResult = null;
 
@@ -1211,7 +1157,6 @@ namespace LeninSearch.Xam
                 QueryDateUtc = DateTime.UtcNow
             };
             HistoryRepo.AddHistory(historyItem);
-            PopulateHistoryTab();
 
             await StartSearch(SearchEntry.Text);
         }
@@ -1228,8 +1173,6 @@ namespace LeninSearch.Xam
         private async Task BeforeSearch()
         {
             _state.ReadingFile = null;
-            HideTextBar();
-            await RebuildScroll(false);
             await ReplaceCorpusWithLoading();
             CorpusButton.IsEnabled = false;
         }
@@ -1257,6 +1200,10 @@ namespace LeninSearch.Xam
             }
 
             searchUnitListItems = searchUnitListItems.OrderBy(x => x.SearchUnit.Priority).ToList();
+            for (ushort i = 0; i < searchUnitListItems.Count; i++)
+            {
+                searchUnitListItems[i].Index = (ushort)(i + 1);
+            }
 
             SearchResultsView.ItemsSource = searchUnitListItems;
 
@@ -1322,6 +1269,11 @@ namespace LeninSearch.Xam
             await ResultScroll.ScrollToAsync(0, 20, true);
             await ResultScrollFadeIn();
             */
+        }
+
+        private void TabViewItem_OnTabTapped(object sender, TabTappedEventArgs e)
+        {
+            Debug.WriteLine("tapped!");
         }
     }
 }
