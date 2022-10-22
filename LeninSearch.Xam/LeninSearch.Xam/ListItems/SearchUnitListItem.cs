@@ -1,6 +1,6 @@
 ﻿using LeninSearch.Standard.Core.Search;
 
-namespace LeninSearch.Xam
+namespace LeninSearch.Xam.ListItems
 {
     public class SearchUnitListItem
     {

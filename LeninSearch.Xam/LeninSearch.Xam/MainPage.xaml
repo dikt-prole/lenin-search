@@ -12,39 +12,17 @@
             <ImageButton
                         InputTransparent="True"
                         Source="{TemplateBinding CurrentIcon}"
-                        Margin="0, 3, 0, 3"
+                        Margin="0, 5, 0, 5"
                         HorizontalOptions="Center"
                         VerticalOptions="Start"
                         BackgroundColor="White"
-                        HeightRequest="19"
-                        WidthRequest="19">
+                        HeightRequest="20"
+                        WidthRequest="20">
             </ImageButton>
         </ControlTemplate>
     </ContentPage.Resources>
-    <StackLayout Orientation="Vertical" Spacing="0">
-        <StackLayout Spacing="0" Orientation="Vertical" x:Name="PlayerLayout" VerticalOptions="FillAndExpand" BackgroundColor="Black" IsVisible="False">
-            <StackLayout Orientation="Horizontal" VerticalOptions="Start" BackgroundColor="#D6181F">
-                <ImageButton Margin="2" x:Name="PlayerTitleButton" HeightRequest="28" Source="close.png" Padding="0" WidthRequest="28" HorizontalOptions="End" BackgroundColor="White"></ImageButton>
-                <StackLayout HorizontalOptions="FillAndExpand">
-                    <Label x:Name="PlayerTitleLabel" TextColor="White" HorizontalOptions="Center" FontSize="Small" VerticalOptions="Center" Margin="5" BackgroundColor="#D6181F">заголовок</Label>
-                </StackLayout>
-                <ImageButton Margin="0" x:Name="PlayerStopButton" HeightRequest="32" Source="close.png" Padding="10" WidthRequest="32" HorizontalOptions="End" BackgroundColor="#D6181F"></ImageButton>
-            </StackLayout>
-            <StackLayout Orientation="Vertical" VerticalOptions="FillAndExpand">
-                <WebView x:Name="PlayerView" HorizontalOptions="CenterAndExpand"></WebView>
-            </StackLayout>
-        </StackLayout>
-        <StackLayout Orientation="Vertical" Spacing="0" x:Name="SearchLayout" VerticalOptions="FillAndExpand">
-            <StackLayout x:Name="HeaderStack" Orientation="Vertical" HorizontalOptions="FillAndExpand" Margin="0" Padding="0" Spacing="0">
-                <StackLayout x:Name="TopLayout" Orientation="Horizontal" HorizontalOptions="Fill" Spacing="0" BackgroundColor="White"   Margin="0">
-                    <ActivityIndicator x:Name="SearchActivityIndicator" Color="#D6181F" IsRunning="False" VerticalOptions="Start" WidthRequest="32" HeightRequest="32" Margin="8"></ActivityIndicator>
-                    <ImageButton Padding="0" x:Name="CorpusButton" WidthRequest="48" HeightRequest="48" Source="lenin.png" BackgroundColor="White" HorizontalOptions="Start" Margin="0"></ImageButton>
-                    <Entry x:Name="SearchEntry" Placeholder="Введите запрос" ReturnType="Search" HorizontalOptions="FillAndExpand" Margin="0" FontSize="Small" TextColor="Black" MinimumWidthRequest="100"></Entry>
-                </StackLayout>
-                <StackLayout HorizontalOptions="FillAndExpand" HeightRequest="1" BackgroundColor="#D6181F"></StackLayout>
-            </StackLayout>
-            <!-- todo: fix TabStripHeight (Xamarin Community Toolkit bug) -->
-            <views:TabView
+    <!-- todo: fix TabStripHeight (Xamarin Community Toolkit bug) -->
+    <views:TabView
                 x:Name="InitialTabs"
                 TabStripPlacement="Bottom"
                 TabStripBackgroundColor="White"
@@ -53,46 +31,73 @@
                 TabIndicatorHeight="1"
                 TabStripHeight="48"
                 Padding="0"
-                Margin="0, 0, 0, -23"
+                Margin="0, 0, 0, -18"
                 TabContentBackgroundColor="White"
                 BackgroundColor="White">
-                <views:TabViewItem Icon="corpus.png" ControlTemplate="{StaticResource TabItemTemplate}">
-                    <StackLayout Orientation="Vertical">
-                        <StackLayout Orientation="Vertical" x:Name="CorpusTab" VerticalOptions="FillAndExpand"></StackLayout>
-                        <!--<StackLayout Orientation="Horizontal">
-                            <StackLayout HorizontalOptions="FillAndExpand"></StackLayout>
-                            <ImageButton Source="download.png" x:Name="CorpusRefreshButton" HorizontalOptions="End" HeightRequest="32" WidthRequest="32" BackgroundColor="White"></ImageButton>
-                        </StackLayout>-->
-                    </StackLayout>
 
-                </views:TabViewItem>
+        <views:TabViewItem ControlTemplate="{StaticResource TabItemTemplate}" x:Name="CorpusTabViewItem">
+            <StackLayout Orientation="Vertical">
+                <ListView x:Name="CorpusListView" HasUnevenRows="True" VerticalOptions="FillAndExpand" 
+                                  BackgroundColor="White" HorizontalOptions="FillAndExpand" CachingStrategy="RetainElement" SelectionMode="None">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <ViewCell Height="48">
+                                <StackLayout Orientation="Horizontal" Spacing="0">
+                                    <ImageButton WidthRequest="48" HeightRequest="48" Padding="4" 
+                                                         BackgroundColor="White" Source="{Binding CorpusIconSource}" 
+                                                         CommandParameter="{Binding CorpusId}" Clicked="OnCorpusIconClick"></ImageButton>
+                                    <Label HorizontalOptions="FillAndExpand" Text="{Binding CorpusTitle}" 
+                                                   HorizontalTextAlignment="Center" FontSize="Small" TextColor="Black" Margin="0, 12, 0, 0"></Label>
+                                    <ImageButton WidthRequest="48" HeightRequest="48" Padding="12" 
+                                                         BackgroundColor="White" Source="trashred.png"></ImageButton>
+                                </StackLayout>
+                            </ViewCell>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </StackLayout>
+        </views:TabViewItem>
 
-                <views:TabViewItem Icon="corpus.png" ControlTemplate="{StaticResource TabItemTemplate}">
-                    <StackLayout Orientation="Vertical" x:Name="BookmarkTab"></StackLayout>
-                </views:TabViewItem>
+        <views:TabViewItem Icon="library.png" ControlTemplate="{StaticResource TabItemTemplate}">
+            <StackLayout Orientation="Vertical">
+                <StackLayout Orientation="Vertical" x:Name="CorpusTab" VerticalOptions="FillAndExpand"></StackLayout>
+            </StackLayout>
+        </views:TabViewItem>
 
-                <views:TabViewItem Icon="corpus.png" ControlTemplate="{StaticResource TabItemTemplate}">
-                    <ListView x:Name="SearchResultsView" HasUnevenRows="True" VerticalOptions="FillAndExpand" BackgroundColor="White" HorizontalOptions="FillAndExpand" CachingStrategy="RetainElement">
-                        <ListView.ItemTemplate>
-                            <DataTemplate>
-                                <ViewCell Height="55">
-                                    <StackLayout Orientation="Vertical" Spacing="0">
-                                        <Label TextColor="#D6181F" Margin="5, 5, 0, 0" FontSize="Small" Text="{Binding Title}"></Label>
-                                        <Label TextColor="Black" Margin="5, 0, 0, 0" FontSize="Micro" LineBreakMode="WordWrap" Text="{Binding Preview}"></Label>
-                                    </StackLayout>
-                                </ViewCell>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
-                </views:TabViewItem>
+        <views:TabViewItem Icon="bookmark.png" ControlTemplate="{StaticResource TabItemTemplate}">
+            <StackLayout Orientation="Vertical" x:Name="BookmarkTab"></StackLayout>
+        </views:TabViewItem>
 
-                <views:TabViewItem Icon="corpus.png" ControlTemplate="{StaticResource TabItemTemplate}">
-                </views:TabViewItem>
+        <views:TabViewItem Icon="search.png" ControlTemplate="{StaticResource TabItemTemplate}">
+            <StackLayout x:Name="HeaderStack" Orientation="Vertical" HorizontalOptions="FillAndExpand" Margin="0" Padding="0" Spacing="0">
+                <StackLayout x:Name="TopLayout" Orientation="Horizontal" HorizontalOptions="Fill" Spacing="0" BackgroundColor="White"   Margin="0">
+                    <ActivityIndicator x:Name="SearchActivityIndicator" Color="#D6181F" IsRunning="False" VerticalOptions="Start" WidthRequest="32" HeightRequest="32" Margin="8"></ActivityIndicator>
+                    <ImageButton Padding="12" x:Name="SearchModeButton" WidthRequest="48" HeightRequest="48" Source="paragraph.png" 
+                                 BackgroundColor="White" HorizontalOptions="Start" Margin="0" 
+                                 Clicked="OnSearchModeButtonClick" CommandParameter="0"></ImageButton>
+                    <Entry x:Name="SearchEntry" Placeholder="Введите запрос" ReturnType="Search" HorizontalOptions="FillAndExpand" Margin="0" FontSize="Small" TextColor="Black" MinimumWidthRequest="100"></Entry>
+                </StackLayout>
+                <StackLayout HorizontalOptions="FillAndExpand" HeightRequest="1" BackgroundColor="#D6181F"></StackLayout>
+                <ListView x:Name="SearchResultsView" HasUnevenRows="True" VerticalOptions="FillAndExpand" BackgroundColor="White" HorizontalOptions="FillAndExpand" CachingStrategy="RetainElement">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <ViewCell Height="55">
+                                <StackLayout Orientation="Vertical" Spacing="0">
+                                    <Label TextColor="#D6181F" Margin="5, 5, 0, 0" FontSize="Small" Text="{Binding Title}"></Label>
+                                    <Label TextColor="Black" Margin="5, 0, 0, 0" FontSize="Micro" LineBreakMode="WordWrap" Text="{Binding Preview}"></Label>
+                                </StackLayout>
+                            </ViewCell>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </StackLayout>
+        </views:TabViewItem>
 
-                <views:TabViewItem Icon="corpus.png" ControlTemplate="{StaticResource TabItemTemplate}">
-                </views:TabViewItem>
+        <views:TabViewItem Icon="read.png" ControlTemplate="{StaticResource TabItemTemplate}">
+        </views:TabViewItem>
 
-            </views:TabView>
-        </StackLayout>
-    </StackLayout>
+        <views:TabViewItem Icon="summary.png" ControlTemplate="{StaticResource TabItemTemplate}">
+        </views:TabViewItem>
+
+    </views:TabView>
 </ContentPage>

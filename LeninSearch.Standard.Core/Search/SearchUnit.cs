@@ -44,9 +44,19 @@ namespace LeninSearch.Standard.Core.Search
         public void SetPreviewAndTitle(LsiData lsiData, CorpusFileItem corpusFileItem, LsDictionary dictionary)
         {
             var lsiParagraph = lsiData.Paragraphs[ParagraphIndex];
-            var spans = lsiParagraph.GetSpans(this).SkipWhile(s => s.Type != LsiSpanType.SearchResult).ToList();
+            
+            var isHeading = lsiData.HeadingParagraphs.Any(h => h.Index == ParagraphIndex);
 
-            Preview = string.Join(' ', spans.Select(s => s.GetText(dictionary.Words)));
+            if (isHeading)
+            {
+                Preview = lsiParagraph.GetText(dictionary.Words);
+            }
+            else
+            {
+                var spans = lsiParagraph.GetSpans(this).SkipWhile(s => s.Type != LsiSpanType.SearchResult).ToList();
+                Preview = string.Join(' ', spans.Select(s => s.GetText(dictionary.Words)));
+            }
+
             if (Preview.Length > MaxPreviewLength)
             {
                 Preview = Preview.Substring(0, MaxPreviewLength);
@@ -59,7 +69,7 @@ namespace LeninSearch.Standard.Core.Search
 
             var sb = new StringBuilder();
             sb.Append(corpusFileItem.Name);
-            if (lsiData.Paragraphs.ContainsKey(ParagraphIndex))
+            if (!isHeading)
             {
                 var headingsHierarchy = lsiData.GetHeadingsDownToZero(ParagraphIndex);
                 foreach (var heading in headingsHierarchy)
