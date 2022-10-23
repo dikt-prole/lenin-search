@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
@@ -37,6 +38,12 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
             }
 
             var searchQueries = _queryCache[queryKey];
+
+            Debug.WriteLine("Search queries:");
+            foreach (var searchQuery in searchQueries)
+            {
+                Debug.WriteLine(searchQuery.Text);
+            }
 
             var result = new SearchResult { Units = new Dictionary<string, Dictionary<string, List<SearchUnit>>>() };
 

@@ -63,7 +63,7 @@ namespace LeninSearch.Xam
             //CorpusRefreshButton.Clicked += async (sender, args) => await ShowUpdates();
 
             // search entry
-            SearchEntry.Text = "диктатура пролетариата";
+            SearchEntry.Text = "национальный вопрос";
             SearchEntry.FontSize = Settings.UI.Font.NormalFontSize;
             SearchEntry.ReturnCommand = new AsyncCommand(OnSearchButtonPressed);
 
@@ -887,28 +887,6 @@ namespace LeninSearch.Xam
             */
         }
 
-        private async Task DisplaySearchHeadings(List<SearchUnit> searchResults)
-        {
-            _state.ReadingFile = null;
-            /*
-            foreach (var sr in searchResults)
-            {
-                var corpusItem = _state.GetCurrentCorpusItem();
-                var corpusItemFile = corpusItem.Files.First(cfi => cfi.Path == sr.File);
-
-                var headingText = $"{corpusItem.Name}, {corpusItemFile.Name}, {sr.Text}";
-                var headingLabel = new Label
-                { Text = headingText, TextColor = Color.Black, FontSize = Settings.UI.Font.NormalFontSize };
-                ResultStack.Children.Add(headingLabel);
-                var readLink = ConstructHyperlinkButton("читать", Settings.UI.Font.NormalFontSize, async () =>
-                    await Read(corpusItemFile, sr.ParagraphIndex));
-                ResultStack.Children.Add(readLink);
-            }
-
-            await ResultScrollFadeIn();
-            */
-        }
-
         private Button ConstructHyperlinkButton(string text, double fontSize, Action action)
         {
             var textWidth = _textMeasure.Width(text, null, (float) fontSize);
@@ -954,6 +932,7 @@ namespace LeninSearch.Xam
             if (string.IsNullOrWhiteSpace(SearchEntry.Text)) return;
 
             // 1. Initial stuff
+            SearchEntry.Text = new SearchQueryCleaner().Clean(SearchEntry.Text);
             _state.SearchQuery = SearchEntry.Text;
             _state.SearchResult = null;
 
@@ -1012,6 +991,8 @@ namespace LeninSearch.Xam
             }
 
             SearchResultsView.ItemsSource = searchUnitListItems;
+
+            _message.ShortAlert($"Найдено {searchUnitListItems.Count} совпадений");
 
             await ReplaceLoadingWithSearchModeButton();
         }

@@ -42,7 +42,7 @@ namespace LeninSearch.Standard.Core.Search
 
                 yield return variedQuery;
 
-                for (var tokenIndex = 0; tokenIndex < variedSplit.Tokens.Length; tokenIndex++)
+                for (var tokenIndex = 1; tokenIndex < variedSplit.Tokens.Length; tokenIndex++)
                 {
                     var variedWithPlusTokens = variedSplit.Tokens.Take(tokenIndex)
                         .Concat(new[] { "+" })
