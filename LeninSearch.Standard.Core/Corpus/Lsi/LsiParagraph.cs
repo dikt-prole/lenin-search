@@ -42,6 +42,11 @@ namespace LeninSearch.Standard.Core.Corpus.Lsi
 
         public List<LsiSpan> GetSpans(SearchUnit searchUnit)
         {
+            if (searchUnit?.ParagraphIndex != Index)
+            {
+                searchUnit = null;
+            }
+
             var spans = new List<LsiSpan>();
 
             if (WordIndexes.Count == 0) return spans;

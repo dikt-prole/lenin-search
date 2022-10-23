@@ -1093,5 +1093,40 @@ namespace LeninSearch.Xam
         {
             return (SearchMode)int.Parse(SearchModeButton.CommandParameter as string);
         }
+
+        private void OnSearchUnitTapped(object sender, EventArgs e)
+        {
+            var stackLayout = (sender as StackLayout);
+            Animations.OpacityToZeroAndBack(stackLayout);
+            var gestureRecognizer = stackLayout.GestureRecognizers[0] as TapGestureRecognizer;
+            var searchUnitListItem = gestureRecognizer.CommandParameter as SearchUnitListItem;
+
+            Task.Run(() =>
+            {
+                var lsiData = _lsiProvider.GetLsiData(searchUnitListItem.CorpusId, searchUnitListItem.File);
+                var corpusFileItem = _lsiProvider.GetCorpusItem(searchUnitListItem.CorpusId)
+                    .GetFileByPath(searchUnitListItem.File);
+                ReadBookTitleLabel.Text = corpusFileItem.Name;
+                var readListItems = new List<ReadListItem>();
+                ReadListItem scrollTo = null;
+                foreach (var paragraphIndex in lsiData.Paragraphs.Keys)
+                {
+                    var lsiParagraph = lsiData.Paragraphs[paragraphIndex];
+                    var readListItem = ReadListItem.Construct(searchUnitListItem.CorpusId,
+                        lsiParagraph, _lsiProvider, searchUnitListItem.SearchUnit);
+                    readListItems.Add(readListItem);
+                    if (paragraphIndex == searchUnitListItem.SearchUnit.ParagraphIndex)
+                    {
+                        scrollTo = readListItem;
+                    }
+                }
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    ReadView.ItemsSource = readListItems;
+                    MainTabs.SelectedIndex = MainTabs.TabItems.IndexOf(ReadTabViewItem);
+                    ReadView.ScrollTo(scrollTo, null, ScrollToPosition.MakeVisible, false);
+                });
+            });
+        }
     }
 }

@@ -10,5 +10,6 @@ namespace LeninSearch.Xam.ListItems
         public string Title => $"{Index}. {SearchUnit.Title}";
         public string Preview => SearchUnit.Preview;
         public ushort Index { get; set; }
+        public SearchUnitListItem Self => this;
     }
 }
