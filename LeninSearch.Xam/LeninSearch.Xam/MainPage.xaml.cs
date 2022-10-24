@@ -1192,14 +1192,14 @@ namespace LeninSearch.Xam
             var stackLayout = sender as StackLayout;
             var gestureRecognizer = stackLayout.GestureRecognizers[0] as TapGestureRecognizer;
             var readListItem = gestureRecognizer.CommandParameter as ReadListItem;
-
-            var lsiData = _lsiProvider.GetLsiData(readListItem.CorpusId, readListItem.File);
-            var dictionary = _lsiProvider.GetDictionary(readListItem.CorpusId);
-
-            var headingChain = lsiData.GetHeadingsDownToZero(readListItem.ParagraphIndex);
-            var headingTexts = headingChain.Select(h => h.GetText(dictionary.Words));
-
-            readListItem.Info = string.Join(" - ", headingTexts);
+            if (readListItem.Info == null)
+            {
+                var lsiData = _lsiProvider.GetLsiData(readListItem.CorpusId, readListItem.File);
+                var dictionary = _lsiProvider.GetDictionary(readListItem.CorpusId);
+                var headingChain = lsiData.GetHeadingsDownToZero(readListItem.ParagraphIndex);
+                var headingTexts = headingChain.Select(h => h.GetText(dictionary.Words));
+                readListItem.Info = string.Join(" - ", headingTexts);
+            }
             readListItem.IsMenuShown = !readListItem.IsMenuShown;
         }
     }
