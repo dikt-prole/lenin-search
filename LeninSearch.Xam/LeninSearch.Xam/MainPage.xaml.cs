@@ -1068,6 +1068,8 @@ namespace LeninSearch.Xam
             var imageButton = sender as ImageButton;
             _state.CorpusId = imageButton.CommandParameter as string;
             CorpusTabViewItem.Icon = Settings.IconFile(_state.CorpusId);
+            SummaryBookPicker.ItemsSource = SummaryBookListItem.Construct(_state.GetCurrentCorpusItem()).ToList();
+            SummaryBookPicker.SelectedIndex = 0;
             _message.ShortAlert($"Активирован корпус '{_state.GetCurrentCorpusItem().Name}'");
         }
 
@@ -1106,13 +1108,12 @@ namespace LeninSearch.Xam
                 var lsiData = _lsiProvider.GetLsiData(searchUnitListItem.CorpusId, searchUnitListItem.File);
                 var corpusFileItem = _lsiProvider.GetCorpusItem(searchUnitListItem.CorpusId)
                     .GetFileByPath(searchUnitListItem.File);
-                ReadBookTitleLabel.Text = corpusFileItem.Name;
                 var readListItems = new List<ReadListItem>();
                 ReadListItem scrollTo = null;
-                foreach (var paragraphIndex in lsiData.Paragraphs.Keys)
+                foreach (var paragraphIndex in lsiData.Paragraphs.Keys.OrderBy(k => k))
                 {
                     var lsiParagraph = lsiData.Paragraphs[paragraphIndex];
-                    var readListItem = ReadListItem.Construct(searchUnitListItem.CorpusId,
+                    var readListItem = ReadListItem.Construct(searchUnitListItem.CorpusId, searchUnitListItem.File,
                         lsiParagraph, _lsiProvider, searchUnitListItem.SearchUnit);
                     readListItems.Add(readListItem);
                     if (paragraphIndex == searchUnitListItem.SearchUnit.ParagraphIndex)
@@ -1120,13 +1121,86 @@ namespace LeninSearch.Xam
                         scrollTo = readListItem;
                     }
                 }
+
                 Device.BeginInvokeOnMainThread(() =>
                 {
+                    ReadBookTitleLabel.Text = corpusFileItem.Name;
                     ReadView.ItemsSource = readListItems;
                     MainTabs.SelectedIndex = MainTabs.TabItems.IndexOf(ReadTabViewItem);
                     ReadView.ScrollTo(scrollTo, null, ScrollToPosition.MakeVisible, false);
                 });
             });
+        }
+
+        private void SummaryBookPickerOnSelectedIndexChanged(object sender, EventArgs e)
+        {
+            var summaryBookListItem = SummaryBookPicker.SelectedItem as SummaryBookListItem;
+
+            if (summaryBookListItem == null) return;
+
+            var lsiData = _lsiProvider.GetLsiData(summaryBookListItem.CorpusId, summaryBookListItem.File);
+            var dictionary = _lsiProvider.GetDictionary(summaryBookListItem.CorpusId);
+            var summaryListItems = lsiData.HeadingParagraphs.OrderBy(h => h.Index).Select(hp => new SummaryListItem
+            {
+                CorpusId = summaryBookListItem.CorpusId,
+                File = summaryBookListItem.File,
+                ParagraphIndex = hp.Index,
+                Title = hp.GetText(dictionary.Words),
+                Padding = new Thickness(10 + 20 * hp.HeadingLevel, 0, 10, 0)
+            });
+            SummaryView.ItemsSource = summaryListItems;
+        }
+
+        private void OnSummaryItemTapped(object sender, EventArgs e)
+        {
+            var stackLayout = sender as StackLayout;
+
+            var summaryListItem =
+                (stackLayout.GestureRecognizers[0] as TapGestureRecognizer).CommandParameter as SummaryListItem;
+
+            Task.Run(() =>
+            {
+                var lsiData = _lsiProvider.GetLsiData(summaryListItem.CorpusId, summaryListItem.File);
+                var corpusFileItem = _lsiProvider.GetCorpusItem(summaryListItem.CorpusId)
+                    .GetFileByPath(summaryListItem.File);
+                var readListItems = new List<ReadListItem>();
+                ReadListItem scrollTo = null;
+                foreach (var paragraphIndex in lsiData.Paragraphs.Keys.OrderBy(k => k))
+                {
+                    var lsiParagraph = lsiData.Paragraphs[paragraphIndex];
+                    var readListItem = ReadListItem.Construct(summaryListItem.CorpusId, summaryListItem.File,
+                        lsiParagraph, _lsiProvider, null);
+                    readListItems.Add(readListItem);
+                    if (paragraphIndex == summaryListItem.ParagraphIndex)
+                    {
+                        scrollTo = readListItem;
+                    }
+                }
+
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    ReadBookTitleLabel.Text = corpusFileItem.Name;
+                    ReadView.ItemsSource = readListItems;
+                    MainTabs.SelectedIndex = MainTabs.TabItems.IndexOf(ReadTabViewItem);
+                    ReadView.ScrollTo(scrollTo, null, ScrollToPosition.MakeVisible, false);
+                });
+            });
+        }
+
+        private void OnReadItemTapped(object sender, EventArgs e)
+        {
+            var stackLayout = sender as StackLayout;
+            var gestureRecognizer = stackLayout.GestureRecognizers[0] as TapGestureRecognizer;
+            var readListItem = gestureRecognizer.CommandParameter as ReadListItem;
+
+            var lsiData = _lsiProvider.GetLsiData(readListItem.CorpusId, readListItem.File);
+            var dictionary = _lsiProvider.GetDictionary(readListItem.CorpusId);
+
+            var headingChain = lsiData.GetHeadingsDownToZero(readListItem.ParagraphIndex);
+            var headingTexts = headingChain.Select(h => h.GetText(dictionary.Words));
+
+            readListItem.Info = string.Join(" - ", headingTexts);
+            readListItem.IsMenuShown = !readListItem.IsMenuShown;
         }
     }
 }

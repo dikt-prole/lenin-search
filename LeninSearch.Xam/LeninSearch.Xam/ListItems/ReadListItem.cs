@@ -1,23 +1,56 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using LeninSearch.Standard.Core;
 using LeninSearch.Standard.Core.Corpus.Lsi;
 using LeninSearch.Standard.Core.Search;
-using LeninSearch.Xam.Controls;
+using LeninSearch.Xam.Annotations;
 using Xamarin.Forms;
 
 namespace LeninSearch.Xam.ListItems
 {
-    public class ReadListItem
+    public class ReadListItem : INotifyPropertyChanged
     {
+        public string CorpusId { get; set; }
+        public string File { get; set; }
         public ushort ParagraphIndex { get; set; }
         public FormattedString FormattedText { get; set; }
         public bool IsImage { get; set; }
-        public static ReadListItem Construct(string corpusId, LsiParagraph lsiParagraph, ILsiProvider lsiProvider, SearchUnit searchUnit)
+
+        private string _info;
+        public string Info
+        {
+            get => _info;
+            set
+            {
+                if (value == _info) return;
+                _info = value;
+                OnPropertyChanged(nameof(Info));
+            }
+        }
+
+        private bool _isMenuShown;
+        public bool IsMenuShown
+        {
+            get => _isMenuShown;
+            set
+            {
+                if (value == _isMenuShown) return;
+                _isMenuShown = value;
+                OnPropertyChanged(nameof(IsMenuShown));
+            }
+        }
+
+        public ReadListItem Self => this;
+
+        public static ReadListItem Construct(string corpusId, string file, LsiParagraph lsiParagraph, ILsiProvider lsiProvider, SearchUnit searchUnit)
         {
             var dictionary = lsiProvider.GetDictionary(corpusId);
             return new ReadListItem
             {
+                CorpusId = corpusId,
+                File = file,
                 ParagraphIndex = lsiParagraph.Index,
                 IsImage = lsiParagraph.IsImage,
                 FormattedText = lsiParagraph.IsImage
@@ -95,6 +128,14 @@ namespace LeninSearch.Xam.ListItems
                 default:
                     return Color.Black;
             }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
