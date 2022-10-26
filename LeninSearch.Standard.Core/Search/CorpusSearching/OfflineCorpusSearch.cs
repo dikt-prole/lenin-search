@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 using LeninSearch.Standard.Core.Corpus;
 using LeninSearch.Standard.Core.Corpus.Lsi;
 
@@ -26,7 +25,7 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
         {
             var corpusItem = _lsiProvider.GetCorpusItem(corpusId);
             var dictionary = _lsiProvider.GetDictionary(corpusId);
-            var queryKey = $"{query}={mode}";
+            var queryKey = $"{corpusId}-{query}-{mode}";
             if (!_queryCache.ContainsKey(queryKey))
             {
                 var cacheQueries = _queryFactory.Construct(query, dictionary.Words, mode).OrderBy(q => q.Priority).ToList();

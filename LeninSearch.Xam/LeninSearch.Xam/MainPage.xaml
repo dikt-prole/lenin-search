@@ -78,7 +78,7 @@
                     <Entry x:Name="SearchEntry" Placeholder="Введите запрос" ReturnType="Search" HorizontalOptions="FillAndExpand" Margin="0" FontSize="Small" TextColor="Black" MinimumWidthRequest="100"></Entry>
                 </StackLayout>
                 <StackLayout HorizontalOptions="FillAndExpand" HeightRequest="1" BackgroundColor="#D6181F"></StackLayout>
-                <CollectionView x:Name="SearchResultsView">
+                <CollectionView x:Name="SearchResultsView" EmptyView="Ничего не найдено, попробуйте другой запрос">
                     <CollectionView.ItemsLayout>
                         <LinearItemsLayout Orientation="Vertical" ItemSpacing="5" />
                     </CollectionView.ItemsLayout>
