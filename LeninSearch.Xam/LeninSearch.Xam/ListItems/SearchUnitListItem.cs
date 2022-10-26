@@ -1,4 +1,5 @@
-﻿using LeninSearch.Standard.Core.Search;
+﻿using System.Security.Principal;
+using LeninSearch.Standard.Core.Search;
 
 namespace LeninSearch.Xam.ListItems
 {
@@ -8,6 +9,7 @@ namespace LeninSearch.Xam.ListItems
         public string CorpusId { get; set; }
         public SearchUnit SearchUnit { get; set; }
         public string Title => $"{Index}. {SearchUnit.Title}";
+        public string Query { get; set; }
         public string Preview => SearchUnit.Preview;
         public ushort Index { get; set; }
         public SearchUnitListItem Self => this;

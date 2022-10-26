@@ -978,7 +978,8 @@ namespace LeninSearch.Xam
                         {
                             CorpusId = _state.CorpusId,
                             File = file,
-                            SearchUnit = searchUnit
+                            SearchUnit = searchUnit,
+                            Query = query
                         });
                     }
                 }

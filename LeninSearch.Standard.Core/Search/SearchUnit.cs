@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using LeninSearch.Standard.Core.Corpus;
@@ -8,7 +9,7 @@ namespace LeninSearch.Standard.Core.Search
 {
     public class SearchUnit
     {
-        public const int MaxTitleLength = 50;
+        public const int MaxTitleLength = 100;
         public const int MaxPreviewLength = 140;
         public SearchUnit() {}
 
@@ -53,34 +54,53 @@ namespace LeninSearch.Standard.Core.Search
             }
             else
             {
-                var spans = lsiParagraph.GetSpans(this).SkipWhile(s => s.Type != LsiSpanType.SearchResult).ToList();
-                Preview = string.Join(' ', spans.Select(s => s.GetText(dictionary.Words)));
+                var spans = lsiParagraph.GetSpans(this);
+                var beforeSearchMatchSpans = spans.TakeWhile(s => s.Type != LsiSpanType.SearchResult).ToList();
+                var beforeSearchMatchText = string.Join(' ', beforeSearchMatchSpans.Select(s => s.GetText(dictionary.Words)));
+                var afterSearchMatchText = string.Join(' ', spans.Except(beforeSearchMatchSpans).Select(s => s.GetText(dictionary.Words)));
+
+                var beforeSearchMatchTextSentenceEndIndex = beforeSearchMatchText.LastIndexOfAny(new []{'.', '?', '!'});
+                if (beforeSearchMatchTextSentenceEndIndex != -1)
+                {
+                    beforeSearchMatchText = beforeSearchMatchText.Substring(beforeSearchMatchTextSentenceEndIndex);
+                }
+
+                var afterSearchMatchTextSentenceEndIndex = afterSearchMatchText.IndexOfAny(new[] { '.', '?', '!' });
+                if (afterSearchMatchTextSentenceEndIndex != -1)
+                {
+                    afterSearchMatchText = afterSearchMatchText.Substring(0, afterSearchMatchTextSentenceEndIndex);
+                }
+
+                Preview = $"{beforeSearchMatchText} {afterSearchMatchText}".TrimStart('.', '?', '!', ' ');
             }
 
-            if (Preview.Length > MaxPreviewLength)
-            {
-                Preview = Preview.Substring(0, MaxPreviewLength);
-                var lastSpaceIndex = Preview.LastIndexOf(' ');
-                if (lastSpaceIndex != -1)
-                {
-                    Preview = Preview.Substring(0, lastSpaceIndex);
-                }
-            }
+            //if (Preview.Length > MaxPreviewLength)
+            //{
+            //    Preview = Preview.Substring(0, MaxPreviewLength);
+            //    var lastSpaceIndex = Preview.LastIndexOf(' ');
+            //    if (lastSpaceIndex != -1)
+            //    {
+            //        Preview = Preview.Substring(0, lastSpaceIndex);
+            //    }
+            //}
 
             var sb = new StringBuilder();
             sb.Append(corpusFileItem.Name);
             if (!isHeading)
             {
                 var headingsHierarchy = lsiData.GetHeadingsDownToZero(ParagraphIndex);
-                foreach (var heading in headingsHierarchy)
+                var titleTokens =
+                    new[] { corpusFileItem.Name }.Concat(headingsHierarchy.Select(h => h.GetText(dictionary.Words)));
+                Title = string.Join(" > ", titleTokens);
+                if (Title.Length > MaxTitleLength)
                 {
-                    var headingText = heading.GetText(dictionary.Words);
-                    if (sb.Length + headingText.Length > MaxTitleLength) break;
-                    sb.Append(" > ");
-                    sb.Append(headingText);
+                    Title = Title.Substring(0, MaxTitleLength);
                 }
             }
-            Title = sb.ToString();
+            else
+            {
+                Title = corpusFileItem.Name;
+            }
         }
     }
 }

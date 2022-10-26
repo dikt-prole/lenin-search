@@ -78,35 +78,24 @@
                     <Entry x:Name="SearchEntry" Placeholder="Введите запрос" ReturnType="Search" HorizontalOptions="FillAndExpand" Margin="0" FontSize="Small" TextColor="Black" MinimumWidthRequest="100"></Entry>
                 </StackLayout>
                 <StackLayout HorizontalOptions="FillAndExpand" HeightRequest="1" BackgroundColor="#D6181F"></StackLayout>
-                <!--<ListView x:Name="SearchResultsView" HasUnevenRows="True" VerticalOptions="FillAndExpand" 
-                          BackgroundColor="White" HorizontalOptions="FillAndExpand" CachingStrategy="RetainElement"
-                          SelectionMode="None" ItemTapped="SearchUnitListItemTapped">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <ViewCell Height="55">
-                                <StackLayout Orientation="Vertical" Spacing="0">
-                                    <Label TextColor="#D6181F" Margin="5, 5, 0, 0" FontSize="Small" Text="{Binding Title}"></Label>
-                                    <Label TextColor="Black" Margin="5, 0, 0, 0" FontSize="Micro" LineBreakMode="WordWrap" Text="{Binding Preview}"></Label>
-                                </StackLayout>
-                            </ViewCell>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>-->
                 <CollectionView x:Name="SearchResultsView">
                     <CollectionView.ItemsLayout>
                         <LinearItemsLayout Orientation="Vertical" ItemSpacing="5" />
                     </CollectionView.ItemsLayout>
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <StackLayout Orientation="Vertical" Padding="10, 0, 10, 0">
+                            <StackLayout Orientation="Vertical" Padding="10, 0, 10, 0" Spacing="0">
                                 <StackLayout.GestureRecognizers>
                                     <TapGestureRecognizer
                                         Tapped="OnSearchUnitTapped"
                                         NumberOfTapsRequired="1"
                                         CommandParameter="{Binding Self}"/>
                                 </StackLayout.GestureRecognizers>
-                                <Label TextColor="#D6181F" Margin="0, 5, 0, 0" FontSize="Small" Text="{Binding Title}"></Label>
-                                <Label TextColor="Black" Margin="0, 0, 0, 0" FontSize="Micro" LineBreakMode="WordWrap" Text="{Binding Preview}"></Label>
+                                <Label TextColor="#D6181F" Margin="0, 5, 0, 0" FontSize="Small" Text="{Binding Title}" LineBreakMode="NoWrap"></Label>
+                                <controls:ExtendedLabel TextColor="Black" Margin="0" FontSize="Micro" LineBreakMode="WordWrap" 
+                                                        Text="{Binding Preview}" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" JustifyText="True">
+                                </controls:ExtendedLabel>
+                                <Label Margin="0" FontSize="Micro" Text="{Binding Query}" LineBreakMode="NoWrap"></Label>
                             </StackLayout>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
