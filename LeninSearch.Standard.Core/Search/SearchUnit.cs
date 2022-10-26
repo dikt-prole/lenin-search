@@ -10,7 +10,6 @@ namespace LeninSearch.Standard.Core.Search
     public class SearchUnit
     {
         public const int MaxTitleLength = 100;
-        public const int MaxPreviewLength = 140;
         public SearchUnit() {}
 
         public SearchUnit(ushort paragraphIndex)
@@ -73,16 +72,6 @@ namespace LeninSearch.Standard.Core.Search
 
                 Preview = $"{beforeSearchMatchText} {afterSearchMatchText}".TrimStart('.', '?', '!', ' ');
             }
-
-            //if (Preview.Length > MaxPreviewLength)
-            //{
-            //    Preview = Preview.Substring(0, MaxPreviewLength);
-            //    var lastSpaceIndex = Preview.LastIndexOf(' ');
-            //    if (lastSpaceIndex != -1)
-            //    {
-            //        Preview = Preview.Substring(0, lastSpaceIndex);
-            //    }
-            //}
 
             var sb = new StringBuilder();
             sb.Append(corpusFileItem.Name);
