@@ -17,6 +17,10 @@ namespace LeninSearch.Xam.ListItems
         public ushort ParagraphIndex { get; set; }
         public FormattedString FormattedText { get; set; }
         public bool IsImage { get; set; }
+        public string ImageFile { get; set; }
+        public ushort ImageWidth { get; set; }
+        public ushort ImageHeight { get; set; }
+        public string ImageTitle { get; set; }
 
         private string _info;
         public string Info
@@ -47,16 +51,30 @@ namespace LeninSearch.Xam.ListItems
         public static ReadListItem Construct(string corpusId, string file, LsiParagraph lsiParagraph, ILsiProvider lsiProvider, SearchUnit searchUnit)
         {
             var dictionary = lsiProvider.GetDictionary(corpusId);
-            return new ReadListItem
+
+            var readListItem = new ReadListItem
             {
                 CorpusId = corpusId,
                 File = file,
                 ParagraphIndex = lsiParagraph.Index,
-                IsImage = lsiParagraph.IsImage,
-                FormattedText = lsiParagraph.IsImage
-                    ? null
-                    : BuildFormattedText(lsiParagraph.GetSpans(searchUnit), lsiParagraph, dictionary, corpusId)
+                IsImage = lsiParagraph.IsImage
             };
+
+            if (readListItem.IsImage)
+            {
+                readListItem.ImageFile = Settings.ImageFile(corpusId, lsiParagraph.ImageIndex);
+                var effectiveWidth = _getEffectiveWidthFunc();
+                var imageCfi = Settings.GetCorpusFileItem(corpusId, $"image{imageIndex}.jpeg");
+                var effectiveHeight = imageCfi.ImageHeight * effectiveWidth / imageCfi.ImageWidth;
+            }
+            else
+            {
+                readListItem.FormattedText = BuildFormattedText(lsiParagraph.GetSpans(searchUnit), lsiParagraph,
+                    dictionary, corpusId);
+            }
+
+
+            return readListItem;
         }
 
         private static FormattedString BuildFormattedText(List<LsiSpan> lsiSpans, LsiParagraph paragraph, LsDictionary dictionary, string corpusId)

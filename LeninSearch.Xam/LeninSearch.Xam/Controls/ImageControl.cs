@@ -13,7 +13,6 @@ namespace LeninSearch.Xam.Controls
         private const double ZoomFactor = 1.5;
         private double _effectiveWidth, _effectiveHeight;
 
-
         public string Source
         {
             get => _image.Source.ToString();
