@@ -33,7 +33,8 @@
                 Padding="0"
                 Margin="0, 0, 0, -8"
                 TabContentBackgroundColor="White"
-                BackgroundColor="White">
+                BackgroundColor="White"
+                SelectionChanged="OnMainTabsSelectionChanged">
 
         <views:TabViewItem ControlTemplate="{StaticResource TabItemTemplate}" x:Name="CorpusTabViewItem">
             <StackLayout Orientation="Vertical">
@@ -131,6 +132,10 @@
                                 <controls:ExtendedLabel IsVisible="{Binding IsText}"  FormattedText="{Binding FormattedText}" JustifyText="True" 
                                                         HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                                 </controls:ExtendedLabel>
+
+                                <!--<controls:ExtendedLabel IsVisible="{Binding IsCommentSelected}" Text="{Binding CommentText}" JustifyText="True" 
+                                                        FontSize="Micro">
+                                </controls:ExtendedLabel>-->
 
                                 <ScrollView IsVisible="{Binding IsImage}" HeightRequest="{Binding ImageHeight}" 
                                             HorizontalOptions="FillAndExpand" Orientation="Both">

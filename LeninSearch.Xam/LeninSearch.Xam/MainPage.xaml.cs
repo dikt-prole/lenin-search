@@ -1059,11 +1059,6 @@ namespace LeninSearch.Xam
             */
         }
 
-        private void TabViewItem_OnTabTapped(object sender, TabTappedEventArgs e)
-        {
-            Debug.WriteLine("tapped!");
-        }
-
         private void OnCorpusIconClick(object sender, EventArgs e)
         {
             var imageButton = sender as ImageButton;
@@ -1115,7 +1110,8 @@ namespace LeninSearch.Xam
                 {
                     var lsiParagraph = lsiData.Paragraphs[paragraphIndex];
                     var readListItem = ReadListItem.Construct(searchUnitListItem.CorpusId, searchUnitListItem.File,
-                        lsiParagraph, _lsiProvider, searchUnitListItem.SearchUnit, () => (ushort)MainTabs.Width);
+                        lsiParagraph, _lsiProvider, searchUnitListItem.SearchUnit, () => (ushort)MainTabs.Width, 
+                        async s => await DisplayAlert("", s, "OK", FlowDirection.MatchParent));
                     readListItems.Add(readListItem);
                     if (paragraphIndex == searchUnitListItem.SearchUnit.ParagraphIndex)
                     {
@@ -1170,7 +1166,7 @@ namespace LeninSearch.Xam
                 {
                     var lsiParagraph = lsiData.Paragraphs[paragraphIndex];
                     var readListItem = ReadListItem.Construct(summaryListItem.CorpusId, summaryListItem.File,
-                        lsiParagraph, _lsiProvider, null, () => (ushort)MainTabs.Width);
+                        lsiParagraph, _lsiProvider, null, () => (ushort)MainTabs.Width, async s => await DisplayAlert("", s, "OK", FlowDirection.MatchParent));
                     readListItems.Add(readListItem);
                     if (paragraphIndex == summaryListItem.ParagraphIndex)
                     {
@@ -1210,7 +1206,15 @@ namespace LeninSearch.Xam
             var gestureRecognizer = image.GestureRecognizers[0] as TapGestureRecognizer;
             var readListItem = gestureRecognizer.CommandParameter as ReadListItem;
             readListItem.ImageZoomCoefficient = readListItem.ImageZoomCoefficient > 1 ? 1 : (float)1.5;
+
+            // hack: disable swipe when image is zoomed
             MainTabs.IsSwipeEnabled = readListItem.ImageZoomCoefficient == 1;
+        }
+
+        private void OnMainTabsSelectionChanged(object sender, TabSelectionChangedEventArgs e)
+        {
+            // hack: restore swipe after image zoom
+            MainTabs.IsSwipeEnabled = true;
         }
     }
 }

@@ -68,7 +68,8 @@ namespace LeninSearch.Xam.ListItems
 
         public ReadListItem Self => this;
 
-        public static ReadListItem Construct(string corpusId, string file, LsiParagraph lsiParagraph, ILsiProvider lsiProvider, SearchUnit searchUnit, Func<ushort> imageWidthFunc)
+        public static ReadListItem Construct(string corpusId, string file, LsiParagraph lsiParagraph, 
+            ILsiProvider lsiProvider, SearchUnit searchUnit, Func<ushort> imageWidthFunc, Action<string> alertAction)
         {
             var dictionary = lsiProvider.GetDictionary(corpusId);
 
@@ -92,14 +93,14 @@ namespace LeninSearch.Xam.ListItems
             else
             {
                 readListItem.FormattedText = BuildFormattedText(lsiParagraph.GetSpans(searchUnit), lsiParagraph,
-                    dictionary, corpusId);
+                    dictionary, corpusId, alertAction);
             }
 
 
             return readListItem;
         }
 
-        private static FormattedString BuildFormattedText(List<LsiSpan> lsiSpans, LsiParagraph paragraph, LsDictionary dictionary, string corpusId)
+        private static FormattedString BuildFormattedText(List<LsiSpan> lsiSpans, LsiParagraph paragraph, LsDictionary dictionary, string corpusId, Action<string> alertAction)
         {
             var commentSpans = new Dictionary<LsiSpan, Span>();
             var searchResultSpans = new Dictionary<LsiSpan, Span>();
@@ -140,6 +141,18 @@ namespace LeninSearch.Xam.ListItems
                 }
 
                 formattedString.Spans.Add(span);
+            }
+
+            foreach (var lsiSpan in commentSpans.Keys)
+            {
+                var gestureRecognizer = new TapGestureRecognizer { Command = new Command(() =>
+                {
+                    var comment = paragraph.Comments.First(c => c.CommentIndex == lsiSpan.CommentIndex);
+                    var words = comment.WordIndexes.Select(wi => dictionary.Words[wi]).ToList();
+                    var commentText = $"[{lsiSpan.CommentIndex + 1}] {TextUtil.GetParagraph(words)}";
+                    alertAction(commentText);
+                }) };
+                commentSpans[lsiSpan].GestureRecognizers.Add(gestureRecognizer);
             }
 
             return formattedString;
