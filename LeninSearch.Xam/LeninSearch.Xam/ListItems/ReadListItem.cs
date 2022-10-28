@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -17,9 +18,28 @@ namespace LeninSearch.Xam.ListItems
         public ushort ParagraphIndex { get; set; }
         public FormattedString FormattedText { get; set; }
         public bool IsImage { get; set; }
+        public bool IsText => !IsImage;
         public string ImageFile { get; set; }
-        public ushort ImageWidth { get; set; }
-        public ushort ImageHeight { get; set; }
+
+        private ushort _imageWidthInitial;
+        public ushort ImageWidth => (ushort)(_imageWidthInitial * ImageZoomCoefficient);
+
+        private ushort _imageHeightInitial;
+        public ushort ImageHeight => (ushort)(_imageHeightInitial * ImageZoomCoefficient);
+
+        private float _imageZoomCoefficient;
+        public float ImageZoomCoefficient
+        {
+            get => _imageZoomCoefficient;
+            set
+            {
+                if (value == _imageZoomCoefficient) return;
+                _imageZoomCoefficient = value;
+                OnPropertyChanged(nameof(ImageWidth));
+                OnPropertyChanged(nameof(ImageHeight));
+            }
+        }
+
         public string ImageTitle { get; set; }
 
         private string _info;
@@ -37,7 +57,7 @@ namespace LeninSearch.Xam.ListItems
         private bool _isMenuShown;
         public bool IsMenuShown
         {
-            get => _isMenuShown;
+            get => IsText && _isMenuShown;
             set
             {
                 if (value == _isMenuShown) return;
@@ -48,7 +68,7 @@ namespace LeninSearch.Xam.ListItems
 
         public ReadListItem Self => this;
 
-        public static ReadListItem Construct(string corpusId, string file, LsiParagraph lsiParagraph, ILsiProvider lsiProvider, SearchUnit searchUnit)
+        public static ReadListItem Construct(string corpusId, string file, LsiParagraph lsiParagraph, ILsiProvider lsiProvider, SearchUnit searchUnit, Func<ushort> imageWidthFunc)
         {
             var dictionary = lsiProvider.GetDictionary(corpusId);
 
@@ -62,10 +82,12 @@ namespace LeninSearch.Xam.ListItems
 
             if (readListItem.IsImage)
             {
+                readListItem.ImageZoomCoefficient = 1;
                 readListItem.ImageFile = Settings.ImageFile(corpusId, lsiParagraph.ImageIndex);
-                var effectiveWidth = _getEffectiveWidthFunc();
-                var imageCfi = Settings.GetCorpusFileItem(corpusId, $"image{imageIndex}.jpeg");
-                var effectiveHeight = imageCfi.ImageHeight * effectiveWidth / imageCfi.ImageWidth;
+                readListItem._imageWidthInitial = imageWidthFunc();
+                var imageCfi = Settings.GetCorpusFileItem(corpusId, $"image{lsiParagraph.ImageIndex}.jpeg");
+                readListItem._imageHeightInitial = (ushort)(imageCfi.ImageHeight * readListItem._imageWidthInitial / imageCfi.ImageWidth);
+                readListItem.ImageTitle = $"иллюстрация №{lsiParagraph.ImageIndex}";
             }
             else
             {

@@ -121,14 +121,28 @@
                                         NumberOfTapsRequired="1"
                                         CommandParameter="{Binding Self}"/>
                                 </StackLayout.GestureRecognizers>
+
                                 <StackLayout Orientation="Horizontal" HeightRequest="24" Spacing="10" IsVisible="{Binding IsMenuShown}">
                                     <ImageButton Source="share.png" BackgroundColor="White" HeightRequest="24" WidthRequest="24"></ImageButton>
                                     <ImageButton Source="bookmark.png" BackgroundColor="White" HeightRequest="24" WidthRequest="24"></ImageButton>
                                     <Label Text="{Binding Info}" HorizontalOptions="End" FontSize="Micro"></Label>
                                 </StackLayout>
-                                <controls:ExtendedLabel FormattedText="{Binding FormattedText}" JustifyText="True" 
+
+                                <controls:ExtendedLabel IsVisible="{Binding IsText}"  FormattedText="{Binding FormattedText}" JustifyText="True" 
                                                         HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                                 </controls:ExtendedLabel>
+
+                                <ScrollView IsVisible="{Binding IsImage}" HeightRequest="{Binding ImageHeight}" 
+                                            HorizontalOptions="FillAndExpand" Orientation="Both">
+                                    <Image Source="{Binding ImageFile}" WidthRequest="{Binding ImageWidth}" HeightRequest="{Binding ImageHeight}">
+                                        <Image.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Tapped="OnReadImageTapped"
+                                                NumberOfTapsRequired="2"
+                                                CommandParameter="{Binding Self}"/>
+                                        </Image.GestureRecognizers>
+                                    </Image>
+                                </ScrollView>
                             </StackLayout>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>

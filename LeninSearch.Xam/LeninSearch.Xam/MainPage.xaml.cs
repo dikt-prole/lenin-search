@@ -1115,7 +1115,7 @@ namespace LeninSearch.Xam
                 {
                     var lsiParagraph = lsiData.Paragraphs[paragraphIndex];
                     var readListItem = ReadListItem.Construct(searchUnitListItem.CorpusId, searchUnitListItem.File,
-                        lsiParagraph, _lsiProvider, searchUnitListItem.SearchUnit);
+                        lsiParagraph, _lsiProvider, searchUnitListItem.SearchUnit, () => (ushort)MainTabs.Width);
                     readListItems.Add(readListItem);
                     if (paragraphIndex == searchUnitListItem.SearchUnit.ParagraphIndex)
                     {
@@ -1170,7 +1170,7 @@ namespace LeninSearch.Xam
                 {
                     var lsiParagraph = lsiData.Paragraphs[paragraphIndex];
                     var readListItem = ReadListItem.Construct(summaryListItem.CorpusId, summaryListItem.File,
-                        lsiParagraph, _lsiProvider, null);
+                        lsiParagraph, _lsiProvider, null, () => (ushort)MainTabs.Width);
                     readListItems.Add(readListItem);
                     if (paragraphIndex == summaryListItem.ParagraphIndex)
                     {
@@ -1202,6 +1202,15 @@ namespace LeninSearch.Xam
                 readListItem.Info = string.Join(" - ", headingTexts);
             }
             readListItem.IsMenuShown = !readListItem.IsMenuShown;
+        }
+
+        private void OnReadImageTapped(object sender, EventArgs e)
+        {
+            var image = sender as Image;
+            var gestureRecognizer = image.GestureRecognizers[0] as TapGestureRecognizer;
+            var readListItem = gestureRecognizer.CommandParameter as ReadListItem;
+            readListItem.ImageZoomCoefficient = readListItem.ImageZoomCoefficient > 1 ? 1 : (float)1.5;
+            MainTabs.IsSwipeEnabled = readListItem.ImageZoomCoefficient == 1;
         }
     }
 }
