@@ -159,7 +159,8 @@
                                 </StackLayout.GestureRecognizers>
 
                                 <StackLayout Orientation="Horizontal" HeightRequest="24" Spacing="10" IsVisible="{Binding IsMenuShown}">
-                                    <ImageButton Source="share.png" BackgroundColor="White" HeightRequest="24" WidthRequest="24"></ImageButton>
+                                    <ImageButton Source="share.png" BackgroundColor="White" HeightRequest="24" WidthRequest="24"
+                                                 Clicked="OnShareClicked" CommandParameter="{Binding Self}"></ImageButton>
                                     <ImageButton Source="bookmark.png" BackgroundColor="White" HeightRequest="24" WidthRequest="24" 
                                                  Clicked="OnAddBookmarkClick" CommandParameter="{Binding Self}"></ImageButton>
                                     <Label Text="{Binding Info}" HorizontalOptions="End" FontSize="Micro"></Label>

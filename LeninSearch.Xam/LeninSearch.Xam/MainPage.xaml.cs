@@ -23,9 +23,6 @@ namespace LeninSearch.Xam
     public partial class MainPage : ContentPage
     {
         private readonly GlobalEvents _globalEvents;
-        private readonly IParagraphViewBuilder _paragraphViewBuilder;
-        private readonly ParagraphGestureDecorator _gestureDecorator;
-        private readonly TextMenuDecorator _textMenuDecorator;
         private readonly CachedLsiProvider _lsiProvider;
         private readonly ICorpusSearch _corpusSearch;
         private readonly ApiService _apiService = new ApiService();
@@ -61,17 +58,6 @@ namespace LeninSearch.Xam
             SearchEntry.ReturnCommand = new Command(OnSearchButtonPressed);
 
             // paragraphs
-            _paragraphViewBuilder = new StdParagraphViewBuilder(_lsiProvider, () => 100 - 20);
-            _gestureDecorator = new ParagraphGestureDecorator(_paragraphViewBuilder);
-            var textActions = new TextActions(async (ps, ci, cfi) => await ShareAction(ps, ci, cfi), BookmarkAction, (paragraph, ci, cfi) => {});
-            _textMenuDecorator = new TextMenuDecorator(_gestureDecorator, textActions, _lsiProvider);
-            _gestureDecorator.ParagraphDoubleTapped += (sender, paragraph) =>
-            {
-                var autoHide = !_state.IsWatchingSearchResults();
-                ShowTextBar(paragraph);
-            };
-            _paragraphViewBuilder = _textMenuDecorator;
-
             PopulateInitialTabs();
         }
 
@@ -82,72 +68,8 @@ namespace LeninSearch.Xam
             CorpusTabViewItem.Icon = Settings.IconFile(corpusId);
             SummaryBookPicker.ItemsSource = summaryBookListItems;
             SummaryBookPicker.SelectedIndex = 0;
+            _state.CorpusId = corpusId;
             _message.ShortAlert($"Активирован корпус '{corpusItem.Name}'");
-        }
-
-        private void BookmarkAction(LsiParagraph paragraph, CorpusItem ci, CorpusFileItem cfi)
-        {
-            var words = _lsiProvider.Words(ci.Id);
-
-            var bookmark = new Bookmark
-            {
-                BookName = cfi.Name,
-                File = cfi.Path,
-                ParagraphIndex = paragraph.Index,
-                ParagraphText = paragraph.GetText(words),
-                CorpusItemName = ci.Name,
-                CorpusItemId = ci.Id,
-                Id = Guid.NewGuid(),
-                When = DateTime.UtcNow
-            };
-
-            BookmarkRepo.Add(bookmark);
-            RefreshBookmarksTab();
-
-            _message.ShortAlert("Закладка добавлена");
-        }
-
-        private async Task ShareAction(List<LsiParagraph> paragraphs, CorpusItem ci, CorpusFileItem cfi)
-        {
-            /*
-            var corpusItem = _state.GetCurrentCorpusItem();
-            if (corpusItem == null) return;
-            var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, _state.ReadingFile);
-            var separator = $"{Environment.NewLine}{Environment.NewLine}";
-            var words = _lsiProvider.GetDictionary(corpusItem.Id).Words;
-
-            var paragraphTexts = new List<string>();
-            foreach (var paragraph in paragraphs)
-            {
-                var paragraphText = paragraph.GetText(words);
-
-                var searchResult = _state.SearchResult?.SearchResults?.FirstOrDefault(r => r.ParagraphIndex == paragraph.Index);
-
-                if (searchResult == null)
-                {
-                    paragraphTexts.Add(paragraphText);
-                    continue;
-                }
-
-                var headings = lsiData.GetHeadingsDownToZero(searchResult.ParagraphIndex);
-
-                paragraphText = headings.Any()
-                    ? $"{cfi.Name} - {headings[0].GetText(words)}{separator}{paragraphText}"
-                    : $"{cfi.Name}{separator}{paragraphText}";
-
-                paragraphTexts.Add(paragraphText);
-            }
-
-            var shareText = string.Join(separator, paragraphTexts);
-
-            shareText = $"{shareText}{separator}Подготовлено при помощи Lenin Search для Android (доступно в Google Play)";
-
-            await Share.RequestAsync(new ShareTextRequest
-            {
-                Text = shareText,
-                Title = "Lenin Search Share"
-            });
-            */
         }
 
         public void CleanCache()
@@ -170,24 +92,18 @@ namespace LeninSearch.Xam
             }
         }
 
-        private async Task ReplaceSearchModeButtonWithLoading()
+        private void ReplaceSearchModeButtonWithLoading()
         {
-            SearchActivityIndicator.Opacity = 0;
-            await SearchModeButton.FadeTo(0, 50, Easing.Linear);
             SearchModeButton.IsVisible = false;
             SearchActivityIndicator.IsVisible = true;
             SearchActivityIndicator.IsRunning = true;
-            await SearchActivityIndicator.FadeTo(1, 50, Easing.Linear);
         }
 
-        private async Task ReplaceLoadingWithSearchModeButton()
+        private void ReplaceLoadingWithSearchModeButton()
         {
-            SearchModeButton.Opacity = 0;
-            await SearchActivityIndicator.FadeTo(0, 50, Easing.Linear);
             SearchActivityIndicator.IsVisible = false;
             SearchModeButton.IsVisible = true;
             SearchActivityIndicator.IsRunning = false;
-            await SearchModeButton.FadeTo(1, 50, Easing.Linear);
         }
 
         private void RefreshCorpusTab()
@@ -641,7 +557,7 @@ namespace LeninSearch.Xam
             _state.SearchQuery = SearchEntry.Text;
             _state.SearchResult = null;
             _state.ReadingFile = null;
-            ReplaceSearchModeButtonWithLoading().Wait();
+            ReplaceSearchModeButtonWithLoading();
 
             Task.Run(async () =>
             {
@@ -688,7 +604,7 @@ namespace LeninSearch.Xam
                 {
                     SearchResultsView.ItemsSource = searchUnitListItems;
                     _message.ShortAlert($"Найдено {searchUnitListItems.Count} совпадений");
-                    ReplaceLoadingWithSearchModeButton().Wait();
+                    ReplaceLoadingWithSearchModeButton();
                 });
             });
         }
@@ -867,6 +783,35 @@ namespace LeninSearch.Xam
             BookmarkRepo.Delete(bookmarkListItem.BookmarkId);
             RefreshBookmarksTab();
             _message.ShortAlert("Закладка удалена");
+        }
+
+        private void OnShareClicked(object sender, EventArgs e)
+        {
+            var imageButton = sender as ImageButton;
+            var readListItem = imageButton.CommandParameter as ReadListItem;
+
+            var corpusItem = _lsiProvider.GetCorpusItem(readListItem.CorpusId);
+            var corpusFileItem = corpusItem.GetFileByPath(readListItem.File);
+            var lsiData = _lsiProvider.GetLsiData(readListItem.CorpusId, readListItem.File);
+            var separator = $"{Environment.NewLine}{Environment.NewLine}";
+            var words = _lsiProvider.GetDictionary(corpusItem.Id).Words;
+            var lsiParagraph = lsiData.Paragraphs[readListItem.ParagraphIndex];
+
+            var shareText = lsiParagraph.GetText(words);
+
+            var headings = lsiData.GetHeadingsDownToZero(readListItem.ParagraphIndex);
+
+            shareText = headings.Any()
+                ? $"{corpusFileItem.Name} - {headings[0].GetText(words)}{separator}{shareText}"
+                : $"{corpusFileItem.Name}{separator}{shareText}";
+
+            shareText = $"{shareText}{separator}Подготовлено при помощи Lenin Search для Android (доступно в Google Play)";
+
+            Share.RequestAsync(new ShareTextRequest
+            {
+                Text = shareText,
+                Title = "Lenin Search Share"
+            }).Wait();
         }
     }
 }
