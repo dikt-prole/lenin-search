@@ -36,39 +36,73 @@
                 BackgroundColor="White"
                 SelectionChanged="OnMainTabsSelectionChanged">
 
+        <!-- CORPUS TAB -->
         <views:TabViewItem ControlTemplate="{StaticResource TabItemTemplate}" x:Name="CorpusTabViewItem">
             <StackLayout Orientation="Vertical">
-                <ListView x:Name="CorpusListView" HasUnevenRows="True" VerticalOptions="FillAndExpand" 
-                                  BackgroundColor="White" HorizontalOptions="FillAndExpand" CachingStrategy="RetainElement" SelectionMode="None">
-                    <ListView.ItemTemplate>
+                <CollectionView x:Name="CorpusCollectionView" VerticalOptions="FillAndExpand" 
+                                  BackgroundColor="White" HorizontalOptions="FillAndExpand">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="5" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <ViewCell Height="48">
-                                <StackLayout Orientation="Horizontal" Spacing="0">
-                                    <ImageButton WidthRequest="48" HeightRequest="48" Padding="4" 
-                                                         BackgroundColor="White" Source="{Binding CorpusIconSource}" 
-                                                         CommandParameter="{Binding CorpusId}" Clicked="OnCorpusIconClick"></ImageButton>
-                                    <Label HorizontalOptions="FillAndExpand" Text="{Binding CorpusTitle}" 
-                                                   HorizontalTextAlignment="Center" FontSize="Small" TextColor="Black" Margin="0, 12, 0, 0"></Label>
-                                    <ImageButton WidthRequest="48" HeightRequest="48" Padding="12" 
-                                                         BackgroundColor="White" Source="trashred.png"></ImageButton>
-                                </StackLayout>
-                            </ViewCell>
+                            <StackLayout Orientation="Horizontal" Spacing="0" HeightRequest="48">
+                                <ImageButton WidthRequest="48" HeightRequest="48" Padding="4" 
+                                             BackgroundColor="White" Source="{Binding CorpusIconSource}" 
+                                             CommandParameter="{Binding CorpusId}" Clicked="OnCorpusIconClick"></ImageButton>
+                                <Label HorizontalOptions="FillAndExpand" Text="{Binding CorpusTitle}" 
+                                       HorizontalTextAlignment="Center" FontSize="Small" TextColor="Black" Margin="0, 12, 0, 0"></Label>
+                                <ImageButton WidthRequest="48" HeightRequest="48" Padding="12" 
+                                             BackgroundColor="White" Source="trashred.png"></ImageButton>
+                            </StackLayout>
                         </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
             </StackLayout>
         </views:TabViewItem>
 
+        <!-- LIBRARY TAB -->
         <views:TabViewItem Icon="library.png" ControlTemplate="{StaticResource TabItemTemplate}">
             <StackLayout Orientation="Vertical">
                 <StackLayout Orientation="Vertical" x:Name="CorpusTab" VerticalOptions="FillAndExpand"></StackLayout>
             </StackLayout>
         </views:TabViewItem>
 
+        <!-- BOOKMARK TAB -->
         <views:TabViewItem Icon="bookmark.png" ControlTemplate="{StaticResource TabItemTemplate}">
-            <StackLayout Orientation="Vertical" x:Name="BookmarkTab"></StackLayout>
+            <StackLayout Orientation="Vertical" x:Name="BookmarkTab">
+                <StackLayout Orientation="Horizontal" HeightRequest="36" Spacing="0" BackgroundColor="#D6181F" HorizontalOptions="FillAndExpand">
+                    <Label FontSize="Small" Text="Закладки" HorizontalOptions="FillAndExpand" HorizontalTextAlignment="Center" TextColor="White" 
+                           Margin="0, 8, 0, 0" BackgroundColor="#D6181F"></Label>
+                </StackLayout>
+                <CollectionView x:Name="BookmarkCollectionView" VerticalOptions="FillAndExpand" 
+                                BackgroundColor="White" HorizontalOptions="FillAndExpand">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="5" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <StackLayout Orientation="Vertical" Spacing="0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                                <StackLayout Orientation="Horizontal" Spacing="0" HeightRequest="48">
+                                    <ImageButton WidthRequest="48" HeightRequest="48" Padding="4" BackgroundColor="White" 
+                                                 Source="{Binding CorpusImage}" Clicked="OnOpenBookmarkClick" 
+                                                 CommandParameter="{Binding Self}"></ImageButton>
+                                    <Label HorizontalOptions="FillAndExpand" Text="{Binding Text}" 
+                                                        HorizontalTextAlignment="Start" FontSize="Small" TextColor="Black" 
+                                                        Margin="0, 5, 0, 0"></Label>
+                                    <ImageButton WidthRequest="48" HeightRequest="48" Padding="12" 
+                                             BackgroundColor="White" Source="trashred.png" Clicked="OnDeleteBookmarkClick" 
+                                             CommandParameter="{Binding Self}"></ImageButton>
+                                </StackLayout>
+                                <Label FontSize="Micro" Text="{Binding Date}" Margin="5, 0, 0, 0" TextColor="Gray"></Label>
+                            </StackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </StackLayout>
         </views:TabViewItem>
 
+        <!-- SEARCH TAB -->
         <views:TabViewItem Icon="search.png" ControlTemplate="{StaticResource TabItemTemplate}">
             <StackLayout x:Name="HeaderStack" Orientation="Vertical" HorizontalOptions="FillAndExpand" Margin="0" Padding="0" Spacing="0">
                 <StackLayout x:Name="TopLayout" Orientation="Horizontal" HorizontalOptions="Fill" Spacing="0" BackgroundColor="White"   Margin="0">
@@ -104,6 +138,7 @@
             </StackLayout>
         </views:TabViewItem>
 
+        <!-- READ TAB -->
         <views:TabViewItem x:Name="ReadTabViewItem" Icon="read.png" ControlTemplate="{StaticResource TabItemTemplate}">
             <StackLayout Orientation="Vertical" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" BackgroundColor="White" Spacing="0">
                 <StackLayout HeightRequest="20" HorizontalOptions="FillAndExpand" BackgroundColor="#D6181F">
@@ -125,17 +160,14 @@
 
                                 <StackLayout Orientation="Horizontal" HeightRequest="24" Spacing="10" IsVisible="{Binding IsMenuShown}">
                                     <ImageButton Source="share.png" BackgroundColor="White" HeightRequest="24" WidthRequest="24"></ImageButton>
-                                    <ImageButton Source="bookmark.png" BackgroundColor="White" HeightRequest="24" WidthRequest="24"></ImageButton>
+                                    <ImageButton Source="bookmark.png" BackgroundColor="White" HeightRequest="24" WidthRequest="24" 
+                                                 Clicked="OnAddBookmarkClick" CommandParameter="{Binding Self}"></ImageButton>
                                     <Label Text="{Binding Info}" HorizontalOptions="End" FontSize="Micro"></Label>
                                 </StackLayout>
 
                                 <controls:ExtendedLabel IsVisible="{Binding IsText}"  FormattedText="{Binding FormattedText}" JustifyText="True" 
                                                         HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                                 </controls:ExtendedLabel>
-
-                                <!--<controls:ExtendedLabel IsVisible="{Binding IsCommentSelected}" Text="{Binding CommentText}" JustifyText="True" 
-                                                        FontSize="Micro">
-                                </controls:ExtendedLabel>-->
 
                                 <ScrollView IsVisible="{Binding IsImage}" HeightRequest="{Binding ImageHeight}" 
                                             HorizontalOptions="FillAndExpand" Orientation="Both">
@@ -155,10 +187,11 @@
             </StackLayout>
         </views:TabViewItem>
 
+        <!-- SUMMARY TAB -->
         <views:TabViewItem Icon="summary.png" ControlTemplate="{StaticResource TabItemTemplate}">
             <StackLayout Orientation="Vertical" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" Spacing="0">
                 <StackLayout Orientation="Horizontal" HeightRequest="36" Spacing="0" BackgroundColor="#D6181F">
-                    <Label FontSize="Small" Text="Содержание: " HorizontalOptions="Start" TextColor="White" Margin="5, 5, 0, 5" BackgroundColor="#D6181F"></Label>
+                    <Label FontSize="Small" Text="Содержание: " HorizontalOptions="Start" TextColor="White" Margin="5, 8, 0, 5" BackgroundColor="#D6181F"></Label>
                     <Picker x:Name="SummaryBookPicker" HeightRequest="36" FontSize="Small" TextColor="White" 
                             HorizontalOptions="FillAndExpand" BackgroundColor="#D6181F" Margin="0, 0, 5, 0" SelectedIndexChanged="SummaryBookPickerOnSelectedIndexChanged"></Picker>
                 </StackLayout>

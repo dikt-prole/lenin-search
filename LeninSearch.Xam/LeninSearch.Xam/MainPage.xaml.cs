@@ -2,23 +2,16 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using LeninSearch.Standard.Core.Corpus;
-using LeninSearch.Standard.Core.Corpus.Json;
 using LeninSearch.Standard.Core.Corpus.Lsi;
 using LeninSearch.Standard.Core.Search;
 using LeninSearch.Standard.Core.Search.CorpusSearching;
 using LeninSearch.Standard.Core.Search.TokenVarying;
-using LeninSearch.Xam.Controls;
 using LeninSearch.Xam.Core;
 using LeninSearch.Xam.ListItems;
 using LeninSearch.Xam.ParagraphAdder;
-using Xamarin.CommunityToolkit.ObjectModel;
 using Xamarin.CommunityToolkit.UI.Views;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -65,7 +58,7 @@ namespace LeninSearch.Xam
             // search entry
             SearchEntry.Text = "национальный вопрос";
             SearchEntry.FontSize = Settings.UI.Font.NormalFontSize;
-            SearchEntry.ReturnCommand = new AsyncCommand(OnSearchButtonPressed);
+            SearchEntry.ReturnCommand = new Command(OnSearchButtonPressed);
 
             // paragraphs
             _paragraphViewBuilder = new StdParagraphViewBuilder(_lsiProvider, () => 100 - 20);
@@ -76,11 +69,20 @@ namespace LeninSearch.Xam
             {
                 var autoHide = !_state.IsWatchingSearchResults();
                 ShowTextBar(paragraph);
-                ShowHeaderStack(autoHide);
             };
             _paragraphViewBuilder = _textMenuDecorator;
 
             PopulateInitialTabs();
+        }
+
+        private void ActivateCorpus(string corpusId)
+        {
+            var corpusItem = _lsiProvider.GetCorpusItem(corpusId);
+            var summaryBookListItems = SummaryBookListItem.Construct(corpusItem).ToList();
+            CorpusTabViewItem.Icon = Settings.IconFile(corpusId);
+            SummaryBookPicker.ItemsSource = summaryBookListItems;
+            SummaryBookPicker.SelectedIndex = 0;
+            _message.ShortAlert($"Активирован корпус '{corpusItem.Name}'");
         }
 
         private void BookmarkAction(LsiParagraph paragraph, CorpusItem ci, CorpusFileItem cfi)
@@ -100,7 +102,7 @@ namespace LeninSearch.Xam
             };
 
             BookmarkRepo.Add(bookmark);
-            PopulateBookmarksTab();
+            RefreshBookmarksTab();
 
             _message.ShortAlert("Закладка добавлена");
         }
@@ -153,29 +155,6 @@ namespace LeninSearch.Xam
             _lsiProvider.CleanCache();
         }
 
-
-        private CancellationTokenSource _showHeaderCts;
-        private void ShowHeaderStack(bool autoHide)
-        {
-            _showHeaderCts?.Cancel();
-            _showHeaderCts = null;
-            HeaderStack.IsVisible = true;
-
-            if (autoHide)
-            {
-                _showHeaderCts = new CancellationTokenSource();
-                var ct = _showHeaderCts.Token;
-                Task.Run(async () =>
-                {
-                    await Task.Delay(Settings.UI.HeaderStackAutoHideMs, ct);
-
-                    if (ct.IsCancellationRequested) return;
-
-                    await Device.InvokeOnMainThreadAsync(() => HeaderStack.IsVisible = false);
-                }, ct);
-            }
-        }
-
         public void SetState(State state)
         {
             _state = state;
@@ -211,33 +190,11 @@ namespace LeninSearch.Xam
             await SearchModeButton.FadeTo(1, 50, Easing.Linear);
         }
 
-        private async void SwipeRight(object sender, EventArgs e)
-        {
-            /*
-            if (!_state.CanGoToPrevParagraphSearchResult()) return;
-
-            ResultScroll.IsEnabled = false;
-            _state.CurrentSearchUnitIndex--;
-            await OnCurrentParagraphResultIndexChange(_state.ReadingFile);
-            */
-        }
-
-        private async void SwipeLeft(object sender, EventArgs e)
-        {
-            /*
-            if (!_state.CanGoToNextParagraphSearchResult()) return;
-
-            ResultScroll.IsEnabled = false;
-            _state.CurrentSearchUnitIndex++;
-            await OnCurrentParagraphResultIndexChange(_state.ReadingFile);
-            */
-        }
-
         private void RefreshCorpusTab()
         {
             var corpusItems = State.GetCorpusItems().ToList();
             var corpusListItems = corpusItems.Select(CorpusListItem.FromCorpusItem).ToList();
-            CorpusListView.ItemsSource = corpusListItems;
+            CorpusCollectionView.ItemsSource = corpusListItems;
         }
 
         private async Task ShowUpdates()
@@ -377,92 +334,18 @@ namespace LeninSearch.Xam
             */
         }
 
-        private void PopulateBookmarksTab()
+        private void RefreshBookmarksTab()
         {
-            BookmarkTab.Children.Clear();
-            var bookmarks = BookmarkRepo.GetAll().ToList();
-            if (bookmarks.Any())
-            {
-                foreach (var bm in bookmarks)
-                {
-                    var bmText = bm.GetText();
-
-                    var layout = new StackLayout
-                    {
-                        Orientation = StackOrientation.Horizontal,
-                        HorizontalOptions = LayoutOptions.FillAndExpand,
-                        BackgroundColor = Color.White,
-                        Spacing = 0
-                    };
-
-                    var readButton = new ImageButton
-                    {
-                        Source = "bullet.png",
-                        WidthRequest = 32,
-                        HeightRequest = 32,
-                        BackgroundColor = Color.White,
-                        HorizontalOptions = LayoutOptions.Start,
-                        Padding = 5,
-                        Margin = 0
-                    };
-                    layout.Children.Add(readButton);
-
-                    var textLabel = new Label
-                    {
-                        Text = bmText,
-                        FontSize = Settings.UI.Font.NormalFontSize,
-                        TextColor = Color.Black,
-                        Margin = new Thickness(5, 0, 5, 0),
-                        HorizontalOptions = LayoutOptions.FillAndExpand
-                    };
-                    layout.Children.Add(textLabel);
-
-                    var trashButton = new ImageButton
-                    {
-                        Source = "trashred.png",
-                        WidthRequest = 32,
-                        HeightRequest = 32,
-                        BackgroundColor = Color.White,
-                        Padding = 5,
-                        Margin = 0,
-                        HorizontalOptions = LayoutOptions.End
-                    };
-                    layout.Children.Add(trashButton);
-
-                    readButton.Clicked += async (sender, args) => await ReadBookmark(bm);
-                    trashButton.Clicked += async (sender, args) =>
-                    {
-                        BookmarkRepo.Delete(bm.Id);
-                        await layout.FadeTo(0, 200, Easing.Linear);
-                        layout.HeightRequest = 0;
-                    };
-
-                    BookmarkTab.Children.Add(layout);
-                }
-            }
-        }
-
-        private async Task ReadBookmark(Bookmark bm)
-        {
-            try
-            {
-                var corpusItem = State.GetCorpusItems().FirstOrDefault(ci => ci.Files.Any(cfi => cfi.Path == bm.File));
-                if (corpusItem == null) return;
-                _state.CorpusId = corpusItem.Id;
-                var corpusFileItem = corpusItem.GetFileByPath(bm.File);
-                await Read(corpusFileItem, bm.ParagraphIndex);
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine(e);
-                throw;
-            }
+            var bookmarkListItems = BookmarkRepo.GetAll()
+                .OrderByDescending(b => b.When)
+                .Select(BookmarkListItem.FromBookmark).ToList();
+            BookmarkCollectionView.ItemsSource = bookmarkListItems;
         }
 
         private void PopulateInitialTabs()
         {
             RefreshCorpusTab();
-            PopulateBookmarksTab();
+            RefreshBookmarksTab();
         }
 
         private async Task DisplaySearchSummary()
@@ -537,7 +420,6 @@ namespace LeninSearch.Xam
         {
             PopulateInitialTabs();
             _state.ReadingFile = null;
-            await RebuildScroll(false);
         }
 
         private async Task AnimateDisappear(View view)
@@ -710,183 +592,6 @@ namespace LeninSearch.Xam
             */
         }
 
-        private async Task RebuildScrollFromTop(LsiData lsiData)
-        {
-            /*
-            var corpusItem = _state.GetCurrentCorpusItem();
-
-            var firstChildIndex = (ushort)ResultStack.Children[0].TabIndex;
-            var prevP = lsiData.GetPrevParagraph(firstChildIndex);
-            if (prevP == null) return;
-            var prevView = _paragraphViewBuilder.Build(prevP, _state, _lsiProvider.Words(corpusItem.Id));
-            ResultStack.Children.Insert(0, prevView);
-            var scrollToAfter = ResultStack.Children[0].Height;
-            ResultScroll.Scrolled -= ResultScrollOnScrolled;
-            ResultScroll.IsEnabled = false;
-            await RebuildScroll(lsiData, prevP.Index, scrollToAfter);
-            */
-        }
-
-        private async Task RebuildScrollFromBottom(LsiData lsiData)
-        {
-            /*
-            double heightFromBottom = 0;
-            int childIndex;
-            for (childIndex = ResultStack.Children.Count - 1; childIndex >= 0; childIndex--)
-            {
-                var child = ResultStack.Children[childIndex];
-                heightFromBottom += child.Height;
-                heightFromBottom += child.Margin.Bottom;
-                heightFromBottom += child.Margin.Top;
-                if (heightFromBottom > ResultScroll.Height) break;
-            }
-
-            var scrollY = heightFromBottom - ResultScroll.Height;
-            var pIndex = (ushort)ResultStack.Children[childIndex].TabIndex;
-            await RebuildScroll(lsiData, pIndex, scrollY);
-            */
-        }
-
-        private async Task DisplayCorpusBooks(CorpusItem corpusItem)
-        {
-            /*
-            InitialTabs.IsVisible = false;
-            ScrollWrapper.IsVisible = true;
-
-            _state.CorpusId = corpusItem.Id;
-            CorpusButton.Source = Settings.IconFile(corpusItem.Id);
-
-            _state.ReadingFile = null;
-            HideTextBar();
-            await RebuildScroll(false);
-
-            ResultStack.Children.Add(new Label
-            {
-                Text = $"{corpusItem.Name} - книги",
-                TextColor = Color.Black,
-                FontSize = Settings.UI.Font.SmallFontSize,
-                HorizontalOptions = LayoutOptions.Center,
-                Margin = new Thickness(0, 0, 0, 20)
-            });
-
-            var flexLayout = new FlexLayout
-            {
-                JustifyContent = FlexJustify.SpaceAround,
-                Wrap = FlexWrap.Wrap
-            };
-
-            foreach (var cfi in corpusItem.LsiFiles())
-            {
-                var link = ConstructHyperlinkButton(cfi.Name, Settings.UI.Font.NormalFontSize, async () =>
-                {
-                    try
-                    {
-                        var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, cfi.Path);
-                        if (lsiData.Headings?.Any() != true)
-                        {
-                            _message.ShortAlert("Заголовки не найдены");
-                        }
-                        else
-                        {
-                            await ReplaceCorpusWithLoading();
-                            await DisplayBookHeadings(corpusItem, cfi, lsiData);
-                            await ReplaceLoadingWithCorpus();
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.WriteLine(e);
-                        throw;
-                    }
-                    
-                });
-                flexLayout.Children.Add(link);
-            }
-
-            ResultStack.Children.Add(flexLayout);
-
-            await ResultScrollFadeIn();
-            */
-        }
-
-        private async Task Read(CorpusFileItem cfi, ushort paragraphIndex)
-        {
-            /*
-            try
-            {
-                InitialTabs.IsVisible = false;
-                ScrollWrapper.IsVisible = true;
-
-                _state.SearchResult = null;
-                _state.ReadingFile = cfi.Path;
-                _state.ReadingParagraphIndex = paragraphIndex;
-                _textMenuDecorator.ClearSelection();
-
-                HideTextBar();
-                await RebuildScroll(true);
-
-                var corpusItem = _state.GetCurrentCorpusItem();
-                var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, cfi.Path);
-
-                var initialParagraph = lsiData.Paragraphs[paragraphIndex];
-                var paragraph = initialParagraph;
-                while (!IsResultScrollReady())
-                {
-                    if (paragraph == null) break;
-
-                    var pView = _paragraphViewBuilder.Build(paragraph, _state, _lsiProvider.Words(corpusItem.Id));
-
-                    ResultStack.Children.Add(pView);
-
-                    paragraph = lsiData.GetNextParagraph(paragraph.Index);
-                }
-
-                await ResultScroll.ScrollToAsync(0, 20, true);
-
-                await ResultScrollFadeIn();
-
-                ShowTextBar(initialParagraph);
-
-                ShowHeaderStack(true);
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine(e);
-                throw;
-            }
-            */
-        }
-
-        private async Task DisplayBookHeadings(CorpusItem ci, CorpusFileItem cfi, LsiData lsiData)
-        {
-            /*
-            _state.ReadingFile = null;
-            HideTextBar();
-            ShowHeaderStack(false);
-
-            await RebuildScroll(false);
-
-            var summaryTitle = $"{ci.Name} - {cfi.Name} - содержание";
-            ResultStack.Children.Add(new Label
-            {
-                Text = summaryTitle,
-                TextColor = Color.Black,
-                HorizontalOptions = LayoutOptions.Center,
-                FontSize = Settings.UI.Font.SmallFontSize,
-                Margin = new Thickness(0, 0, 0, 20)
-            });
-
-            var dictionaryWords = _lsiProvider.GetDictionary(ci.Id).Words;
-            foreach (var headingLeaf in lsiData.HeadingTree.Children)
-            {
-                var hlView = ViewFactory.ConstructHeadingView(headingLeaf, dictionaryWords, async hl => await Read(cfi, hl.Index));
-                ResultStack.Children.Add(hlView);
-            }
-
-            await ResultScrollFadeIn();
-            */
-        }
-
         private Button ConstructHyperlinkButton(string text, double fontSize, Action action)
         {
             var textWidth = _textMeasure.Width(text, null, (float) fontSize);
@@ -927,7 +632,7 @@ namespace LeninSearch.Xam
             return cfiSpan;
         }
 
-        private async Task OnSearchButtonPressed()
+        private void OnSearchButtonPressed()
         {
             if (string.IsNullOrWhiteSpace(SearchEntry.Text)) return;
 
@@ -935,138 +640,64 @@ namespace LeninSearch.Xam
             SearchEntry.Text = new SearchQueryCleaner().Clean(SearchEntry.Text);
             _state.SearchQuery = SearchEntry.Text;
             _state.SearchResult = null;
-
-            // 2. Save history
-            var corpusItem = _state.GetCurrentCorpusItem();
-            var historyItem = new HistoryItem
-            {
-                CorpusName = corpusItem.Name,
-                CorpusId = corpusItem.Id,
-                Query = SearchEntry.Text,
-                QueryDateUtc = DateTime.UtcNow
-            };
-            HistoryRepo.AddHistory(historyItem);
-
-            await StartSearch(SearchEntry.Text);
-        }
-
-        private async Task StartSearch(string query)
-        {
-            await BeforeSearch();
-            var searchMode = GetCurrentSearchMode();
-            _state.SearchResult = await _corpusSearch.SearchAsync(_state.CorpusId, query, searchMode);
-            await AfterSearch();
-        }
-
-        private async Task BeforeSearch()
-        {
             _state.ReadingFile = null;
-            await ReplaceSearchModeButtonWithLoading();
-        }
+            ReplaceSearchModeButtonWithLoading().Wait();
 
-        private async Task AfterSearch()
-        {
-            var searchUnitListItems = new List<SearchUnitListItem>();
-
-            foreach (var file in _state.SearchResult.Units.Keys)
+            Task.Run(async () =>
             {
-                foreach (var query in _state.SearchResult.Units[file].Keys)
+                // 1. Save history
+                var corpusItem = _state.GetCurrentCorpusItem();
+                var historyItem = new HistoryItem
                 {
-                    foreach (var searchUnit in _state.SearchResult.Units[file][query])
+                    CorpusName = corpusItem.Name,
+                    CorpusId = corpusItem.Id,
+                    Query = SearchEntry.Text,
+                    QueryDateUtc = DateTime.UtcNow
+                };
+                HistoryRepo.AddHistory(historyItem);
+
+                var searchMode = GetCurrentSearchMode();
+                _state.SearchResult = await _corpusSearch.SearchAsync(_state.CorpusId, SearchEntry.Text, searchMode);
+
+                var searchUnitListItems = new List<SearchUnitListItem>();
+
+                foreach (var file in _state.SearchResult.Units.Keys)
+                {
+                    foreach (var query in _state.SearchResult.Units[file].Keys)
                     {
-                        searchUnitListItems.Add(new SearchUnitListItem
+                        foreach (var searchUnit in _state.SearchResult.Units[file][query])
                         {
-                            CorpusId = _state.CorpusId,
-                            File = file,
-                            SearchUnit = searchUnit,
-                            Query = query
-                        });
+                            searchUnitListItems.Add(new SearchUnitListItem
+                            {
+                                CorpusId = _state.CorpusId,
+                                File = file,
+                                SearchUnit = searchUnit,
+                                Query = query
+                            });
+                        }
                     }
                 }
-            }
 
-            searchUnitListItems = searchUnitListItems.OrderBy(x => x.SearchUnit.Priority).ToList();
-            for (ushort i = 0; i < searchUnitListItems.Count; i++)
-            {
-                searchUnitListItems[i].Index = (ushort)(i + 1);
-            }
+                searchUnitListItems = searchUnitListItems.OrderBy(x => x.SearchUnit.Priority).ToList();
+                for (ushort i = 0; i < searchUnitListItems.Count; i++)
+                {
+                    searchUnitListItems[i].Index = (ushort)(i + 1);
+                }
 
-            SearchResultsView.ItemsSource = searchUnitListItems;
-
-            _message.ShortAlert($"Найдено {searchUnitListItems.Count} совпадений");
-
-            await ReplaceLoadingWithSearchModeButton();
-        }
-
-        private async Task RebuildScroll(bool attachScrollEvent)
-        {
-            /*
-            await ResultScrollFadeOut();
-
-            ScrollWrapper.Children.Clear();
-            ResultScroll = new GestureScrollView
-            {
-                VerticalOptions = LayoutOptions.FillAndExpand,
-                HorizontalOptions = LayoutOptions.FillAndExpand,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Never,
-                Opacity = 0,
-                IsEnabled = false
-            };
-            ResultScroll.SwipeLeft += SwipeLeft;
-            ResultScroll.SwipeRight += SwipeRight;
-
-            ScrollWrapper.Children.Add(ResultScroll);
-            ResultStack = new StackLayout
-            {
-                Margin = new Thickness(10),
-                Orientation = StackOrientation.Vertical,
-                VerticalOptions = LayoutOptions.Start,
-                BackgroundColor = Color.White,
-                Spacing = 0
-            };
-            ResultScroll.Content = ResultStack;
-            if (attachScrollEvent)
-            {
-                ResultScroll.Scrolled += ResultScrollOnScrolled;
-            }
-            */
-        }
-
-        private async Task OnCurrentParagraphResultIndexChange(string file)
-        {
-            /*
-            if (!_state.IsWatchingSearchResults()) return;
-
-            var corpusItem = _state.GetCurrentCorpusItem();
-            var searchResult = _state.GetCurrentSearchUnit();
-            var lsiData = _lsiProvider.GetLsiData(corpusItem.Id, file);
-            var paragraph = lsiData.Paragraphs[searchResult.ParagraphIndex];
-            ShowTextBar(paragraph);
-            _textMenuDecorator.ClearSelection();
-            await RebuildScroll(true);
-
-            ResultStack.Children.Add(_paragraphViewBuilder.Build(paragraph, _state, _lsiProvider.Words(corpusItem.Id)));
-            var maxIndex = paragraph.Index;
-            while (!IsResultScrollReady())
-            {
-                var nextP = lsiData.GetNextParagraph(maxIndex);
-                if (nextP == null) break;
-                maxIndex = nextP.Index;
-                ResultStack.Children.Add(_paragraphViewBuilder.Build(nextP, _state, _lsiProvider.Words(corpusItem.Id)));
-            }
-            await ResultScroll.ScrollToAsync(0, 20, true);
-            await ResultScrollFadeIn();
-            */
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    SearchResultsView.ItemsSource = searchUnitListItems;
+                    _message.ShortAlert($"Найдено {searchUnitListItems.Count} совпадений");
+                    ReplaceLoadingWithSearchModeButton().Wait();
+                });
+            });
         }
 
         private void OnCorpusIconClick(object sender, EventArgs e)
         {
             var imageButton = sender as ImageButton;
-            _state.CorpusId = imageButton.CommandParameter as string;
-            CorpusTabViewItem.Icon = Settings.IconFile(_state.CorpusId);
-            SummaryBookPicker.ItemsSource = SummaryBookListItem.Construct(_state.GetCurrentCorpusItem()).ToList();
-            SummaryBookPicker.SelectedIndex = 0;
-            _message.ShortAlert($"Активирован корпус '{_state.GetCurrentCorpusItem().Name}'");
+            Animations.OpacityToZeroAndBack(imageButton);
+            ActivateCorpus(imageButton.CommandParameter as string);
         }
 
         private void OnSearchModeButtonClick(object sender, EventArgs e)
@@ -1098,35 +729,7 @@ namespace LeninSearch.Xam
             Animations.OpacityToZeroAndBack(stackLayout);
             var gestureRecognizer = stackLayout.GestureRecognizers[0] as TapGestureRecognizer;
             var searchUnitListItem = gestureRecognizer.CommandParameter as SearchUnitListItem;
-
-            Task.Run(() =>
-            {
-                var lsiData = _lsiProvider.GetLsiData(searchUnitListItem.CorpusId, searchUnitListItem.File);
-                var corpusFileItem = _lsiProvider.GetCorpusItem(searchUnitListItem.CorpusId)
-                    .GetFileByPath(searchUnitListItem.File);
-                var readListItems = new List<ReadListItem>();
-                ReadListItem scrollTo = null;
-                foreach (var paragraphIndex in lsiData.Paragraphs.Keys.OrderBy(k => k))
-                {
-                    var lsiParagraph = lsiData.Paragraphs[paragraphIndex];
-                    var readListItem = ReadListItem.Construct(searchUnitListItem.CorpusId, searchUnitListItem.File,
-                        lsiParagraph, _lsiProvider, searchUnitListItem.SearchUnit, () => (ushort)MainTabs.Width, 
-                        async s => await DisplayAlert("", s, "OK", FlowDirection.MatchParent));
-                    readListItems.Add(readListItem);
-                    if (paragraphIndex == searchUnitListItem.SearchUnit.ParagraphIndex)
-                    {
-                        scrollTo = readListItem;
-                    }
-                }
-
-                Device.BeginInvokeOnMainThread(() =>
-                {
-                    ReadBookTitleLabel.Text = corpusFileItem.Name;
-                    ReadView.ItemsSource = readListItems;
-                    MainTabs.SelectedIndex = MainTabs.TabItems.IndexOf(ReadTabViewItem);
-                    ReadView.ScrollTo(scrollTo, null, ScrollToPosition.MakeVisible, false);
-                });
-            });
+            RunReadBook(searchUnitListItem.CorpusId, searchUnitListItem.File, searchUnitListItem.SearchUnit.ParagraphIndex, searchUnitListItem.SearchUnit);
         }
 
         private void SummaryBookPickerOnSelectedIndexChanged(object sender, EventArgs e)
@@ -1151,37 +754,8 @@ namespace LeninSearch.Xam
         private void OnSummaryItemTapped(object sender, EventArgs e)
         {
             var stackLayout = sender as StackLayout;
-
-            var summaryListItem =
-                (stackLayout.GestureRecognizers[0] as TapGestureRecognizer).CommandParameter as SummaryListItem;
-
-            Task.Run(() =>
-            {
-                var lsiData = _lsiProvider.GetLsiData(summaryListItem.CorpusId, summaryListItem.File);
-                var corpusFileItem = _lsiProvider.GetCorpusItem(summaryListItem.CorpusId)
-                    .GetFileByPath(summaryListItem.File);
-                var readListItems = new List<ReadListItem>();
-                ReadListItem scrollTo = null;
-                foreach (var paragraphIndex in lsiData.Paragraphs.Keys.OrderBy(k => k))
-                {
-                    var lsiParagraph = lsiData.Paragraphs[paragraphIndex];
-                    var readListItem = ReadListItem.Construct(summaryListItem.CorpusId, summaryListItem.File,
-                        lsiParagraph, _lsiProvider, null, () => (ushort)MainTabs.Width, async s => await DisplayAlert("", s, "OK", FlowDirection.MatchParent));
-                    readListItems.Add(readListItem);
-                    if (paragraphIndex == summaryListItem.ParagraphIndex)
-                    {
-                        scrollTo = readListItem;
-                    }
-                }
-
-                Device.BeginInvokeOnMainThread(() =>
-                {
-                    ReadBookTitleLabel.Text = corpusFileItem.Name;
-                    ReadView.ItemsSource = readListItems;
-                    MainTabs.SelectedIndex = MainTabs.TabItems.IndexOf(ReadTabViewItem);
-                    ReadView.ScrollTo(scrollTo, null, ScrollToPosition.MakeVisible, false);
-                });
-            });
+            var summaryListItem = (stackLayout.GestureRecognizers[0] as TapGestureRecognizer).CommandParameter as SummaryListItem;
+            RunReadBook(summaryListItem.CorpusId, summaryListItem.File, summaryListItem.ParagraphIndex);
         }
 
         private void OnReadItemTapped(object sender, EventArgs e)
@@ -1215,6 +789,84 @@ namespace LeninSearch.Xam
         {
             // hack: restore swipe after image zoom
             MainTabs.IsSwipeEnabled = true;
+        }
+
+        private void OnAddBookmarkClick(object sender, EventArgs e)
+        {
+            var imageButton = sender as ImageButton;
+            var readListItem = imageButton.CommandParameter as ReadListItem;
+            var dictionary = _lsiProvider.GetDictionary(readListItem.CorpusId);
+            var corpusItem = _lsiProvider.GetCorpusItem(readListItem.CorpusId);
+            var corpusFileItem = corpusItem.GetFileByPath(readListItem.File);
+            var lsiData = _lsiProvider.GetLsiData(readListItem.CorpusId, readListItem.File);
+            var lsiParagraph = lsiData.Paragraphs[readListItem.ParagraphIndex];
+
+            var bookmark = new Bookmark
+            {
+                BookName = corpusFileItem.Name,
+                File = corpusFileItem.Path,
+                ParagraphIndex = readListItem.ParagraphIndex,
+                ParagraphText = lsiParagraph.GetText(dictionary.Words),
+                CorpusItemName = corpusItem.Name,
+                CorpusItemId = corpusItem.Id,
+                Id = Guid.NewGuid(),
+                When = DateTime.UtcNow
+            };
+
+            BookmarkRepo.Add(bookmark);
+            RefreshBookmarksTab();
+
+            _message.ShortAlert("Закладка добавлена");
+        }
+
+        private void RunReadBook(string corpusId, string file, ushort selectedParagraphIndex, SearchUnit searchUnit = null)
+        {
+            Task.Run(() =>
+            {
+                var lsiData = _lsiProvider.GetLsiData(corpusId, file);
+                var corpusFileItem = _lsiProvider.GetCorpusItem(corpusId)
+                    .GetFileByPath(file);
+                var readListItems = new List<ReadListItem>();
+                ReadListItem scrollTo = null;
+                foreach (var paragraphIndex in lsiData.Paragraphs.Keys.OrderBy(k => k))
+                {
+                    var lsiParagraph = lsiData.Paragraphs[paragraphIndex];
+                    var readListItem = ReadListItem.Construct(corpusId, file,
+                        lsiParagraph, _lsiProvider, searchUnit, () => (ushort)MainTabs.Width,
+                        async s => await DisplayAlert("", s, "OK", FlowDirection.MatchParent));
+                    readListItems.Add(readListItem);
+                    if (paragraphIndex == selectedParagraphIndex)
+                    {
+                        scrollTo = readListItem;
+                    }
+                }
+
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    ReadBookTitleLabel.Text = corpusFileItem.Name;
+                    ReadView.ItemsSource = readListItems;
+                    MainTabs.SelectedIndex = MainTabs.TabItems.IndexOf(ReadTabViewItem);
+                    ReadView.ScrollTo(scrollTo, null, ScrollToPosition.MakeVisible, false);
+                });
+            });
+        }
+
+        private void OnOpenBookmarkClick(object sender, EventArgs e)
+        {
+            var imageButton = sender as ImageButton;
+            var bookmarkListItem = imageButton.CommandParameter as BookmarkListItem;
+            Animations.OpacityToZeroAndBack(imageButton);
+            ActivateCorpus(bookmarkListItem.CorpusId);
+            RunReadBook(bookmarkListItem.CorpusId, bookmarkListItem.File, bookmarkListItem.ParagraphIndex);
+        }
+
+        private void OnDeleteBookmarkClick(object sender, EventArgs e)
+        {
+            var imageButton = sender as ImageButton;
+            var bookmarkListItem = imageButton.CommandParameter as BookmarkListItem;
+            BookmarkRepo.Delete(bookmarkListItem.BookmarkId);
+            RefreshBookmarksTab();
+            _message.ShortAlert("Закладка удалена");
         }
     }
 }
