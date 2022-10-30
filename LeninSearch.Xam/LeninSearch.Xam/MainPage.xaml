@@ -39,8 +39,12 @@
         <!-- CORPUS TAB -->
         <views:TabViewItem ControlTemplate="{StaticResource TabItemTemplate}" x:Name="CorpusTabViewItem">
             <StackLayout Orientation="Vertical">
+                <StackLayout Orientation="Horizontal" HeightRequest="36" Spacing="0" BackgroundColor="#D6181F" HorizontalOptions="FillAndExpand">
+                    <Label FontSize="Small" Text="Корпус" HorizontalOptions="FillAndExpand" HorizontalTextAlignment="Center" TextColor="White" 
+                           Margin="0, 8, 0, 0" BackgroundColor="#D6181F"></Label>
+                </StackLayout>
                 <CollectionView x:Name="CorpusCollectionView" VerticalOptions="FillAndExpand" 
-                                  BackgroundColor="White" HorizontalOptions="FillAndExpand">
+                                BackgroundColor="White" HorizontalOptions="FillAndExpand">
                     <CollectionView.ItemsLayout>
                         <LinearItemsLayout Orientation="Vertical" ItemSpacing="5" />
                     </CollectionView.ItemsLayout>
@@ -51,7 +55,7 @@
                                              BackgroundColor="White" Source="{Binding CorpusIconSource}" 
                                              CommandParameter="{Binding CorpusId}" Clicked="OnCorpusIconClick"></ImageButton>
                                 <Label HorizontalOptions="FillAndExpand" Text="{Binding CorpusTitle}" 
-                                       HorizontalTextAlignment="Center" FontSize="Small" TextColor="Black" Margin="0, 12, 0, 0"></Label>
+                                       HorizontalTextAlignment="Start" FontSize="Small" TextColor="Black" Margin="5, 12, 0, 0"></Label>
                                 <ImageButton WidthRequest="48" HeightRequest="48" Padding="12" 
                                              BackgroundColor="White" Source="trashred.png"></ImageButton>
                             </StackLayout>
@@ -64,7 +68,33 @@
         <!-- LIBRARY TAB -->
         <views:TabViewItem Icon="library.png" ControlTemplate="{StaticResource TabItemTemplate}">
             <StackLayout Orientation="Vertical">
-                <StackLayout Orientation="Vertical" x:Name="CorpusTab" VerticalOptions="FillAndExpand"></StackLayout>
+                <StackLayout Orientation="Horizontal" HeightRequest="36" Spacing="0" BackgroundColor="#D6181F" HorizontalOptions="FillAndExpand">
+                    <Label FontSize="Small" Text="Библиотека" HorizontalOptions="FillAndExpand" HorizontalTextAlignment="Center" TextColor="White" 
+                           Margin="0, 8, 0, 0" BackgroundColor="#D6181F"></Label>
+                </StackLayout>
+                <CollectionView x:Name="LibraryCollectionView" VerticalOptions="FillAndExpand" 
+                                BackgroundColor="White" HorizontalOptions="FillAndExpand">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="5" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <StackLayout Orientation="Horizontal" Spacing="0" HeightRequest="36">
+                                <Label HorizontalOptions="FillAndExpand" Text="{Binding Text}" 
+                                       HorizontalTextAlignment="Start" FontSize="Small" TextColor="Black" Margin="5, 6, 0, 0"></Label>
+                                <ImageButton WidthRequest="36" HeightRequest="36" Padding="6" 
+                                             BackgroundColor="White" Source="download.png" 
+                                             IsVisible="{Binding IsNotDownloading}"
+                                             CommandParameter="{Binding Self}" Clicked="OnLibraryDownloadClicked"></ImageButton>
+                                <ActivityIndicator x:Name="SearchActivityIndicator" Color="#D6181F" 
+                                                   IsVisible="{Binding IsDownloading}"
+                                                   IsRunning="{Binding IsDownloading}" 
+                                                   VerticalOptions="Start" WidthRequest="24" HeightRequest="24" 
+                                                   Margin="6"></ActivityIndicator>
+                            </StackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
             </StackLayout>
         </views:TabViewItem>
 
@@ -76,7 +106,7 @@
                            Margin="0, 8, 0, 0" BackgroundColor="#D6181F"></Label>
                 </StackLayout>
                 <CollectionView x:Name="BookmarkCollectionView" VerticalOptions="FillAndExpand" 
-                                BackgroundColor="White" HorizontalOptions="FillAndExpand">
+                                BackgroundColor="White" HorizontalOptions="FillAndExpand"  EmptyView="Закладок пока нет">
                     <CollectionView.ItemsLayout>
                         <LinearItemsLayout Orientation="Vertical" ItemSpacing="5" />
                     </CollectionView.ItemsLayout>
@@ -141,8 +171,10 @@
         <!-- READ TAB -->
         <views:TabViewItem x:Name="ReadTabViewItem" Icon="read.png" ControlTemplate="{StaticResource TabItemTemplate}">
             <StackLayout Orientation="Vertical" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" BackgroundColor="White" Spacing="0">
-                <StackLayout HeightRequest="20" HorizontalOptions="FillAndExpand" BackgroundColor="#D6181F">
-                    <Label x:Name="ReadBookTitleLabel" FontSize="Micro" TextColor="White" HorizontalOptions="Center" Margin="0, 2, 0, 0"></Label>
+                <StackLayout Orientation="Horizontal" HeightRequest="36" Spacing="0" BackgroundColor="#D6181F" HorizontalOptions="FillAndExpand">
+                    <Label x:Name="ReadBookTitleLabel" FontSize="Small" Text="Книга не выбрана" 
+                           HorizontalOptions="FillAndExpand" HorizontalTextAlignment="Center" TextColor="White" 
+                           Margin="0, 8, 0, 0" BackgroundColor="#D6181F"></Label>
                 </StackLayout>
                 <CollectionView x:Name="ReadView" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                     <CollectionView.ItemsLayout>
