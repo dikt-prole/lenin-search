@@ -128,11 +128,22 @@ namespace LeninSearch.Xam
 
         public static List<string> GetExistingCorpusIds()
         {
-            if (!Directory.Exists(CorpusRoot)) return new List<string>();
+            var corpusIds = new List<string>();
+
+            if (!Directory.Exists(CorpusRoot)) return corpusIds;
 
             var corpusFolders = Directory.GetDirectories(CorpusRoot);
 
-            return corpusFolders.Select(f => f.Split('\\', '/').Last()).ToList();
+            foreach (var corpusFolder in corpusFolders)
+            {
+                var corpusId = corpusFolder.Split('\\', '/').Last();
+                if (File.Exists(Path.Combine(CorpusRoot, corpusId, "corpus.json")))
+                {
+                    corpusIds.Add(corpusId);
+                }
+            }
+
+            return corpusIds;
         }
 
         public static string IconFile(string corpusId)

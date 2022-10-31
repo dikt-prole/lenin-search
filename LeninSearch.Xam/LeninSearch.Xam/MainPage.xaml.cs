@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -108,7 +110,8 @@ namespace LeninSearch.Xam
         private void RefreshCorpusTab()
         {
             var corpusItems = State.GetCorpusItems().ToList();
-            var corpusListItems = corpusItems.Select(CorpusListItem.FromCorpusItem).ToList();
+            var corpusListItems =
+                new ObservableCollection<CorpusListItem>(corpusItems.Select(CorpusListItem.FromCorpusItem));
             CorpusCollectionView.ItemsSource = corpusListItems;
         }
 
@@ -116,7 +119,7 @@ namespace LeninSearch.Xam
         {
             Task.Run(() =>
             {
-                List<LibraryListItem> libraryListItems = null;
+                ObservableCollection<LibraryListItem> libraryListItems = null;
                 var summaryResult = _apiService.GetSummaryAsync(Settings.LsiVersion).Result;
                 if (summaryResult.Success)
                 {
@@ -141,7 +144,8 @@ namespace LeninSearch.Xam
                         .GroupBy(ci => ci.Series)
                         .Select(g => g.First());
                     updates.AddRange(nonExistingSeries);
-                    libraryListItems = updates.Select(LibraryListItem.FromCorpusItem).ToList();
+                    libraryListItems =
+                        new ObservableCollection<LibraryListItem>(updates.Select(LibraryListItem.FromCorpusItem));
                 }
 
                 Device.BeginInvokeOnMainThread(() =>
@@ -496,11 +500,12 @@ namespace LeninSearch.Xam
             var imageButton = sender as ImageButton;
             var libraryListItem = imageButton.CommandParameter as LibraryListItem;
 
-            var answer = await DisplayAlert("Установка обновления", $"Установить '{libraryListItem.Update.Name}'?", "Да", "Нет");
-
-            if (!answer) return;
-
             libraryListItem.IsDownloading = true;
+
+            var sameSeriesCorpusItems = Settings.GetExistingCorpusIds()
+                .Select(cid => _lsiProvider.GetCorpusItem(cid))
+                .Where(ci => ci.Series == libraryListItem.Update.Series)
+                .ToList();
 
             // 1. create corpus folder
             var corpusFolder = Path.Combine(Settings.CorpusRoot, libraryListItem.Update.Id);
@@ -517,19 +522,45 @@ namespace LeninSearch.Xam
                 var cfiBytesResult = await _apiService.GetFileBytesAsync(libraryListItem.Update.Id, cfi.Path);
                 if (!cfiBytesResult.Success)
                 {
-                    libraryListItem.Text = "Ошибка скачивания";
+                    Directory.Delete(corpusFolder, true);
+                    libraryListItem.Text = $"Ошибка скачивания. {cfiBytesResult.Error}";
                     return;
                 }
 
                 await File.WriteAllBytesAsync(Path.Combine(corpusFolder, cfi.Path), cfiBytesResult.Bytes);
             }
 
-            // 3. remove item from collection view
+            // 3. remove same series corpus
+            foreach (var corpusItem in sameSeriesCorpusItems)
+            {
+                Directory.Delete(Path.Combine(Settings.CorpusRoot, corpusItem.Id), true);
+            }
+
             await Device.InvokeOnMainThreadAsync(() =>
             {
-                var list = LibraryCollectionView.ItemsSource as List<LibraryListItem>;
-                list = list.Except(new[] { libraryListItem }).ToList();
-                LibraryCollectionView.ItemsSource = list;
+                    // 4. remove item from library collection view
+                var collection = LibraryCollectionView.ItemsSource as ObservableCollection<LibraryListItem>;
+                collection.Remove(libraryListItem);
+
+                    // 5. remove same series items from corpus collection view
+                var corpusListItems = CorpusCollectionView.ItemsSource as ObservableCollection<CorpusListItem>;
+                foreach (var corpusItem in sameSeriesCorpusItems)
+                {
+                    var corpusListItem = corpusListItems.FirstOrDefault(cli => cli.CorpusId == corpusItem.Id);
+                    if (corpusListItem != null)
+                    {
+                        corpusListItems.Remove(corpusListItem);
+                    }
+                }
+
+                    // 6. add new item to corpus collection view
+                corpusListItems.Add(CorpusListItem.FromCorpusItem(libraryListItem.Update));
+
+                    // 7. reactivate corpus
+                if (sameSeriesCorpusItems.Any(ci => ci.Id == _state.CorpusId))
+                {
+                    ActivateCorpus(libraryListItem.Update.Id);
+                }
             });
         }
     }
