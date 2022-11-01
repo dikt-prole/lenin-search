@@ -12,6 +12,8 @@ namespace LeninSearch.Xam.ListItems
         public string Query { get; set; }
         public string Preview => SearchUnit.Preview;
         public ushort Index { get; set; }
+        public ushort SpanLength { get; set; }
+        public string Info => $"длина совпадения: {SpanLength} слов(а)";
         public SearchUnitListItem Self => this;
     }
 }

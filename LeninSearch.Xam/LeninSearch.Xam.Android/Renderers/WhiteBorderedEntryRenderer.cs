@@ -19,9 +19,16 @@ namespace LeninSearch.Xam.Droid.Renderers
             if (Control == null || e.NewElement == null) return;
 
             if (Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop)
+            {
                 Control.BackgroundTintList = ColorStateList.ValueOf(Color.White);
+                Control.SetTextCursorDrawable(Resource.Drawable.white_cursor);
+            }
             else
+            {
                 Control.Background.SetColorFilter(Color.White, PorterDuff.Mode.SrcAtop);
+                Control.SetTextCursorDrawable(Resource.Drawable.white_cursor);
+                Control.SetHintTextColor(Color.White);
+            }
         }
     }
 }

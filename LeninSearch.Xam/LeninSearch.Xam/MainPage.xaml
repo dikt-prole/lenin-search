@@ -136,7 +136,7 @@
         <views:TabViewItem Icon="search.png" ControlTemplate="{StaticResource TabItemTemplate}">
             <StackLayout Orientation="Vertical" HorizontalOptions="FillAndExpand" Margin="0" Padding="0" Spacing="0">
                 <StackLayout Orientation="Horizontal" HorizontalOptions="Fill" Spacing="0" BackgroundColor="#D6181F" HeightRequest="34" Margin="0" IsClippedToBounds="True">
-                    <ActivityIndicator x:Name="SearchActivityIndicator" Color="#D6181F" IsRunning="False" VerticalOptions="Start" 
+                    <ActivityIndicator x:Name="SearchActivityIndicator" Color="White" IsRunning="False" VerticalOptions="Start" 
                                        WidthRequest="24" HeightRequest="24" Margin="6"></ActivityIndicator>
                     <ImageButton Padding="6" x:Name="SearchModeButton" WidthRequest="36" HeightRequest="36" Source="paragraph.png" 
                                  BackgroundColor="#D6181F" HorizontalOptions="Start" Margin="0" 
@@ -162,7 +162,7 @@
                                 <controls:ExtendedLabel TextColor="Black" Margin="0" FontSize="Micro" LineBreakMode="WordWrap" 
                                                         Text="{Binding Preview}" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" JustifyText="True">
                                 </controls:ExtendedLabel>
-                                <Label Margin="0" FontSize="Micro" Text="{Binding Query}" LineBreakMode="NoWrap"></Label>
+                                <Label Margin="0" FontSize="Micro" Text="{Binding Info}" LineBreakMode="NoWrap"></Label>
                             </StackLayout>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>

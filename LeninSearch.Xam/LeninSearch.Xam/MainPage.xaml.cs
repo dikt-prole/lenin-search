@@ -268,13 +268,14 @@ namespace LeninSearch.Xam
                                 CorpusId = _state.CorpusId,
                                 File = file,
                                 SearchUnit = searchUnit,
-                                Query = query
+                                Query = query,
+                                SpanLength = searchUnit.SpanLength
                             });
                         }
                     }
                 }
 
-                searchUnitListItems = searchUnitListItems.OrderBy(x => x.SearchUnit.Priority).ToList();
+                searchUnitListItems = searchUnitListItems.OrderBy(x => x.SearchUnit.SpanLength).ToList();
                 for (ushort i = 0; i < searchUnitListItems.Count; i++)
                 {
                     searchUnitListItems[i].Index = (ushort)(i + 1);

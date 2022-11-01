@@ -40,7 +40,7 @@ namespace LeninSearch.Standard.Core.Api
                 WordIndexChains = WordIndexChains.Select(wic => new WordIndexChain {WordIndexes = wic}).ToList(),
                 Preview = Preview,
                 Title = Title,
-                Priority = Priority
+                SpanLength = Priority
             };
 
             return result;;

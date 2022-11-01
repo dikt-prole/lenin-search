@@ -8,6 +8,7 @@ namespace LeninSearch.Standard.Core.Search
     {
         private readonly int _tokenIndexCountCutoff;
         private readonly int _resultCountCutoff;
+        public const ushort MaxSpanLength = 20;
 
         public LsSearcher(int tokenIndexCountCutoff = int.MaxValue, int resultCountCutoff = int.MaxValue)
         {
@@ -122,7 +123,10 @@ namespace LeninSearch.Standard.Core.Search
             foreach (var paragraphIndex in wordChains.Keys)
             {
                 var searchResult = new SearchUnit(paragraphIndex, wordChains[paragraphIndex]);
-                result.Add(searchResult);
+                if (searchResult.SpanLength < MaxSpanLength)
+                {
+                    result.Add(searchResult);
+                }
             }
 
             result = result.Take(_resultCountCutoff).ToList();
