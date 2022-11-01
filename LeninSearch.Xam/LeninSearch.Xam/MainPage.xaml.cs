@@ -29,9 +29,6 @@ namespace LeninSearch.Xam
         private readonly ApiService _apiService = new ApiService();
         private readonly IMessage _message = DependencyService.Get<IMessage>();
         private readonly ITextMeasure _textMeasure = DependencyService.Get<ITextMeasure>();
-        private readonly Span _searchResultTitleSpan;
-        private bool _isRunningCorpusUpdate = false;
-
         private State _state;
 
         public MainPage(GlobalEvents globalEvents)
@@ -186,46 +183,6 @@ namespace LeninSearch.Xam
         {
             RefreshAllTabs();
             _state.ReadingFile = null;
-        }
-
-        private Button ConstructHyperlinkButton(string text, double fontSize, Action action)
-        {
-            var textWidth = _textMeasure.Width(text, null, (float)fontSize);
-            var button = new Button
-            {
-                BackgroundColor = Color.White,
-                TextColor = Settings.UI.MainColor,
-                Text = text,
-                FontSize = fontSize,
-                Padding = 0,
-                Margin = 5,
-                TextTransform = TextTransform.None,
-                HeightRequest = 24,
-                WidthRequest = 24 + textWidth
-            };
-            button.Clicked += (sender, args) => action();
-
-            return button;
-        }
-
-        private Span AttachCommandToLabel(Label label, Command command)
-        {
-            var gestureRecognizer = new TapGestureRecognizer { Command = command };
-            var cfiSpan = new Span
-            {
-                Text = label.Text,
-                TextColor = label.TextColor,
-                TextDecorations = label.TextDecorations,
-                FontSize = label.FontSize
-            };
-            cfiSpan.GestureRecognizers.Add(gestureRecognizer);
-            var fString = new FormattedString();
-            fString.Spans.Add(cfiSpan);
-
-            label.FormattedText = fString;
-            label.Text = null;
-
-            return cfiSpan;
         }
 
         private void OnSearchButtonPressed()

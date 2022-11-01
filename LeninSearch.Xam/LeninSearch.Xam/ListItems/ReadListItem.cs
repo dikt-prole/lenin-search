@@ -116,12 +116,13 @@ namespace LeninSearch.Xam.ListItems
                     FontAttributes = paragraph.IsHeading
                         ? FontAttributes.Bold
                         : GetFontAttributes(lsiSpan.Type),
-                    //FontFamily = paragraph.IsHeading 
-                    //    ? Settings.UI.Font.Bold 
-                    //    : FontFamily(lsiSpan.Type),
-                    TextDecorations = TextDecorations.None,
-                    FontSize = Settings.UI.Font.ReadingFontSize
+                    TextDecorations = TextDecorations.None
                 };
+
+                if (lsiSpan.Type == LsiSpanType.SearchResult)
+                {
+                    span.BackgroundColor = Settings.UI.Colors.ReadSearchMatchColor;
+                }
 
                 if (lsiSpan.Type == LsiSpanType.Comment)
                 {
@@ -163,7 +164,6 @@ namespace LeninSearch.Xam.ListItems
             switch (spanType)
             {
                 case LsiSpanType.Strong:
-                case LsiSpanType.SearchResult:
                     return FontAttributes.Bold;
                 case LsiSpanType.Emphasis:
                     return FontAttributes.Italic;
@@ -175,9 +175,8 @@ namespace LeninSearch.Xam.ListItems
         {
             switch (spanType)
             {
-                case LsiSpanType.SearchResult:
                 case LsiSpanType.Comment:
-                    return Settings.UI.MainColor;
+                    return Settings.UI.Colors.MainColor;
                 default:
                     return Color.Black;
             }
