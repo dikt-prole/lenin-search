@@ -100,7 +100,7 @@
 
         <!-- BOOKMARK TAB -->
         <views:TabViewItem Icon="bookmark.png" ControlTemplate="{StaticResource TabItemTemplate}">
-            <StackLayout Orientation="Vertical" x:Name="BookmarkTab">
+            <StackLayout Orientation="Vertical" x:Name="BookmarkTab" Spacing="0">
                 <StackLayout Orientation="Horizontal" HeightRequest="36" Spacing="0" BackgroundColor="#D6181F" HorizontalOptions="FillAndExpand">
                     <Label FontSize="Small" Text="Закладки" HorizontalOptions="FillAndExpand" HorizontalTextAlignment="Center" TextColor="White" 
                            Margin="0, 8, 0, 0" BackgroundColor="#D6181F"></Label>
@@ -134,15 +134,17 @@
 
         <!-- SEARCH TAB -->
         <views:TabViewItem Icon="search.png" ControlTemplate="{StaticResource TabItemTemplate}">
-            <StackLayout x:Name="HeaderStack" Orientation="Vertical" HorizontalOptions="FillAndExpand" Margin="0" Padding="0" Spacing="0">
-                <StackLayout x:Name="TopLayout" Orientation="Horizontal" HorizontalOptions="Fill" Spacing="0" BackgroundColor="White"   Margin="0">
-                    <ActivityIndicator x:Name="SearchActivityIndicator" Color="#D6181F" IsRunning="False" VerticalOptions="Start" WidthRequest="32" HeightRequest="32" Margin="8"></ActivityIndicator>
-                    <ImageButton Padding="12" x:Name="SearchModeButton" WidthRequest="48" HeightRequest="48" Source="paragraph.png" 
-                                 BackgroundColor="White" HorizontalOptions="Start" Margin="0" 
+            <StackLayout Orientation="Vertical" HorizontalOptions="FillAndExpand" Margin="0" Padding="0" Spacing="0">
+                <StackLayout Orientation="Horizontal" HorizontalOptions="Fill" Spacing="0" BackgroundColor="#D6181F" HeightRequest="34" Margin="0" IsClippedToBounds="True">
+                    <ActivityIndicator x:Name="SearchActivityIndicator" Color="#D6181F" IsRunning="False" VerticalOptions="Start" 
+                                       WidthRequest="24" HeightRequest="24" Margin="6"></ActivityIndicator>
+                    <ImageButton Padding="6" x:Name="SearchModeButton" WidthRequest="36" HeightRequest="36" Source="paragraph.png" 
+                                 BackgroundColor="#D6181F" HorizontalOptions="Start" Margin="0" 
                                  Clicked="OnSearchModeButtonClick" CommandParameter="0"></ImageButton>
-                    <Entry x:Name="SearchEntry" Placeholder="Введите запрос" ReturnType="Search" HorizontalOptions="FillAndExpand" Margin="0" FontSize="Small" TextColor="Black" MinimumWidthRequest="100"></Entry>
+                    <controls:WhiteBorderedEntry x:Name="SearchEntry" Placeholder="Введите запрос" ReturnType="Search"
+                           HorizontalOptions="FillAndExpand" Margin="0" FontSize="Small" TextColor="White" 
+                           BackgroundColor="#D6181F" HeightRequest="36"></controls:WhiteBorderedEntry>
                 </StackLayout>
-                <StackLayout HorizontalOptions="FillAndExpand" HeightRequest="1" BackgroundColor="#D6181F"></StackLayout>
                 <CollectionView x:Name="SearchResultsView" EmptyView="Ничего не найдено, попробуйте другой запрос">
                     <CollectionView.ItemsLayout>
                         <LinearItemsLayout Orientation="Vertical" ItemSpacing="5" />

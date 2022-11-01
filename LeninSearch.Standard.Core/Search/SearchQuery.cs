@@ -10,7 +10,6 @@ namespace LeninSearch.Standard.Core.Search
         public List<SearchToken> Ordered { get; set; }
         public List<SearchToken> NonOrdered { get; set; }
         public SearchMode Mode { get; set; }
-        public ushort Priority { get; set; }
         public bool IsHeading => Mode == SearchMode.Heading;
 
         public static SearchQuery Construct(string text, string[] dictionary, SearchMode mode)

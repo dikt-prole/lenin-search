@@ -55,7 +55,6 @@ namespace LeninSearch.Xam
 
             // search entry
             SearchEntry.Text = "национальный вопрос";
-            SearchEntry.FontSize = Settings.UI.Font.NormalFontSize;
             SearchEntry.ReturnCommand = new Command(OnSearchButtonPressed);
 
             // paragraphs

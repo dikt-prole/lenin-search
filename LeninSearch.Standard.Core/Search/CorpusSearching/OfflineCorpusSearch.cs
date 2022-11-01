@@ -28,7 +28,7 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
             var queryKey = $"{corpusId}-{query}-{mode}";
             if (!_queryCache.ContainsKey(queryKey))
             {
-                var cacheQueries = _queryFactory.Construct(query, dictionary.Words, mode).OrderBy(q => q.Priority).ToList();
+                var cacheQueries = _queryFactory.Construct(query, dictionary.Words, mode).ToList();
                 foreach (var searchQuery in cacheQueries)
                 {
                     searchQuery.Mode = mode;

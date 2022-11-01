@@ -29,7 +29,6 @@ namespace LeninSearch.Standard.Core.Search
 
             var initialSplit = new SearchSplit
             {
-                Priority = 0,
                 Tokens = queryText.Split(' ', StringSplitOptions.RemoveEmptyEntries)
             };
 
@@ -38,7 +37,6 @@ namespace LeninSearch.Standard.Core.Search
             foreach (var variedSplit in variedSplits)
             {
                 var variedQuery = SearchQuery.Construct(string.Join(' ', variedSplit.Tokens), dictionary, mode);
-                variedQuery.Priority = variedSplit.Priority;
 
                 yield return variedQuery;
 
@@ -49,8 +47,6 @@ namespace LeninSearch.Standard.Core.Search
                         .Concat(variedSplit.Tokens.Skip(tokenIndex));
 
                     var variedWithPlusQuery = SearchQuery.Construct(string.Join(' ', variedWithPlusTokens), dictionary, mode);
-
-                    variedWithPlusQuery.Priority = (ushort)(variedSplit.Priority + 10 * (variedSplit.Tokens.Length - tokenIndex));
 
                     yield return variedWithPlusQuery;
                 }
@@ -66,7 +62,6 @@ namespace LeninSearch.Standard.Core.Search
                 {
                     yield return new SearchSplit
                     {
-                        Priority = zeroIndexToken.Omit,
                         Tokens = new[] { zeroIndexToken.Token }
                     };
                 }
@@ -77,7 +72,6 @@ namespace LeninSearch.Standard.Core.Search
             var smallerSplit = new SearchSplit
             {
                 Tokens = split.Tokens.Skip(1).ToArray(),
-                Priority = 0
             };
 
             var variedSplits = VarySplit(smallerSplit).ToList();
@@ -87,8 +81,7 @@ namespace LeninSearch.Standard.Core.Search
                 {
                     yield return new SearchSplit
                     {
-                        Tokens = new[] { zeroIndexToken.Token }.Concat(variedSplit.Tokens).ToArray(),
-                        Priority = (ushort)(zeroIndexToken.Omit + variedSplit.Priority)
+                        Tokens = new[] { zeroIndexToken.Token }.Concat(variedSplit.Tokens).ToArray()
                     };
                 }
             }

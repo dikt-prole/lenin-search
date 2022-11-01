@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using LeninSearch.Standard.Core.Corpus;
 using LeninSearch.Standard.Core.Corpus.Lsi;
+using Newtonsoft.Json;
 
 namespace LeninSearch.Standard.Core.Search
 {
@@ -28,6 +29,22 @@ namespace LeninSearch.Standard.Core.Search
                     WordIndexes = wordDatas.Select(w => w.WordIndex).ToList()
                 }
             };
+
+            Priority = 0;
+            if (wordDatas.Count > 1)
+            {
+                for (var i = 0; i < wordDatas.Count; i++)
+                {
+                    for (var j = 0; j < i; j++)
+                    {
+                        var wordDistance = Math.Abs(wordDatas[i].WordPosition - wordDatas[j].WordPosition);
+                        if (wordDistance > Priority)
+                        {
+                            Priority = (ushort)wordDistance;
+                        }
+                    }
+                }
+            }
         }
 
         public void AddChain(WordIndexChain chain)
