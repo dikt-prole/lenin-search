@@ -135,14 +135,15 @@
         <!-- SEARCH TAB -->
         <views:TabViewItem Icon="search.png" ControlTemplate="{StaticResource TabItemTemplate}">
             <StackLayout Orientation="Vertical" HorizontalOptions="FillAndExpand" Margin="0" Padding="0" Spacing="0">
-                <StackLayout Orientation="Horizontal" HorizontalOptions="Fill" Spacing="0" BackgroundColor="#D6181F" HeightRequest="34" Margin="0" IsClippedToBounds="True">
+                <StackLayout Orientation="Horizontal" HorizontalOptions="Fill" Spacing="0" BackgroundColor="#D6181F" 
+                             HeightRequest="34" Margin="0" IsClippedToBounds="True">
                     <ActivityIndicator x:Name="SearchActivityIndicator" Color="White" IsRunning="False" VerticalOptions="Start" 
                                        WidthRequest="24" HeightRequest="24" Margin="6"></ActivityIndicator>
                     <ImageButton Padding="6" x:Name="SearchModeButton" WidthRequest="36" HeightRequest="36" Source="paragraph.png" 
                                  BackgroundColor="#D6181F" HorizontalOptions="Start" Margin="0" 
                                  Clicked="OnSearchModeButtonClick" CommandParameter="0"></ImageButton>
                     <controls:WhiteBorderedEntry x:Name="SearchEntry" Placeholder="Введите запрос" ReturnType="Search"
-                           HorizontalOptions="FillAndExpand" Margin="0" FontSize="Small" TextColor="White" 
+                           HorizontalOptions="FillAndExpand" Margin="0, 0, 0, -2" FontSize="Small" TextColor="White" 
                            BackgroundColor="#D6181F" HeightRequest="36"></controls:WhiteBorderedEntry>
                 </StackLayout>
                 <CollectionView x:Name="SearchResultsView" EmptyView="Ничего не найдено, попробуйте другой запрос">
@@ -225,10 +226,11 @@
         <!-- SUMMARY TAB -->
         <views:TabViewItem Icon="summary.png" ControlTemplate="{StaticResource TabItemTemplate}">
             <StackLayout Orientation="Vertical" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" Spacing="0">
-                <StackLayout Orientation="Horizontal" HeightRequest="36" Spacing="0" BackgroundColor="#D6181F">
+                <StackLayout Orientation="Horizontal" HorizontalOptions="Fill" Spacing="0" BackgroundColor="#D6181F" 
+                             HeightRequest="34" Margin="0" IsClippedToBounds="True">
                     <Label FontSize="Small" Text="Содержание: " HorizontalOptions="Start" TextColor="White" Margin="5, 8, 0, 5" BackgroundColor="#D6181F"></Label>
-                    <Picker x:Name="SummaryBookPicker" HeightRequest="36" FontSize="Small" TextColor="White" 
-                            HorizontalOptions="FillAndExpand" BackgroundColor="#D6181F" Margin="0, 0, 5, 0" SelectedIndexChanged="SummaryBookPickerOnSelectedIndexChanged"></Picker>
+                    <controls:WhiteBorderedPicker x:Name="SummaryBookPicker" HeightRequest="36" FontSize="Small" TextColor="White" 
+                            HorizontalOptions="FillAndExpand" BackgroundColor="#D6181F" Margin="0, 0, 0, -2" SelectedIndexChanged="SummaryBookPickerOnSelectedIndexChanged"></controls:WhiteBorderedPicker>
                 </StackLayout>
                 <CollectionView x:Name="SummaryView" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                     <CollectionView.ItemsLayout>

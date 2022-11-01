@@ -92,6 +92,7 @@
     <Compile Include="MainActivity.cs" />
     <Compile Include="Renderers\NoKeyboardEntryRenderer.cs" />
     <Compile Include="Renderers\WhiteBorderedEntryRenderer.cs" />
+    <Compile Include="Renderers\WhiteBorderedPickerRenderer.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SplashActivity.cs" />
