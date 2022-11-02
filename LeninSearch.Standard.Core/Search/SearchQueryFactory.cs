@@ -42,6 +42,10 @@ namespace LeninSearch.Standard.Core.Search
                 Debug.WriteLine(string.Join(" ", subset));
             }
 
+            // todo:
+            // 1. use prioritized subsets
+            // 2. more optimal search query construction (same word indexes for a token)
+
             if (allTokens.Length > 1)
             {
                 for (var i = 0; i < allTokens.Length; i++)
