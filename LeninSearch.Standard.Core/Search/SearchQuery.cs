@@ -10,19 +10,18 @@ namespace LeninSearch.Standard.Core.Search
         public List<SearchToken> Ordered { get; set; }
         public List<SearchToken> NonOrdered { get; set; }
         public SearchMode Mode { get; set; }
-        public bool IsHeading => Mode == SearchMode.Heading;
+        public ushort Priority { get; set; }
 
-        public static SearchQuery Construct(string text, string[] dictionary, SearchMode mode)
+        public static SearchQuery Construct(string text, string[] dictionary, SearchMode mode, ushort priority)
         {
             var request = new SearchQuery
             {
                 Text = text,
                 Ordered = new List<SearchToken>(),
                 NonOrdered = new List<SearchToken>(),
-                Mode = text.StartsWith('*') ? SearchMode.Heading : SearchMode.Paragraph
+                Mode = mode,
+                Priority = priority
             };
-
-            text = text.TrimStart('*', ' ');
 
             var plusIndex = text.IndexOf('+');
             if (plusIndex < 0)

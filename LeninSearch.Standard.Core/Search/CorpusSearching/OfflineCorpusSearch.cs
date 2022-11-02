@@ -28,7 +28,7 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
             var queryKey = $"{corpusId}-{query}-{mode}";
             if (!_queryCache.ContainsKey(queryKey))
             {
-                var cacheQueries = _queryFactory.Construct(query, dictionary.Words, mode).ToList();
+                var cacheQueries = _queryFactory.Construct(query, dictionary.Words, mode).OrderBy(q => q.Priority).ToList();
                 foreach (var searchQuery in cacheQueries)
                 {
                     searchQuery.Mode = mode;
@@ -41,7 +41,7 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
             Debug.WriteLine("Search queries:");
             foreach (var searchQuery in searchQueries)
             {
-                Debug.WriteLine(searchQuery.Text);
+                Debug.WriteLine($"{searchQuery.Text}, priority={searchQuery.Priority}, mode={searchQuery.Mode}");
             }
 
             var result = new SearchResult { Units = new Dictionary<string, Dictionary<string, List<SearchUnit>>>() };
@@ -53,7 +53,7 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
                 var queryUnits = new Dictionary<string, List<SearchUnit>>();
                 var lsiData = _lsiProvider.GetLsiData(corpusId, cfi.Path);
                 var excludeParagraphs = new HashSet<ushort>();
-                foreach (var searchQuery in searchQueries)
+                foreach (var searchQuery in searchQueries.OrderBy(q => q.Priority))
                 {
                     var units = InnerSearch(lsiData, searchQuery, dictionary, cfi, excludeParagraphs);
                     if (units.Any())

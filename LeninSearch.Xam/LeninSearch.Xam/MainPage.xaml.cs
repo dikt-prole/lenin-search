@@ -43,7 +43,7 @@ namespace LeninSearch.Xam
             //    Settings.TokenIndexCountCutoff, Settings.ResultCountCutoff);
 
             _corpusSearch = new OfflineCorpusSearch(_lsiProvider,
-                new SearchQueryFactory(new PorterTokenVariantProvider()),
+                new SearchQueryFactory(),
                 Settings.TokenIndexCountCutoff,
                 Settings.ResultCountCutoff);
 
@@ -51,7 +51,7 @@ namespace LeninSearch.Xam
             //CorpusRefreshButton.Clicked += async (sender, args) => await ShowUpdates();
 
             // search entry
-            SearchEntry.Text = "национальный вопрос";
+            SearchEntry.Text = "диктатура пролетариата научный латинский";
             SearchEntry.ReturnCommand = new Command(OnSearchButtonPressed);
 
             // paragraphs

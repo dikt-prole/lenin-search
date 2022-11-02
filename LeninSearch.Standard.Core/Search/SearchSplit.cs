@@ -2,6 +2,7 @@
 {
     public class SearchSplit
     {
+        public ushort Priority { get; set; }
         public string[] Tokens { get; set; }
     }
 }

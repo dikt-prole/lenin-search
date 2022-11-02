@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using LeninSearch.Standard.Core.Search.TokenVarying;
 
@@ -7,11 +8,11 @@ namespace LeninSearch.Standard.Core.Search
 {
     public class SearchQueryFactory : ISearchQueryFactory
     {
-        private readonly ITokenVariantProvider _tokenVariantProvider;
+        private readonly RuPorter _stemmer;
 
-        public SearchQueryFactory(ITokenVariantProvider tokenVariantProvider)
+        public SearchQueryFactory()
         {
-            _tokenVariantProvider = tokenVariantProvider;
+            _stemmer = new RuPorter();
         }
 
         public IEnumerable<SearchQuery> Construct(string queryText, string[] dictionary, SearchMode mode)
@@ -23,67 +24,67 @@ namespace LeninSearch.Standard.Core.Search
 
             if (queryText.Contains('*') || queryText.Contains('+'))
             {
-                yield return SearchQuery.Construct(queryText, dictionary, mode);
+                yield return SearchQuery.Construct(queryText, dictionary, mode, 0);
                 yield break;
             }
 
-            var initialSplit = new SearchSplit
+            // level 1
+            var allTokens = queryText.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(s => $"{_stemmer.Stemm(s)}*" ).ToArray();
+            foreach (var searchQuery in GetQueryVariants(allTokens, 1, dictionary, mode))
             {
-                Tokens = queryText.Split(' ', StringSplitOptions.RemoveEmptyEntries)
-            };
+                yield return searchQuery;
+            }
 
-            var variedSplits = VarySplit(initialSplit);
-
-            foreach (var variedSplit in variedSplits)
+            var subsets = SubSetsOf(allTokens).Select(ss => ss.ToArray()).ToArray();
+            Debug.WriteLine("Subsets:");
+            foreach (var subset in subsets.OrderByDescending(s => s.Length))
             {
-                var variedQuery = SearchQuery.Construct(string.Join(' ', variedSplit.Tokens), dictionary, mode);
+                Debug.WriteLine(string.Join(" ", subset));
+            }
 
-                yield return variedQuery;
-
-                for (var tokenIndex = 1; tokenIndex < variedSplit.Tokens.Length; tokenIndex++)
+            if (allTokens.Length > 1)
+            {
+                for (var i = 0; i < allTokens.Length; i++)
                 {
-                    var variedWithPlusTokens = variedSplit.Tokens.Take(tokenIndex)
-                        .Concat(new[] { "+" })
-                        .Concat(variedSplit.Tokens.Skip(tokenIndex));
-
-                    var variedWithPlusQuery = SearchQuery.Construct(string.Join(' ', variedWithPlusTokens), dictionary, mode);
-
-                    yield return variedWithPlusQuery;
+                    // level 2
+                    var levelTwoSplit = allTokens.Take(i).Concat(allTokens.Skip(i + 1)).ToArray();
+                    foreach (var searchQuery in GetQueryVariants(levelTwoSplit, 100, dictionary, mode))
+                    {
+                        yield return searchQuery;
+                    }
                 }
             }
         }
 
-        private IEnumerable<SearchSplit> VarySplit(SearchSplit split)
+        /// <summary>
+        /// https://stackoverflow.com/a/999182/6483508
+        /// </summary>
+        public static IEnumerable<IEnumerable<T>> SubSetsOf<T>(IEnumerable<T> source)
         {
-            var zeroIndexTokens = _tokenVariantProvider.Vary(split.Tokens[0]).ToList();
-            if (split.Tokens.Length == 1)
-            {
-                foreach (var zeroIndexToken in zeroIndexTokens)
-                {
-                    yield return new SearchSplit
-                    {
-                        Tokens = new[] { zeroIndexToken.Token }
-                    };
-                }
+            if (!source.Any())
+                return Enumerable.Repeat(Enumerable.Empty<T>(), 1);
 
-                yield break;
-            }
+            var element = source.Take(1);
 
-            var smallerSplit = new SearchSplit
-            {
-                Tokens = split.Tokens.Skip(1).ToArray(),
-            };
+            var haveNots = SubSetsOf(source.Skip(1));
+            var haves = haveNots.Select(set => element.Concat(set));
 
-            var variedSplits = VarySplit(smallerSplit).ToList();
-            foreach (var zeroIndexToken in zeroIndexTokens)
+            return haves.Concat(haveNots);
+        }
+
+        private IEnumerable<SearchQuery> GetQueryVariants(string[] tokens, ushort basePriority, string[] dictionary, SearchMode mode)
+        {
+            yield return SearchQuery.Construct(string.Join(' ', tokens), dictionary, mode, basePriority);
+            for (var tokenIndex = 1; tokenIndex < tokens.Length; tokenIndex++)
             {
-                foreach (var variedSplit in variedSplits)
-                {
-                    yield return new SearchSplit
-                    {
-                        Tokens = new[] { zeroIndexToken.Token }.Concat(variedSplit.Tokens).ToArray()
-                    };
-                }
+                var variedWithPlusTokens = tokens.Take(tokenIndex)
+                    .Concat(new[] { "+" })
+                    .Concat(tokens.Skip(tokenIndex));
+
+                var priority = (ushort)(basePriority + 10 * (tokens.Length - tokenIndex));
+                var variedWithPlusQuery = SearchQuery.Construct(string.Join(' ', variedWithPlusTokens), dictionary, mode, priority);
+
+                yield return variedWithPlusQuery;
             }
         }
     }
