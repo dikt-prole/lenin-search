@@ -34,6 +34,26 @@ namespace LeninSearch.Xam.Core
             }
         }
 
+        public (List<CorpusItem> Summary, bool Success, string Error) GetSummary(int lsiVersion)
+        {
+            try
+            {
+                var summaryJson = _httpClient.GetStringAsync(Settings.Web.SummaryUrl).Result;
+
+                var corpusItems = JsonConvert.DeserializeObject<List<CorpusItem>>(summaryJson);
+
+                var resultCorpusItems = corpusItems
+                    .Where(ci => ci.LsiVersion <= lsiVersion)
+                    .ToList();
+
+                return (resultCorpusItems, true, null);
+            }
+            catch (Exception exc)
+            {
+                return (null, false, exc.Message);
+            }
+        }
+
         public async Task<(byte[] Bytes, bool Success, string Error)> GetFileBytesAsync(string corpusId, string file)
         {
             try

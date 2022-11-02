@@ -121,8 +121,8 @@ namespace LeninSearch.Xam
                 {
                     var summary = summaryResult.Summary;
                     var updates = new List<CorpusItem>();
-                    var existingCorpusIds = Settings.GetExistingCorpusIds();
-                    var existingCorpusItems = existingCorpusIds.Select(id => summary.FirstOrDefault(ci => ci.Id == id))
+                    var finishedCorpusIds = Settings.GetFinishedCorpusIds();
+                    var existingCorpusItems = finishedCorpusIds.Select(id => summary.FirstOrDefault(ci => ci.Id == id))
                         .Where(ci => ci != null).ToList();
                     foreach (var existingCi in existingCorpusItems)
                     {
@@ -459,7 +459,7 @@ namespace LeninSearch.Xam
 
             libraryListItem.IsDownloading = true;
 
-            var sameSeriesCorpusItems = Settings.GetExistingCorpusIds()
+            var sameSeriesCorpusItems = Settings.GetFinishedCorpusIds()
                 .Select(cid => _lsiProvider.GetCorpusItem(cid))
                 .Where(ci => ci.Series == libraryListItem.Update.Series)
                 .ToList();

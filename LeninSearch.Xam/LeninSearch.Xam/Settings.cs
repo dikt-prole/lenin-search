@@ -99,7 +99,7 @@ namespace LeninSearch.Xam
             return Directory.Exists(Path.Combine(CorpusRoot, corpusId));
         }
 
-        public static List<string> GetExistingCorpusIds()
+        public static List<string> GetFinishedCorpusIds()
         {
             var corpusIds = new List<string>();
 
@@ -111,6 +111,26 @@ namespace LeninSearch.Xam
             {
                 var corpusId = corpusFolder.Split('\\', '/').Last();
                 if (File.Exists(Path.Combine(CorpusRoot, corpusId, "corpus.json")))
+                {
+                    corpusIds.Add(corpusId);
+                }
+            }
+
+            return corpusIds;
+        }
+
+        public static List<string> GetUnfinishedCorpusIds()
+        {
+            var corpusIds = new List<string>();
+
+            if (!Directory.Exists(CorpusRoot)) return corpusIds;
+
+            var corpusFolders = Directory.GetDirectories(CorpusRoot);
+
+            foreach (var corpusFolder in corpusFolders)
+            {
+                var corpusId = corpusFolder.Split('\\', '/').Last();
+                if (!File.Exists(Path.Combine(CorpusRoot, corpusId, "corpus.json")))
                 {
                     corpusIds.Add(corpusId);
                 }

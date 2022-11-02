@@ -1,4 +1,5 @@
-﻿using Android.App;
+﻿using System.Collections.Generic;
+using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Widget;
@@ -40,18 +41,16 @@ namespace LeninSearch.Xam.Droid
                 Directory.CreateDirectory(Settings.CorpusRoot);
             }
 
-            var existingCorpusIds = Settings.GetExistingCorpusIds();
+            var finishedCorpusIds = Settings.GetFinishedCorpusIds();
             var apiService = new ApiService();
-            var summaryResult = apiService.GetSummaryAsync(Settings.LsiVersion).Result;
+            var summaryResult = apiService.GetSummary(Settings.LsiVersion);
 
             // 1. failed to get summary case
             if (!summaryResult.Success)
             {
                 foreach (var series in Settings.InitialSeries)
                 {
-                    var corpusId = existingCorpusIds.FirstOrDefault(id => id.StartsWith(series));
-                    // corpus.json is loaded last. So if the file exists it means corpus was loaded fine.
-                    if (corpusId == null || !File.Exists(Path.Combine(Settings.CorpusRoot, corpusId, "corpus.json")))
+                    if (finishedCorpusIds.All(cid => !cid.StartsWith(series)))
                     {
                         SetSpalshText(Settings.Misc.SplashApiError);
                         return;
@@ -64,18 +63,15 @@ namespace LeninSearch.Xam.Droid
 
             // 2. calculate corpus ids that need to be repaired
             var summary = summaryResult.Summary;
-            var repairIds = existingCorpusIds.Where(id => !File.Exists(Path.Combine(Settings.CorpusRoot, id, "corpus.json"))).ToList();
+            var repairCorpusIds = new List<string>(Settings.GetUnfinishedCorpusIds());
             foreach (var series in Settings.InitialSeries)
             {
-                if (existingCorpusIds.Any(f => f.StartsWith(series))) continue;
-
                 var corpusId = summary.Where(ci => ci.Series == series).OrderByDescending(ci => ci.CorpusVersion).First().Id;
-
-                repairIds.Add(corpusId);
+                repairCorpusIds.Add(corpusId);
             }
 
             // 3. repair
-            foreach (var corpusId in repairIds)
+            foreach (var corpusId in repairCorpusIds)
             {
                 var corpusFolder = Path.Combine(Settings.CorpusRoot, corpusId);
                 if (!Directory.Exists(corpusFolder))
@@ -87,7 +83,7 @@ namespace LeninSearch.Xam.Droid
 
                 foreach (var cfi in corpusItem.Files)
                 {
-                    SetSpalshText($"Скачиваю: '{cfi.Path}'");
+                    SetSpalshText($"Скачиваю {corpusItem.Name}: '{cfi.Path}'");
                     var filePath = Path.Combine(corpusFolder, cfi.Path);
                     if (!File.Exists(filePath))
                     {
