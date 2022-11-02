@@ -308,15 +308,13 @@ namespace LeninSearch.Xam
         private void OnSummaryItemTapped(object sender, EventArgs e)
         {
             var stackLayout = sender as StackLayout;
+            Animations.OpacityToZeroAndBack(stackLayout);
             var summaryListItem = (stackLayout.GestureRecognizers[0] as TapGestureRecognizer).CommandParameter as SummaryListItem;
             RunReadBook(summaryListItem.CorpusId, summaryListItem.File, summaryListItem.ParagraphIndex);
         }
 
-        private void OnReadItemTapped(object sender, EventArgs e)
+        private void OnReadItemTapped(ReadListItem readListItem)
         {
-            var stackLayout = sender as StackLayout;
-            var gestureRecognizer = stackLayout.GestureRecognizers[0] as TapGestureRecognizer;
-            var readListItem = gestureRecognizer.CommandParameter as ReadListItem;
             if (readListItem.Info == null)
             {
                 var lsiData = _lsiProvider.GetLsiData(readListItem.CorpusId, readListItem.File);
@@ -387,7 +385,8 @@ namespace LeninSearch.Xam
                     var lsiParagraph = lsiData.Paragraphs[paragraphIndex];
                     var readListItem = ReadListItem.Construct(corpusId, file,
                         lsiParagraph, _lsiProvider, searchUnit, () => (ushort)MainTabs.Width,
-                        async s => await DisplayAlert("", s, "OK", FlowDirection.MatchParent));
+                        async s => await DisplayAlert("", s, "OK", FlowDirection.MatchParent),
+                        OnReadItemTapped);
                     readListItems.Add(readListItem);
                     if (paragraphIndex == selectedParagraphIndex)
                     {
@@ -519,6 +518,25 @@ namespace LeninSearch.Xam
                     ActivateCorpus(libraryListItem.Update.Id);
                 }
             });
+        }
+
+        private async void OnDeleteCorpusClicked(object sender, EventArgs e)
+        {
+            var imageButton = sender as ImageButton;
+            var corpusListItem = imageButton.CommandParameter as CorpusListItem;
+
+            var alertResult = await DisplayAlert("", $"Удалить '{corpusListItem.CorpusTitle}'?", "OK", "ОТМЕНА");
+
+            if (!alertResult) return;
+
+            var corpusFolder = Path.Combine(Settings.CorpusRoot, corpusListItem.CorpusId);
+            if (Directory.Exists(corpusFolder))
+            {
+                Directory.Delete(corpusFolder, true);
+            }
+
+            var corpusListItems = CorpusCollectionView.ItemsSource as ObservableCollection<CorpusListItem>;
+            corpusListItems.Remove(corpusListItem);
         }
     }
 }

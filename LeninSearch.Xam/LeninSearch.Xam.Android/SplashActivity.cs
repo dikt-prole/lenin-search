@@ -83,10 +83,10 @@ namespace LeninSearch.Xam.Droid
 
                 foreach (var cfi in corpusItem.Files)
                 {
-                    SetSpalshText($"Скачиваю {corpusItem.Name}: '{cfi.Path}'");
                     var filePath = Path.Combine(corpusFolder, cfi.Path);
                     if (!File.Exists(filePath))
                     {
+                        SetSpalshText($"Скачиваю {corpusItem.Name}: '{cfi.Path}'");
                         var fileBytesResult = apiService.GetFileBytesAsync(corpusItem.Id, cfi.Path).Result;
 
                         if (!fileBytesResult.Success)

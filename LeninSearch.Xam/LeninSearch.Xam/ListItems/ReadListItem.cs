@@ -69,7 +69,8 @@ namespace LeninSearch.Xam.ListItems
         public ReadListItem Self => this;
 
         public static ReadListItem Construct(string corpusId, string file, LsiParagraph lsiParagraph, 
-            ILsiProvider lsiProvider, SearchUnit searchUnit, Func<ushort> imageWidthFunc, Action<string> alertAction)
+            ILsiProvider lsiProvider, SearchUnit searchUnit, Func<ushort> imageWidthFunc, Action<string> alertAction, 
+            Action<ReadListItem> onReadItemTapped)
         {
             var dictionary = lsiProvider.GetDictionary(corpusId);
 
@@ -93,14 +94,15 @@ namespace LeninSearch.Xam.ListItems
             else
             {
                 readListItem.FormattedText = BuildFormattedText(lsiParagraph.GetSpans(searchUnit), lsiParagraph,
-                    dictionary, corpusId, alertAction);
+                    dictionary, corpusId, alertAction, () => onReadItemTapped(readListItem));
             }
 
 
             return readListItem;
         }
 
-        private static FormattedString BuildFormattedText(List<LsiSpan> lsiSpans, LsiParagraph paragraph, LsDictionary dictionary, string corpusId, Action<string> alertAction)
+        private static FormattedString BuildFormattedText(List<LsiSpan> lsiSpans, LsiParagraph paragraph, LsDictionary dictionary, string corpusId, 
+            Action<string> alertAction, Action onReadItemTapped)
         {
             var commentSpans = new Dictionary<LsiSpan, Span>();
             var searchResultSpans = new Dictionary<LsiSpan, Span>();
@@ -126,7 +128,25 @@ namespace LeninSearch.Xam.ListItems
 
                 if (lsiSpan.Type == LsiSpanType.Comment)
                 {
-                    commentSpans.Add(lsiSpan, span);
+                    var gestureRecognizer = new TapGestureRecognizer
+                    {
+                        Command = new Command(() =>
+                        {
+                            var comment = paragraph.Comments.First(c => c.CommentIndex == lsiSpan.CommentIndex);
+                            var words = comment.WordIndexes.Select(wi => dictionary.Words[wi]).ToList();
+                            var commentText = $"[{lsiSpan.CommentIndex + 1}] {TextUtil.GetParagraph(words)}";
+                            alertAction(commentText);
+                        })
+                    };
+                    span.GestureRecognizers.Add(gestureRecognizer);
+                }
+                else
+                {
+                    var gestureRecognizer = new TapGestureRecognizer
+                    {
+                        Command = new Command(onReadItemTapped)
+                    };
+                    span.GestureRecognizers.Add(gestureRecognizer);
                 }
 
                 if (lsiSpan.Type == LsiSpanType.SearchResult)

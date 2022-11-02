@@ -57,7 +57,9 @@
                                 <Label HorizontalOptions="FillAndExpand" Text="{Binding CorpusTitle}" 
                                        HorizontalTextAlignment="Start" FontSize="Small" TextColor="Black" Margin="5, 12, 0, 0"></Label>
                                 <ImageButton WidthRequest="48" HeightRequest="48" Padding="12" 
-                                             BackgroundColor="White" Source="trashred.png"></ImageButton>
+                                             BackgroundColor="White" Source="trashred.png" 
+                                             IsVisible="{Binding IsDeleteAllowed}" 
+                                             Clicked="OnDeleteCorpusClicked" CommandParameter="{Binding Self}"></ImageButton>
                             </StackLayout>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
@@ -186,13 +188,7 @@
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <StackLayout Orientation="Vertical" Padding="10, 0, 10, 0" Spacing="0">
-                                <StackLayout.GestureRecognizers>
-                                    <TapGestureRecognizer
-                                        Tapped="OnReadItemTapped"
-                                        NumberOfTapsRequired="1"
-                                        CommandParameter="{Binding Self}"/>
-                                </StackLayout.GestureRecognizers>
-
+                                
                                 <StackLayout Orientation="Horizontal" HeightRequest="24" Spacing="10" IsVisible="{Binding IsMenuShown}">
                                     <ImageButton Source="share.png" BackgroundColor="White" HeightRequest="24" WidthRequest="24"
                                                  Clicked="OnShareClicked" CommandParameter="{Binding Self}"></ImageButton>

@@ -12,10 +12,15 @@ namespace LeninSearch.Xam
         public static IEnumerable<CorpusItem> GetCorpusItems()
         {
             var corpusFolders = Directory.GetDirectories(Settings.CorpusRoot);
+
             foreach (var corpusFolder in corpusFolders)
             {
-                var ciJson = File.ReadAllText(Path.Combine(corpusFolder, "corpus.json"));
-                yield return JsonConvert.DeserializeObject<CorpusItem>(ciJson);
+                var corpusJsonFile = Path.Combine(corpusFolder, "corpus.json");
+                if (File.Exists(corpusJsonFile))
+                {
+                    var ciJson = File.ReadAllText(corpusJsonFile);
+                    yield return JsonConvert.DeserializeObject<CorpusItem>(ciJson);
+                }
             }
         }
 
