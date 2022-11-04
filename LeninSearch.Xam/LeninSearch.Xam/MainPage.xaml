@@ -165,7 +165,8 @@
                                 <controls:ExtendedLabel TextColor="Black" Margin="0" FontSize="Micro" LineBreakMode="WordWrap" 
                                                         Text="{Binding Preview}" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" JustifyText="True">
                                 </controls:ExtendedLabel>
-                                <Label Margin="0" FontSize="Micro" Text="{Binding Info}" LineBreakMode="NoWrap"></Label>
+                                <Label IsVisible="{Binding HasMissingTokens}" Margin="0" FontSize="Micro" 
+                                       Text="{Binding MissingTokensText}" LineBreakMode="NoWrap" TextDecorations="Strikethrough"></Label>
                             </StackLayout>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>

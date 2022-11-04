@@ -1,4 +1,5 @@
-﻿using System.Security.Principal;
+﻿using System.Linq;
+using System.Security.Principal;
 using LeninSearch.Standard.Core.Search;
 
 namespace LeninSearch.Xam.ListItems
@@ -12,8 +13,11 @@ namespace LeninSearch.Xam.ListItems
         public string Query { get; set; }
         public string Preview => SearchUnit.Preview;
         public ushort Index { get; set; }
-        public ushort SpanLength { get; set; }
-        public string Info => $"длина совпадения: {SpanLength} слов(а)";
+        public ushort MatchSpanLength => SearchUnit.MatchSpanLength;
+        public ushort QueryPriority { get; set; }
+        public string[] MissingTokens { get; set; }
+        public string MissingTokensText => string.Join(", ", MissingTokens);
+        public bool HasMissingTokens => MissingTokens.Any();
         public SearchUnitListItem Self => this;
     }
 }

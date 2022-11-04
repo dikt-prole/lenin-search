@@ -28,7 +28,10 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
             var queryKey = $"{corpusId}-{query}-{mode}";
             if (!_queryCache.ContainsKey(queryKey))
             {
-                var cacheQueries = _queryFactory.Construct(query, dictionary.Words, mode).OrderBy(q => q.Priority).ToList();
+                var cacheQueries = _queryFactory
+                    .Construct(query, dictionary.Words, mode)
+                    .OrderBy(q => q.Priority)
+                    .ToList();
                 foreach (var searchQuery in cacheQueries)
                 {
                     searchQuery.Mode = mode;
@@ -41,16 +44,17 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
             Debug.WriteLine("Search queries:");
             foreach (var searchQuery in searchQueries)
             {
-                Debug.WriteLine($"{searchQuery.Text}, priority={searchQuery.Priority}, mode={searchQuery.Mode}");
+                Debug.WriteLine(
+                    $"{searchQuery.Text}, priority={searchQuery.Priority}, mode={searchQuery.Mode}, missing={string.Join(',', searchQuery.MissingTokens)}");
             }
 
-            var result = new SearchResult { Units = new Dictionary<string, Dictionary<string, List<SearchUnit>>>() };
+            var result = new SearchResult { FileResults = new Dictionary<string, List<SearchQueryResult>>() };
 
             var corpusFileItems = corpusItem.LsiFiles();
 
             foreach (var cfi in corpusFileItems)
             {
-                var queryUnits = new Dictionary<string, List<SearchUnit>>();
+                var searchQueryResults = new List<SearchQueryResult>();
                 var lsiData = _lsiProvider.GetLsiData(corpusId, cfi.Path);
                 var excludeParagraphs = new HashSet<ushort>();
                 foreach (var searchQuery in searchQueries.OrderBy(q => q.Priority))
@@ -58,14 +62,21 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
                     var units = InnerSearch(lsiData, searchQuery, dictionary, cfi, excludeParagraphs);
                     if (units.Any())
                     {
-                        queryUnits.Add(searchQuery.Text, units);
+                        var searchQueryResult = new SearchQueryResult
+                        {
+                            Priority = searchQuery.Priority,
+                            MissingTokens = searchQuery.MissingTokens,
+                            Query = searchQuery.Text,
+                            Units = units
+                        };
+                        searchQueryResults.Add(searchQueryResult);
                         excludeParagraphs.UnionWith(units.Select(u => u.ParagraphIndex));
                     }
                 }
 
-                if (queryUnits.Any())
+                if (searchQueryResults.Any())
                 {
-                    result.Units.Add(cfi.Path, queryUnits);
+                    result.FileResults.Add(cfi.Path, searchQueryResults);
                 }
             }
 

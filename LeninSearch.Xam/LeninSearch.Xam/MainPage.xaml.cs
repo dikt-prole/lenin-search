@@ -43,7 +43,7 @@ namespace LeninSearch.Xam
             //    Settings.TokenIndexCountCutoff, Settings.ResultCountCutoff);
 
             _corpusSearch = new OfflineCorpusSearch(_lsiProvider,
-                new SearchQueryFactory(),
+                new SearchQueryFactory(new RuPorterStemmer()),
                 Settings.TokenIndexCountCutoff,
                 Settings.ResultCountCutoff);
 
@@ -214,25 +214,28 @@ namespace LeninSearch.Xam
 
                 var searchUnitListItems = new List<SearchUnitListItem>();
 
-                foreach (var file in _state.SearchResult.Units.Keys)
+                foreach (var file in _state.SearchResult.FileResults.Keys)
                 {
-                    foreach (var query in _state.SearchResult.Units[file].Keys)
+                    foreach (var searchQueryResult in _state.SearchResult.FileResults[file])
                     {
-                        foreach (var searchUnit in _state.SearchResult.Units[file][query])
+                        foreach (var searchUnit in searchQueryResult.Units)
                         {
                             searchUnitListItems.Add(new SearchUnitListItem
                             {
                                 CorpusId = _state.CorpusId,
                                 File = file,
                                 SearchUnit = searchUnit,
-                                Query = query,
-                                SpanLength = searchUnit.SpanLength
+                                Query = searchQueryResult.Query,
+                                QueryPriority = searchQueryResult.Priority,
+                                MissingTokens = searchQueryResult.MissingTokens
                             });
                         }
                     }
                 }
 
-                searchUnitListItems = searchUnitListItems.OrderBy(x => x.SearchUnit.SpanLength).ToList();
+                searchUnitListItems = searchUnitListItems
+                    .OrderBy(x => x.QueryPriority)
+                    .ThenBy(x => x.MatchSpanLength).ToList();
                 for (ushort i = 0; i < searchUnitListItems.Count; i++)
                 {
                     searchUnitListItems[i].Index = (ushort)(i + 1);

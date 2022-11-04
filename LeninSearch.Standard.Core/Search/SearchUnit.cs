@@ -32,16 +32,16 @@ namespace LeninSearch.Standard.Core.Search
 
             if (wordDatas.Count == 0)
             {
-                SpanLength = 0;
+                MatchSpanLength = 0;
             }
             else if (wordDatas.Count == 1)
             {
-                SpanLength = 1;
+                MatchSpanLength = 1;
             }
             else
             {
                 var wordPositions = wordDatas.Select(w => w.WordPosition).ToList();
-                SpanLength = (ushort)(wordPositions.Max() - wordPositions.Min());
+                MatchSpanLength = (ushort)(wordPositions.Max() - wordPositions.Min());
             }
         }
 
@@ -54,7 +54,7 @@ namespace LeninSearch.Standard.Core.Search
         public List<WordIndexChain> WordIndexChains { get; set; }
         public string Preview { get; set; }
         public string Title { get; set; }
-        public ushort SpanLength { get; set; }
+        public ushort MatchSpanLength { get; set; }
 
         public void SetPreviewAndTitle(LsiData lsiData, CorpusFileItem corpusFileItem, LsDictionary dictionary)
         {

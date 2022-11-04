@@ -46,7 +46,7 @@ namespace LeninSearch.Xam
 
         public bool IsWatchingSearchResults()
         {
-            return SearchResult?.Units?.Any() == true;
+            return SearchResult?.FileResults?.Any() == true;
         }
 
         public bool IsReading()

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using LeninSearch.Standard.Core.Search.TokenVarying;
 
@@ -8,11 +7,11 @@ namespace LeninSearch.Standard.Core.Search
 {
     public class SearchQueryFactory : ISearchQueryFactory
     {
-        private readonly RuPorter _stemmer;
-
-        public SearchQueryFactory()
+        private readonly IStemmer _stemmer;
+        private const int OmitTokensMaxCount = 2;
+        public SearchQueryFactory(IStemmer stemmer)
         {
-            _stemmer = new RuPorter();
+            _stemmer = stemmer;
         }
 
         public IEnumerable<SearchQuery> Construct(string queryText, string[] dictionary, SearchMode mode)
@@ -22,40 +21,70 @@ namespace LeninSearch.Standard.Core.Search
                 yield break;
             }
 
+            // exact search case
             if (queryText.Contains('*') || queryText.Contains('+'))
             {
-                yield return SearchQuery.Construct(queryText, dictionary, mode, 0);
+                if (queryText.Contains('+'))
+                {
+                    var plusSplit = queryText.Split('+', StringSplitOptions.RemoveEmptyEntries);
+                    var orderedStems = plusSplit[0].Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(s => s.Trim('*')).ToArray();
+                    var nonOrderedStems = plusSplit[1].Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(s => s.Trim('*')).ToArray();
+                    var exactSearchStemWordIndexes =
+                        GetStemWordIndexes(dictionary, orderedStems.Concat(nonOrderedStems).ToArray());
+                    yield return ConstructSearchQuery(orderedStems, nonOrderedStems, 1, mode,
+                        exactSearchStemWordIndexes);
+                }
+                else
+                {
+                    var orderedStems = queryText.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(s => s.Trim('*')).ToArray();
+                    var exactSearchStemWordIndexes =
+                        GetStemWordIndexes(dictionary, orderedStems);
+                    yield return ConstructSearchQuery(orderedStems, new string[] { }, 1, mode,
+                        exactSearchStemWordIndexes);
+                }
+
                 yield break;
             }
 
-            // level 1
-            var allTokens = queryText.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(s => $"{_stemmer.Stemm(s)}*" ).ToArray();
-            foreach (var searchQuery in GetQueryVariants(allTokens, 1, dictionary, mode))
-            {
-                yield return searchQuery;
-            }
+            // general search case
+            // token = 'диктатура'
+            // stem = 'диктатур'
+            var stemTokens = queryText.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                .ToDictionary(s => _stemmer.Stemm(s).ToLower(), s => s);
 
-            var subsets = SubSetsOf(allTokens).Select(ss => ss.ToArray()).ToArray();
-            Debug.WriteLine("Subsets:");
-            foreach (var subset in subsets.OrderByDescending(s => s.Length))
+            var stemWordIndexes = stemTokens.ToDictionary(st => st.Key, st => new List<uint>());
+            for (uint wordIndex = 0; wordIndex < dictionary.Length; wordIndex++)
             {
-                Debug.WriteLine(string.Join(" ", subset));
-            }
-
-            // todo:
-            // 1. use prioritized subsets
-            // 2. more optimal search query construction (same word indexes for a token)
-
-            if (allTokens.Length > 1)
-            {
-                for (var i = 0; i < allTokens.Length; i++)
+                foreach (var stem in stemWordIndexes.Keys)
                 {
-                    // level 2
-                    var levelTwoSplit = allTokens.Take(i).Concat(allTokens.Skip(i + 1)).ToArray();
-                    foreach (var searchQuery in GetQueryVariants(levelTwoSplit, 100, dictionary, mode))
+                    if (dictionary[wordIndex].ToLower().StartsWith(stem))
                     {
-                        yield return searchQuery;
+                        stemWordIndexes[stem].Add(wordIndex);
                     }
+                }
+            }
+
+            var minTokenCombinationLength = stemTokens.Count - OmitTokensMaxCount;
+            if (minTokenCombinationLength < 1)
+            {
+                minTokenCombinationLength = 1;
+            }
+            var stemCombinations = SubSetsOf(stemTokens.Keys)
+                .Select(ss => ss.ToArray())
+                .Where(c => c.Length >= minTokenCombinationLength)
+                .ToArray();
+
+            foreach (var stems in stemCombinations)
+            {
+                var basePriority = (ushort)(1 + (stemTokens.Count - stems.Length) * 20);
+                var searchQueries = ConstructSearchQueries(stems, basePriority, stemWordIndexes, mode);
+                foreach (var searchQuery in searchQueries)
+                {
+                    searchQuery.MissingTokens = stemTokens.Keys.Except(stems).Select(s => stemTokens[s]).ToArray();
+                    yield return searchQuery;
                 }
             }
         }
@@ -63,7 +92,7 @@ namespace LeninSearch.Standard.Core.Search
         /// <summary>
         /// https://stackoverflow.com/a/999182/6483508
         /// </summary>
-        public static IEnumerable<IEnumerable<T>> SubSetsOf<T>(IEnumerable<T> source)
+        private static IEnumerable<IEnumerable<T>> SubSetsOf<T>(IEnumerable<T> source)
         {
             if (!source.Any())
                 return Enumerable.Repeat(Enumerable.Empty<T>(), 1);
@@ -76,20 +105,76 @@ namespace LeninSearch.Standard.Core.Search
             return haves.Concat(haveNots);
         }
 
-        private IEnumerable<SearchQuery> GetQueryVariants(string[] tokens, ushort basePriority, string[] dictionary, SearchMode mode)
+        private IEnumerable<SearchQuery> ConstructSearchQueries(string[] stems, ushort basePriority, Dictionary<string, List<uint>> stemWordIndexes, SearchMode mode)
         {
-            yield return SearchQuery.Construct(string.Join(' ', tokens), dictionary, mode, basePriority);
-            for (var tokenIndex = 1; tokenIndex < tokens.Length; tokenIndex++)
+            yield return ConstructSearchQuery(stems, new string[] { }, basePriority, mode, stemWordIndexes);
+
+            for (var stemIndex = 1; stemIndex < stems.Length; stemIndex++)
             {
-                var variedWithPlusTokens = tokens.Take(tokenIndex)
-                    .Concat(new[] { "+" })
-                    .Concat(tokens.Skip(tokenIndex));
-
-                var priority = (ushort)(basePriority + 10 * (tokens.Length - tokenIndex));
-                var variedWithPlusQuery = SearchQuery.Construct(string.Join(' ', variedWithPlusTokens), dictionary, mode, priority);
-
-                yield return variedWithPlusQuery;
+                var orderedStems = stems.Take(stemIndex).ToArray();
+                var nonOrderedStems = stems.Skip(stemIndex).ToArray();
+                var priority = (ushort)(basePriority + stems.Length - stemIndex);
+                yield return ConstructSearchQuery(orderedStems, nonOrderedStems, priority, mode, stemWordIndexes);
             }
+        }
+
+        private Dictionary<string, List<uint>> GetStemWordIndexes(string[] dictionary, string[] stems)
+        {
+            var stemWordIndexes = stems.ToDictionary(s => s, s => new List<uint>());
+            for (uint wordIndex = 0; wordIndex < dictionary.Length; wordIndex++)
+            {
+                foreach (var stem in stemWordIndexes.Keys)
+                {
+                    if (dictionary[wordIndex].ToLower().StartsWith(stem))
+                    {
+                        stemWordIndexes[stem].Add(wordIndex);
+                    }
+                }
+            }
+
+            return stemWordIndexes;
+        }
+
+        private SearchQuery ConstructSearchQuery(string[] orderedStems, string[] nonOrderedStems, ushort priority, SearchMode mode, Dictionary<string, List<uint>> stemWordIndexes)
+        {
+            var searchQuery = new SearchQuery
+            {
+                Mode = mode,
+                Priority = priority,
+                Text = nonOrderedStems.Any()
+                    ? $"{string.Join(' ', orderedStems.Select(s => $"{s}*"))} + {string.Join(' ', nonOrderedStems.Select(s => $"{s}*"))}"
+                    : $"{string.Join(' ', orderedStems.Select(s => $"{s}*"))}",
+                Ordered = new List<SearchToken>(),
+                NonOrdered = new List<SearchToken>()
+            };
+
+            for (var i = 0; i < orderedStems.Length; i++)
+            {
+                var stem = orderedStems[i];
+                var searchToken = new SearchToken
+                {
+                    Text = stem,
+                    Order = i,
+                    TokenType = SearchTokenType.Ordered,
+                    WordIndexes = stemWordIndexes[stem]
+                };
+                searchQuery.Ordered.Add(searchToken);
+            }
+
+            for (var i = 0; i < nonOrderedStems.Length; i++)
+            {
+                var stem = nonOrderedStems[i];
+                var searchToken = new SearchToken
+                {
+                    Text = stem,
+                    Order = 0,
+                    TokenType = SearchTokenType.NonOrdered,
+                    WordIndexes = stemWordIndexes[stem]
+                };
+                searchQuery.NonOrdered.Add(searchToken);
+            }
+
+            return searchQuery;
         }
     }
 }

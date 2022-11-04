@@ -11,7 +11,7 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
         public SwitchCorpusSearch(ILsiProvider lsiProvider, string host, int port, int timeoutMs, int tokeIndexCountCutoff = int.MaxValue, int resultCountCutoff = int.MaxValue)
         {
             _onlineSearch = new OnlineCorpusSearch(host, port, timeoutMs);
-            _offlineSearch = new OfflineCorpusSearch(lsiProvider, new SearchQueryFactory(), tokeIndexCountCutoff, resultCountCutoff);
+            _offlineSearch = new OfflineCorpusSearch(lsiProvider, new SearchQueryFactory(new RuPorterStemmer()), tokeIndexCountCutoff, resultCountCutoff);
         }
         public async Task<SearchResult> SearchAsync(string corpusId, string query, SearchMode mode)
         {

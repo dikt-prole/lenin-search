@@ -123,7 +123,7 @@ namespace LeninSearch.Standard.Core.Search
             foreach (var paragraphIndex in wordChains.Keys)
             {
                 var searchResult = new SearchUnit(paragraphIndex, wordChains[paragraphIndex]);
-                if (searchResult.SpanLength < MaxSpanLength)
+                if (searchResult.MatchSpanLength < MaxSpanLength)
                 {
                     result.Add(searchResult);
                 }

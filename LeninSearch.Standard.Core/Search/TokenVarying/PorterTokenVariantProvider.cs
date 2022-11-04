@@ -7,7 +7,7 @@ namespace LeninSearch.Standard.Core.Search.TokenVarying
     {
         public IEnumerable<(string Token, ushort Omit)> Vary(string token)
         {
-            var porterResult = new RuPorter().Stemm(token);
+            var porterResult = new RuPorterStemmer().Stemm(token);
             Debug.WriteLine($"Porter: in='{token}', out={porterResult}");
             yield return ($"{porterResult}*", (ushort)(token.Length - porterResult.Length));
         }

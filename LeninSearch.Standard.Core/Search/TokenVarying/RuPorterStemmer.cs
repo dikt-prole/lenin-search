@@ -5,7 +5,7 @@ namespace LeninSearch.Standard.Core.Search.TokenVarying
     /// <summary>  
     /// Stemmer  
     /// </summary>  
-    public class RuPorter
+    public class RuPorterStemmer : IStemmer
     {
 
         public const string VERSION = "0.2";

@@ -22,38 +22,40 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
 
         public async Task<SearchResult> SearchAsync(string corpusId, string query, SearchMode searchMode)
         {
-            var request = new CorpusSearchRequest
-            {
-                CorpusId = corpusId,
-                Query = query
-            };
+            throw new NotImplementedException();
+            
+            //var request = new CorpusSearchRequest
+            //{
+            //    CorpusId = corpusId,
+            //    Query = query
+            //};
 
-            try
-            {
-                var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
-                var response = await _httpClient.PostAsync(_searchUrl, content);
-                var responseJson = await response.Content.ReadAsStringAsync();
-                var searchResponse = JsonConvert.DeserializeObject<CorpusSearchResponse>(responseJson);
-                var searchResult = new SearchResult { Units = new Dictionary<string, Dictionary<string, List<SearchUnit>>>() };
-                foreach (var file in searchResponse.Units.Keys)
-                {
-                    searchResult.Units.Add(file, new Dictionary<string, List<SearchUnit>>());
-                    foreach (var fileQuery in searchResponse.Units[file].Keys)
-                    {
-                        var units = searchResponse.Units[file][fileQuery].Select(r => r.ToSearchResultUnit()).ToList();
-                        searchResult.Units[file].Add(fileQuery, units);
-                    }
-                }
+            //try
+            //{
+            //    var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
+            //    var response = await _httpClient.PostAsync(_searchUrl, content);
+            //    var responseJson = await response.Content.ReadAsStringAsync();
+            //    var searchResponse = JsonConvert.DeserializeObject<CorpusSearchResponse>(responseJson);
+            //    var searchResult = new SearchResult { Units = new Dictionary<string, Dictionary<string, List<SearchUnit>>>() };
+            //    foreach (var file in searchResponse.Units.Keys)
+            //    {
+            //        searchResult.Units.Add(file, new Dictionary<string, List<SearchUnit>>());
+            //        foreach (var fileQuery in searchResponse.Units[file].Keys)
+            //        {
+            //            var units = searchResponse.Units[file][fileQuery].Select(r => r.ToSearchResultUnit()).ToList();
+            //            searchResult.Units[file].Add(fileQuery, units);
+            //        }
+            //    }
 
-                return searchResult;
-            }
-            catch (Exception exc)
-            {
-                return new SearchResult
-                {
-                    Error = exc.Message
-                };
-            }
+            //    return searchResult;
+            //}
+            //catch (Exception exc)
+            //{
+            //    return new SearchResult
+            //    {
+            //        Error = exc.Message
+            //    };
+            //}
         }
     }
 }
