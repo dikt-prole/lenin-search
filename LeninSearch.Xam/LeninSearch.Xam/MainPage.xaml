@@ -146,7 +146,7 @@
                                  Clicked="OnSearchModeButtonClick" CommandParameter="0"></ImageButton>
                     <controls:WhiteBorderedEntry x:Name="SearchEntry" Placeholder="Введите запрос" ReturnType="Search"
                            HorizontalOptions="FillAndExpand" Margin="0, 0, 0, -2" FontSize="Small" TextColor="White" 
-                           BackgroundColor="#D6181F" HeightRequest="36"></controls:WhiteBorderedEntry>
+                           BackgroundColor="#D6181F" HeightRequest="36" PlaceholderColor="White"></controls:WhiteBorderedEntry>
                 </StackLayout>
                 <CollectionView x:Name="SearchCollectionView" EmptyView="Ничего не найдено, попробуйте другой запрос">
                     <CollectionView.ItemsLayout>
