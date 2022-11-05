@@ -92,7 +92,14 @@
                                                    IsVisible="{Binding IsDownloading}"
                                                    IsRunning="{Binding IsDownloading}" 
                                                    VerticalOptions="Start" WidthRequest="24" HeightRequest="24" 
-                                                   Margin="6"></ActivityIndicator>
+                                                   Margin="6">
+                                    <ActivityIndicator.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Tapped="OnCancelLibraryDownload"
+                                            NumberOfTapsRequired="1"
+                                            CommandParameter="{Binding Self}"/>
+                                    </ActivityIndicator.GestureRecognizers>
+                                </ActivityIndicator>
                             </StackLayout>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
@@ -140,7 +147,8 @@
                 <StackLayout Orientation="Horizontal" HorizontalOptions="Fill" Spacing="0" BackgroundColor="#D6181F" 
                              HeightRequest="34" Margin="0" IsClippedToBounds="True">
                     <ActivityIndicator x:Name="SearchActivityIndicator" Color="White" IsRunning="False" VerticalOptions="Start" 
-                                       WidthRequest="24" HeightRequest="24" Margin="6" IsVisible="False"></ActivityIndicator>
+                                       WidthRequest="24" HeightRequest="24" Margin="6" IsVisible="False">                                                
+                    </ActivityIndicator>
                     <ImageButton Padding="6" x:Name="SearchModeButton" WidthRequest="36" HeightRequest="36" Source="paragraph.png" 
                                  BackgroundColor="#D6181F" HorizontalOptions="Start" Margin="0" 
                                  Clicked="OnSearchModeButtonClick" CommandParameter="0"></ImageButton>

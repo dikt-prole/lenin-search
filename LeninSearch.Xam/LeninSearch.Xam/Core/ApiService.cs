@@ -6,11 +6,12 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using LeninSearch.Standard.Core.Corpus;
 using LeninSearch.Standard.Core.Corpus.Json;
+using LeninSearch.Xam.Core.Interfaces;
 using Newtonsoft.Json;
 
 namespace LeninSearch.Xam.Core
 {
-    public class ApiService
+    public class ApiService : IApiService
     {
         private HttpClient _httpClient = new HttpClient { Timeout = TimeSpan.FromMilliseconds(Settings.Web.TimeoutMs) };
 

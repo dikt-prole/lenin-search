@@ -11,6 +11,7 @@ using LeninSearch.Standard.Core.Search;
 using LeninSearch.Standard.Core.Search.CorpusSearching;
 using LeninSearch.Standard.Core.Search.TokenVarying;
 using LeninSearch.Xam.Core;
+using LeninSearch.Xam.Core.Interfaces;
 using LeninSearch.Xam.ListItems;
 using LeninSearch.Xam.State;
 using Xamarin.CommunityToolkit.UI.Views;
@@ -28,6 +29,7 @@ namespace LeninSearch.Xam
         private readonly ApiService _apiService = new ApiService();
         private readonly IMessage _message = DependencyService.Get<IMessage>();
         private AppState _state;
+        private readonly ILibraryDownloadManager _libraryDownloadManager;
 
         public MainPage(GlobalEvents globalEvents)
         {
@@ -48,7 +50,57 @@ namespace LeninSearch.Xam
             // search entry
             SearchEntry.ReturnCommand = new Command(OnSearchButtonPressed);
             ReadCollectionView.Scrolled += OnReadCollectionViewScrolled;
-            
+
+            _libraryDownloadManager = new LibraryDownloadManager(_lsiProvider, _apiService);
+            _libraryDownloadManager.Error += OnLibraryDownloadManagerError;
+            _libraryDownloadManager.Progress += OnLibraryDownloadManagerProgress;
+            _libraryDownloadManager.Completed += OnLibraryDownloadManagerCompleted;
+        }
+
+        private void OnLibraryDownloadManagerCompleted(object sender, LibraryDownloadCompleteEventArgs e)
+        {
+            Device.BeginInvokeOnMainThread(() =>
+            {
+                var libraryListItems = LibraryCollectionView.ItemsSource as ObservableCollection<LibraryListItem>;
+                var libraryListItem = libraryListItems.First(i => i.Update.Id == e.Download.Id);
+                libraryListItems.Remove(libraryListItem);
+
+                var corpusListItems = CorpusCollectionView.ItemsSource as ObservableCollection<CorpusListItem>;
+                var removedCorpusListItems = corpusListItems.Where(i => e.Removed.Any(ci => ci.Id == i.CorpusId)).ToList();
+                foreach (var removedCorpusListItem in removedCorpusListItems)
+                {
+                    corpusListItems.Remove(removedCorpusListItem);
+                }
+
+                var addedCorpusListItem = CorpusListItem.FromCorpusItem(e.Download);
+                corpusListItems.Add(addedCorpusListItem);
+
+                if (removedCorpusListItems.Any(ci => ci.CorpusId == _state.ActiveCorpusId))
+                {
+                    ActivateCorpus(e.Download.Id);
+                }
+            });
+        }
+
+        private void OnLibraryDownloadManagerProgress(object sender, LibraryDownloadProgressEventArgs e)
+        {
+            Device.BeginInvokeOnMainThread(() =>
+            {
+                var libraryListItems = LibraryCollectionView.ItemsSource as ObservableCollection<LibraryListItem>;
+                var libraryListItem = libraryListItems.First(i => i.Update.Id == e.Download.Id);
+                libraryListItem.Text = $"Скачиваю: {e.File}";
+            });
+        }
+
+        private void OnLibraryDownloadManagerError(object sender, LibraryDownloadErrorEventArgs e)
+        {
+            Device.BeginInvokeOnMainThread(() =>
+            {
+                var libraryListItems = LibraryCollectionView.ItemsSource as ObservableCollection<LibraryListItem>;
+                var libraryListItem = libraryListItems.First(i => i.Update.Id == e.Download.Id);
+                libraryListItem.Text = "Ошибка скачивания";
+                libraryListItem.IsDownloading = false;
+            });
         }
 
         private void OnReadCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e)
@@ -477,79 +529,24 @@ namespace LeninSearch.Xam
             }).Wait();
         }
 
-        private async void OnLibraryDownloadClicked(object sender, EventArgs e)
+        private void OnLibraryDownloadClicked(object sender, EventArgs e)
         {
             var imageButton = sender as ImageButton;
             var libraryListItem = imageButton.CommandParameter as LibraryListItem;
-
             libraryListItem.IsDownloading = true;
-
-            var sameSeriesCorpusItems = Settings.GetFinishedCorpusIds()
-                .Select(cid => _lsiProvider.GetCorpusItem(cid))
-                .Where(ci => ci.Series == libraryListItem.Update.Series)
-                .ToList();
-
-            // 1. create corpus folder
-            var corpusFolder = Path.Combine(Settings.CorpusRoot, libraryListItem.Update.Id);
-            if (Directory.Exists(corpusFolder))
-            {
-                Directory.Delete(corpusFolder, true);
-            }
-            Directory.CreateDirectory(corpusFolder);
-
-            // 2. download files
-            foreach (var cfi in libraryListItem.Update.Files)
-            {
-                libraryListItem.Text = $"Скачиваю: {cfi.Path}";
-                var cfiBytesResult = await _apiService.GetFileBytesAsync(libraryListItem.Update.Id, cfi.Path);
-                if (!cfiBytesResult.Success)
-                {
-                    Directory.Delete(corpusFolder, true);
-                    libraryListItem.Text = $"Ошибка скачивания. {cfiBytesResult.Error}";
-                    return;
-                }
-
-                await File.WriteAllBytesAsync(Path.Combine(corpusFolder, cfi.Path), cfiBytesResult.Bytes);
-            }
-
-            // 3. remove same series corpus
-            foreach (var corpusItem in sameSeriesCorpusItems)
-            {
-                Directory.Delete(Path.Combine(Settings.CorpusRoot, corpusItem.Id), true);
-            }
-
-            await Device.InvokeOnMainThreadAsync(() =>
-            {
-                    // 4. remove item from library collection view
-                var collection = LibraryCollectionView.ItemsSource as ObservableCollection<LibraryListItem>;
-                collection.Remove(libraryListItem);
-
-                    // 5. remove same series items from corpus collection view
-                var corpusListItems = CorpusCollectionView.ItemsSource as ObservableCollection<CorpusListItem>;
-                foreach (var corpusItem in sameSeriesCorpusItems)
-                {
-                    var corpusListItem = corpusListItems.FirstOrDefault(cli => cli.CorpusId == corpusItem.Id);
-                    if (corpusListItem != null)
-                    {
-                        corpusListItems.Remove(corpusListItem);
-                    }
-                }
-
-                    // 6. add new item to corpus collection view
-                corpusListItems.Add(CorpusListItem.FromCorpusItem(libraryListItem.Update));
-
-                    // 7. reactivate corpus
-                if (sameSeriesCorpusItems.Any(ci => ci.Id == _state.ActiveCorpusId))
-                {
-                    ActivateCorpus(libraryListItem.Update.Id);
-                }
-            });
+            _libraryDownloadManager.StartDownload(libraryListItem.Update);
         }
 
         private async void OnDeleteCorpusClicked(object sender, EventArgs e)
         {
             var imageButton = sender as ImageButton;
             var corpusListItem = imageButton.CommandParameter as CorpusListItem;
+
+            if (corpusListItem.CorpusId == _state.ActiveCorpusId)
+            {
+                await DisplayAlert("", "Невозможно удалить активный корпус", "OK");
+                return;
+            }
 
             var alertResult = await DisplayAlert("", $"Удалить '{corpusListItem.CorpusTitle}'?", "OK", "ОТМЕНА");
 
@@ -563,6 +560,19 @@ namespace LeninSearch.Xam
 
             var corpusListItems = CorpusCollectionView.ItemsSource as ObservableCollection<CorpusListItem>;
             corpusListItems.Remove(corpusListItem);
+        }
+
+        private void OnCancelLibraryDownload(object sender, EventArgs e)
+        {
+            Device.BeginInvokeOnMainThread(() =>
+            {
+                var activityIndicator = sender as ActivityIndicator;
+                var gestureRecognizer = activityIndicator.GestureRecognizers[0] as TapGestureRecognizer;
+                var libraryListItem = gestureRecognizer.CommandParameter as LibraryListItem;
+                _libraryDownloadManager.CancelDownload(libraryListItem.Update.Id);
+                libraryListItem.IsDownloading = false;
+                libraryListItem.Text = libraryListItem.Update.ToString();
+            });
         }
     }
 }
