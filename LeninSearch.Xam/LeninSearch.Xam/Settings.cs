@@ -16,7 +16,7 @@ namespace LeninSearch.Xam
         public static readonly string[] InitialSeries = {"lenin"};
         public static string CorpusRoot => Path.Combine(Path.GetTempPath(), "corpus");
         public static string BookmarkFolder => Path.Combine(Path.GetTempPath(), "bookmarks");
-        public static string StateFolder => Path.Combine(Path.GetTempPath(), "state");
+        public static string StateFolder => Path.Combine(Path.GetTempPath(), "state-055EEC7F");
 
         public static string HistoryFile = Path.Combine(Path.GetTempPath(), "history", "history.json");
 
@@ -156,6 +156,21 @@ namespace LeninSearch.Xam
             var corpusItem = JsonConvert.DeserializeObject<CorpusItem>(corpusItemJson);
 
             return corpusItem.GetFileByPath(path);
+        }
+
+        public static IEnumerable<CorpusItem> GetCorpusItems()
+        {
+            var corpusFolders = Directory.GetDirectories(Settings.CorpusRoot);
+
+            foreach (var corpusFolder in corpusFolders)
+            {
+                var corpusJsonFile = Path.Combine(corpusFolder, "corpus.json");
+                if (File.Exists(corpusJsonFile))
+                {
+                    var ciJson = File.ReadAllText(corpusJsonFile);
+                    yield return JsonConvert.DeserializeObject<CorpusItem>(ciJson);
+                }
+            }
         }
     }
 }

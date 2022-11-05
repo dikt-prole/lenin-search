@@ -1,15 +1,13 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using LeninSearch.Standard.Core;
 using LeninSearch.Standard.Core.Corpus;
-using LeninSearch.Standard.Core.Corpus.Json;
 using LeninSearch.Standard.Core.Corpus.Lsi;
 using LeninSearch.Standard.Core.LsiUtil;
 using LeninSearch.Standard.Core.Search;
 using Newtonsoft.Json;
 
-namespace LeninSearch.Xam
+namespace LeninSearch.Xam.Core
 {
     public class CachedLsiProvider : ILsiProvider
     {

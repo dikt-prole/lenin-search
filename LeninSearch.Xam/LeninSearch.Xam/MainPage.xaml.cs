@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,10 +12,10 @@ using LeninSearch.Standard.Core.Search.CorpusSearching;
 using LeninSearch.Standard.Core.Search.TokenVarying;
 using LeninSearch.Xam.Core;
 using LeninSearch.Xam.ListItems;
+using LeninSearch.Xam.State;
 using Xamarin.CommunityToolkit.UI.Views;
 using Xamarin.Essentials;
 using Xamarin.Forms;
-using Label = Xamarin.Forms.Label;
 
 namespace LeninSearch.Xam
 {
@@ -28,8 +27,7 @@ namespace LeninSearch.Xam
         private readonly ICorpusSearch _corpusSearch;
         private readonly ApiService _apiService = new ApiService();
         private readonly IMessage _message = DependencyService.Get<IMessage>();
-        private readonly ITextMeasure _textMeasure = DependencyService.Get<ITextMeasure>();
-        private State _state;
+        private AppState _state;
 
         public MainPage(GlobalEvents globalEvents)
         {
@@ -47,26 +45,37 @@ namespace LeninSearch.Xam
                 Settings.TokenIndexCountCutoff,
                 Settings.ResultCountCutoff);
 
-            // updates
-            //CorpusRefreshButton.Clicked += async (sender, args) => await ShowUpdates();
-
             // search entry
-            SearchEntry.Text = "диктатура пролетариата научный латинский";
             SearchEntry.ReturnCommand = new Command(OnSearchButtonPressed);
-
-            // paragraphs
-            RefreshAllTabs();
+            ReadCollectionView.Scrolled += OnReadCollectionViewScrolled;
+            
         }
 
-        private void ActivateCorpus(string corpusId)
+        private void OnReadCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e)
+        {
+            var readListItems = ReadCollectionView.ItemsSource as List<ReadListItem>;
+            if (readListItems != null && e.FirstVisibleItemIndex < readListItems.Count)
+            {
+                var currentReadListItem = readListItems[e.CenterItemIndex];
+                _state.ReadingTabState.SelectedParagraphIndex = currentReadListItem.ParagraphIndex;
+            }
+        }
+
+        private void ActivateCorpus(string corpusId, bool alert = true, bool selectBook = true)
         {
             var corpusItem = _lsiProvider.GetCorpusItem(corpusId);
             var summaryBookListItems = SummaryBookListItem.Construct(corpusItem).ToList();
             CorpusTabViewItem.Icon = Settings.IconFile(corpusId);
             SummaryBookPicker.ItemsSource = summaryBookListItems;
-            SummaryBookPicker.SelectedIndex = 0;
-            _state.CorpusId = corpusId;
-            _message.ShortAlert($"Активирован корпус '{corpusItem.Name}'");
+            if (selectBook)
+            {
+                SummaryBookPicker.SelectedIndex = 0;
+            }
+            _state.ActiveCorpusId = corpusId;
+            if (alert)
+            {
+                _message.ShortAlert($"Активирован корпус '{corpusItem.Name}'");
+            }
         }
 
         public void CleanCache()
@@ -74,20 +83,54 @@ namespace LeninSearch.Xam
             _lsiProvider.CleanCache();
         }
 
-        public void SetState(State state)
+        public void SetState(AppState state)
         {
             _state = state;
+            RefreshAllTabs();
+            MainTabs.SelectedIndex = _state.SelectedTabIndex;
             var corpusItem = _state.GetCurrentCorpusItem();
-            CorpusTabViewItem.Icon = Settings.IconFile(corpusItem.Id);
-            SearchActivityIndicator.IsVisible = false;
+            ActivateCorpus(corpusItem.Id, false, false);
+
+            // summary tab
+            var summarySelectedFile = _state.SummaryTabState?.SelectedFile;
+            if (summarySelectedFile != null)
+            {
+                var summaryBookListItems = SummaryBookPicker.ItemsSource as List<SummaryBookListItem>;
+                if (summaryBookListItems != null)
+                {
+                    var selectedSummaryBookListItem = summaryBookListItems.FirstOrDefault(sli => sli.File == summarySelectedFile);
+                    if (selectedSummaryBookListItem != null)
+                    {
+                        SummaryBookPicker.SelectedIndex = summaryBookListItems.IndexOf(selectedSummaryBookListItem);
+                    }
+                }
+            }
+            else
+            {
+                SummaryBookPicker.SelectedIndex = 0;
+            }
+
+            // read tab
+            var selectedFile = _state.ReadingTabState?.SelectedFile;
+            var selectedParagraphIndex = _state.ReadingTabState?.SelectedParagraphIndex;
+            if (!string.IsNullOrEmpty(selectedFile) && selectedParagraphIndex.HasValue)
+            {
+                RunReadBook(_state.ActiveCorpusId, selectedFile, selectedParagraphIndex.Value, false);
+            }
+
+            // search tab
+            SearchEntry.Text = _state.SearchTabState?.SearchQuery;
+            SearchCollectionView.ItemsSource = null;
+            var searchResult = _state.SearchTabState?.SearchResult;
+            if (searchResult != null)
+            {
+                var searchUnitListItems = SearchUnitListItem.FromSearchResult(searchResult, _state.ActiveCorpusId);
+                SearchCollectionView.ItemsSource = searchUnitListItems;
+            }
         }
 
         private void GlobalEventsOnBackButtonPressed(object sender, EventArgs e)
-        {
-            if (_state.IsReading())
-            {
-            }
-        }
+        { }
 
         private void ReplaceSearchModeButtonWithLoading()
         {
@@ -105,7 +148,7 @@ namespace LeninSearch.Xam
 
         private void RefreshCorpusTab()
         {
-            var corpusItems = State.GetCorpusItems().ToList();
+            var corpusItems = Settings.GetCorpusItems().ToList();
             var corpusListItems =
                 new ObservableCollection<CorpusListItem>(corpusItems.Select(CorpusListItem.FromCorpusItem));
             CorpusCollectionView.ItemsSource = corpusListItems;
@@ -171,18 +214,12 @@ namespace LeninSearch.Xam
 
         private async Task GenerateSearchReport()
         {
-            var ppsr = _state.SearchResult;
-            var corpusItem = _state.GetCurrentCorpusItem();
-            var query = SearchEntry.Text;
-            var fishFile = SearchReportGenerator.GenerateSearchReportHtmlFile(ppsr, corpusItem, query, _lsiProvider);
+            //var ppsr = _state.SearchResult;
+            //var corpusItem = _state.GetCurrentCorpusItem();
+            //var query = SearchEntry.Text;
+            //var fishFile = SearchReportGenerator.GenerateSearchReportHtmlFile(ppsr, corpusItem, query, _lsiProvider);
 
-            await Share.RequestAsync(new ShareFileRequest($"Lenin Search Report - {corpusItem.Name} ({query})", new ShareFile(fishFile)));
-        }
-
-        private async void DisplayInitialTabs()
-        {
-            RefreshAllTabs();
-            _state.ReadingFile = null;
+            //await Share.RequestAsync(new ShareFileRequest($"Lenin Search Report - {corpusItem.Name} ({query})", new ShareFile(fishFile)));
         }
 
         private void OnSearchButtonPressed()
@@ -191,59 +228,31 @@ namespace LeninSearch.Xam
 
             // 1. Initial stuff
             SearchEntry.Text = new SearchQueryCleaner().Clean(SearchEntry.Text);
-            _state.SearchQuery = SearchEntry.Text;
-            _state.SearchResult = null;
-            _state.ReadingFile = null;
+            _state.SearchTabState ??= new SearchTabState();
+            _state.SearchTabState.SearchQuery = SearchEntry.Text;
             ReplaceSearchModeButtonWithLoading();
 
             Task.Run(async () =>
             {
                 // 1. Save history
-                var corpusItem = _state.GetCurrentCorpusItem();
+                var currentCorpusItem = _state.GetCurrentCorpusItem();
                 var historyItem = new HistoryItem
                 {
-                    CorpusName = corpusItem.Name,
-                    CorpusId = corpusItem.Id,
+                    CorpusName = currentCorpusItem.Name,
+                    CorpusId = currentCorpusItem.Id,
                     Query = SearchEntry.Text,
                     QueryDateUtc = DateTime.UtcNow
                 };
                 HistoryRepo.AddHistory(historyItem);
 
                 var searchMode = GetCurrentSearchMode();
-                _state.SearchResult = await _corpusSearch.SearchAsync(_state.CorpusId, SearchEntry.Text, searchMode);
+                var searchResult = await _corpusSearch.SearchAsync(currentCorpusItem.Id, SearchEntry.Text, searchMode);
+                _state.SearchTabState.SearchResult = searchResult;
 
-                var searchUnitListItems = new List<SearchUnitListItem>();
-
-                foreach (var file in _state.SearchResult.FileResults.Keys)
-                {
-                    foreach (var searchQueryResult in _state.SearchResult.FileResults[file])
-                    {
-                        foreach (var searchUnit in searchQueryResult.Units)
-                        {
-                            searchUnitListItems.Add(new SearchUnitListItem
-                            {
-                                CorpusId = _state.CorpusId,
-                                File = file,
-                                SearchUnit = searchUnit,
-                                Query = searchQueryResult.Query,
-                                QueryPriority = searchQueryResult.Priority,
-                                MissingTokens = searchQueryResult.MissingTokens
-                            });
-                        }
-                    }
-                }
-
-                searchUnitListItems = searchUnitListItems
-                    .OrderBy(x => x.QueryPriority)
-                    .ThenBy(x => x.MatchSpanLength).ToList();
-                for (ushort i = 0; i < searchUnitListItems.Count; i++)
-                {
-                    searchUnitListItems[i].Index = (ushort)(i + 1);
-                }
-
+                var searchUnitListItems = SearchUnitListItem.FromSearchResult(searchResult, currentCorpusItem.Id);
                 Device.BeginInvokeOnMainThread(() =>
                 {
-                    SearchResultsView.ItemsSource = searchUnitListItems;
+                    SearchCollectionView.ItemsSource = searchUnitListItems;
                     _message.ShortAlert($"Найдено {searchUnitListItems.Count} совпадений");
                     ReplaceLoadingWithSearchModeButton();
                 });
@@ -286,14 +295,16 @@ namespace LeninSearch.Xam
             Animations.OpacityToZeroAndBack(stackLayout);
             var gestureRecognizer = stackLayout.GestureRecognizers[0] as TapGestureRecognizer;
             var searchUnitListItem = gestureRecognizer.CommandParameter as SearchUnitListItem;
-            RunReadBook(searchUnitListItem.CorpusId, searchUnitListItem.File, searchUnitListItem.SearchUnit.ParagraphIndex, searchUnitListItem.SearchUnit);
+            RunReadBook(searchUnitListItem.CorpusId, searchUnitListItem.File, searchUnitListItem.SearchUnit.ParagraphIndex, true, searchUnitListItem.SearchUnit);
         }
 
         private void SummaryBookPickerOnSelectedIndexChanged(object sender, EventArgs e)
         {
             var summaryBookListItem = SummaryBookPicker.SelectedItem as SummaryBookListItem;
-
             if (summaryBookListItem == null) return;
+
+            _state.SummaryTabState ??= new SummaryTabState();
+            _state.SummaryTabState.SelectedFile = summaryBookListItem.File;
 
             var lsiData = _lsiProvider.GetLsiData(summaryBookListItem.CorpusId, summaryBookListItem.File);
             var dictionary = _lsiProvider.GetDictionary(summaryBookListItem.CorpusId);
@@ -305,7 +316,7 @@ namespace LeninSearch.Xam
                 Title = hp.GetText(dictionary.Words),
                 Padding = new Thickness(10 + 20 * hp.HeadingLevel, 0, 10, 0)
             });
-            SummaryView.ItemsSource = summaryListItems;
+            SummaryCollectionView.ItemsSource = summaryListItems;
         }
 
         private void OnSummaryItemTapped(object sender, EventArgs e)
@@ -344,6 +355,7 @@ namespace LeninSearch.Xam
         {
             // hack: restore swipe after image zoom
             MainTabs.IsSwipeEnabled = true;
+            _state.SelectedTabIndex = MainTabs.SelectedIndex;
         }
 
         private void OnAddBookmarkClick(object sender, EventArgs e)
@@ -374,10 +386,14 @@ namespace LeninSearch.Xam
             _message.ShortAlert("Закладка добавлена");
         }
 
-        private void RunReadBook(string corpusId, string file, ushort selectedParagraphIndex, SearchUnit searchUnit = null)
+        private void RunReadBook(string corpusId, string file, ushort selectedParagraphIndex, bool selectTab = true, SearchUnit searchUnit = null)
         {
             Task.Run(() =>
             {
+                _state.ReadingTabState ??= new ReadingTabState();
+                _state.ReadingTabState.SelectedParagraphIndex = selectedParagraphIndex;
+                _state.ReadingTabState.SelectedFile = file;
+
                 var lsiData = _lsiProvider.GetLsiData(corpusId, file);
                 var corpusFileItem = _lsiProvider.GetCorpusItem(corpusId)
                     .GetFileByPath(file);
@@ -400,9 +416,16 @@ namespace LeninSearch.Xam
                 Device.BeginInvokeOnMainThread(() =>
                 {
                     ReadBookTitleLabel.Text = corpusFileItem.Name;
-                    ReadView.ItemsSource = readListItems;
-                    MainTabs.SelectedIndex = MainTabs.TabItems.IndexOf(ReadTabViewItem);
-                    ReadView.ScrollTo(scrollTo, null, ScrollToPosition.MakeVisible, false);
+                    ReadCollectionView.ItemsSource = readListItems;
+                    if (selectTab)
+                    {
+                        MainTabs.SelectedIndex = MainTabs.TabItems.IndexOf(ReadTabViewItem);
+                    }
+                    Task.Run(() =>
+                    {
+                        Task.Delay(500);
+                        ReadCollectionView.ScrollTo(scrollTo, null, ScrollToPosition.Center, false);
+                    });
                 });
             });
         }
@@ -516,7 +539,7 @@ namespace LeninSearch.Xam
                 corpusListItems.Add(CorpusListItem.FromCorpusItem(libraryListItem.Update));
 
                     // 7. reactivate corpus
-                if (sameSeriesCorpusItems.Any(ci => ci.Id == _state.CorpusId))
+                if (sameSeriesCorpusItems.Any(ci => ci.Id == _state.ActiveCorpusId))
                 {
                     ActivateCorpus(libraryListItem.Update.Id);
                 }

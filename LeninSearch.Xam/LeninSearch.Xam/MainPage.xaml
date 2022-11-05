@@ -140,7 +140,7 @@
                 <StackLayout Orientation="Horizontal" HorizontalOptions="Fill" Spacing="0" BackgroundColor="#D6181F" 
                              HeightRequest="34" Margin="0" IsClippedToBounds="True">
                     <ActivityIndicator x:Name="SearchActivityIndicator" Color="White" IsRunning="False" VerticalOptions="Start" 
-                                       WidthRequest="24" HeightRequest="24" Margin="6"></ActivityIndicator>
+                                       WidthRequest="24" HeightRequest="24" Margin="6" IsVisible="False"></ActivityIndicator>
                     <ImageButton Padding="6" x:Name="SearchModeButton" WidthRequest="36" HeightRequest="36" Source="paragraph.png" 
                                  BackgroundColor="#D6181F" HorizontalOptions="Start" Margin="0" 
                                  Clicked="OnSearchModeButtonClick" CommandParameter="0"></ImageButton>
@@ -148,7 +148,7 @@
                            HorizontalOptions="FillAndExpand" Margin="0, 0, 0, -2" FontSize="Small" TextColor="White" 
                            BackgroundColor="#D6181F" HeightRequest="36"></controls:WhiteBorderedEntry>
                 </StackLayout>
-                <CollectionView x:Name="SearchResultsView" EmptyView="Ничего не найдено, попробуйте другой запрос">
+                <CollectionView x:Name="SearchCollectionView" EmptyView="Ничего не найдено, попробуйте другой запрос">
                     <CollectionView.ItemsLayout>
                         <LinearItemsLayout Orientation="Vertical" ItemSpacing="5" />
                     </CollectionView.ItemsLayout>
@@ -182,7 +182,7 @@
                            HorizontalOptions="FillAndExpand" HorizontalTextAlignment="Center" TextColor="White" 
                            Margin="0, 8, 0, 0" BackgroundColor="#D6181F"></Label>
                 </StackLayout>
-                <CollectionView x:Name="ReadView" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                <CollectionView x:Name="ReadCollectionView" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                     <CollectionView.ItemsLayout>
                         <LinearItemsLayout Orientation="Vertical" ItemSpacing="5" />
                     </CollectionView.ItemsLayout>
@@ -229,7 +229,7 @@
                     <controls:WhiteBorderedPicker x:Name="SummaryBookPicker" HeightRequest="36" FontSize="Small" TextColor="White" 
                             HorizontalOptions="FillAndExpand" BackgroundColor="#D6181F" Margin="0, 0, 0, -2" SelectedIndexChanged="SummaryBookPickerOnSelectedIndexChanged"></controls:WhiteBorderedPicker>
                 </StackLayout>
-                <CollectionView x:Name="SummaryView" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                <CollectionView x:Name="SummaryCollectionView" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                     <CollectionView.ItemsLayout>
                         <LinearItemsLayout Orientation="Vertical" ItemSpacing="10" />
                     </CollectionView.ItemsLayout>

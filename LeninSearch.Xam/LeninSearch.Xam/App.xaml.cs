@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using LeninSearch.Xam.State;
 using Newtonsoft.Json;
 using Xamarin.Forms;
 using Xamarin.Forms.PlatformConfiguration;
@@ -15,8 +17,8 @@ namespace LeninSearch.Xam
 {
     public partial class App : Application
     {
-        private State _state;
-        public bool AllowBackButton => !_state.IsReading();
+        private AppState _state;
+        public bool AllowBackButton => true;
 
         public App(GlobalEvents globalEvents)
         {
@@ -27,7 +29,7 @@ namespace LeninSearch.Xam
 
         protected override void OnStart()
         {
-            Debug.WriteLine($"OnStart");
+            Debug.WriteLine($"{DateTime.Now} OnStart");
             _state = LoadState();
             if (MainPage is MainPage mainPage)
             {
@@ -37,14 +39,14 @@ namespace LeninSearch.Xam
 
         protected override void OnSleep()
         {
-            Debug.WriteLine($"OnSleep");
+            Debug.WriteLine($"{DateTime.Now} OnSleep");
             (MainPage as MainPage)?.CleanCache();
             SaveState(_state);
         }
 
         protected override void OnResume()
         {
-            Debug.WriteLine($"OnResume");
+            Debug.WriteLine($"{DateTime.Now} OnResume");
             _state = LoadState();
             if (MainPage is MainPage mainPage)
             {
@@ -52,7 +54,7 @@ namespace LeninSearch.Xam
             }
         }
 
-        private static void SaveState(State state)
+        private static void SaveState(AppState state)
         {
             var stateFilePath = Path.Combine(Settings.StateFolder, "state.json");
 
@@ -65,7 +67,7 @@ namespace LeninSearch.Xam
             File.WriteAllText(stateFilePath, json);
         }
 
-        private static State LoadState(bool leaveOnlyCorpusSelection = false)
+        private static AppState LoadState()
         {
             var stateFilePath = Path.Combine(Settings.StateFolder, "state.json");
 
@@ -73,29 +75,22 @@ namespace LeninSearch.Xam
             {
                 var json = File.ReadAllText(stateFilePath);
 
-                var state = JsonConvert.DeserializeObject<State>(json);
-
-                if (leaveOnlyCorpusSelection)
-                {
-                    state.SearchResult = null;
-                    state.SearchQuery = null;
-                    state.ReadingFile = null;
-                }
+                var state = JsonConvert.DeserializeObject<AppState>(json);
 
                 return state;
             }
 
-            var corpusItem = State.GetCorpusItems().FirstOrDefault(ci => ci.Selected);
-            if (corpusItem == null)
+            var corpusItems = Settings.GetCorpusItems().ToList();
+            var selectedCorpusItem = corpusItems.First();
+            return new AppState
             {
-                corpusItem = State.GetCorpusItems().First();
-            }
-
-            return new State
-            {
-                CorpusId = corpusItem.Id,
-                ReadingFile = null,
-                SearchQuery = null
+                ActiveCorpusId = selectedCorpusItem.Id,
+                SelectedTabIndex = 0,
+                SearchTabState = new SearchTabState
+                {
+                    SearchQuery = null
+                },
+                ReadingTabState = null
             };
         }
     }
