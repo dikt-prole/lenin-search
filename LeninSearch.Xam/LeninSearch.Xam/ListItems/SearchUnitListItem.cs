@@ -1,11 +1,14 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Principal;
 using LeninSearch.Standard.Core.Search;
+using LeninSearch.Xam.Annotations;
 
 namespace LeninSearch.Xam.ListItems
 {
-    public class SearchUnitListItem
+    public class SearchUnitListItem : INotifyPropertyChanged
     {
         public string File { get; set; }
         public string CorpusId { get; set; }
@@ -20,6 +23,22 @@ namespace LeninSearch.Xam.ListItems
         public string MissingTokensText => string.Join(", ", MissingTokens);
         public bool HasMissingTokens => MissingTokens.Any();
         public SearchUnitListItem Self => this;
+
+        private bool _isHighlighted;
+        public bool IsHighlighted
+        {
+            get => _isHighlighted;
+            set
+            {
+                if (value == _isHighlighted) return;
+                _isHighlighted = value;
+                OnPropertyChanged(nameof(BackgroundColor));
+            }
+        }
+
+        public string BackgroundColor => IsHighlighted 
+            ? Settings.UI.Colors.SearchUnitHighlightColorHex 
+            : "#FFFFFF";
 
         public static List<SearchUnitListItem> FromSearchResult(SearchResult searchResult, string corpusId)
         {
@@ -53,6 +72,14 @@ namespace LeninSearch.Xam.ListItems
             }
 
             return searchUnitListItems;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

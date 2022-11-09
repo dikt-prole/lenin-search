@@ -158,18 +158,18 @@
                 </StackLayout>
                 <CollectionView x:Name="SearchCollectionView" EmptyView="Ничего не найдено, попробуйте другой запрос">
                     <CollectionView.ItemsLayout>
-                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="5" />
+                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="0" />
                     </CollectionView.ItemsLayout>
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <StackLayout Orientation="Vertical" Padding="10, 0, 10, 0" Spacing="0">
+                            <StackLayout Orientation="Vertical" Padding="10, 5, 10, 5" Spacing="0" BackgroundColor="{Binding BackgroundColor}">
                                 <StackLayout.GestureRecognizers>
                                     <TapGestureRecognizer
                                         Tapped="OnSearchUnitTapped"
                                         NumberOfTapsRequired="1"
                                         CommandParameter="{Binding Self}"/>
                                 </StackLayout.GestureRecognizers>
-                                <Label TextColor="#D6181F" Margin="0, 5, 0, 0" FontSize="Small" Text="{Binding Title}" LineBreakMode="NoWrap"></Label>
+                                <Label TextColor="#D6181F" Margin="0, 0, 0, 0" FontSize="Small" Text="{Binding Title}" LineBreakMode="NoWrap"></Label>
                                 <controls:ExtendedLabel TextColor="Black" Margin="0" FontSize="Micro" LineBreakMode="WordWrap" 
                                                         Text="{Binding Preview}" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" JustifyText="True">
                                 </controls:ExtendedLabel>

@@ -50,6 +50,7 @@ namespace LeninSearch.Xam
             {
                 public static Color MainColor => Color.FromRgb(214, 24, 31);
                 public static Color ReadSearchMatchColor => new Color(1, 0, 0, 0.20);
+                public static string SearchUnitHighlightColorHex = "#FFE5E6";
             }
 
             public static bool OldAndroidJustification { get; set; }

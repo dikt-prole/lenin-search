@@ -380,6 +380,18 @@ namespace LeninSearch.Xam
             Animations.OpacityToZeroAndBack(stackLayout);
             var gestureRecognizer = stackLayout.GestureRecognizers[0] as TapGestureRecognizer;
             var searchUnitListItem = gestureRecognizer.CommandParameter as SearchUnitListItem;
+
+            // highlight
+            var searchUnitListItems = SearchCollectionView.ItemsSource as List<SearchUnitListItem>;
+            foreach (var i in searchUnitListItems)
+            {
+                if (i.IsHighlighted)
+                {
+                    i.IsHighlighted = false;
+                }
+            }
+            searchUnitListItem.IsHighlighted = true;
+
             RunReadBook(searchUnitListItem.CorpusId, searchUnitListItem.File, searchUnitListItem.SearchUnit.ParagraphIndex, true, searchUnitListItem.SearchUnit);
         }
 
