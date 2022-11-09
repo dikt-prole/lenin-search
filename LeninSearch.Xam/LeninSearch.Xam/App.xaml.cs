@@ -80,18 +80,7 @@ namespace LeninSearch.Xam
                 return state;
             }
 
-            var corpusItems = Settings.GetCorpusItems().ToList();
-            var selectedCorpusItem = corpusItems.First();
-            return new AppState
-            {
-                ActiveCorpusId = selectedCorpusItem.Id,
-                SelectedTabIndex = 0,
-                SearchTabState = new SearchTabState
-                {
-                    SearchQuery = null
-                },
-                ReadingTabState = null
-            };
+            return AppState.Default();
         }
     }
 }

@@ -28,7 +28,7 @@ namespace LeninSearch.Xam
         private readonly ICorpusSearch _corpusSearch;
         private readonly ApiService _apiService = new ApiService();
         private readonly IMessage _message = DependencyService.Get<IMessage>();
-        private AppState _state;
+        private AppState _state = AppState.Default();
         private readonly ILibraryDownloadManager _libraryDownloadManager;
 
         public MainPage(GlobalEvents globalEvents)
@@ -123,17 +123,23 @@ namespace LeninSearch.Xam
             }
         }
 
-        private void ActivateCorpus(string corpusId, bool alert = true, bool selectBook = true)
+        private void ActivateCorpus(string corpusId, bool alert = true)
         {
             var corpusItem = _lsiProvider.GetCorpusItem(corpusId);
             var summaryBookListItems = SummaryBookListItem.Construct(corpusItem).ToList();
             CorpusTabViewItem.Icon = Settings.IconFile(corpusId);
-            SummaryBookPicker.ItemsSource = summaryBookListItems;
-            if (selectBook)
-            {
-                SummaryBookPicker.SelectedIndex = 0;
-            }
             _state.ActiveCorpusId = corpusId;
+
+            SummaryBookPicker.ItemsSource = summaryBookListItems;
+            SummaryBookPicker.SelectedIndex = 0;
+            _state.SummaryTabState.SelectedFile = summaryBookListItems[0].File;
+
+            SearchCollectionView.ItemsSource = null;
+            _state.SearchTabState.SearchResult = null;
+
+            ReadCollectionView.ItemsSource = null;
+            _state.ReadingTabState = null;
+            
             if (alert)
             {
                 _message.ShortAlert($"Активирован корпус '{corpusItem.Name}'");
@@ -147,14 +153,13 @@ namespace LeninSearch.Xam
 
         public void SetState(AppState state)
         {
-            _state = state;
             RefreshAllTabs();
-            MainTabs.SelectedIndex = _state.SelectedTabIndex;
-            var corpusItem = _state.GetCurrentCorpusItem();
-            ActivateCorpus(corpusItem.Id, false, false);
+            MainTabs.SelectedIndex = state.SelectedTabIndex;
+            var corpusItem = state.GetCurrentCorpusItem();
+            ActivateCorpus(corpusItem.Id, false);
 
             // summary tab
-            var summarySelectedFile = _state.SummaryTabState?.SelectedFile;
+            var summarySelectedFile = state.SummaryTabState?.SelectedFile;
             if (summarySelectedFile != null)
             {
                 var summaryBookListItems = SummaryBookPicker.ItemsSource as List<SummaryBookListItem>;
@@ -173,22 +178,24 @@ namespace LeninSearch.Xam
             }
 
             // read tab
-            var selectedFile = _state.ReadingTabState?.SelectedFile;
-            var selectedParagraphIndex = _state.ReadingTabState?.SelectedParagraphIndex;
+            var selectedFile = state.ReadingTabState?.SelectedFile;
+            var selectedParagraphIndex = state.ReadingTabState?.SelectedParagraphIndex;
             if (!string.IsNullOrEmpty(selectedFile) && selectedParagraphIndex.HasValue)
             {
-                RunReadBook(_state.ActiveCorpusId, selectedFile, selectedParagraphIndex.Value, false);
+                RunReadBook(state.ActiveCorpusId, selectedFile, selectedParagraphIndex.Value, false);
             }
 
             // search tab
-            SearchEntry.Text = _state.SearchTabState?.SearchQuery;
+            SearchEntry.Text = state.SearchTabState?.SearchQuery;
             SearchCollectionView.ItemsSource = null;
-            var searchResult = _state.SearchTabState?.SearchResult;
+            var searchResult = state.SearchTabState?.SearchResult;
             if (searchResult != null)
             {
-                var searchUnitListItems = SearchUnitListItem.FromSearchResult(searchResult, _state.ActiveCorpusId);
+                var searchUnitListItems = SearchUnitListItem.FromSearchResult(searchResult, state.ActiveCorpusId);
                 SearchCollectionView.ItemsSource = searchUnitListItems;
             }
+
+            _state = state;
         }
 
         private void GlobalEventsOnBackButtonPressed(object sender, EventArgs e)

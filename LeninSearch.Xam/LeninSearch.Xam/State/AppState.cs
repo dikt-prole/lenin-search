@@ -19,5 +19,19 @@ namespace LeninSearch.Xam.State
         {
             return Settings.GetCorpusItems().FirstOrDefault(ci => ci.Id == ActiveCorpusId);
         }
+
+        public static AppState Default()
+        {
+            var corpusItems = Settings.GetCorpusItems().ToList();
+            var selectedCorpusItem = corpusItems.First();
+            return new AppState
+            {
+                ActiveCorpusId = selectedCorpusItem.Id,
+                SelectedTabIndex = 0,
+                ReadingTabState = null,
+                SearchTabState = new SearchTabState(),
+                SummaryTabState = new SummaryTabState()
+            };
+        }
     }
 }
