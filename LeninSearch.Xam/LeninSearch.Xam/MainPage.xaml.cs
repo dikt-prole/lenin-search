@@ -62,22 +62,26 @@ namespace LeninSearch.Xam
             Device.BeginInvokeOnMainThread(() =>
             {
                 var libraryListItems = LibraryCollectionView.ItemsSource as ObservableCollection<LibraryListItem>;
-                var libraryListItem = libraryListItems.First(i => i.Update.Id == e.Download.Id);
-                libraryListItems.Remove(libraryListItem);
+                var libraryListItem = libraryListItems.FirstOrDefault(i => i.Update.Id == e.Download.Id);
 
-                var corpusListItems = CorpusCollectionView.ItemsSource as ObservableCollection<CorpusListItem>;
-                var removedCorpusListItems = corpusListItems.Where(i => e.Removed.Any(ci => ci.Id == i.CorpusId)).ToList();
-                foreach (var removedCorpusListItem in removedCorpusListItems)
+                if (libraryListItem != null)
                 {
-                    corpusListItems.Remove(removedCorpusListItem);
-                }
+                    libraryListItems.Remove(libraryListItem);
 
-                var addedCorpusListItem = CorpusListItem.FromCorpusItem(e.Download);
-                corpusListItems.Add(addedCorpusListItem);
+                    var corpusListItems = CorpusCollectionView.ItemsSource as ObservableCollection<CorpusListItem>;
+                    var removedCorpusListItems = corpusListItems.Where(i => e.Removed.Any(ci => ci.Id == i.CorpusId)).ToList();
+                    foreach (var removedCorpusListItem in removedCorpusListItems)
+                    {
+                        corpusListItems.Remove(removedCorpusListItem);
+                    }
 
-                if (removedCorpusListItems.Any(ci => ci.CorpusId == _state.ActiveCorpusId))
-                {
-                    ActivateCorpus(e.Download.Id);
+                    var addedCorpusListItem = CorpusListItem.FromCorpusItem(e.Download);
+                    corpusListItems.Add(addedCorpusListItem);
+
+                    if (removedCorpusListItems.Any(ci => ci.CorpusId == _state.ActiveCorpusId))
+                    {
+                        ActivateCorpus(e.Download.Id);
+                    }
                 }
             });
         }
@@ -87,8 +91,11 @@ namespace LeninSearch.Xam
             Device.BeginInvokeOnMainThread(() =>
             {
                 var libraryListItems = LibraryCollectionView.ItemsSource as ObservableCollection<LibraryListItem>;
-                var libraryListItem = libraryListItems.First(i => i.Update.Id == e.Download.Id);
-                libraryListItem.Text = $"Скачиваю: {e.File}";
+                var libraryListItem = libraryListItems.FirstOrDefault(i => i.Update.Id == e.Download.Id);
+                if (libraryListItem != null)
+                {
+                    libraryListItem.Text = $"Скачиваю: {e.File}";
+                }
             });
         }
 
@@ -97,9 +104,12 @@ namespace LeninSearch.Xam
             Device.BeginInvokeOnMainThread(() =>
             {
                 var libraryListItems = LibraryCollectionView.ItemsSource as ObservableCollection<LibraryListItem>;
-                var libraryListItem = libraryListItems.First(i => i.Update.Id == e.Download.Id);
-                libraryListItem.Text = "Ошибка скачивания";
-                libraryListItem.IsDownloading = false;
+                var libraryListItem = libraryListItems.FirstOrDefault(i => i.Update.Id == e.Download.Id);
+                if (libraryListItem != null)
+                {
+                    libraryListItem.Text = "Ошибка скачивания";
+                    libraryListItem.IsDownloading = false;
+                }
             });
         }
 
@@ -206,7 +216,7 @@ namespace LeninSearch.Xam
             CorpusCollectionView.ItemsSource = corpusListItems;
         }
 
-        private void BeginRefreshLibraryTab()
+        private void RunRefreshLibraryTab()
         {
             Task.Run(() =>
             {
@@ -241,10 +251,26 @@ namespace LeninSearch.Xam
 
                 Device.BeginInvokeOnMainThread(() =>
                 {
-                    LibraryCollectionView.ItemsSource = libraryListItems;
-                    LibraryCollectionView.EmptyView = summaryResult.Success
-                        ? "Вы уже все скачали"
-                        : "Ошибка соединения с библиотекой";
+                    LibraryCollectionView.EmptyView = "Вы уже все скачали";
+                    if (LibraryCollectionView.ItemsSource == null)
+                    {
+                        LibraryCollectionView.ItemsSource = libraryListItems;
+                        if (!summaryResult.Success)
+                        {
+                            LibraryCollectionView.EmptyView = "Ошибка соединения с библиотекой";
+                        }
+                    }
+                    else if (summaryResult.Success)
+                    {
+                        var currentLibraryListItems = LibraryCollectionView.ItemsSource as ObservableCollection<LibraryListItem>;
+                        var missingLibraryListItems = libraryListItems
+                            .Where(i => currentLibraryListItems.All(ci => ci.Update.Id != i.Update.Id))
+                            .ToList();
+                        foreach (var libraryListItem in missingLibraryListItems)
+                        {
+                            currentLibraryListItems.Add(libraryListItem);
+                        }
+                    }
                 });
             });
         }
@@ -261,7 +287,7 @@ namespace LeninSearch.Xam
         {
             RefreshCorpusTab();
             RefreshBookmarksTab();
-            BeginRefreshLibraryTab();
+            RunRefreshLibraryTab();
         }
 
         private async Task GenerateSearchReport()
@@ -560,6 +586,8 @@ namespace LeninSearch.Xam
 
             var corpusListItems = CorpusCollectionView.ItemsSource as ObservableCollection<CorpusListItem>;
             corpusListItems.Remove(corpusListItem);
+
+            RunRefreshLibraryTab();
         }
 
         private void OnCancelLibraryDownload(object sender, EventArgs e)
