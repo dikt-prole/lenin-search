@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -412,7 +413,7 @@ namespace LeninSearch.Xam
                 ParagraphIndex = hp.Index,
                 Title = hp.GetText(dictionary.Words),
                 Padding = new Thickness(10 + 20 * hp.HeadingLevel, 0, 10, 0)
-            });
+            }).ToList();
             SummaryCollectionView.ItemsSource = summaryListItems;
         }
 
@@ -496,7 +497,8 @@ namespace LeninSearch.Xam
                     .GetFileByPath(file);
                 var readListItems = new List<ReadListItem>();
                 ReadListItem scrollTo = null;
-                foreach (var paragraphIndex in lsiData.Paragraphs.Keys.OrderBy(k => k))
+                var paragraphIndexes = lsiData.Paragraphs.Keys.OrderBy(k => k).ToList();
+                foreach (var paragraphIndex in paragraphIndexes)
                 {
                     var lsiParagraph = lsiData.Paragraphs[paragraphIndex];
                     var readListItem = ReadListItem.Construct(corpusId, file,

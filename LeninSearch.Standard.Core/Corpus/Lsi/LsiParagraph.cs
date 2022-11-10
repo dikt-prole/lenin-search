@@ -51,12 +51,23 @@ namespace LeninSearch.Standard.Core.Corpus.Lsi
 
             if (WordIndexes.Count == 0) return spans;
 
-            var zeroWordData = GetWordData(0, searchUnit);
-            var zeroSpan = ConstructSpan(zeroWordData.SpanType, zeroWordData.CommentIndex, zeroWordData.InlineImageIndex);
-            zeroSpan.WordIndexes.Add(WordIndexes[0]);
-            spans.Add(zeroSpan);
+            ushort wordPosition = 0;
+            while (true)
+            {
+                if (wordPosition >= WordIndexes.Count) break;
+                var wordData = GetWordData(wordPosition, searchUnit);
+                var span = ConstructSpan(wordData.SpanType, wordData.CommentIndex, wordData.InlineImageIndex);
+                spans.Add(span);
+                var wordIndex = WordIndexes[wordPosition];
+                wordPosition++;
+                if (span.WordIndexes != null)
+                {
+                    span.WordIndexes.Add(wordIndex);
+                    break;
+                }
+            }
 
-            for (ushort wordPosition = 1; wordPosition < WordIndexes.Count; wordPosition++)
+            for (; wordPosition < WordIndexes.Count; wordPosition++)
             {
                 var wordData = GetWordData(wordPosition, searchUnit);
                 var lastSpan = spans.Last();

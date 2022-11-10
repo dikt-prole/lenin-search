@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using LeninSearch.Standard.Core;
@@ -68,8 +69,8 @@ namespace LeninSearch.Xam.ListItems
 
         public ReadListItem Self => this;
 
-        public static ReadListItem Construct(string corpusId, string file, LsiParagraph lsiParagraph, 
-            ILsiProvider lsiProvider, SearchUnit searchUnit, Func<ushort> imageWidthFunc, Action<string> alertAction, 
+        public static ReadListItem Construct(string corpusId, string file, LsiParagraph lsiParagraph,
+            ILsiProvider lsiProvider, SearchUnit searchUnit, Func<ushort> imageWidthFunc, Action<string> alertAction,
             Action<ReadListItem> onReadItemTapped)
         {
             var dictionary = lsiProvider.GetDictionary(corpusId);
@@ -88,7 +89,9 @@ namespace LeninSearch.Xam.ListItems
                 readListItem.ImageFile = Settings.ImageFile(corpusId, lsiParagraph.ImageIndex);
                 readListItem._imageWidthInitial = imageWidthFunc();
                 var imageCfi = Settings.GetCorpusFileItem(corpusId, $"image{lsiParagraph.ImageIndex}.jpeg");
-                readListItem._imageHeightInitial = (ushort)(imageCfi.ImageHeight * readListItem._imageWidthInitial / imageCfi.ImageWidth);
+                readListItem._imageHeightInitial = imageCfi == null
+                    ? (ushort)0
+                    : (ushort)(imageCfi.ImageHeight * readListItem._imageWidthInitial / imageCfi.ImageWidth);
                 readListItem.ImageTitle = $"иллюстрация №{lsiParagraph.ImageIndex}";
             }
             else
@@ -97,11 +100,10 @@ namespace LeninSearch.Xam.ListItems
                     dictionary, corpusId, alertAction, () => onReadItemTapped(readListItem));
             }
 
-
             return readListItem;
         }
 
-        private static FormattedString BuildFormattedText(List<LsiSpan> lsiSpans, LsiParagraph paragraph, LsDictionary dictionary, string corpusId, 
+        private static FormattedString BuildFormattedText(List<LsiSpan> lsiSpans, LsiParagraph paragraph, LsDictionary dictionary, string corpusId,
             Action<string> alertAction, Action onReadItemTapped)
         {
             var commentSpans = new Dictionary<LsiSpan, Span>();
@@ -166,13 +168,16 @@ namespace LeninSearch.Xam.ListItems
 
             foreach (var lsiSpan in commentSpans.Keys)
             {
-                var gestureRecognizer = new TapGestureRecognizer { Command = new Command(() =>
+                var gestureRecognizer = new TapGestureRecognizer
+                {
+                    Command = new Command(() =>
                 {
                     var comment = paragraph.Comments.First(c => c.CommentIndex == lsiSpan.CommentIndex);
                     var words = comment.WordIndexes.Select(wi => dictionary.Words[wi]).ToList();
                     var commentText = $"[{lsiSpan.CommentIndex + 1}] {TextUtil.GetParagraph(words)}";
                     alertAction(commentText);
-                }) };
+                })
+                };
                 commentSpans[lsiSpan].GestureRecognizers.Add(gestureRecognizer);
             }
 
