@@ -12,7 +12,7 @@ namespace LeninSearch.Api.Health
         private static readonly HttpClient HttpClient = new HttpClient{Timeout = TimeSpan.FromMinutes(10)};
         static void Main(string[] args)
         {
-            var request = new CorpusSearchRequest
+            var request = new SearchRequest
             {
                 CorpusId = "lenin-v2",
                 Query = "дикт* прол* + латин* науч*"
@@ -23,7 +23,7 @@ namespace LeninSearch.Api.Health
                 var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
                 var response = HttpClient.PostAsync(SearchUrl, content).Result;
                 var responseJson = response.Content.ReadAsStringAsync().Result;
-                var searchResponse = JsonConvert.DeserializeObject<CorpusSearchResponse>(responseJson);
+                var searchResponse = JsonConvert.DeserializeObject<SearchResponse>(responseJson);
                 if (searchResponse?.Units.Count != 1)
                 {
                     throw new Exception("Results are invalid");

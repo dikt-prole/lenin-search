@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace LeninSearch.Standard.Core.Api
 {
-    public class SearchResultUnitResponse
+    public class SearchUnitResponse
     {
         [JsonProperty(PropertyName = "pi")]
         public ushort ParagraphIndex { get; set; }
@@ -19,28 +19,29 @@ namespace LeninSearch.Standard.Core.Api
         [JsonProperty(PropertyName = "ttl")]
         public string Title { get; set; }
 
-        [JsonProperty(PropertyName = "pty")]
-        public ushort Priority { get; set; }
+        [JsonProperty(PropertyName = "msl")]
+        public ushort MatchSpanLength { get; set; }
 
-        public static SearchResultUnitResponse FromSearchResultUnit(SearchUnit searchUnit)
+        public static SearchUnitResponse FromSearchResultUnit(SearchUnit searchUnit)
         {
-            return new SearchResultUnitResponse
+            return new SearchUnitResponse
             {
                 ParagraphIndex = searchUnit.ParagraphIndex,
                 WordIndexChains = searchUnit.WordIndexChains.Select(wic => wic.WordIndexes).ToList(),
                 Preview = searchUnit.Preview,
-                Title = searchUnit.Title
+                Title = searchUnit.Title,
+                MatchSpanLength = searchUnit.MatchSpanLength
             };
         }
 
-        public SearchUnit ToSearchResultUnit()
+        public SearchUnit ToSearchUnit()
         {
             var result = new SearchUnit(ParagraphIndex)
             {
                 WordIndexChains = WordIndexChains.Select(wic => new WordIndexChain {WordIndexes = wic}).ToList(),
                 Preview = Preview,
                 Title = Title,
-                MatchSpanLength = Priority
+                MatchSpanLength = MatchSpanLength
             };
 
             return result;;

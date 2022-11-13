@@ -2,7 +2,7 @@
 
 namespace LeninSearch.Standard.Core.Api
 {
-    public class CorpusSearchRequest
+    public class SearchRequest
     {
         public string CorpusId { get; set; }
         public string Query { get; set; }

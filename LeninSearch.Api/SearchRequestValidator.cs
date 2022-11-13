@@ -4,9 +4,9 @@ using LeninSearch.Standard.Core.Api;
 
 namespace LeninSearch.Api
 {
-    public class CorpusSearchRequestValidator
+    public class SearchRequestValidator
     {
-        public string Validate(CorpusSearchRequest request)
+        public string Validate(SearchRequest request)
         {
             var query = request.Query;
 

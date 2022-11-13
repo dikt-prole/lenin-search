@@ -11,17 +11,19 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
     {
         private readonly ILsiProvider _lsiProvider;
         private readonly ISearchQueryFactory _queryFactory;
+        private readonly bool _parallel;
         private readonly LsSearcher _searcher;
 
-        private Dictionary<string, List<SearchQuery>> _queryCache = new Dictionary<string, List<SearchQuery>>();
-        public OfflineCorpusSearch(ILsiProvider lsiProvider, ISearchQueryFactory queryFactory, int tokenIndexCountCutoff = int.MaxValue, int resultCountCutoff = int.MaxValue)
+        private readonly Dictionary<string, List<SearchQuery>> _queryCache = new Dictionary<string, List<SearchQuery>>();
+        public OfflineCorpusSearch(ILsiProvider lsiProvider, ISearchQueryFactory queryFactory, int tokenIndexCountCutoff = int.MaxValue, int resultCountCutoff = int.MaxValue, bool parallel = false)
         {
             _lsiProvider = lsiProvider;
             _queryFactory = queryFactory;
+            _parallel = parallel;
             _searcher = new LsSearcher(tokenIndexCountCutoff, resultCountCutoff);
         }
 
-        public Task<SearchResult> SearchAsync(string corpusId, string query, SearchMode mode)
+        public async Task<SearchResult> SearchAsync(string corpusId, string query, SearchMode mode)
         {
             var corpusItem = _lsiProvider.GetCorpusItem(corpusId);
             var dictionary = _lsiProvider.GetDictionary(corpusId);
@@ -41,49 +43,39 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
 
             var searchQueries = _queryCache[queryKey];
 
-            Debug.WriteLine("Search queries:");
-            foreach (var searchQuery in searchQueries)
-            {
-                Debug.WriteLine(
-                    $"{searchQuery.Text}, priority={searchQuery.Priority}, mode={searchQuery.Mode}, missing={string.Join(',', searchQuery.MissingTokens)}");
-            }
-
             var result = new SearchResult { FileResults = new Dictionary<string, List<SearchQueryResult>>() };
 
             var corpusFileItems = corpusItem.LsiFiles();
 
-            foreach (var cfi in corpusFileItems)
+            if (_parallel)
             {
-                var searchQueryResults = new List<SearchQueryResult>();
-                var lsiData = _lsiProvider.GetLsiData(corpusId, cfi.Path);
-                var excludeParagraphs = new HashSet<ushort>();
-                foreach (var searchQuery in searchQueries.OrderBy(q => q.Priority))
+                var tasks = corpusFileItems.Select(cfi =>
+                    Task.Run(() => InnerSearchManyQueries(corpusId, cfi, searchQueries, dictionary)));
+                var manyQueryResults = await Task.WhenAll(tasks);
+                foreach (var manyQueryResult in manyQueryResults)
                 {
-                    var units = InnerSearch(lsiData, searchQuery, dictionary, cfi, excludeParagraphs);
-                    if (units.Any())
+                    if (manyQueryResult.Results.Any())
                     {
-                        var searchQueryResult = new SearchQueryResult
-                        {
-                            Priority = searchQuery.Priority,
-                            MissingTokens = searchQuery.MissingTokens,
-                            Query = searchQuery.Text,
-                            Units = units
-                        };
-                        searchQueryResults.Add(searchQueryResult);
-                        excludeParagraphs.UnionWith(units.Select(u => u.ParagraphIndex));
+                        result.FileResults.Add(manyQueryResult.File, manyQueryResult.Results);
                     }
                 }
-
-                if (searchQueryResults.Any())
+            }
+            else
+            {
+                foreach (var corpusFileItem in corpusFileItems)
                 {
-                    result.FileResults.Add(cfi.Path, searchQueryResults);
+                    var manyQueryResult = InnerSearchManyQueries(corpusId, corpusFileItem, searchQueries, dictionary);
+                    if (manyQueryResult.Results.Any())
+                    {
+                        result.FileResults.Add(manyQueryResult.File, manyQueryResult.Results);
+                    }
                 }
             }
 
-            return Task.FromResult(result);
+            return result;
         }
 
-        private List<SearchUnit> InnerSearch(LsiData lsiData, SearchQuery searchQuery, 
+        private List<SearchUnit> InnerSearchOneQuery(LsiData lsiData, SearchQuery searchQuery, 
             LsDictionary dictionary, CorpusFileItem corpusFileItem, HashSet<ushort> excludeParagraphs)
         {
             var results = _searcher.Search(lsiData, searchQuery, excludeParagraphs);
@@ -94,6 +86,31 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
             }
 
             return results;
+        }
+
+        private (string File, List<SearchQueryResult> Results) InnerSearchManyQueries(string corpusId, CorpusFileItem corpusFileItem, List<SearchQuery> searchQueries, LsDictionary dictionary)
+        {
+            var searchQueryResults = new List<SearchQueryResult>();
+            var lsiData = _lsiProvider.GetLsiData(corpusId, corpusFileItem.Path);
+            var excludeParagraphs = new HashSet<ushort>();
+            foreach (var searchQuery in searchQueries)
+            {
+                var units = InnerSearchOneQuery(lsiData, searchQuery, dictionary, corpusFileItem, excludeParagraphs);
+                if (units.Any())
+                {
+                    var searchQueryResult = new SearchQueryResult
+                    {
+                        Priority = searchQuery.Priority,
+                        MissingTokens = searchQuery.MissingTokens,
+                        Query = searchQuery.Text,
+                        Units = units
+                    };
+                    searchQueryResults.Add(searchQueryResult);
+                    excludeParagraphs.UnionWith(units.Select(u => u.ParagraphIndex));
+                }
+            }
+
+            return (corpusFileItem.Path, searchQueryResults);
         }
     }
 }

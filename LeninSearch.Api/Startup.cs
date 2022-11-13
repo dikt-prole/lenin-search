@@ -1,5 +1,6 @@
 using LeninSearch.Api.Services;
 using LeninSearch.Standard.Core.Search;
+using LeninSearch.Standard.Core.Search.CorpusSearching;
 using LeninSearch.Standard.Core.Search.TokenVarying;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -23,12 +24,15 @@ namespace LeninSearch.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers().AddNewtonsoftJson();
+            services.AddApiVersioning();
 
             // precached
-            var lsIndexDataProvider = new PrecachedLsiProvider().Load(100);
+            //var lsIndexDataProvider = new PrecachedLsiProvider().Load(100);
+            services.AddSingleton<ICorpusSearch>(p => new OfflineCorpusSearch(
+                p.GetService<ILsiProvider>(), p.GetService<ISearchQueryFactory>(), int.MaxValue, 100, true));
+            services.AddSingleton<IStemmer, RuPorterStemmer>();
             services.AddSingleton<ISearchQueryFactory, SearchQueryFactory>();
-            services.AddSingleton<ITokenVariantProvider, PorterTokenVariantProvider>();
-            services.AddSingleton<ILsiProvider>(sp => lsIndexDataProvider);
+            services.AddSingleton<ILsiProvider, CachedLsiProvider>();
             services.AddSingleton<IMemoryCache, MemoryCache>();
         }
 
