@@ -25,6 +25,7 @@ namespace LeninSearch.Api
         {
             services.AddControllers().AddNewtonsoftJson();
             services.AddApiVersioning();
+            services.AddResponseCompression(o => o.EnableForHttps = true);
 
             // precached
             //var lsIndexDataProvider = new PrecachedLsiProvider().Load(100);

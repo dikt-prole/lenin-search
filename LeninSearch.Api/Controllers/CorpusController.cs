@@ -34,8 +34,8 @@ namespace LeninSearch.Api.Controllers
             _cleaner = new SearchQueryCleaner();
         }
 
-        [HttpPost("search")]
-        public async Task<SearchResponse> Search([FromBody] SearchRequest request)
+        [HttpGet("search")]
+        public async Task<SearchResponse> Search([FromQuery] SearchRequest request)
         {
             request.Query = _cleaner.Clean(request.Query);
 
@@ -67,10 +67,11 @@ namespace LeninSearch.Api.Controllers
             return searchResponse;
         }
 
-        [HttpPost("search-compressed")]
-        public async Task<SearchResponse> SearchCompressed([FromBody] SearchRequest request)
+        [HttpGet("search-compressed")]
+        [EnableCompression]
+        public Task<SearchResponse> SearchCompressed([FromQuery] SearchRequest request)
         {
-
+            return Search(request);
         }
 
         [HttpGet("summary")]
