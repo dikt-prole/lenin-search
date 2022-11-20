@@ -1,9 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using LeninSearch.Standard.Core.Api;
 using Newtonsoft.Json;
 
@@ -16,46 +18,44 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
 
         public OnlineCorpusSearch(string host, int port, int timeoutMs)
         {
-            _searchUrl = $"http://{host}:{port}/corpus/ls-search";
+            //host = "10.0.2.2";
+            //port = 5000;
+
+            _searchUrl = $"http://{host}:{port}/api/v1/corpus/search-compressed?corpusId=[corpusId]&query=[query]&mode=[mode]";
             _httpClient = new HttpClient {Timeout = TimeSpan.FromMilliseconds(timeoutMs)};
         }
 
         public async Task<SearchResult> SearchAsync(string corpusId, string query, SearchMode searchMode)
         {
-            throw new NotImplementedException();
-            
-            //var request = new CorpusSearchRequest
-            //{
-            //    CorpusId = corpusId,
-            //    Query = query
-            //};
+            try
+            {
+                var queryUrlEncoded = HttpUtility.UrlEncode(query);
+                var searchUrl = _searchUrl
+                    .Replace("[corpusId]", corpusId)
+                    .Replace("[query]", queryUrlEncoded)
+                    .Replace("[mode]", searchMode.ToString());
+                var response = await _httpClient.GetAsync(searchUrl);
 
-            //try
-            //{
-            //    var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
-            //    var response = await _httpClient.PostAsync(_searchUrl, content);
-            //    var responseJson = await response.Content.ReadAsStringAsync();
-            //    var searchResponse = JsonConvert.DeserializeObject<CorpusSearchResponse>(responseJson);
-            //    var searchResult = new SearchResult { Units = new Dictionary<string, Dictionary<string, List<SearchUnit>>>() };
-            //    foreach (var file in searchResponse.Units.Keys)
-            //    {
-            //        searchResult.Units.Add(file, new Dictionary<string, List<SearchUnit>>());
-            //        foreach (var fileQuery in searchResponse.Units[file].Keys)
-            //        {
-            //            var units = searchResponse.Units[file][fileQuery].Select(r => r.ToSearchResultUnit()).ToList();
-            //            searchResult.Units[file].Add(fileQuery, units);
-            //        }
-            //    }
+                var contentStream = await response.Content.ReadAsStreamAsync();
 
-            //    return searchResult;
-            //}
-            //catch (Exception exc)
-            //{
-            //    return new SearchResult
-            //    {
-            //        Error = exc.Message
-            //    };
-            //}
+                await using var brotli = new BrotliStream(contentStream, CompressionMode.Decompress);
+
+                await using var output = new MemoryStream();
+                await brotli.CopyToAsync(output);
+
+                var responseJson = Encoding.UTF8.GetString(output.ToArray());
+                var searchResponse = JsonConvert.DeserializeObject<SearchResponse>(responseJson);
+                var searchResult = searchResponse.ToSearchResult();
+                return searchResult;
+            }
+            catch (Exception exc)
+            {
+                Debug.WriteLine(exc.ToString());
+                return new SearchResult
+                {
+                    Error = exc.Message
+                };
+            }
         }
     }
 }

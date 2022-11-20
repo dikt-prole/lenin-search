@@ -39,14 +39,16 @@ namespace LeninSearch.Xam
 
             _lsiProvider = new CachedLsiProvider();
 
-            //_corpusSearch = new SwitchCorpusSearch(_lsiProvider,
-            //    Settings.Web.Host, Settings.Web.Port, Settings.Web.TimeoutMs,
-            //    Settings.TokenIndexCountCutoff, Settings.ResultCountCutoff);
+            _corpusSearch = new SwitchCorpusSearch(_lsiProvider,
+                Settings.Web.Host, Settings.Web.Port, Settings.Web.TimeoutMs,
+                Settings.TokenIndexCountCutoff, Settings.ResultCountCutoff);
 
-            _corpusSearch = new OfflineCorpusSearch(_lsiProvider,
-                new SearchQueryFactory(new RuPorterStemmer()),
-                Settings.TokenIndexCountCutoff,
-                Settings.ResultCountCutoff);
+            //_corpusSearch = new OnlineCorpusSearch(Settings.Web.Host, Settings.Web.Port, Settings.Web.TimeoutMs);
+
+            //_corpusSearch = new OfflineCorpusSearch(_lsiProvider,
+            //    new SearchQueryFactory(new RuPorterStemmer()),
+            //    Settings.TokenIndexCountCutoff,
+            //    Settings.ResultCountCutoff);
 
             // search entry
             SearchEntry.ReturnCommand = new Command(OnSearchButtonPressed);
@@ -335,13 +337,26 @@ namespace LeninSearch.Xam
                 var searchResult = await _corpusSearch.SearchAsync(currentCorpusItem.Id, SearchEntry.Text, searchMode);
                 _state.SearchTabState.SearchResult = searchResult;
 
-                var searchUnitListItems = SearchUnitListItem.FromSearchResult(searchResult, currentCorpusItem.Id);
-                Device.BeginInvokeOnMainThread(() =>
+                if (!searchResult.Success)
                 {
-                    SearchCollectionView.ItemsSource = searchUnitListItems;
-                    _message.ShortAlert($"Найдено {searchUnitListItems.Count} совпадений");
-                    ReplaceLoadingWithSearchModeButton();
-                });
+                    Device.BeginInvokeOnMainThread(() =>
+                    {
+                        ReplaceLoadingWithSearchModeButton();
+                        SearchCollectionView.EmptyView = "При поиске произошла ошибка";
+                        SearchCollectionView.ItemsSource = null;
+                    });
+                }
+                else
+                {
+                    var searchUnitListItems = SearchUnitListItem.FromSearchResult(searchResult, currentCorpusItem.Id);
+                    Device.BeginInvokeOnMainThread(() =>
+                    {
+                        ReplaceLoadingWithSearchModeButton();
+                        SearchCollectionView.EmptyView = "Ничего не найдено, попробуйте другой запрос";
+                        SearchCollectionView.ItemsSource = searchUnitListItems;
+                        _message.ShortAlert($"Найдено {searchUnitListItems.Count} совпадений");
+                    });
+                }
             });
         }
 

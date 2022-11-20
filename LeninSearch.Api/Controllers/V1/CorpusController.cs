@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using LeninSearch.Standard.Core.Api;
 using LeninSearch.Standard.Core.Corpus;
@@ -14,7 +17,7 @@ using LeninSearch.Standard.Core.Search.CorpusSearching;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 
-namespace LeninSearch.Api.Controllers
+namespace LeninSearch.Api.Controllers.V1
 {
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
@@ -69,9 +72,20 @@ namespace LeninSearch.Api.Controllers
 
         [HttpGet("search-compressed")]
         [EnableCompression]
-        public Task<SearchResponse> SearchCompressed([FromQuery] SearchRequest request)
+        public async Task<IActionResult> SearchCompressed([FromQuery] SearchRequest request)
         {
-            return Search(request);
+            var searchResponse = await Search(request);
+            var searchResponseJson = JsonConvert.SerializeObject(searchResponse);
+            var searchResponseBytes = Encoding.UTF8.GetBytes(searchResponseJson);
+
+            await using var brotliInputStream = new MemoryStream(searchResponseBytes);
+            await using var brotliOutputStream = new MemoryStream();
+            await using var brotli = new BrotliStream(brotliOutputStream, CompressionLevel.Fastest);
+            await brotliInputStream.CopyToAsync(brotli);
+            await brotli.FlushAsync();
+            var brotliBytes = brotliOutputStream.ToArray();
+
+            return File(brotliBytes, "text/json");
         }
 
         [HttpGet("summary")]

@@ -4,6 +4,7 @@ using LeninSearch.Standard.Core.Search.CorpusSearching;
 using LeninSearch.Standard.Core.Search.TokenVarying;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,8 +26,12 @@ namespace LeninSearch.Api
         {
             services.AddControllers().AddNewtonsoftJson();
             services.AddApiVersioning();
-            services.AddResponseCompression(o => o.EnableForHttps = true);
+            services.AddResponseCompression(o =>
+            {
+                o.EnableForHttps = true;
+            });
 
+            
             // precached
             //var lsIndexDataProvider = new PrecachedLsiProvider().Load(100);
             services.AddSingleton<ICorpusSearch>(p => new OfflineCorpusSearch(
@@ -40,12 +45,14 @@ namespace LeninSearch.Api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            //app.UseMiddleware<SimpleLoggingMiddleware>();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseRouting();
 
