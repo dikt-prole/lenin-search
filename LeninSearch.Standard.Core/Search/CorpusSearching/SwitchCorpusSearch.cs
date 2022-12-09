@@ -1,5 +1,5 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using LeninSearch.Standard.Core.Api;
 using LeninSearch.Standard.Core.Search.TokenVarying;
 
 namespace LeninSearch.Standard.Core.Search.CorpusSearching
@@ -8,9 +8,9 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
     {
         private readonly OnlineCorpusSearch _onlineSearch;
         private readonly OfflineCorpusSearch _offlineSearch;
-        public SwitchCorpusSearch(ILsiProvider lsiProvider, string host, int port, int timeoutMs, int tokeIndexCountCutoff = int.MaxValue, int resultCountCutoff = int.MaxValue)
+        public SwitchCorpusSearch(ILsiProvider lsiProvider, IApiClientV1 apiClientV1, int tokeIndexCountCutoff = int.MaxValue, int resultCountCutoff = int.MaxValue)
         {
-            _onlineSearch = new OnlineCorpusSearch(host, port, timeoutMs);
+            _onlineSearch = new OnlineCorpusSearch(apiClientV1);
             _offlineSearch = new OfflineCorpusSearch(lsiProvider, new SearchQueryFactory(new RuPorterStemmer()), tokeIndexCountCutoff, resultCountCutoff);
         }
         public async Task<SearchResult> SearchAsync(string corpusId, string query, SearchMode mode)

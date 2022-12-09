@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Content.PM;
+using LeninSearch.Standard.Core.Api;
 using Application = Android.App.Application;
 
 namespace LeninSearch.Xam.Droid
@@ -42,7 +43,7 @@ namespace LeninSearch.Xam.Droid
             }
 
             var finishedCorpusIds = Settings.GetFinishedCorpusIds();
-            var apiService = new ApiService();
+            var apiService = new ApiClientV1(Settings.Web.Host, Settings.Web.Port, Settings.Web.TimeoutMs);
             var summaryResult = apiService.GetSummary(Settings.LsiVersion);
 
             // 1. failed to get summary case

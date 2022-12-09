@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using LeninSearch.Standard.Core.Api;
 using LeninSearch.Standard.Core.Corpus;
 using LeninSearch.Standard.Core.Search;
 using LeninSearch.Xam.Core.Interfaces;
@@ -14,7 +15,7 @@ namespace LeninSearch.Xam.Core
     public class LibraryDownloadManager : ILibraryDownloadManager
     {
         private readonly ILsiProvider _lsiProvider;
-        private readonly IApiService _apiService;
+        private readonly IApiClientV1 _apiClientV1;
         public event EventHandler<LibraryDownloadCompleteEventArgs> Completed;
         public event EventHandler<LibraryDownloadProgressEventArgs> Progress;
         public event EventHandler<LibraryDownloadErrorEventArgs> Error;
@@ -22,10 +23,10 @@ namespace LeninSearch.Xam.Core
         private ConcurrentDictionary<string, CancellationTokenSource> _cancellationTokenSources =
             new ConcurrentDictionary<string, CancellationTokenSource>();
 
-        public LibraryDownloadManager(ILsiProvider lsiProvider, IApiService apiService)
+        public LibraryDownloadManager(ILsiProvider lsiProvider, IApiClientV1 apiClientV1)
         {
             _lsiProvider = lsiProvider;
-            _apiService = apiService;
+            _apiClientV1 = apiClientV1;
         }
 
         public void StartDownload(CorpusItem update)
@@ -73,7 +74,7 @@ namespace LeninSearch.Xam.Core
                     }
 
                     OnProgress(download, cfi.Path);
-                    var cfiBytesResult = _apiService.GetFileBytesAsync(download.Id, cfi.Path).Result;
+                    var cfiBytesResult = _apiClientV1.GetFileBytesAsync(download.Id, cfi.Path).Result;
                     if (!cfiBytesResult.Success)
                     {
                         Directory.Delete(corpusFolder, true);

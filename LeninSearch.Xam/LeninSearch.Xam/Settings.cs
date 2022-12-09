@@ -32,7 +32,8 @@ namespace LeninSearch.Xam
         // online search
         public static class Web
         {
-            public const string Host = "leninsearch.org";
+            //public const string Host = "leninsearch.org";
+            public const string Host = "10.0.2.2";
             public const int Port = 5000;
             public const int TimeoutMs = 5000;
             public const string SummaryUrl = "http://leninsearch.org:5000/corpus/summary";

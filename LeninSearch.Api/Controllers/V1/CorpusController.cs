@@ -107,5 +107,24 @@ namespace LeninSearch.Api.Controllers.V1
             var contentType = "APPLICATION/octet-stream";
             return File(content, contentType, file);
         }
+
+        [HttpGet("file-compressed")]
+        public async Task<IActionResult> GetCorpusFileCompressed(string corpusId, string file)
+        {
+            var executingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var path = Path.Combine(executingDirectory, "corpus", corpusId, file);
+            var content = await System.IO.File.ReadAllBytesAsync(path);
+
+            Debug.WriteLine($"{file}: {content.Length} bytes");
+
+            await using var brotliInputStream = new MemoryStream(content);
+            await using var brotliOutputStream = new MemoryStream();
+            await using var brotli = new BrotliStream(brotliOutputStream, CompressionLevel.Fastest);
+            await brotliInputStream.CopyToAsync(brotli);
+            await brotli.FlushAsync();
+            var brotliBytes = brotliOutputStream.ToArray();
+
+            return File(brotliBytes, "APPLICATION/octet-stream", file);
+        }
     }
 }

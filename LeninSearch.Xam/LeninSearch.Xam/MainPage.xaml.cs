@@ -2,15 +2,14 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using LeninSearch.Standard.Core.Api;
 using LeninSearch.Standard.Core.Corpus;
 using LeninSearch.Standard.Core.Corpus.Lsi;
 using LeninSearch.Standard.Core.Search;
 using LeninSearch.Standard.Core.Search.CorpusSearching;
-using LeninSearch.Standard.Core.Search.TokenVarying;
 using LeninSearch.Xam.Core;
 using LeninSearch.Xam.Core.Interfaces;
 using LeninSearch.Xam.ListItems;
@@ -27,7 +26,7 @@ namespace LeninSearch.Xam
         private readonly GlobalEvents _globalEvents;
         private readonly CachedLsiProvider _lsiProvider;
         private readonly ICorpusSearch _corpusSearch;
-        private readonly ApiService _apiService = new ApiService();
+        private readonly ApiClientV1 _apiClientV1 = new ApiClientV1(Settings.Web.Host, Settings.Web.Port, Settings.Web.TimeoutMs);
         private readonly IMessage _message = DependencyService.Get<IMessage>();
         private AppState _state = AppState.Default();
         private readonly ILibraryDownloadManager _libraryDownloadManager;
@@ -39,9 +38,7 @@ namespace LeninSearch.Xam
 
             _lsiProvider = new CachedLsiProvider();
 
-            _corpusSearch = new SwitchCorpusSearch(_lsiProvider,
-                Settings.Web.Host, Settings.Web.Port, Settings.Web.TimeoutMs,
-                Settings.TokenIndexCountCutoff, Settings.ResultCountCutoff);
+            _corpusSearch = new SwitchCorpusSearch(_lsiProvider, _apiClientV1, Settings.TokenIndexCountCutoff, Settings.ResultCountCutoff);
 
             //_corpusSearch = new OnlineCorpusSearch(Settings.Web.Host, Settings.Web.Port, Settings.Web.TimeoutMs);
 
@@ -54,7 +51,7 @@ namespace LeninSearch.Xam
             SearchEntry.ReturnCommand = new Command(OnSearchButtonPressed);
             ReadCollectionView.Scrolled += OnReadCollectionViewScrolled;
 
-            _libraryDownloadManager = new LibraryDownloadManager(_lsiProvider, _apiService);
+            _libraryDownloadManager = new LibraryDownloadManager(_lsiProvider, _apiClientV1);
             _libraryDownloadManager.Error += OnLibraryDownloadManagerError;
             _libraryDownloadManager.Progress += OnLibraryDownloadManagerProgress;
             _libraryDownloadManager.Completed += OnLibraryDownloadManagerCompleted;
@@ -231,7 +228,7 @@ namespace LeninSearch.Xam
             Task.Run(() =>
             {
                 ObservableCollection<LibraryListItem> libraryListItems = null;
-                var summaryResult = _apiService.GetSummaryAsync(Settings.LsiVersion).Result;
+                var summaryResult = _apiClientV1.GetSummaryAsync(Settings.LsiVersion).Result;
                 if (summaryResult.Success)
                 {
                     var summary = summaryResult.Summary;
