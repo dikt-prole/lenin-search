@@ -22,8 +22,6 @@ namespace LeninSearch.Standard.Core.Api
 
         public ApiClientV1(string host, int port, int timeoutMs)
         {
-            //host = "10.0.2.2";
-            //port = 5000;
             _httpClient = new HttpClient { Timeout = TimeSpan.FromMilliseconds(timeoutMs) };
             _fileLinkTemplate = $"http://{host}:{port}/api/v1/corpus/file-compressed?corpusId=[corpusId]&file=[file]";
             _summaryLink = $"http://{host}:{port}/api/v1/corpus/summary";

@@ -22,8 +22,6 @@ namespace LeninSearch.Xam
 
         // search options
         public const int BatchSize = 8;
-        public static bool OneByOne { get; set; }
-        public static int? EffectiveBatchSize => OneByOne ? (int?)BatchSize : null;
 
         public const int TokenIndexCountCutoff = int.MaxValue;
 
@@ -32,12 +30,10 @@ namespace LeninSearch.Xam
         // online search
         public static class Web
         {
-            //public const string Host = "leninsearch.org";
-            public const string Host = "10.0.2.2";
+            public const string Host = "leninsearch.org";
+            //public const string Host = "10.0.2.2";
             public const int Port = 5000;
             public const int TimeoutMs = 5000;
-            public const string SummaryUrl = "http://leninsearch.org:5000/corpus/summary";
-            public const string CorpusFileLink = "http://leninsearch.org:5000/corpus/file?corpusId=[corpusId]&file=[file]";
         }
 
         public static class UI

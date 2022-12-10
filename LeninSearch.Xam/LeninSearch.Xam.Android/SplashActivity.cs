@@ -19,8 +19,6 @@ namespace LeninSearch.Xam.Droid
         ScreenOrientation = ScreenOrientation.Portrait)]
     public class SplashActivity : AppCompatActivity
     {
-        static readonly string TAG = "[ls]";
-
         private TextView _progressTextView;
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -30,9 +28,8 @@ namespace LeninSearch.Xam.Droid
             SetContentView(Resource.Layout.Splash);
             _progressTextView = FindViewById<TextView>(Resource.Id.txtAppVersion);
             _progressTextView.Text = "";
-            Settings.OneByOne = Build.VERSION.SdkInt == BuildVersionCodes.LollipopMr1;
 
-            Task.Run(() => Startup());
+            Task.Run(Startup);
         }
 
         private void Startup()
