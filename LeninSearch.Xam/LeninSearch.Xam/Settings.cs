@@ -21,8 +21,6 @@ namespace LeninSearch.Xam
         public static string HistoryFile = Path.Combine(Path.GetTempPath(), "history", "history.json");
 
         // search options
-        public const int BatchSize = 8;
-
         public const int TokenIndexCountCutoff = int.MaxValue;
 
         public const int ResultCountCutoff = 100;
