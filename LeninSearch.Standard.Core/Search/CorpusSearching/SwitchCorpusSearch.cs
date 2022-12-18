@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using LeninSearch.Standard.Core.Api;
 using LeninSearch.Standard.Core.Search.TokenVarying;
 
@@ -6,20 +7,26 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
 {
     public class SwitchCorpusSearch : ICorpusSearch
     {
+        private readonly Func<bool> _isInternetAvailableFunc;
         private readonly OnlineCorpusSearch _onlineSearch;
         private readonly OfflineCorpusSearch _offlineSearch;
-        public SwitchCorpusSearch(ILsiProvider lsiProvider, IApiClientV1 apiClientV1, int tokeIndexCountCutoff = int.MaxValue, int resultCountCutoff = int.MaxValue)
+        public SwitchCorpusSearch(ILsiProvider lsiProvider, IApiClientV1 apiClientV1, Func<bool> isInternetAvailableFunc = null, int maxResultsPerBook = int.MaxValue)
         {
+            _isInternetAvailableFunc = isInternetAvailableFunc;
             _onlineSearch = new OnlineCorpusSearch(apiClientV1);
-            _offlineSearch = new OfflineCorpusSearch(lsiProvider, new SearchQueryFactory(new RuPorterStemmer()), tokeIndexCountCutoff, resultCountCutoff);
+            _offlineSearch = new OfflineCorpusSearch(lsiProvider, new SearchQueryFactory(new RuPorterStemmer()), maxResultsPerBook);
         }
         public async Task<SearchResult> SearchAsync(string corpusId, string query, SearchMode mode)
         {
-            var onlineResult = await _onlineSearch.SearchAsync(corpusId, query, mode);
+            var isInternetAvailable = _isInternetAvailableFunc?.Invoke() == true;
 
-            if (onlineResult.Success)
+            if (isInternetAvailable)
             {
-                return onlineResult;
+                var onlineResult = await _onlineSearch.SearchAsync(corpusId, query, mode);
+                if (onlineResult.Success)
+                {
+                    return onlineResult;
+                }
             }
 
             var offlineResult = await _offlineSearch.SearchAsync(corpusId, query, mode);

@@ -31,14 +31,13 @@ namespace LeninSearch.Api
                 o.EnableForHttps = true;
             });
 
-            
-            // precached
-            //var lsIndexDataProvider = new PrecachedLsiProvider().Load(100);
+            services.AddSingleton<ILsiProvider, CachedLsiProvider>();
+
             services.AddSingleton<ICorpusSearch>(p => new OfflineCorpusSearch(
-                p.GetService<ILsiProvider>(), p.GetService<ISearchQueryFactory>(), int.MaxValue, 100, true));
+                p.GetService<ILsiProvider>(), p.GetService<ISearchQueryFactory>(), 50, true));
             services.AddSingleton<IStemmer, RuPorterStemmer>();
             services.AddSingleton<ISearchQueryFactory, SearchQueryFactory>();
-            services.AddSingleton<ILsiProvider, CachedLsiProvider>();
+            
             services.AddSingleton<IMemoryCache, MemoryCache>();
         }
 

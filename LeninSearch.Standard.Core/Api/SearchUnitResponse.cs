@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using LeninSearch.Standard.Core.Search;
 using Newtonsoft.Json;
@@ -15,6 +16,7 @@ namespace LeninSearch.Standard.Core.Api
 
         [JsonProperty(PropertyName = "pvw")]
         public string Preview { get; set; }
+
 
         [JsonProperty(PropertyName = "ttl")]
         public string Title { get; set; }

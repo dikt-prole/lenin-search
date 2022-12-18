@@ -40,8 +40,11 @@
         <views:TabViewItem ControlTemplate="{StaticResource TabItemTemplate}" x:Name="CorpusTabViewItem">
             <StackLayout Orientation="Vertical">
                 <StackLayout Orientation="Horizontal" HeightRequest="36" Spacing="0" BackgroundColor="#D6181F" HorizontalOptions="FillAndExpand">
+                    <StackLayout HeightRequest="36" WidthRequest="36"></StackLayout>
                     <Label FontSize="Small" Text="Корпус" HorizontalOptions="FillAndExpand" HorizontalTextAlignment="Center" TextColor="White" 
                            Margin="0, 8, 0, 0" BackgroundColor="#D6181F"></Label>
+                    <ImageButton WidthRequest="36" HeightRequest="36" Padding="8" 
+                                 BackgroundColor="#D6181F" Source="tg.png" Clicked="OnTgButtonClicked"></ImageButton>
                 </StackLayout>
                 <CollectionView x:Name="CorpusCollectionView" VerticalOptions="FillAndExpand" 
                                 BackgroundColor="White" HorizontalOptions="FillAndExpand">

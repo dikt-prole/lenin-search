@@ -11,16 +11,18 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
     {
         private readonly ILsiProvider _lsiProvider;
         private readonly ISearchQueryFactory _queryFactory;
+        private readonly int _maxResultsPerBook;
         private readonly bool _parallel;
         private readonly LsSearcher _searcher;
 
         private readonly Dictionary<string, List<SearchQuery>> _queryCache = new Dictionary<string, List<SearchQuery>>();
-        public OfflineCorpusSearch(ILsiProvider lsiProvider, ISearchQueryFactory queryFactory, int tokenIndexCountCutoff = int.MaxValue, int resultCountCutoff = int.MaxValue, bool parallel = false)
+        public OfflineCorpusSearch(ILsiProvider lsiProvider, ISearchQueryFactory queryFactory, int maxResultsPerBook = int.MaxValue, bool parallel = false)
         {
             _lsiProvider = lsiProvider;
             _queryFactory = queryFactory;
+            _maxResultsPerBook = maxResultsPerBook;
             _parallel = parallel;
-            _searcher = new LsSearcher(tokenIndexCountCutoff, resultCountCutoff);
+            _searcher = new LsSearcher();
         }
 
         public async Task<SearchResult> SearchAsync(string corpusId, string query, SearchMode mode)
@@ -95,6 +97,10 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
             var excludeParagraphs = new HashSet<ushort>();
             foreach (var searchQuery in searchQueries)
             {
+                if (searchQueryResults.Sum(sqr => sqr.Units.Count) >= _maxResultsPerBook)
+                {
+                    break;
+                }
                 var units = InnerSearchOneQuery(lsiData, searchQuery, dictionary, corpusFileItem, excludeParagraphs);
                 if (units.Any())
                 {

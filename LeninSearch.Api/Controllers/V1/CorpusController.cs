@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 using LeninSearch.Standard.Core.Api;
@@ -61,7 +63,13 @@ namespace LeninSearch.Api.Controllers.V1
                 throw new ValidationException(validationMessage);
             }
 
+            var sw = new Stopwatch();
+            sw.Start();
+
             var searchResult = await _corpusSearch.SearchAsync(request.CorpusId, request.Query, request.Mode);
+
+            sw.Stop();
+            _logger.LogInformation($"search elapsed: {sw.Elapsed}");
 
             var searchResponse = SearchResponse.FromSearchResult(searchResult);
 
@@ -114,8 +122,6 @@ namespace LeninSearch.Api.Controllers.V1
             var executingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var path = Path.Combine(executingDirectory, "corpus", corpusId, file);
             var content = await System.IO.File.ReadAllBytesAsync(path);
-
-            Debug.WriteLine($"{file}: {content.Length} bytes");
 
             await using var brotliInputStream = new MemoryStream(content);
             await using var brotliOutputStream = new MemoryStream();

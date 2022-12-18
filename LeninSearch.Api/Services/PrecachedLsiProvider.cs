@@ -29,8 +29,8 @@ namespace LeninSearch.Api.Services
             var executingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var folder = Path.Combine(executingDirectory, "corpus");
             var jsonFiles = Directory.GetFiles(folder, "corpus.json", SearchOption.AllDirectories);
-            var summary = jsonFiles.Select(f => JsonConvert.DeserializeObject<CorpusItem>(File.ReadAllText(f))).ToList();
-            foreach (var corpusItem in summary)
+            var corpusItems = jsonFiles.Select(f => JsonConvert.DeserializeObject<CorpusItem>(File.ReadAllText(f))).ToList();
+            foreach (var corpusItem in corpusItems)
             {
                 _corpusItems.Add(corpusItem.Id, corpusItem);
 

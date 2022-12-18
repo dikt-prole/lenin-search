@@ -6,10 +6,11 @@
     android:gravity="center_vertical"
     android:background="#fff"
     android:id="@+id/splashview">
-    <ImageView
+
+  <ImageView
         android:layout_width="300dp"
         android:layout_height="200dp"
-        android:layout_marginTop="100dp"        
+        android:layout_marginTop="80dp"        
         android:layout_centerHorizontal="true"
         android:src = "@drawable/splash"
     />

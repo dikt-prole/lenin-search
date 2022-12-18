@@ -20,10 +20,10 @@ namespace LeninSearch.Xam
 
         public static string HistoryFile = Path.Combine(Path.GetTempPath(), "history", "history.json");
 
-        // search options
-        public const int TokenIndexCountCutoff = int.MaxValue;
-
-        public const int ResultCountCutoff = 100;
+        public static class Search
+        {
+            public const int MaxResultsPerBook = 50;
+        }
 
         // online search
         public static class Web
@@ -31,7 +31,7 @@ namespace LeninSearch.Xam
             public const string Host = "leninsearch.org";
             //public const string Host = "10.0.2.2";
             public const int Port = 5000;
-            public const int TimeoutMs = 5000;
+            public const int TimeoutMs = 15000;
         }
 
         public static class UI

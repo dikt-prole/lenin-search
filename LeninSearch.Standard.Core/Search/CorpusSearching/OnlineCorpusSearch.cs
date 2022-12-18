@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Diagnostics;
+using System.Threading.Tasks;
 using LeninSearch.Standard.Core.Api;
 
 namespace LeninSearch.Standard.Core.Search.CorpusSearching
@@ -12,9 +13,17 @@ namespace LeninSearch.Standard.Core.Search.CorpusSearching
             _apiClientV1 = apiClientV1;
         }
 
-        public Task<SearchResult> SearchAsync(string corpusId, string query, SearchMode searchMode)
+        public async Task<SearchResult> SearchAsync(string corpusId, string query, SearchMode searchMode)
         {
-            return _apiClientV1.SearchAsync(corpusId, query, searchMode);
+            var sw = new Stopwatch();
+            sw.Start();
+
+            var result = await _apiClientV1.SearchAsync(corpusId, query, searchMode);
+
+            sw.Start();
+            Debug.WriteLine($"online search elapsed: {sw.Elapsed}");
+
+            return result;
         }
     }
 }

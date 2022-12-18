@@ -6,4 +6,7 @@
 5. chmod 777 ./LeninSearch.Api (WinSCP)
 6. ./LeninSearch.Api --urls http://151.248.121.154:5000
 7. enjoy
+
+8. crontab -e
+9. @reboot /home/startls.sh
 */

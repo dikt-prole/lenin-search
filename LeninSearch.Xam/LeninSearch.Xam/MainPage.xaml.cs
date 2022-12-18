@@ -38,7 +38,11 @@ namespace LeninSearch.Xam
 
             _lsiProvider = new CachedLsiProvider();
 
-            _corpusSearch = new SwitchCorpusSearch(_lsiProvider, _apiClientV1, Settings.TokenIndexCountCutoff, Settings.ResultCountCutoff);
+            _corpusSearch = new SwitchCorpusSearch(
+                _lsiProvider, 
+                _apiClientV1, 
+                () => Connectivity.NetworkAccess == NetworkAccess.Internet, 
+                Settings.Search.MaxResultsPerBook);
 
             //_corpusSearch = new OnlineCorpusSearch(Settings.Web.Host, Settings.Web.Port, Settings.Web.TimeoutMs);
 
@@ -50,6 +54,7 @@ namespace LeninSearch.Xam
             // search entry
             SearchEntry.ReturnCommand = new Command(OnSearchButtonPressed);
             ReadCollectionView.Scrolled += OnReadCollectionViewScrolled;
+
 
             _libraryDownloadManager = new LibraryDownloadManager(_lsiProvider, _apiClientV1);
             _libraryDownloadManager.Error += OnLibraryDownloadManagerError;
@@ -634,6 +639,17 @@ namespace LeninSearch.Xam
                 libraryListItem.IsDownloading = false;
                 libraryListItem.Text = libraryListItem.Update.ToString();
             });
+        }
+
+        private async void OnTgButtonClicked(object sender, EventArgs e)
+        {
+            var openResult = await Launcher.TryOpenAsync("https://t.me/leninsearch_chat");
+            if (!openResult)
+            {
+                _message.ShortAlert("Telegram не установлен");
+                await Task.Delay(500);
+                await Launcher.TryOpenAsync("https://play.google.com/store/apps/details?id=org.telegram.messenger");
+            }
         }
     }
 }

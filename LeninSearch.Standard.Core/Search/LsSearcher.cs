@@ -6,15 +6,14 @@ namespace LeninSearch.Standard.Core.Search
 {
     public class LsSearcher
     {
-        private readonly int _tokenIndexCountCutoff;
-        private readonly int _resultCountCutoff;
+        private const int TokenIndexCountCutoff = 50;
+        //private readonly int _resultCountCutoff;
         public const ushort MaxSpanLength = 20;
 
-        public LsSearcher(int tokenIndexCountCutoff = int.MaxValue, int resultCountCutoff = int.MaxValue)
-        {
-            _tokenIndexCountCutoff = tokenIndexCountCutoff;
-            _resultCountCutoff = resultCountCutoff;
-        }
+        //public LsSearcher(int resultCountCutoff = int.MaxValue)
+        //{
+        //    _resultCountCutoff = resultCountCutoff;
+        //}
 
         public List<SearchUnit> Search(LsiData lsiData, SearchQuery query, HashSet<ushort> excludeParagraphs)
         {
@@ -43,7 +42,7 @@ namespace LeninSearch.Standard.Core.Search
             foreach (var token in allTokens)
             {
                 token.WordIndexes = token.WordIndexes.Where(wordParagraphData.ContainsKey)
-                    .Take(_tokenIndexCountCutoff)
+                    .Take(TokenIndexCountCutoff)
                     .ToList();
                 if (token.WordIndexes.Count == 0)
                 {
@@ -129,7 +128,7 @@ namespace LeninSearch.Standard.Core.Search
                 }
             }
 
-            result = result.Take(_resultCountCutoff).ToList();
+            //result = result.Take(_resultCountCutoff).ToList();
 
             return result;
         }

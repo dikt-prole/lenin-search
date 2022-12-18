@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using LeninSearch.Standard.Core.Corpus;
 using LeninSearch.Standard.Core.Corpus.Lsi;
-using Newtonsoft.Json;
 
 namespace LeninSearch.Standard.Core.Search
 {
@@ -59,12 +57,11 @@ namespace LeninSearch.Standard.Core.Search
         public void SetPreviewAndTitle(LsiData lsiData, CorpusFileItem corpusFileItem, LsDictionary dictionary)
         {
             var lsiParagraph = lsiData.Paragraphs[ParagraphIndex];
-            
             var isHeading = lsiData.HeadingParagraphs.Any(h => h.Index == ParagraphIndex);
-
             if (isHeading)
             {
                 Preview = lsiParagraph.GetText(dictionary.Words);
+                
             }
             else
             {
