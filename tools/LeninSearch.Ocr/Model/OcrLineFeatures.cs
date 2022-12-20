@@ -13,12 +13,6 @@ namespace LeninSearch.Ocr.Model
         [JsonProperty("ri")]
         public double RightIndent { get; set; }
 
-        [JsonProperty("bi")]
-        public double BottomIndent { get; set; }
-
-        [JsonProperty("ti")]
-        public double TopIndent { get; set; }
-
         [JsonProperty("btd")]
         public double BelowTopDivider { get; set; }
 
@@ -28,14 +22,8 @@ namespace LeninSearch.Ocr.Model
         [JsonProperty("w")]
         public double Width { get; set; }
 
-        [JsonProperty("h")]
-        public double Height { get; set; }
-
         [JsonProperty("swc")]
         public double StartsWithCapital { get; set; }
-
-        [JsonProperty("cp")]
-        public double CapitalPercentage { get; set; }
 
         public double[] ToFeatureRow(Dictionary<string, bool> rowModel)
         {
@@ -78,18 +66,14 @@ namespace LeninSearch.Ocr.Model
                 // geometric features
                 LeftIndent = line.TopLeftY,
                 RightIndent = page.Width - line.BottomRightX,
-                TopIndent = line.TopLeftY,
-                BottomIndent = page.Height - line.BottomRightY,
                 BelowTopDivider = page.TopDivider.Y < line.TopLeftY ? 1 : 0,
                 AboveBottomDivider = page.BottomDivider.Y > line.TopLeftY ? 1 : 0,
                 Width = lineRectangle.Width,
-                Height = lineRectangle.Height,
 
                 // text features
                 StartsWithCapital = string.IsNullOrEmpty(lineText)
                     ? 0 
-                    : char.IsUpper(lineText[0]) ? 1 : 0,
-                CapitalPercentage = (100.0 * lineText?.Count(char.IsUpper) ?? 0) / (lineText?.Length ?? 1)
+                    : char.IsUpper(lineText[0]) ? 1 : 0
             };
         }
 
