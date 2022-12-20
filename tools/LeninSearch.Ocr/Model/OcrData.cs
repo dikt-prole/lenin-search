@@ -28,7 +28,7 @@ namespace LeninSearch.Ocr.Model
         public void Save(string bookFolder)
         {
             var file = Path.Combine(bookFolder, "ocr-data.json");
-            var json = JsonConvert.SerializeObject(this, Formatting.Indented);
+            var json = JsonConvert.SerializeObject(this);
             File.WriteAllText(file, json);
         }
 
