@@ -4,14 +4,11 @@ using Android.Content;
 using Android.OS;
 using Android.Widget;
 using AndroidX.AppCompat.App;
-using LeninSearch.Xam.Core;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Content.PM;
 using LeninSearch.Standard.Core.Api;
-using Xamarin.Essentials;
-using Xamarin.Forms;
 using Application = Android.App.Application;
 
 namespace LeninSearch.Xam.Droid
@@ -30,12 +27,6 @@ namespace LeninSearch.Xam.Droid
             SetContentView(Resource.Layout.Splash);
             _progressTextView = FindViewById<TextView>(Resource.Id.txtAppVersion);
             _progressTextView.Text = "";
-
-            //var tgImageButton = FindViewById<Android.Widget.ImageButton>(Resource.Id.tgImageButton);
-            //tgImageButton.Click += async (sender, args) =>
-            //{
-            //    await Launcher.TryOpenAsync("www.google.com");
-            //};
 
             Task.Run(Startup);
         }

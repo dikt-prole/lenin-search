@@ -36,6 +36,7 @@
     <MarxEngelsV2 Include="..\corpus\ls_index\marx-engels-v2\*.*" />
     <KlgdV1 Include="..\corpus\ls_index\klgd-v1\*.*" />
     <PopovV1 Include="..\corpus\ls_index\popov-v1\*.*" />
+    <PavlovV1 Include="..\corpus\ls_index\pavlov-v1\*.*" />
   </ItemGroup>
 
   <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
@@ -49,6 +50,7 @@
     <Copy SourceFiles="@(MarxEngelsV2)" DestinationFolder="$(OutDir)\corpus\marx-engels-v2" />
     <Copy SourceFiles="@(KlgdV1)" DestinationFolder="$(OutDir)\corpus\klgd-v1" />
     <Copy SourceFiles="@(PopovV1)" DestinationFolder="$(OutDir)\corpus\popov-v1" />
+    <Copy SourceFiles="@(PavlovV1)" DestinationFolder="$(OutDir)\corpus\pavlov-v1" />
   </Target>
 
   <Target Name="CopyCustomContentOnPublish" AfterTargets="Publish">
@@ -62,6 +64,7 @@
     <Copy SourceFiles="@(MarxEngelsV2)" DestinationFolder="$(PublishDir)\corpus\marx-engels-v2" />
     <Copy SourceFiles="@(KlgdV1)" DestinationFolder="$(PublishDir)\corpus\klgd-v1" />
     <Copy SourceFiles="@(PopovV1)" DestinationFolder="$(PublishDir)\corpus\popov-v1" />
+    <Copy SourceFiles="@(PavlovV1)" DestinationFolder="$(PublishDir)\corpus\pavlov-v1" />
   </Target>
 
 </Project>
