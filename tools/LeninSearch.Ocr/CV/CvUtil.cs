@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -155,7 +156,7 @@ namespace LeninSearch.Ocr.CV
         // todo: get small contours after smoothed contours
         public static IEnumerable<Rectangle> GetContourRectangles(string imageFile, SmoothGaussianArgs smoothGaussianArgs)
         {
-            using var image = new Bitmap(Image.FromFile(imageFile));
+            using var image = new Bitmap(Image.FromStream(new MemoryStream(File.ReadAllBytes(imageFile))));
             using var bgrImage = image.ToImage<Bgr, byte>();
 
             //using var invertedGray = bgrImage.Convert<Gray, byte>()
