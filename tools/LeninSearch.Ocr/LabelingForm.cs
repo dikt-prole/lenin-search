@@ -45,7 +45,7 @@ namespace LeninSearch.Ocr
 
         private const int MaxLineHeight = 35;
         private const int MaxWordDistance = 35;
-        private const int MaxImageTitleXOverflow = 35;
+        private const int MinImageTitlePadding = 10;
 
         public LabelingForm()
         {
@@ -105,34 +105,28 @@ namespace LeninSearch.Ocr
 
                 var filename = Path.GetFileNameWithoutExtension(imageFile);
 
-                var imageBlock = AddImageBlock(imageRectangle.Value, filename);
+                var page = _ocrData.GetPage(filename);
 
-                //var page = _ocrData.GetPage(filename);
-                //foreach (var pageLine in page.Lines)
-                //{
-                //    page.BreakLineByDistantWord(pageLine, MaxWordDistance);
-                //}
+                var imageBlock = AddImageBlock(imageRectangle.Value, page);
 
-                //var bottomRect = new Rectangle(
-                //    imageBlock.TopLeftX, 
-                //    imageBlock.BottomRightY, 
-                //    imageBlock.BottomRightX - imageBlock.TopLeftX,
-                //    page.Height - imageBlock.BottomRightY);
+                var bottomRect = new Rectangle(
+                    imageBlock.TopLeftX + MinImageTitlePadding,
+                    imageBlock.BottomRightY,
+                    imageBlock.BottomRightX - imageBlock.TopLeftX - MinImageTitlePadding,
+                    page.Height - imageBlock.BottomRightY);
 
-                //var bottomIntersectingLines = page.Lines
-                //    .Where(l => l.Rectangle.IntersectsWith(bottomRect))
-                //    .OrderBy(l => l.TopLeftY);
+                var bottomIntersectingLines = page.Lines
+                    .Where(l => l.Rectangle.IntersectsWith(bottomRect))
+                    .OrderBy(l => l.TopLeftY);
 
-                //foreach (var bottomIntersectingLine in bottomIntersectingLines)
-                //{
-                //    if (imageBlock.TopLeftX - bottomIntersectingLine.TopLeftX > MaxImageTitleXOverflow) break;
+                foreach (var bottomIntersectingLine in bottomIntersectingLines)
+                {
+                    if (!bottomRect.Contains(bottomIntersectingLine.Rectangle)) break;
 
-                //    if (bottomIntersectingLine.BottomRightX - imageBlock.BottomRightX > MaxImageTitleXOverflow) break;
+                    imageBlock.BottomRightY = bottomIntersectingLine.BottomRightY;
 
-                //    imageBlock.BottomRightY = bottomIntersectingLine.BottomRightY;
-
-                //    bottomIntersectingLine.Label = OcrLabel.Image;
-                //}
+                    bottomIntersectingLine.Label = OcrLabel.Image;
+                }
             }
 
             MessageBox.Show("Success", "Auto Detect Images", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -209,6 +203,16 @@ namespace LeninSearch.Ocr
             {
                 MessageBox.Show(ocrResult.Error, "Ocr Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
+            }
+
+            // break by distance
+            foreach (var page in ocrResult.Pages)
+            {
+                var linesToBreak = page.Lines.ToArray();
+                foreach (var pageLine in linesToBreak)
+                {
+                    page.BreakLineByDistantWord(pageLine, MaxWordDistance);
+                }
             }
 
             // replace old pages with new pages
@@ -509,8 +513,7 @@ namespace LeninSearch.Ocr
                 menu.Items.Add("Add Image Block", null, (o, a) =>
                 {
                     var filename = ocr_lb.SelectedItem as string;
-                    AddImageBlock(rect, filename);
-                    ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
+                    AddImageBlockAndRefresh(rect, filename);
                 });
                 menu.Items.Add("Add Page Wide Image Block", null, (o, a) => AddPageWideImageBlock(rect));
                 menu.Items.Add("Remove Image Block", null, (o, a) => RemoveImageBlock(rect));
@@ -671,14 +674,31 @@ namespace LeninSearch.Ocr
             ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
         }
 
-        private OcrImageBlock AddImageBlock(Rectangle pbRectangle, string filename)
+        private void AddImageBlockAndRefresh(Rectangle pbRectangle, string filename)
         {
-            if (filename == null) return null;
+            if (filename == null) return;
             var page = _ocrData.GetPage(filename);
-            if (page == null) return null;
+            if (page == null) return;
 
             var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
 
+            var imageBlock = new OcrImageBlock
+            {
+                TopLeftX = originalRect.X,
+                TopLeftY = originalRect.Y,
+                BottomRightX = originalRect.X + originalRect.Width,
+                BottomRightY = originalRect.Y + originalRect.Size.Height
+            };
+
+            page.ImageBlocks.Add(imageBlock);
+
+            ImageBlockPostEdit(page, imageBlock);
+
+            ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
+        }
+
+        private OcrImageBlock AddImageBlock(Rectangle originalRect, OcrPage page)
+        {
             var imageBlock = new OcrImageBlock
             {
                 TopLeftX = originalRect.X,

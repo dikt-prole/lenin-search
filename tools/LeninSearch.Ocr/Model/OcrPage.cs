@@ -93,6 +93,8 @@ namespace LeninSearch.Ocr.Model
 
         public void BreakLineByDistantWord(OcrLine line, int maxDistance)
         {
+            if (line.Words == null) return;
+
             var words = line.Words.OrderBy(w => w.TopLeftX).ToList();
 
             if (words.Count < 2) return;
