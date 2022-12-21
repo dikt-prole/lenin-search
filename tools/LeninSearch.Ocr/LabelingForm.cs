@@ -45,6 +45,7 @@ namespace LeninSearch.Ocr
 
         private const int MaxLineHeight = 35;
         private const int MaxWordDistance = 35;
+        private const int MaxImageTitleXOverflow = 35;
 
         public LabelingForm()
         {
@@ -102,7 +103,36 @@ namespace LeninSearch.Ocr
 
                 if (imageRectangle == null) continue;
 
-                AddImageBlock(imageRectangle.Value, Path.GetFileNameWithoutExtension(imageFile), false);
+                var filename = Path.GetFileNameWithoutExtension(imageFile);
+
+                var imageBlock = AddImageBlock(imageRectangle.Value, filename);
+
+                //var page = _ocrData.GetPage(filename);
+                //foreach (var pageLine in page.Lines)
+                //{
+                //    page.BreakLineByDistantWord(pageLine, MaxWordDistance);
+                //}
+
+                //var bottomRect = new Rectangle(
+                //    imageBlock.TopLeftX, 
+                //    imageBlock.BottomRightY, 
+                //    imageBlock.BottomRightX - imageBlock.TopLeftX,
+                //    page.Height - imageBlock.BottomRightY);
+
+                //var bottomIntersectingLines = page.Lines
+                //    .Where(l => l.Rectangle.IntersectsWith(bottomRect))
+                //    .OrderBy(l => l.TopLeftY);
+
+                //foreach (var bottomIntersectingLine in bottomIntersectingLines)
+                //{
+                //    if (imageBlock.TopLeftX - bottomIntersectingLine.TopLeftX > MaxImageTitleXOverflow) break;
+
+                //    if (bottomIntersectingLine.BottomRightX - imageBlock.BottomRightX > MaxImageTitleXOverflow) break;
+
+                //    imageBlock.BottomRightY = bottomIntersectingLine.BottomRightY;
+
+                //    bottomIntersectingLine.Label = OcrLabel.Image;
+                //}
             }
 
             MessageBox.Show("Success", "Auto Detect Images", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -476,7 +506,12 @@ namespace LeninSearch.Ocr
             // 3. image blocks section
             if (blocks_rb.Checked || all_rb.Checked)
             {
-                menu.Items.Add("Add Image Block", null, (o, a) => AddImageBlock(rect, ocr_lb.SelectedItem as string));
+                menu.Items.Add("Add Image Block", null, (o, a) =>
+                {
+                    var filename = ocr_lb.SelectedItem as string;
+                    AddImageBlock(rect, filename);
+                    ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
+                });
                 menu.Items.Add("Add Page Wide Image Block", null, (o, a) => AddPageWideImageBlock(rect));
                 menu.Items.Add("Remove Image Block", null, (o, a) => RemoveImageBlock(rect));
                 menu.Items.Add("Add Title Block", null, (o, a) => AddTitleBlock(rect));
@@ -636,11 +671,11 @@ namespace LeninSearch.Ocr
             ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
         }
 
-        private void AddImageBlock(Rectangle pbRectangle, string filename, bool refreshPage = true)
+        private OcrImageBlock AddImageBlock(Rectangle pbRectangle, string filename)
         {
-            if (filename == null) return;
+            if (filename == null) return null;
             var page = _ocrData.GetPage(filename);
-            if (page == null) return;
+            if (page == null) return null;
 
             var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
 
@@ -656,10 +691,7 @@ namespace LeninSearch.Ocr
 
             ImageBlockPostEdit(page, imageBlock);
 
-            if (refreshPage)
-            {
-                ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
-            }
+            return imageBlock;
         }
 
         private void ImageBlockPostEdit(OcrPage page, OcrImageBlock imageBlock)

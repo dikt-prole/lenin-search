@@ -30,8 +30,6 @@ namespace LeninSearch.Script.Scripts
 
                 if (image.Width <= image.Height) continue;
 
-                SaveToTmp(imageFile, image);
-
                 var contours = CvUtil.GetContourRectangles(imageFile, SmoothGaussianArgs.SmallSmooth());
                 var minX = contours.Select(c => c.X).Min();
                 var maxX = contours.Select(c => c.X + c.Width).Max();
@@ -59,13 +57,6 @@ namespace LeninSearch.Script.Scripts
                 File.Delete(imageFile);
                 resultImage.Save(imageFile, ImageFormat.Jpeg);
             }
-        }
-
-        private void SaveToTmp(string imageFile, Bitmap b)
-        {
-            var tmpFile = Path.GetTempFileName() + ".jpg";
-            b.Save(tmpFile, ImageFormat.Jpeg);
-            Debug.WriteLine($"{Path.GetFileName(imageFile)} => {tmpFile}");
         }
     }
 }
