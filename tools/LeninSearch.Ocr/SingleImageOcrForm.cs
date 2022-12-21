@@ -93,13 +93,27 @@ namespace LeninSearch.Ocr
 
         private void TestClick(object? sender, EventArgs e)
         {
-            var rects = CvUtil.GetContourRectangles(file_tb.Text).ToList();
-            var image = new Bitmap(Image.FromFile(file_tb.Text));
-            using var g = Graphics.FromImage(image);
+            var maxLineHeight = 35;
+            var rects = CvUtil.GetContourRectangles(file_tb.Text, SmoothGaussianArgs.MediumSmooth()).ToList();
+            var imageRects = rects.Where(r => r.Height > maxLineHeight).ToList();
+            if (imageRects.Any())
+            {
+                var minX = imageRects.Select(r => r.X).Min();
+                var maxX = imageRects.Select(r => r.X + r.Width).Max();
+                var minY = imageRects.Select(r => r.Y).Min();
+                var maxY = imageRects.Select(r => r.Y + r.Height).Max();
+                var image = new Bitmap(Image.FromFile(file_tb.Text));
 
-            foreach (var rect in rects) g.DrawRectangle(Pens.Red, rect);
+                using var g = Graphics.FromImage(image);
 
-            processed_pb.Image = image;
+                g.DrawRectangle(Pens.Red, minX, minY, maxX - minX, maxY - minY);
+
+                processed_pb.Image = image;
+            }
+            else
+            {
+                processed_pb.Image = new Bitmap(Image.FromFile(file_tb.Text));
+            }
         }
 
         private async void Ocr_btnOnClick(object? sender, EventArgs e)

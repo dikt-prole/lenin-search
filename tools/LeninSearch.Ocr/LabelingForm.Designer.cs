@@ -53,7 +53,6 @@ namespace LeninSearch.Ocr
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.bookFolder_tb = new System.Windows.Forms.TextBox();
             this.saveOcrData_btn = new System.Windows.Forms.Button();
-            this.rowModel_flp = new System.Windows.Forms.FlowLayoutPanel();
             this.regeneratePage_btn = new System.Windows.Forms.Button();
             this.uncoveredLinks_btn = new System.Windows.Forms.Button();
             this.breakByDistant_btn = new System.Windows.Forms.Button();
@@ -62,6 +61,7 @@ namespace LeninSearch.Ocr
             this.button1 = new System.Windows.Forms.Button();
             this.generateLines_btn = new System.Windows.Forms.Button();
             this.generateFb2_btn = new System.Windows.Forms.Button();
+            this.autoDetectImages_btn = new System.Windows.Forms.Button();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.label9 = new System.Windows.Forms.Label();
             this.labeling_rb = new System.Windows.Forms.RadioButton();
@@ -317,7 +317,6 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel1.Controls.Add(this.progressBar1, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.bookFolder_tb, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.saveOcrData_btn, 1, 2);
-            this.tableLayoutPanel1.Controls.Add(this.rowModel_flp, 0, 6);
             this.tableLayoutPanel1.Controls.Add(this.regeneratePage_btn, 1, 4);
             this.tableLayoutPanel1.Controls.Add(this.uncoveredLinks_btn, 2, 4);
             this.tableLayoutPanel1.Controls.Add(this.breakByDistant_btn, 0, 5);
@@ -326,6 +325,7 @@ namespace LeninSearch.Ocr
             this.tableLayoutPanel1.Controls.Add(this.button1, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.generateLines_btn, 2, 2);
             this.tableLayoutPanel1.Controls.Add(this.generateFb2_btn, 0, 4);
+            this.tableLayoutPanel1.Controls.Add(this.autoDetectImages_btn, 0, 3);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(773, 3);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -381,16 +381,6 @@ namespace LeninSearch.Ocr
             this.saveOcrData_btn.TabIndex = 3;
             this.saveOcrData_btn.Text = "Save Ocr Data";
             this.saveOcrData_btn.UseVisualStyleBackColor = true;
-            // 
-            // rowModel_flp
-            // 
-            this.tableLayoutPanel1.SetColumnSpan(this.rowModel_flp, 3);
-            this.rowModel_flp.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rowModel_flp.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.rowModel_flp.Location = new System.Drawing.Point(3, 153);
-            this.rowModel_flp.Name = "rowModel_flp";
-            this.rowModel_flp.Size = new System.Drawing.Size(388, 395);
-            this.rowModel_flp.TabIndex = 8;
             // 
             // regeneratePage_btn
             // 
@@ -486,6 +476,17 @@ namespace LeninSearch.Ocr
             this.generateFb2_btn.Text = "Generate FB2";
             this.generateFb2_btn.UseVisualStyleBackColor = true;
             this.generateFb2_btn.Click += new System.EventHandler(this.GenerateFb2Click);
+            // 
+            // autoDetectImages_btn
+            // 
+            this.autoDetectImages_btn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.autoDetectImages_btn.Location = new System.Drawing.Point(1, 67);
+            this.autoDetectImages_btn.Margin = new System.Windows.Forms.Padding(1);
+            this.autoDetectImages_btn.Name = "autoDetectImages_btn";
+            this.autoDetectImages_btn.Size = new System.Drawing.Size(131, 26);
+            this.autoDetectImages_btn.TabIndex = 16;
+            this.autoDetectImages_btn.Text = "Auto Detect Images";
+            this.autoDetectImages_btn.UseVisualStyleBackColor = true;
             // 
             // tableLayoutPanel2
             // 
@@ -613,7 +614,6 @@ namespace LeninSearch.Ocr
         private System.Windows.Forms.Panel pmiddle_panel;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.FlowLayoutPanel rowModel_flp;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.RadioButton labeling_rb;
@@ -627,5 +627,6 @@ namespace LeninSearch.Ocr
         private System.Windows.Forms.Button removeLinks_btn;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button generateFb2_btn;
+        private System.Windows.Forms.Button autoDetectImages_btn;
     }
 }

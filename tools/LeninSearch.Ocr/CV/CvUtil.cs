@@ -153,7 +153,7 @@ namespace LeninSearch.Ocr.CV
         }
 
         // todo: get small contours after smoothed contours
-        public static IEnumerable<Rectangle> GetContourRectangles(string imageFile)
+        public static IEnumerable<Rectangle> GetContourRectangles(string imageFile, SmoothGaussianArgs smoothGaussianArgs)
         {
             using var image = new Bitmap(Image.FromFile(imageFile));
             using var bgrImage = image.ToImage<Bgr, byte>();
@@ -163,7 +163,11 @@ namespace LeninSearch.Ocr.CV
             //    .Not();
 
             using var invertedGray = bgrImage.Convert<Gray, byte>()
-                .SmoothGaussian(0, 0, 1, 1)
+                .SmoothGaussian(
+                    smoothGaussianArgs.KernelWidth, 
+                    smoothGaussianArgs.KernelHeight, 
+                    smoothGaussianArgs.Sigma1, 
+                    smoothGaussianArgs.Sigma2)
                 .Not()
                 .ThresholdBinary(new Gray(25), new Gray(255));
 
@@ -202,6 +206,25 @@ namespace LeninSearch.Ocr.CV
 
                 if (rect.Width > 0 && rect.Height > 0) yield return rect;
             }
+        }
+
+        public static Rectangle? GetImageRectangle(string imageFile, int maxLineHeight)
+        {
+            var rects = GetContourRectangles(imageFile, SmoothGaussianArgs.MediumSmooth()).ToList();
+
+            var imageRects = rects.Where(r => r.Height > maxLineHeight).ToList();
+
+            if (imageRects.Any())
+            {
+                var minX = imageRects.Select(r => r.X).Min();
+                var maxX = imageRects.Select(r => r.X + r.Width).Max();
+                var minY = imageRects.Select(r => r.Y).Min();
+                var maxY = imageRects.Select(r => r.Y + r.Height).Max();
+
+                return new Rectangle(minX, minY, maxX - minX, maxY - minY);
+            }
+
+            return null;
         }
 
         public static IEnumerable<UncoveredContour> GetUncoveredContours(string imageFile, OcrPage page)

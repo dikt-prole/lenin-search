@@ -42,6 +42,8 @@ namespace LeninSearch.Ocr
 
         private readonly TitleBlockDialog _titleBlockDialog = new TitleBlockDialog();
 
+        private const int MaxLineHeight = 35;
+
         public LabelingForm()
         {
             InitializeComponent();
@@ -66,20 +68,9 @@ namespace LeninSearch.Ocr
             openBookFolder_btn.Click += OpenBookFolderClick;
             generateLines_btn.Click += GenerateLinesClick;
 
-            rowModel_flp.Controls.Clear();
-            var rowModel = OcrLineFeatures.GetDefaultRowModel();
-            foreach (var propName in rowModel.Keys)
-            {
-                var propCheckbox = new CheckBox
-                {
-                    Text = propName,
-                    Checked = rowModel[propName],
-                    Width = 200
-                };
-                rowModel_flp.Controls.Add(propCheckbox);
-            }
-
             labeling_rb.Checked = true;
+
+            autoDetectImages_btn.Click += OnAutoDetectImagesClick;
 
             _ocrService =
                 new FeatureSettingDecorator(
@@ -88,38 +79,41 @@ namespace LeninSearch.Ocr
                             new YandexVisionOcrLineService())));
         }
 
-        private Dictionary<string, bool> GetRowModel()
+        private void OnAutoDetectImagesClick(object sender, EventArgs e)
         {
-            return rowModel_flp.Controls.OfType<CheckBox>().ToDictionary(chb => chb.Text, chb => chb.Checked);
-        }
-
-        private void ApplyModelClick(object? sender, EventArgs e)
-        {
-            if (_model == null)
+            if (_ocrData == null)
             {
-                MessageBox.Show("No model trained yet", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Ocr Data is missing", "Auto Detect Images", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
             var dialog = new ImageScopeDialog();
-
             if (dialog.ShowDialog() != DialogResult.OK) return;
 
-            var featuredLines = _ocrData.Pages.Where(dialog.PageMatch).SelectMany(p => p.NonImageBlockLines)
-                .Where(b => b.Features != null)
+            var imageFiles = GetImageFiles(bookFolder_tb.Text)
+                .Where(f => dialog.ImageMatch(int.Parse(new string(Path.GetFileNameWithoutExtension(f).Where(char.IsNumber).ToArray()))))
                 .ToList();
 
-            var rowModel = GetRowModel();
-
-            var inputs = featuredLines.Select(l => l.Features.ToFeatureRow(rowModel)).ToArray();
-            var predicted = _model.Decide(inputs);
-
-            for (var i = 0; i < featuredLines.Count; i++)
+            foreach (var imageFile in imageFiles)
             {
-                featuredLines[i].Label = (OcrLabel)predicted[i];
+                var imageRectangle = CvUtil.GetImageRectangle(imageFile, MaxLineHeight);
+
+                if (imageRectangle == null) continue;
+
+                var page = _ocrData.GetPage(Path.GetFileNameWithoutExtension(imageFile));
+
+                var imageBlock = new OcrImageBlock
+                {
+                    TopLeftX = imageRectangle.Value.X,
+                    TopLeftY = imageRectangle.Value.Y,
+                    BottomRightX = imageRectangle.Value.X + imageRectangle.Value.Width,
+                    BottomRightY = imageRectangle.Value.Y + imageRectangle.Value.Size.Height
+                };
+
+                page.ImageBlocks.Add(imageBlock);
             }
 
-            MessageBox.Show("Model applied", "Model", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Success", "Auto Detect Images", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private static async Task<(List<OcrPage> Pages, bool Success, string Error)> BatchOcr(IOcrService ocrService, List<string> imageFiles, Action<int> progressAction)
@@ -288,40 +282,6 @@ namespace LeninSearch.Ocr
             foreach (var fileName in fileNames)
             {
                 ocr_lb.Items.Add(fileName);
-            }
-        }
-
-        private void TrainModelClick(object? sender, EventArgs e)
-        {
-            var dialog = new ImageScopeDialog();
-
-            if (dialog.ShowDialog() != DialogResult.OK) return;
-
-            var labeledLines = _ocrData.Pages.Where(dialog.PageMatch).SelectMany(p => p.NonImageBlockLines)
-                .Where(r => r.Label.HasValue && r.Features != null)
-                .ToList();
-
-            var rowModel = GetRowModel();
-
-            double[][] inputs = labeledLines.Select(l => l.Features.ToFeatureRow(rowModel)).ToArray();
-            int[] outputs = labeledLines.Select(l => (int)l.Label).ToArray();
-
-            Accord.Math.Random.Generator.Seed = 1;
-            var teacher = new RandomForestLearning
-            {
-                NumberOfTrees = 20
-            };
-
-            try
-            {
-                _model = teacher.Learn(inputs, outputs);
-                MessageBox.Show($"Model trained on {labeledLines.Count} examples", "Model", MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
-            }
-            catch (Exception exc)
-            {
-                MessageBox.Show(exc.Message, "Error", MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
             }
         }
 
@@ -1152,8 +1112,6 @@ namespace LeninSearch.Ocr
                 .SelectMany(p => p.GetExcludingLabels(OcrLabel.Comment, OcrLabel.Garbage, OcrLabel.Image, OcrLabel.Title))
                 .Where(r => r.Label.HasValue && r.Features != null)
                 .ToList();
-
-            var rowModel = GetRowModel();
 
             double[][] inputs = labeledLines.Select(l => l.Features.ToFeatureRow()).ToArray();
             int[] outputs = labeledLines.Select(l => (int)l.Label).ToArray();
