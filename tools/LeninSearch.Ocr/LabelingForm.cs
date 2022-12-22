@@ -44,7 +44,7 @@ namespace LeninSearch.Ocr
         private readonly TitleBlockDialog _titleBlockDialog = new TitleBlockDialog();
 
         private const int MaxLineHeight = 35;
-        private const int MaxWordDistance = 35;
+        private const int MaxWordDistance = 25;
         private const int MinImageTitlePadding = 10;
 
         public LabelingForm()

@@ -105,17 +105,18 @@ namespace LeninSearch.Ocr.Model
                 if (distance > maxDistance)
                 {
                     var leftWords = words.Take(wordIndex).ToList();
-                    var rightWords = words.Except(leftWords).ToList();
                     var lines = BreakIntoWords(line);
                     var leftLines = lines.Where(l => leftWords.Contains(l.Words[0])).ToList();
                     var rightLines = lines.Except(leftLines).ToList();
                     if (leftLines.Count > 1)
                     {
                         MergeLines(leftLines[0], leftLines.Skip(1).ToArray());
+                        BreakLineByDistantWord(leftLines[0], maxDistance);
                     }
                     if (rightLines.Count > 1)
                     {
                         MergeLines(rightLines[0], rightLines.Skip(1).ToArray());
+                        BreakLineByDistantWord(rightLines[0], maxDistance);
                     }
                     return;
                 }
