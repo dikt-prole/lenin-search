@@ -99,20 +99,42 @@ namespace LeninSearch.Ocr
 
             foreach (var imageFile in imageFiles)
             {
-                var imageRectangle = CvUtil.GetImageRectangle(imageFile, MaxLineHeight);
-
-                if (imageRectangle == null) continue;
-
                 var filename = Path.GetFileNameWithoutExtension(imageFile);
 
                 var page = _ocrData.GetPage(filename);
+
+                page.ImageBlocks?.Clear();
+
+                var args = new FindImageRectangleArgs
+                {
+                    GaussianArgs = SmoothGaussianArgs.Smooth(5, 1),
+                    MaxLineHeight = MaxLineHeight,
+                    SideExpandMax = 20
+                };
+                var imageRectangle = CvUtil.FindImageRectangle(imageFile, args, out _);
+
+                if (imageRectangle == null) continue;
+
+                var leftRectangle = new Rectangle(
+                    0, 
+                    imageRectangle.Value.Y, 
+                    imageRectangle.Value.X,
+                    imageRectangle.Value.Height);
+
+                var rightRectangle = new Rectangle(
+                    imageRectangle.Value.X + imageRectangle.Value.Width,
+                    imageRectangle.Value.Y, 
+                    page.Width - imageRectangle.Value.X - imageRectangle.Value.Width,
+                    imageRectangle.Value.Height);
+
+
 
                 var imageBlock = AddImageBlock(imageRectangle.Value, page);
 
                 var bottomRect = new Rectangle(
                     imageBlock.TopLeftX + MinImageTitlePadding,
                     imageBlock.BottomRightY,
-                    imageBlock.BottomRightX - imageBlock.TopLeftX - MinImageTitlePadding,
+                    imageBlock.BottomRightX - imageBlock.TopLeftX - MinImageTitlePadding * 2,
                     page.Height - imageBlock.BottomRightY);
 
                 var bottomIntersectingLines = page.Lines
@@ -356,7 +378,7 @@ namespace LeninSearch.Ocr
                                 }
                                 ib.TopLeftY = p.Y;
 
-                                ImageBlockPostEdit(page, ib);
+                                ImageBlockPostEdit(page, ib, true);
 
                                 pictureBox1.Refresh();
                             };
@@ -373,7 +395,7 @@ namespace LeninSearch.Ocr
                                 }
                                 ib.BottomRightY = p.Y;
 
-                                ImageBlockPostEdit(page, ib);
+                                ImageBlockPostEdit(page, ib, true);
 
                                 pictureBox1.Refresh();
                             };
@@ -692,7 +714,7 @@ namespace LeninSearch.Ocr
 
             page.ImageBlocks.Add(imageBlock);
 
-            ImageBlockPostEdit(page, imageBlock);
+            ImageBlockPostEdit(page, imageBlock, true);
 
             ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
         }
@@ -709,30 +731,35 @@ namespace LeninSearch.Ocr
 
             page.ImageBlocks.Add(imageBlock);
 
-            ImageBlockPostEdit(page, imageBlock);
+            ImageBlockPostEdit(page, imageBlock, false);
 
             return imageBlock;
         }
 
-        private void ImageBlockPostEdit(OcrPage page, OcrImageBlock imageBlock)
+        private void ImageBlockPostEdit(OcrPage page, OcrImageBlock imageBlock, bool doBreakLines = false)
         {
             var intersectingLines = page.GetIntersectingLines(imageBlock.Rectangle);
             foreach (var intersectingLine in intersectingLines)
             {
-                var breakLines = page.BreakIntoWords(intersectingLine);
-                var breakIntersectingLines = breakLines.Where(l => l.Rectangle.IntersectsWith(imageBlock.Rectangle)).ToArray();
-                var breakNonIntersectingLines = breakLines.Except(breakIntersectingLines).ToArray();
-                foreach (var breakIntersectingLine in breakIntersectingLines)
-                {
-                    breakIntersectingLine.Label = OcrLabel.Image;
-                }
+                intersectingLine.Label = OcrLabel.Image;
 
-                if (breakNonIntersectingLines.Length > 0)
+                if (doBreakLines)
                 {
-                    page.MergeLines(breakNonIntersectingLines[0], breakNonIntersectingLines.Skip(1).ToArray());
-                    foreach (var breakNonIntersectingLine in breakNonIntersectingLines)
+                    var breakLines = page.BreakIntoWords(intersectingLine);
+                    var breakIntersectingLines = breakLines.Where(l => l.Rectangle.IntersectsWith(imageBlock.Rectangle)).ToArray();
+                    var breakNonIntersectingLines = breakLines.Except(breakIntersectingLines).ToArray();
+                    foreach (var breakIntersectingLine in breakIntersectingLines)
                     {
-                        breakNonIntersectingLine.Label = OcrLabel.PMiddle;
+                        breakIntersectingLine.Label = OcrLabel.Image;
+                    }
+
+                    if (breakNonIntersectingLines.Length > 0)
+                    {
+                        page.MergeLines(breakNonIntersectingLines[0], breakNonIntersectingLines.Skip(1).ToArray());
+                        foreach (var breakNonIntersectingLine in breakNonIntersectingLines)
+                        {
+                            breakNonIntersectingLine.Label = OcrLabel.PMiddle;
+                        }
                     }
                 }
             }
@@ -756,7 +783,15 @@ namespace LeninSearch.Ocr
             var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
             page.ImageBlocks.RemoveAll(ib => ib.Rectangle.IntersectsWith(originalRect));
 
-            pictureBox1.Refresh();
+            var nonIntersectingImageLines = page.Lines
+                .Where(l => page.ImageBlocks.All(ib => !ib.Rectangle.IntersectsWith(l.Rectangle)))
+                .Where(l => l.Label == OcrLabel.Image);
+            foreach (var nonIntersectingImageLine in nonIntersectingImageLines)
+            {
+                nonIntersectingImageLine.Label = OcrLabel.PMiddle;
+            }
+
+            ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
         }
 
         private void AddTitleBlock(Rectangle pbRectangle)

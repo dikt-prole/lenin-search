@@ -93,27 +93,31 @@ namespace LeninSearch.Ocr
 
         private void TestClick(object? sender, EventArgs e)
         {
-            var maxLineHeight = 35;
-            var rects = CvUtil.GetContourRectangles(file_tb.Text, SmoothGaussianArgs.MediumSmooth()).ToList();
-            var imageRects = rects.Where(r => r.Height > maxLineHeight).ToList();
-            if (imageRects.Any())
+            var args = new FindImageRectangleArgs
             {
-                var minX = imageRects.Select(r => r.X).Min();
-                var maxX = imageRects.Select(r => r.X + r.Width).Max();
-                var minY = imageRects.Select(r => r.Y).Min();
-                var maxY = imageRects.Select(r => r.Y + r.Height).Max();
-                var image = new Bitmap(Image.FromFile(file_tb.Text));
+                GaussianArgs = SmoothGaussianArgs.Smooth(8, 1),
+                MaxLineHeight = 40,
+                SideExpandMax = 50,
+                ImageTitleAreaHeight = 200
+            };
 
-                using var g = Graphics.FromImage(image);
+            var imageRect = CvUtil.FindImageRectangle(file_tb.Text, args, out var processingData);
+            var processedImage = new Bitmap(processingData["SMOOTH_BITMAP"] as Bitmap);
+            using var g = Graphics.FromImage(processedImage);
 
-                g.DrawRectangle(Pens.Red, minX, minY, maxX - minX, maxY - minY);
-
-                processed_pb.Image = image;
-            }
-            else
+            using var rectPen = new Pen(Color.Chartreuse, 4);
+            foreach (var rect in processingData["RECTS"] as List<Rectangle>)
             {
-                processed_pb.Image = new Bitmap(Image.FromFile(file_tb.Text));
+                g.DrawRectangle(rectPen, rect);
             }
+
+            using var imgPen = new Pen(Color.DeepPink, 4);
+            if (imageRect.HasValue)
+            {
+                g.DrawRectangle(imgPen, imageRect.Value);
+            }
+
+            processed_pb.Image = processedImage;
         }
 
         private async void Ocr_btnOnClick(object? sender, EventArgs e)

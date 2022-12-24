@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using CsvHelper;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -153,6 +154,28 @@ namespace LeninSearch.Ocr.CV
             }
         }
 
+
+        public static Bitmap GetSmoothedBitmap(string imageFile, SmoothGaussianArgs smoothGaussianArgs)
+        {
+            using var image = new Bitmap(Image.FromStream(new MemoryStream(File.ReadAllBytes(imageFile))));
+            using var bgrImage = image.ToImage<Bgr, byte>();
+
+            //using var invertedGray = bgrImage.Convert<Gray, byte>()
+            //    .ThresholdBinary(new Gray(90), new Gray(255))
+            //    .Not();
+
+            using var invertedGray = bgrImage.Convert<Gray, byte>()
+                .SmoothGaussian(
+                    smoothGaussianArgs.KernelWidth,
+                    smoothGaussianArgs.KernelHeight,
+                    smoothGaussianArgs.Sigma1,
+                    smoothGaussianArgs.Sigma2)
+                .Not()
+                .ThresholdBinary(new Gray(25), new Gray(255));
+
+            return invertedGray.ToBitmap();
+        }
+
         // todo: get small contours after smoothed contours
         public static IEnumerable<Rectangle> GetContourRectangles(string imageFile, SmoothGaussianArgs smoothGaussianArgs)
         {
@@ -209,23 +232,117 @@ namespace LeninSearch.Ocr.CV
             }
         }
 
-        public static Rectangle? GetImageRectangle(string imageFile, int maxLineHeight)
+        public static Rectangle? FindImageRectangle(string imageFile, FindImageRectangleArgs args, out Dictionary<string, object> processingData)
         {
-            var rects = GetContourRectangles(imageFile, SmoothGaussianArgs.MediumSmooth()).ToList();
+            processingData = new Dictionary<string, object>();
 
-            var imageRects = rects.Where(r => r.Height > maxLineHeight).ToList();
+            using var image = new Bitmap(Image.FromStream(new MemoryStream(File.ReadAllBytes(imageFile))));
+            using var bgrImage = image.ToImage<Bgr, byte>();
 
-            if (imageRects.Any())
+            using var invertedGray = bgrImage.Convert<Gray, byte>()
+                .SmoothGaussian(
+                    args.GaussianArgs.KernelWidth,
+                    args.GaussianArgs.KernelHeight,
+                    args.GaussianArgs.Sigma1,
+                    args.GaussianArgs.Sigma2)
+                .Not()
+                .ThresholdBinary(new Gray(25), new Gray(255));
+
+            processingData.Add("SMOOTH_BITMAP", invertedGray.ToBitmap());
+
+            var contours = new VectorOfVectorOfPoint();
+            var hierarchy = new Mat();
+            CvInvoke.FindContours(invertedGray, contours, hierarchy, RetrType.External, ChainApproxMethod.ChainApproxSimple);
+            CvInvoke.DrawContours(bgrImage, contours, -1, new MCvScalar(255, 0, 0));
+
+            var rects = new List<Rectangle>();
+            for (var i = 0; i < contours.Size; i++)
             {
-                var minX = imageRects.Select(r => r.X).Min();
-                var maxX = imageRects.Select(r => r.X + r.Width).Max();
-                var minY = imageRects.Select(r => r.Y).Min();
-                var maxY = imageRects.Select(r => r.Y + r.Height).Max();
-
-                return new Rectangle(minX, minY, maxX - minX, maxY - minY);
+                var points = contours[i].ToArray();
+                var cMinX = points.Select(p => p.X).Min();
+                var cMaxX = points.Select(p => p.X).Max();
+                var cMinY = points.Select(p => p.Y).Min();
+                var cMaxY = points.Select(p => p.Y).Max();
+                rects.Add(
+                    new Rectangle(
+                        cMinX,
+                        cMinY, 
+                        cMaxX - cMinX, 
+                        cMaxY - cMinY));
             }
 
-            return null;
+            processingData.Add("RECTS", rects);
+
+            var imageCandidateRects = rects.Where(r => r.Height > args.MaxLineHeight).ToList();
+
+            if (!imageCandidateRects.Any()) return null;
+
+            var minX = imageCandidateRects.Select(r => r.X).Min();
+            var maxX = imageCandidateRects.Select(r => r.X + r.Width).Max();
+            var minY = imageCandidateRects.Select(r => r.Y).Min();
+            var maxY = imageCandidateRects.Select(r => r.Y + r.Height).Max();
+            var imageRect = new Rectangle(minX, minY, maxX - minX, maxY - minY);
+
+            var nonImageRects = rects.Where(r => !r.IntersectsWith(imageRect)).ToArray();
+
+            // expanding to the left
+            for (var i = 0; i < args.SideExpandMax; i++)
+            {
+                if (imageRect.X < 1) break;
+
+                var expandedRectangle =
+                    new Rectangle(imageRect.X - 1, imageRect.Y, imageRect.Width + 1, imageRect.Height);
+                if (nonImageRects.Any(r => r.IntersectsWith(expandedRectangle)))
+                {
+                    break;
+                }
+
+                imageRect = expandedRectangle;
+            }
+
+            // expanding to the right
+            for (var i = 0; i < args.SideExpandMax; i++)
+            {
+                if (imageRect.X + imageRect.Width >= image.Width) break;
+
+                var expandedRectangle =
+                    new Rectangle(imageRect.X, imageRect.Y, imageRect.Width + 1, imageRect.Height);
+                if (nonImageRects.Any(r => r.IntersectsWith(expandedRectangle)))
+                {
+                    break;
+                }
+
+                imageRect = expandedRectangle;
+            }
+
+            // expanding to the bottom
+            var underImageRect = new Rectangle(
+                imageRect.X,
+                imageRect.Y + imageRect.Height,
+                imageRect.Width,
+                1000);
+            var underImageTextRects = rects
+                .Where(r => r.GetIntersectionWidth(underImageRect) > 10)
+                .Where(r => r.Width > imageRect.Width)
+                .OrderBy(r => r.Y)
+                .ToArray();
+            if (underImageTextRects.Any())
+            {
+                imageRect.Height = underImageTextRects[0].Y - imageRect.Y;
+            }
+
+            //var imageTitleAreaRect = new Rectangle(imageRect.X, imageRect.Y + imageRect.Height, imageRect.Width,
+            //    args.ImageTitleAreaHeight);
+            //var nonImageBottomRects = rects
+            //    .Where(r => imageTitleAreaRect.Contains(r))
+            //    .OrderByDescending(r => r.Y)
+            //    .ToArray();
+            //if (nonImageBottomRects.Any())
+            //{
+            //    imageRect.Height = nonImageBottomRects[0].Y + nonImageBottomRects[0].Height - imageRect.Y;
+            //}
+
+            return imageRect;
         }
 
         public static IEnumerable<UncoveredContour> GetUncoveredContours(string imageFile, OcrPage page)

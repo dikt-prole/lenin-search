@@ -39,5 +39,16 @@
                 Sigma2 = 2
             };
         }
+
+        public static SmoothGaussianArgs Smooth(int sigma1, int sigma2)
+        {
+            return new SmoothGaussianArgs
+            {
+                KernelHeight = 0,
+                KernelWidth = 0,
+                Sigma1 = sigma1,
+                Sigma2 = sigma2
+            };
+        }
     }
 }
