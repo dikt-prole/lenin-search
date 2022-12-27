@@ -98,7 +98,7 @@ namespace LeninSearch.Ocr
                 GaussianArgs = SmoothGaussianArgs.Smooth(8, 1),
                 MaxLineHeight = 40,
                 SideExpandMax = 50,
-                ImageTitleAreaHeight = 200
+                ImageTitleAreaHeight = 120
             };
 
             var imageRect = CvUtil.FindImageRectangle(file_tb.Text, args, out var processingData);

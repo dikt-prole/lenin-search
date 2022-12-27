@@ -322,13 +322,29 @@ namespace LeninSearch.Ocr.CV
                 imageRect.Width,
                 1000);
             var underImageTextRects = rects
-                .Where(r => r.GetIntersectionWidth(underImageRect) > 10)
+                .Where(r => r.GetIntersectionWidth(underImageRect) > args.GeneralDelta)
                 .Where(r => r.Width > imageRect.Width)
                 .OrderBy(r => r.Y)
                 .ToArray();
             if (underImageTextRects.Any())
             {
-                imageRect.Height = underImageTextRects[0].Y - imageRect.Y;
+                imageRect.Height = underImageTextRects[0].Y - imageRect.Y - args.GeneralDelta;
+            }
+            else
+            {
+                var imageTitleAreaRect = new Rectangle(
+                    imageRect.X,
+                    imageRect.Y + imageRect.Height,
+                    imageRect.Width,
+                    args.ImageTitleAreaHeight);
+                var imageTitleRects = rects
+                    .Where(r => imageTitleAreaRect.Contains(r))
+                    .OrderByDescending(r => r.Y)
+                    .ToArray();
+                if (imageTitleRects.Any())
+                {
+                    imageRect.Height = imageTitleRects[0].Y + imageTitleRects[0].Height - imageRect.Y + args.GeneralDelta;
+                }
             }
 
             //var imageTitleAreaRect = new Rectangle(imageRect.X, imageRect.Y + imageRect.Height, imageRect.Width,

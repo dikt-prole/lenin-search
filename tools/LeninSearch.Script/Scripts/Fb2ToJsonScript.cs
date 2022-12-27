@@ -166,7 +166,7 @@ namespace LeninSearch.Script.Scripts
 
         private void HandleFb2Node(XmlNode node, JsonFileData jsonFileData, List<string> imageIds, List<string> commentIds, string fileName, byte sectionLevel)
         {
-            var sectionNodeId = node.Attributes["id"]?.Value;
+            var sectionNodeId = node.Attributes?["id"]?.Value;
 
             if (sectionNodeId != null && commentIds.Contains(sectionNodeId)) return;
 
