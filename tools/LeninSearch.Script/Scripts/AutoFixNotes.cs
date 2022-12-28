@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace LeninSearch.Script.Scripts
 {
@@ -22,7 +23,7 @@ namespace LeninSearch.Script.Scripts
             foreach (var fb2File in fb2Files)
             {
                 Console.WriteLine($"Processing: {fb2File}");
-                var fb2Text = File.ReadAllText(fb2File);
+                var fb2Text = File.ReadAllText(fb2File, Encoding.UTF8);
                 var fb2FileNew = $"{fixedFolder}\\{Path.GetFileName(fb2File)}";
 
                 var notesStartIndex = fb2Text.IndexOf(startToken);
@@ -48,7 +49,7 @@ namespace LeninSearch.Script.Scripts
                 var fb2TextNew = string.Join("", fb2Text.Substring(0, notesStartIndex), notesText,
                     fb2Text.Substring(notesEndIndex));
 
-                File.WriteAllText(fb2FileNew, fb2TextNew);
+                File.WriteAllText(fb2FileNew, fb2TextNew, Encoding.UTF8);
             }
         }
     }

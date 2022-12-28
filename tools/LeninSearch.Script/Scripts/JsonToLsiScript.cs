@@ -98,7 +98,13 @@ namespace LeninSearch.Script.Scripts
             var globalWordsDictionary = new Dictionary<string, uint>();
             for (var i = 0; i < globalWordsArray.Length; i++)
             {
-                globalWordsDictionary.Add(globalWordsArray[i], (uint)i);
+                var word = globalWordsArray[i];
+                if (globalWordsDictionary.ContainsKey(word))
+                {
+                    throw new Exception($"Duplicate word '{word}' on line {i}");
+                }
+
+                globalWordsDictionary.Add(word, (uint)i);
             }
 
             var tasks = jsonFiles.Select(jf => Task.Run(() => WriteLsiFile(jf, lsiFolder, globalWordsDictionary))).ToList();
