@@ -37,6 +37,7 @@
     <KlgdV1 Include="..\corpus\ls_index\klgd-v1\*.*" />
     <PopovV1 Include="..\corpus\ls_index\popov-v1\*.*" />
     <PavlovV1 Include="..\corpus\ls_index\pavlov-v1\*.*" />
+    <ModFanV1 Include="..\corpus\ls_index\mod-fan-v1\*.*" />
   </ItemGroup>
 
   <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
@@ -51,6 +52,7 @@
     <Copy SourceFiles="@(KlgdV1)" DestinationFolder="$(OutDir)\corpus\klgd-v1" />
     <Copy SourceFiles="@(PopovV1)" DestinationFolder="$(OutDir)\corpus\popov-v1" />
     <Copy SourceFiles="@(PavlovV1)" DestinationFolder="$(OutDir)\corpus\pavlov-v1" />
+    <Copy SourceFiles="@(ModFanV1)" DestinationFolder="$(OutDir)\corpus\mod-fan-v1" />
   </Target>
 
   <Target Name="CopyCustomContentOnPublish" AfterTargets="Publish">
@@ -65,6 +67,7 @@
     <Copy SourceFiles="@(KlgdV1)" DestinationFolder="$(PublishDir)\corpus\klgd-v1" />
     <Copy SourceFiles="@(PopovV1)" DestinationFolder="$(PublishDir)\corpus\popov-v1" />
     <Copy SourceFiles="@(PavlovV1)" DestinationFolder="$(PublishDir)\corpus\pavlov-v1" />
+    <Copy SourceFiles="@(ModFanV1)" DestinationFolder="$(PublishDir)\corpus\mod-fan-v1" />
   </Target>
 
 </Project>
