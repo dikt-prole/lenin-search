@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -43,9 +44,10 @@ namespace LeninSearch.Ocr
 
         private readonly TitleBlockDialog _titleBlockDialog = new TitleBlockDialog();
 
-        private const int MaxLineHeight = 35;
+        private const int MaxLineHeight = 40;
         private const int MaxWordDistance = 25;
-        private const int MinImageTitlePadding = 10;
+        private const int SideExpandMax = 50;
+        private const int ImageTitleAreaHeight = 120;
 
         public LabelingForm()
         {
@@ -107,47 +109,16 @@ namespace LeninSearch.Ocr
 
                 var args = new FindImageRectangleArgs
                 {
-                    GaussianArgs = SmoothGaussianArgs.Smooth(5, 1),
+                    GaussianArgs = SmoothGaussianArgs.Smooth(8, 1),
                     MaxLineHeight = MaxLineHeight,
-                    SideExpandMax = 20
+                    SideExpandMax = SideExpandMax,
+                    ImageTitleAreaHeight = ImageTitleAreaHeight
                 };
                 var imageRectangle = CvUtil.FindImageRectangle(imageFile, args, out _);
 
-                if (imageRectangle == null) continue;
-
-                var leftRectangle = new Rectangle(
-                    0, 
-                    imageRectangle.Value.Y, 
-                    imageRectangle.Value.X,
-                    imageRectangle.Value.Height);
-
-                var rightRectangle = new Rectangle(
-                    imageRectangle.Value.X + imageRectangle.Value.Width,
-                    imageRectangle.Value.Y, 
-                    page.Width - imageRectangle.Value.X - imageRectangle.Value.Width,
-                    imageRectangle.Value.Height);
-
-
-
-                var imageBlock = AddImageBlock(imageRectangle.Value, page);
-
-                var bottomRect = new Rectangle(
-                    imageBlock.TopLeftX + MinImageTitlePadding,
-                    imageBlock.BottomRightY,
-                    imageBlock.BottomRightX - imageBlock.TopLeftX - MinImageTitlePadding * 2,
-                    page.Height - imageBlock.BottomRightY);
-
-                var bottomIntersectingLines = page.Lines
-                    .Where(l => l.Rectangle.IntersectsWith(bottomRect))
-                    .OrderBy(l => l.TopLeftY);
-
-                foreach (var bottomIntersectingLine in bottomIntersectingLines)
+                if (imageRectangle.HasValue)
                 {
-                    if (!bottomRect.Contains(bottomIntersectingLine.Rectangle)) break;
-
-                    imageBlock.BottomRightY = bottomIntersectingLine.BottomRightY;
-
-                    bottomIntersectingLine.Label = OcrLabel.Image;
+                    AddImageBlock(imageRectangle.Value, page);
                 }
             }
 
@@ -186,24 +157,6 @@ namespace LeninSearch.Ocr
             return (pages, true, null);
         }
 
-        private static async Task<(List<OcrPage> Pages, bool Success, string Error)> SequentialOcr(IOcrService ocrService, List<string> imageFiles, Action<int> progressAction)
-        {
-            var pages = new List<OcrPage>();
-            for (var imageIndex = 0; imageIndex < imageFiles.Count; imageIndex++)
-            {
-                var result = await ocrService.GetOcrPageAsync(imageFiles[imageIndex]);
-                progressAction(imageIndex + 1);
-                if (!result.Success)
-                {
-                    return (null, false, result.Error);
-                }
-                pages.Add(result.Page);
-
-            }
-
-            return (pages, true, null);
-        }
-
         private async void GenerateLinesClick(object? sender, EventArgs e)
         {
             var dialog = new ImageScopeDialog();
@@ -219,27 +172,56 @@ namespace LeninSearch.Ocr
             progressBar1.Maximum = imageFiles.Count;
             progressBar1.Value = 0;
 
-            //var ocrResult = await BatchOcr(_ocrService, imageFiles, progress => progressBar1.Value = progress);
-            var ocrResult = await SequentialOcr(_ocrService, imageFiles, progress => progressBar1.Value = progress);
-            if (!ocrResult.Success)
+            for (var i = 0; i < imageFiles.Count; i++)
             {
-                MessageBox.Show(ocrResult.Error, "Ocr Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+                var imageFile = imageFiles[i];
+                var existingPage = _ocrData.Pages.FirstOrDefault(p => p.Filename == Path.GetFileNameWithoutExtension(imageFile));
 
-            // break by distance
-            foreach (var page in ocrResult.Pages)
-            {
-                var linesToBreak = page.Lines.ToArray();
+                // prepare ocr file
+                var ocrFile = imageFile;
+                if (existingPage?.ImageBlocks?.Any() == true)
+                {
+                    ocrFile = Path.GetTempFileName() + ".jpg";
+                    using var image = new Bitmap(Image.FromStream(new MemoryStream(File.ReadAllBytes(imageFile))));
+                    using var g = Graphics.FromImage(image);
+                    using var brush = new SolidBrush(Color.White);
+                    foreach (var ib in existingPage.ImageBlocks)
+                    {
+                        g.FillRectangle(brush, ib.Rectangle);
+                    }
+                    image.Save(ocrFile, ImageFormat.Jpeg);
+                }
+
+                // do ocr
+                var ocrResult = await _ocrService.GetOcrPageAsync(ocrFile);
+                if (!ocrResult.Success)
+                {
+                    MessageBox.Show(ocrResult.Error, "Ocr Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // set correct filename
+                ocrResult.Page.Filename = Path.GetFileNameWithoutExtension(imageFile);
+
+                // break by distance
+                var linesToBreak = ocrResult.Page.Lines.ToArray();
                 foreach (var pageLine in linesToBreak)
                 {
-                    page.BreakLineByDistantWord(pageLine, MaxWordDistance);
+                    ocrResult.Page.BreakLineByDistantWord(pageLine, MaxWordDistance);
                 }
-            }
 
-            // replace old pages with new pages
-            _ocrData.Pages.RemoveAll(p => ocrResult.Pages.Any(pp => pp.Filename == p.Filename));
-            _ocrData.Pages.AddRange(ocrResult.Pages);
+                // merge pages
+                if (existingPage != null)
+                {
+                    existingPage.MergePage(ocrResult.Page);
+                }
+                else
+                {
+                    _ocrData.Pages.Add(ocrResult.Page);
+                }
+
+                progressBar1.Value = i + 1;
+            }
 
             MessageBox.Show("Ocr completed", "Ocr", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
@@ -357,84 +339,45 @@ namespace LeninSearch.Ocr
             if (e.Button == MouseButtons.Left)
             {
                 var originalPoint = pictureBox1.ToOriginalPoint(e.Location);
-                var imageBlocks = page.ImageBlocks?.Where(ib =>
-                    ib.TopLeftRectangle.Contains(originalPoint) || ib.BottomRightRectangle.Contains(originalPoint))
-                    .ToList() ?? new List<OcrImageBlock>();
-                var titleBlocks = page.TitleBlocks?.Where(tb =>
-                        tb.TopLeftRectangle.Contains(originalPoint) || tb.BottomRightRectangle.Contains(originalPoint))
-                    .ToList() ?? new List<OcrTitleBlock>();
                 _moveDragPoint = null;
-                if (imageBlocks.Any())
+
+                var draggedOcrBlock = 
+                    page.ImageBlocks?.FirstOrDefault(ib => ib.IsInDragRectangle(originalPoint)) ??
+                        (OcrBlock)page.TitleBlocks?.FirstOrDefault(tb => tb.IsInDragRectangle(originalPoint));
+
+                if (draggedOcrBlock != null)
                 {
-                    foreach (var ib in imageBlocks)
+                    var isTop = draggedOcrBlock.TopDragRectangle.Contains(originalPoint);
+                    var isBottom = draggedOcrBlock.BottomDragRectangle.Contains(originalPoint);
+                    var isLeft = draggedOcrBlock.LeftDragRectangle.Contains(originalPoint);
+                    var isRight = draggedOcrBlock.RightDragRectangle.Contains(originalPoint);
+
+                    _moveDragPoint = p =>
                     {
-                        if (ib.TopLeftRectangle.Contains(originalPoint))
+                        if (isTop)
                         {
-                            _moveDragPoint = p =>
-                            {
-                                if (ModifierKeys != Keys.Shift)
-                                {
-                                    ib.TopLeftX = p.X;
-                                }
-                                ib.TopLeftY = p.Y;
-
-                                ImageBlockPostEdit(page, ib, true);
-
-                                pictureBox1.Refresh();
-                            };
-                            break;
+                            draggedOcrBlock.TopLeftY = p.Y;
+                        }
+                        if (isBottom)
+                        {
+                            draggedOcrBlock.BottomRightY = p.Y;
+                        }
+                        if (isLeft)
+                        {
+                            draggedOcrBlock.TopLeftX = p.X;
+                        }
+                        if (isRight)
+                        {
+                            draggedOcrBlock.BottomRightX = p.X;
                         }
 
-                        if (ib.BottomRightRectangle.Contains(originalPoint))
+                        if (draggedOcrBlock is OcrImageBlock ocrImageBLock)
                         {
-                            _moveDragPoint = p =>
-                            {
-                                if (ModifierKeys != Keys.Shift)
-                                {
-                                    ib.BottomRightX = p.X;
-                                }
-                                ib.BottomRightY = p.Y;
-
-                                ImageBlockPostEdit(page, ib, true);
-
-                                pictureBox1.Refresh();
-                            };
-                            break;
-                        }
-                    }
-                }
-                else if (titleBlocks.Any())
-                {
-                    foreach (var tb in titleBlocks)
-                    {
-                        if (tb.TopLeftRectangle.Contains(originalPoint))
-                        {
-                            _moveDragPoint = p =>
-                            {
-                                if (ModifierKeys != Keys.Shift)
-                                {
-                                    tb.TopLeftX = p.X;
-                                }
-                                tb.TopLeftY = p.Y;
-                                pictureBox1.Refresh();
-                            };
-                            break;
+                            ImageBlockPostEdit(page, ocrImageBLock, true);
                         }
 
-                        if (tb.BottomRightRectangle.Contains(originalPoint))
-                        {
-                            _moveDragPoint = p =>
-                            {
-                                if (ModifierKeys != Keys.Shift)
-                                {
-                                    tb.BottomRightX = p.X;
-                                }
-                                tb.BottomRightY = p.Y;
-                                pictureBox1.Refresh();
-                            };
-                            break;
-                        }
-                    }
+                        pictureBox1.Refresh();
+                    };
                 }
                 else if (page.TopDivider.DragRectangle.Contains(originalPoint))
                 {
@@ -583,8 +526,10 @@ namespace LeninSearch.Ocr
             foreach (var ib in page.ImageBlocks)
             {
                 e.Graphics.DrawRectangle(ibPen, pictureBox1.ToPictureBoxRectangle(ib.Rectangle));
-                e.Graphics.FillRectangle(ibBrush, pictureBox1.ToPictureBoxRectangle(ib.TopLeftRectangle));
-                e.Graphics.FillRectangle(ibBrush, pictureBox1.ToPictureBoxRectangle(ib.BottomRightRectangle));
+                foreach (var dragRectangle in ib.AllDragRectangles())
+                {
+                    e.Graphics.FillRectangle(ibBrush, pictureBox1.ToPictureBoxRectangle(dragRectangle));
+                }
             }
 
             using var textBrush = new SolidBrush(Color.DarkViolet);
@@ -595,8 +540,10 @@ namespace LeninSearch.Ocr
             {
                 var tbpbRect = pictureBox1.ToPictureBoxRectangle(tb.Rectangle);
                 e.Graphics.DrawRectangle(tbPen, tbpbRect);
-                e.Graphics.FillRectangle(tbBrush, pictureBox1.ToPictureBoxRectangle(tb.TopLeftRectangle));
-                e.Graphics.FillRectangle(tbBrush, pictureBox1.ToPictureBoxRectangle(tb.BottomRightRectangle));
+                foreach (var dragRectangle in tb.AllDragRectangles())
+                {
+                    e.Graphics.FillRectangle(tbBrush, pictureBox1.ToPictureBoxRectangle(dragRectangle));
+                }
                 e.Graphics.DrawString($"Level: {tb.TitleLevel}, Text: {tb.TitleText}", font, textBrush, tbpbRect.X, tbpbRect.Y - 20);
             }
 

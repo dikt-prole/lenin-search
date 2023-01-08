@@ -46,6 +46,13 @@ namespace LeninSearch.Ocr.Model
             return $"Filename: {Filename}, Lines: {Lines?.Count ?? 0}";
         }
 
+        public void MergePage(OcrPage page)
+        {
+            TopDivider = page.TopDivider;
+            BottomDivider = page.BottomDivider;
+            Lines = page.Lines ?? new List<OcrLine>();
+        }
+
         public void MergeLines(OcrLine intoLine, params OcrLine[] mergeLines)
         {
             foreach (var line in mergeLines) Lines.Remove(line);

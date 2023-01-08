@@ -286,34 +286,43 @@ namespace LeninSearch.Ocr.CV
             var nonImageRects = rects.Where(r => !r.IntersectsWith(imageRect)).ToArray();
 
             // expanding to the left
+            var leftExpandedRectangle = new Rectangle(imageRect.Location, imageRect.Size);
             for (var i = 0; i < args.SideExpandMax; i++)
             {
-                if (imageRect.X < 1) break;
+                if (leftExpandedRectangle.X < 1) break;
 
-                var expandedRectangle =
-                    new Rectangle(imageRect.X - 1, imageRect.Y, imageRect.Width + 1, imageRect.Height);
-                if (nonImageRects.Any(r => r.IntersectsWith(expandedRectangle)))
-                {
-                    break;
-                }
+                var seedRectangle = new Rectangle(
+                    leftExpandedRectangle.X - 1, 
+                    leftExpandedRectangle.Y, 
+                    imageRect.Width + 1, 
+                    imageRect.Height);
 
-                imageRect = expandedRectangle;
+                if (nonImageRects.Any(r => r.IntersectsWith(seedRectangle))) break;
+
+                leftExpandedRectangle = seedRectangle;
             }
+            var imageRectNewX = (leftExpandedRectangle.X + imageRect.X) / 2;
+            var imageRectNewWidth = imageRect.Width + imageRect.X - imageRectNewX;
+            imageRect = new Rectangle(imageRectNewX, imageRect.Y, imageRectNewWidth, imageRect.Height);
 
             // expanding to the right
+            var rightExpandedRectangle = new Rectangle(imageRect.Location, imageRect.Size);
             for (var i = 0; i < args.SideExpandMax; i++)
             {
                 if (imageRect.X + imageRect.Width >= image.Width) break;
 
-                var expandedRectangle =
-                    new Rectangle(imageRect.X, imageRect.Y, imageRect.Width + 1, imageRect.Height);
-                if (nonImageRects.Any(r => r.IntersectsWith(expandedRectangle)))
-                {
-                    break;
-                }
+                var seedRectangle = new Rectangle(
+                    rightExpandedRectangle.X, 
+                    rightExpandedRectangle.Y, 
+                    rightExpandedRectangle.Width + 1, 
+                    rightExpandedRectangle.Height);
 
-                imageRect = expandedRectangle;
+                if (nonImageRects.Any(r => r.IntersectsWith(seedRectangle))) break;
+
+                rightExpandedRectangle = seedRectangle;
             }
+            imageRectNewWidth = (imageRect.Width + rightExpandedRectangle.Width) / 2;
+            imageRect = new Rectangle(imageRect.X, imageRect.Y, imageRectNewWidth, imageRect.Height);
 
             // expanding to the bottom
             var underImageRect = new Rectangle(

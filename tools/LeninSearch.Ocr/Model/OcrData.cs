@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
+using LeninSearch.Ocr.CV;
 using Newtonsoft.Json;
 
 namespace LeninSearch.Ocr.Model
@@ -22,7 +24,26 @@ namespace LeninSearch.Ocr.Model
                 return JsonConvert.DeserializeObject<OcrData>(json);
             }
 
-            return Empty();
+            var ocrData = Empty();
+            var jpegFiles = Directory.GetFiles(bookFolder, "*.jpg");
+            foreach (var jpegFile in jpegFiles)
+            {
+                using var image = Image.FromStream(new MemoryStream(File.ReadAllBytes(jpegFile)));
+                var page = new OcrPage
+                {
+                    Filename = Path.GetFileNameWithoutExtension(jpegFile),
+                    Lines = new List<OcrLine>(),
+                    Width = image.Width,
+                    Height = image.Height,
+                    BottomDivider = new DividerLine(image.Height - 1, 0, image.Width),
+                    TopDivider = new DividerLine(1, 0, image.Width),
+                    TitleBlocks = new List<OcrTitleBlock>(),
+                    ImageBlocks = new List<OcrImageBlock>()
+                };
+                ocrData.Pages.Add(page);
+            }
+
+            return ocrData;
         }
 
         public void Save(string bookFolder)
