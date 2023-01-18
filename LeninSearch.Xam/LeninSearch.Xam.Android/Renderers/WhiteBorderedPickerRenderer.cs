@@ -1,6 +1,9 @@
-﻿using Android.Content.Res;
+﻿using System;
+using Android.Content.Res;
 using Android.Graphics;
 using Android.OS;
+using Android.Runtime;
+using Android.Widget;
 using LeninSearch.Xam.Controls;
 using LeninSearch.Xam.Droid.Renderers;
 using Xamarin.Forms;
@@ -18,16 +21,11 @@ namespace LeninSearch.Xam.Droid.Renderers
 
             if (Control == null || e.NewElement == null) return;
 
-            if (Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop)
+            if (Build.VERSION.SdkInt >= BuildVersionCodes.Q)
             {
-                Control.BackgroundTintList = ColorStateList.ValueOf(Android.Graphics.Color.White);
+                // this API introduced in android 10
+                Control.BackgroundTintList = ColorStateList.ValueOf(Color.White);
                 Control.SetTextCursorDrawable(Resource.Drawable.white_cursor);
-            }
-            else
-            {
-                Control.Background.SetColorFilter(Android.Graphics.Color.White, PorterDuff.Mode.SrcAtop);
-                Control.SetTextCursorDrawable(Resource.Drawable.white_cursor);
-                Control.SetHintTextColor(Color.White);
             }
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.IO;
 using System.Reflection;
 using Android.Content;
 using Android.Graphics;
@@ -64,7 +65,7 @@ namespace LeninSearch.Xam.Droid.Renderers
                 var end = ss.GetSpanEnd(span);
                 var imageFile = ssText.Substring(start, end - start);
                 
-                if (imageFile.EndsWith(".jpeg"))
+                if (imageFile.EndsWith(".jpeg") && File.Exists(imageFile))
                 {
                     var flags = ss.GetSpanFlags(span);
                     ss.RemoveSpan(span);
