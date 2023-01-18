@@ -48,6 +48,7 @@ namespace LeninSearch.Ocr
         private const int MaxWordDistance = 25;
         private const int SideExpandMax = 50;
         private const int ImageTitleAreaHeight = 120;
+        private const int MinPageWideTextWidth = 1320;
 
         public LabelingForm()
         {
@@ -200,8 +201,12 @@ namespace LeninSearch.Ocr
                     return;
                 }
 
-                // set correct filename
-                ocrResult.Page.Filename = Path.GetFileNameWithoutExtension(imageFile);
+                // set correct filename & delete temp file
+                if (ocrFile != imageFile)
+                {
+                    ocrResult.Page.Filename = Path.GetFileNameWithoutExtension(imageFile);
+                    File.Delete(ocrFile);
+                }
 
                 // break by distance
                 var linesToBreak = ocrResult.Page.Lines.ToArray();

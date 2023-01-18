@@ -188,9 +188,9 @@ namespace LeninSearch.Ocr.CV
 
             using var invertedGray = bgrImage.Convert<Gray, byte>()
                 .SmoothGaussian(
-                    smoothGaussianArgs.KernelWidth, 
-                    smoothGaussianArgs.KernelHeight, 
-                    smoothGaussianArgs.Sigma1, 
+                    smoothGaussianArgs.KernelWidth,
+                    smoothGaussianArgs.KernelHeight,
+                    smoothGaussianArgs.Sigma1,
                     smoothGaussianArgs.Sigma2)
                 .Not()
                 .ThresholdBinary(new Gray(25), new Gray(255));
@@ -232,6 +232,49 @@ namespace LeninSearch.Ocr.CV
             }
         }
 
+        public static Rectangle[] GetTitleRectangles(string imageFile, SmoothGaussianArgs smoothGaussianArgs, int minimumTitleWidth, int maximumTitleWidth, Rectangle[] excludeAreas = null)
+        {
+            using var image = new Bitmap(Image.FromStream(new MemoryStream(File.ReadAllBytes(imageFile))));
+            using var bgrImage = image.ToImage<Bgr, byte>();
+
+            using var invertedGray = bgrImage.Convert<Gray, byte>()
+                .SmoothGaussian(
+                    smoothGaussianArgs.KernelWidth,
+                    smoothGaussianArgs.KernelHeight,
+                    smoothGaussianArgs.Sigma1,
+                    smoothGaussianArgs.Sigma2)
+                .Not()
+                .ThresholdBinary(new Gray(25), new Gray(255));
+
+            var contours = new VectorOfVectorOfPoint();
+            var hierarchy = new Mat();
+            CvInvoke.FindContours(invertedGray, contours, hierarchy, RetrType.External, ChainApproxMethod.ChainApproxSimple);
+
+            var rectangles = new List<Rectangle>();
+            for (var i = 0; i < contours.Size; i++)
+            {
+                var points = contours[i].ToArray();
+                var minX = points.Select(p => p.X).Min();
+                var maxX = points.Select(p => p.X).Max();
+                var minY = points.Select(p => p.Y).Min();
+                var maxY = points.Select(p => p.Y).Max();
+
+                var rect = new Rectangle(minX, minY, maxX - minX, maxY - minY);
+
+                if (minimumTitleWidth < rect.Width && rect.Width < maximumTitleWidth)
+                {
+                    rectangles.Add(rect);
+                }
+            }
+
+            if (excludeAreas?.Any() == true)
+            {
+                rectangles = rectangles.Where(r => excludeAreas.All(ea => !ea.IntersectsWith(r))).ToList();
+            }
+
+            return rectangles.ToArray();
+        }
+
         public static Rectangle? FindImageRectangle(string imageFile, FindImageRectangleArgs args, out Dictionary<string, object> processingData)
         {
             processingData = new Dictionary<string, object>();
@@ -266,8 +309,8 @@ namespace LeninSearch.Ocr.CV
                 rects.Add(
                     new Rectangle(
                         cMinX,
-                        cMinY, 
-                        cMaxX - cMinX, 
+                        cMinY,
+                        cMaxX - cMinX,
                         cMaxY - cMinY));
             }
 
@@ -292,9 +335,9 @@ namespace LeninSearch.Ocr.CV
                 if (leftExpandedRectangle.X < 1) break;
 
                 var seedRectangle = new Rectangle(
-                    leftExpandedRectangle.X - 1, 
-                    leftExpandedRectangle.Y, 
-                    imageRect.Width + 1, 
+                    leftExpandedRectangle.X - 1,
+                    leftExpandedRectangle.Y,
+                    imageRect.Width + 1,
                     imageRect.Height);
 
                 if (nonImageRects.Any(r => r.IntersectsWith(seedRectangle))) break;
@@ -312,9 +355,9 @@ namespace LeninSearch.Ocr.CV
                 if (imageRect.X + imageRect.Width >= image.Width) break;
 
                 var seedRectangle = new Rectangle(
-                    rightExpandedRectangle.X, 
-                    rightExpandedRectangle.Y, 
-                    rightExpandedRectangle.Width + 1, 
+                    rightExpandedRectangle.X,
+                    rightExpandedRectangle.Y,
+                    rightExpandedRectangle.Width + 1,
                     rightExpandedRectangle.Height);
 
                 if (nonImageRects.Any(r => r.IntersectsWith(seedRectangle))) break;

@@ -93,31 +93,15 @@ namespace LeninSearch.Ocr
 
         private void TestClick(object? sender, EventArgs e)
         {
-            var args = new FindImageRectangleArgs
+            var titleRectangles = CvUtil.GetTitleRectangles(file_tb.Text, SmoothGaussianArgs.Smooth(12, 0), 180, 1320);
+            var resultImage = Image.FromStream(new MemoryStream(File.ReadAllBytes(file_tb.Text)));
+            using var pen = new Pen(Color.Red, 4);
+            using var g = Graphics.FromImage(resultImage);
+            foreach (var titleRectangle in titleRectangles)
             {
-                GaussianArgs = SmoothGaussianArgs.Smooth(8, 1),
-                MaxLineHeight = 40,
-                SideExpandMax = 50,
-                ImageTitleAreaHeight = 120
-            };
-
-            var imageRect = CvUtil.FindImageRectangle(file_tb.Text, args, out var processingData);
-            var processedImage = new Bitmap(processingData["SMOOTH_BITMAP"] as Bitmap);
-            using var g = Graphics.FromImage(processedImage);
-
-            using var rectPen = new Pen(Color.Chartreuse, 4);
-            foreach (var rect in processingData["RECTS"] as List<Rectangle>)
-            {
-                g.DrawRectangle(rectPen, rect);
+                g.DrawRectangle(pen, titleRectangle);
             }
-
-            using var imgPen = new Pen(Color.DeepPink, 4);
-            if (imageRect.HasValue)
-            {
-                g.DrawRectangle(imgPen, imageRect.Value);
-            }
-
-            processed_pb.Image = processedImage;
+            processed_pb.Image = resultImage;
         }
 
         private async void Ocr_btnOnClick(object? sender, EventArgs e)
