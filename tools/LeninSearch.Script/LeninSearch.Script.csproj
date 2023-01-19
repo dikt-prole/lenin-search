@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\LeninSearch.Standard.Core\LeninSearch.Standard.Core.csproj" />
-    <ProjectReference Include="..\LeninSearch.Ocr\LeninSearch.Ocr.csproj" />
+    <ProjectReference Include="..\LeninSearch.Ocr\LeninSearch.Studio.WinForms.csproj" />
   </ItemGroup>
 
   <ItemGroup>
