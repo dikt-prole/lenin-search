@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using LeninSearch.Studio.Core.Detectors;
+using LeninSearch.Studio.Core.Models;
 using LeninSearch.Studio.Core.Settings;
 using LeninSearch.Studio.WinForms.CV;
 using LeninSearch.Studio.WinForms.Model;

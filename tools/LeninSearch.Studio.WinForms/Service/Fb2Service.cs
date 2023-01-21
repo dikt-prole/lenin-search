@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using LeninSearch.Studio.Core.Models;
 using LeninSearch.Studio.WinForms.Model;
 using LeninSearch.Studio.WinForms.Model.Fb2;
 

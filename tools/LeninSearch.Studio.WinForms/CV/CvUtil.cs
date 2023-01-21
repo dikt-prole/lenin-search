@@ -7,6 +7,7 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
+using LeninSearch.Studio.Core.Models;
 using LeninSearch.Studio.WinForms.Model;
 
 namespace LeninSearch.Studio.WinForms.CV

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using LeninSearch.Studio.Core.Models;
 using LeninSearch.Studio.WinForms.Model;
 
 namespace LeninSearch.Studio.WinForms.YandexVision.OcrResponse

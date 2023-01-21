@@ -6,6 +6,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
+using LeninSearch.Studio.Core.Models;
 
 namespace LeninSearch.Studio.WinForms.Model.Fb2
 {

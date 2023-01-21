@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Net.Mime;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -25,7 +25,7 @@ namespace LeninSearch.Studio.Core.Detectors
 
             if (internalValues != null)
             {
-                internalValues.Add("invertedGray", new Bitmap(invertedGray.ToBitmap()));
+                internalValues.Add(nameof(invertedGray), new Bitmap(invertedGray.ToBitmap()));
             }
 
             var contours = new VectorOfVectorOfPoint();
@@ -52,12 +52,62 @@ namespace LeninSearch.Studio.Core.Detectors
                 }
             }
 
+            rectangles = rectangles.OrderBy(r => r.Y).ToList();
+
             if (excludeAreas?.Any() == true)
             {
                 rectangles = rectangles.Where(r => excludeAreas.All(ea => !ea.IntersectsWith(r))).ToList();
             }
 
-            return rectangles.ToArray();
+            if (internalValues != null)
+            {
+                internalValues.Add(nameof(rectangles), rectangles);
+            }
+
+            if (!rectangles.Any())
+            {
+                return Array.Empty<Rectangle>();
+            }
+
+            // generate title sets
+            var titleSets = new List<List<Rectangle>>
+            {
+                new List<Rectangle>
+                {
+                    rectangles[0]
+                }
+            };
+            for (var i = 1; i < rectangles.Count; i++)
+            {
+                var currRect = rectangles[i];
+                var prevRect = titleSets.Last().Last();
+                if (currRect.Y - prevRect.Y - prevRect.Height > settings.MaxLineDist)
+                {
+                    titleSets.Add(new List<Rectangle>{currRect});
+                }
+                else
+                {
+                    titleSets.Last().Add(currRect);
+                }
+            }
+
+            // generate title set rectangles
+            var titleRectangles = new List<Rectangle>();
+            foreach (var titleSet in titleSets)
+            {
+                var minX = titleSet.Min(r => r.X);
+                var maxX = titleSet.Max(r => r.X + r.Width);
+                var minY = titleSet.Min(r => r.Y);
+                var maxY = titleSet.Max(r => r.Y + r.Height);
+                titleRectangles.Add(
+                    new Rectangle(
+                        minX - settings.AddPadding, 
+                        minY - settings.AddPadding, 
+                        maxX - minX + settings.AddPadding * 2,
+                        maxY - minY + settings.AddPadding * 2));
+            }
+
+            return titleRectangles.ToArray();
         }
 
         public Rectangle[] Detect(string imageFile, DetectTitleSettings settings, Rectangle[] excludeAreas)

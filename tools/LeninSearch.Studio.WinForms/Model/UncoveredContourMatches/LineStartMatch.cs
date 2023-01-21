@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using LeninSearch.Studio.Core.Models;
 
 namespace LeninSearch.Studio.WinForms.Model.UncoveredContourMatches
 {

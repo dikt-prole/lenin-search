@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
 using LeninSearch.Studio.Core.Detectors;
 using LeninSearch.Studio.Core.Settings;
 
-namespace LeninSearch.Studio.WinForms.ImageRendering
+namespace LeninSearch.Studio.Core.ImageRendering
 {
-    public class TestDetectTitleImageRenderer : IImageRenderer
+    public class TestDetectTitleImageRenderer : ImageRendererBase
     {
         private readonly DetectTitleSettings _settings;
         private readonly ITitleDetector _titleDetector;
@@ -21,31 +19,37 @@ namespace LeninSearch.Studio.WinForms.ImageRendering
         public TestDetectTitleImageRenderer(DetectTitleSettings settings) : this(settings, new TitleDetector())
         { }
 
-        public void RenderJpeg(string imageFile, Stream outStream)
+        protected override Bitmap RenderOriginalBitmap(string imageFile)
         {
             var internalValues = new Dictionary<string, object>();
-            var rectangles = _titleDetector.Detect(imageFile, _settings, null, internalValues);
+            var titleRects = _titleDetector.Detect(imageFile, _settings, null, internalValues);
 
-            using var invertedGray = internalValues["invertedGray"] as Bitmap;
-            using var g = Graphics.FromImage(invertedGray);
+            var originalImage = internalValues["invertedGray"] as Bitmap;
+            using var g = Graphics.FromImage(originalImage);
+
+            var width = originalImage.Width;
+            var height = originalImage.Height;
+
             using var linePen = new Pen(Color.LimeGreen, 2);
-
-            var width = invertedGray.Width;
-            var height = invertedGray.Height;
-
             g.DrawLine(linePen, 0, _settings.MinTop, width, _settings.MinTop);
             g.DrawLine(linePen, 0, height - _settings.MinBottom, width, height - _settings.MinBottom);
             g.DrawLine(linePen, _settings.MinLeft, 0, _settings.MinLeft, height);
             g.DrawLine(linePen, width - _settings.MinRight, 0, width - _settings.MinRight, height);
 
-
-            using var rectPen = new Pen(Color.Red, 2);
+            var rectangles = internalValues["rectangles"] as List<Rectangle>;
+            using var rectPen = new Pen(Color.Aqua, 2);
             foreach (var rect in rectangles)
             {
                 g.DrawRectangle(rectPen, rect);
             }
 
-            invertedGray.Save(outStream, ImageFormat.Jpeg);
+            using var titleRectPen = new Pen(Color.Red, 2);
+            foreach (var rect in titleRects)
+            {
+                g.DrawRectangle(titleRectPen, rect);
+            }
+
+            return originalImage;
         }
     }
 }

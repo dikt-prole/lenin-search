@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
-using LeninSearch.Studio.WinForms.Model;
+using LeninSearch.Studio.Core.Models;
 
-namespace LeninSearch.Studio.WinForms
+namespace LeninSearch.Studio.Core.Misc
 {
     public static class OcrPalette
     {

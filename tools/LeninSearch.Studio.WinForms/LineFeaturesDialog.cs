@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Windows.Forms;
+using LeninSearch.Studio.Core.Models;
 using LeninSearch.Studio.WinForms.Model;
 
 namespace LeninSearch.Studio.WinForms

@@ -43,6 +43,11 @@
             this.minBottom_nud = new System.Windows.Forms.NumericUpDown();
             this.gaussSigma1_nud = new System.Windows.Forms.NumericUpDown();
             this.gaussSigma2_nud = new System.Windows.Forms.NumericUpDown();
+            this.label7 = new System.Windows.Forms.Label();
+            this.maxLineDist_nud = new System.Windows.Forms.NumericUpDown();
+            this.save_btn = new System.Windows.Forms.Button();
+            this.label8 = new System.Windows.Forms.Label();
+            this.addPadding_nud = new System.Windows.Forms.NumericUpDown();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.minLeft_nud)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.minRight_nud)).BeginInit();
@@ -50,11 +55,14 @@
             ((System.ComponentModel.ISupportInitialize)(this.minBottom_nud)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gaussSigma1_nud)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gaussSigma2_nud)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.maxLineDist_nud)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.addPadding_nud)).BeginInit();
             this.SuspendLayout();
             // 
             // tableLayoutPanel1
             // 
-            this.tableLayoutPanel1.ColumnCount = 3;
+            this.tableLayoutPanel1.ColumnCount = 4;
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
@@ -64,19 +72,26 @@
             this.tableLayoutPanel1.Controls.Add(this.label4, 0, 3);
             this.tableLayoutPanel1.Controls.Add(this.label5, 0, 4);
             this.tableLayoutPanel1.Controls.Add(this.label6, 0, 5);
-            this.tableLayoutPanel1.Controls.Add(this.test_btn, 0, 6);
-            this.tableLayoutPanel1.Controls.Add(this.apply_btn, 1, 6);
+            this.tableLayoutPanel1.Controls.Add(this.test_btn, 0, 8);
+            this.tableLayoutPanel1.Controls.Add(this.apply_btn, 1, 8);
             this.tableLayoutPanel1.Controls.Add(this.minLeft_nud, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.minRight_nud, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.minTop_nud, 1, 2);
             this.tableLayoutPanel1.Controls.Add(this.minBottom_nud, 1, 3);
             this.tableLayoutPanel1.Controls.Add(this.gaussSigma1_nud, 1, 4);
             this.tableLayoutPanel1.Controls.Add(this.gaussSigma2_nud, 1, 5);
+            this.tableLayoutPanel1.Controls.Add(this.label7, 0, 6);
+            this.tableLayoutPanel1.Controls.Add(this.maxLineDist_nud, 1, 6);
+            this.tableLayoutPanel1.Controls.Add(this.save_btn, 2, 8);
+            this.tableLayoutPanel1.Controls.Add(this.label8, 0, 7);
+            this.tableLayoutPanel1.Controls.Add(this.addPadding_nud, 1, 7);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 8;
+            this.tableLayoutPanel1.RowCount = 10;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
@@ -85,7 +100,7 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(552, 238);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(467, 344);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // label1
@@ -151,7 +166,7 @@
             // test_btn
             // 
             this.test_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.test_btn.Location = new System.Drawing.Point(1, 169);
+            this.test_btn.Location = new System.Drawing.Point(1, 225);
             this.test_btn.Margin = new System.Windows.Forms.Padding(1);
             this.test_btn.Name = "test_btn";
             this.test_btn.Size = new System.Drawing.Size(98, 26);
@@ -162,7 +177,7 @@
             // apply_btn
             // 
             this.apply_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.apply_btn.Location = new System.Drawing.Point(101, 169);
+            this.apply_btn.Location = new System.Drawing.Point(101, 225);
             this.apply_btn.Margin = new System.Windows.Forms.Padding(1);
             this.apply_btn.Name = "apply_btn";
             this.apply_btn.Size = new System.Drawing.Size(98, 26);
@@ -218,13 +233,60 @@
             this.gaussSigma2_nud.Size = new System.Drawing.Size(94, 23);
             this.gaussSigma2_nud.TabIndex = 13;
             // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(3, 173);
+            this.label7.Margin = new System.Windows.Forms.Padding(3, 5, 3, 0);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(81, 15);
+            this.label7.TabIndex = 14;
+            this.label7.Text = "Max Line Dist:";
+            // 
+            // maxLineDist_nud
+            // 
+            this.maxLineDist_nud.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.maxLineDist_nud.Location = new System.Drawing.Point(103, 171);
+            this.maxLineDist_nud.Name = "maxLineDist_nud";
+            this.maxLineDist_nud.Size = new System.Drawing.Size(94, 23);
+            this.maxLineDist_nud.TabIndex = 15;
+            // 
+            // save_btn
+            // 
+            this.save_btn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.save_btn.Location = new System.Drawing.Point(201, 225);
+            this.save_btn.Margin = new System.Windows.Forms.Padding(1);
+            this.save_btn.Name = "save_btn";
+            this.save_btn.Size = new System.Drawing.Size(98, 26);
+            this.save_btn.TabIndex = 16;
+            this.save_btn.Text = "Save";
+            this.save_btn.UseVisualStyleBackColor = true;
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(3, 201);
+            this.label8.Margin = new System.Windows.Forms.Padding(3, 5, 3, 0);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(76, 15);
+            this.label8.TabIndex = 17;
+            this.label8.Text = "AddPadding:";
+            // 
+            // addPadding_nud
+            // 
+            this.addPadding_nud.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.addPadding_nud.Location = new System.Drawing.Point(103, 199);
+            this.addPadding_nud.Name = "addPadding_nud";
+            this.addPadding_nud.Size = new System.Drawing.Size(94, 23);
+            this.addPadding_nud.TabIndex = 18;
+            // 
             // DetectTitleControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.tableLayoutPanel1);
             this.Name = "DetectTitleControl";
-            this.Size = new System.Drawing.Size(552, 238);
+            this.Size = new System.Drawing.Size(467, 344);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.minLeft_nud)).EndInit();
@@ -233,6 +295,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.minBottom_nud)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.gaussSigma1_nud)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.gaussSigma2_nud)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.maxLineDist_nud)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.addPadding_nud)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -254,5 +318,10 @@
         private System.Windows.Forms.NumericUpDown minBottom_nud;
         private System.Windows.Forms.NumericUpDown gaussSigma1_nud;
         private System.Windows.Forms.NumericUpDown gaussSigma2_nud;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.NumericUpDown maxLineDist_nud;
+        private System.Windows.Forms.Button save_btn;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.NumericUpDown addPadding_nud;
     }
 }

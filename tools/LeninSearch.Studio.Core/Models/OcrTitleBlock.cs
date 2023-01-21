@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace LeninSearch.Studio.WinForms.Model
+namespace LeninSearch.Studio.Core.Models
 {
     public class OcrTitleBlock : OcrBlock
     {

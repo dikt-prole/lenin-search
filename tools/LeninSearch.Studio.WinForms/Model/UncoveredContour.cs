@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using System.IO;
+using LeninSearch.Studio.Core.Models;
 
 namespace LeninSearch.Studio.WinForms.Model
 {

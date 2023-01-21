@@ -8,18 +8,23 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Accord.MachineLearning.DecisionTrees;
+using LeninSearch.Studio.Core.ImageRendering;
+using LeninSearch.Studio.Core.Misc;
+using LeninSearch.Studio.Core.Models;
 using LeninSearch.Studio.WinForms.CV;
-using LeninSearch.Studio.WinForms.ImageRendering;
 using LeninSearch.Studio.WinForms.Model;
 using LeninSearch.Studio.WinForms.Model.UncoveredContourMatches;
 using LeninSearch.Studio.WinForms.Service;
 using LeninSearch.Studio.WinForms.YandexVision;
+using Newtonsoft.Json.Linq;
 
 namespace LeninSearch.Studio.WinForms
 {
     public partial class LabelingForm : Form
     {
-        private Point? _selectionStartPoint;
+        private readonly PageState _pageState = new PageState();
+
+        private IImageRenderer _imageRenderer;
 
         private OcrData _ocrData = OcrData.Empty();
 
@@ -84,24 +89,21 @@ namespace LeninSearch.Studio.WinForms
                         new OcrServiceRetryDecorator(
                             new YandexVisionOcrLineService())));
 
+            _imageRenderer = new PageStateRenderer(_pageState,
+                () => pictureBox1.ToOriginalPoint(pictureBox1.PointToClient(Cursor.Position)));
+
             detectTitleControl1.TestStart += (sender, args) =>
             {
-                var filename = ocr_lb.SelectedItem as string;
-                var imageFile = Directory.GetFiles(bookFolder_tb.Text)
-                    .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == filename);
-                var settings = detectTitleControl1.Settings;
-                var jpegStream = new MemoryStream();
-                var renderer = new TestDetectTitleImageRenderer(settings);
-                renderer.RenderJpeg(imageFile, jpegStream);
-                pictureBox1.Image = Image.FromStream(jpegStream);
+                var settings = detectTitleControl1.GetSettings();
+                _imageRenderer = new TestDetectTitleImageRenderer(settings);
+                pictureBox1.Refresh();
             };
 
             detectTitleControl1.TestEnd += (sender, args) =>
             {
-                var filename = ocr_lb.SelectedItem as string;
-                var imageFile = Directory.GetFiles(bookFolder_tb.Text)
-                    .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == filename);
-                pictureBox1.Image = Image.FromFile(imageFile);
+                _imageRenderer = new PageStateRenderer(_pageState,
+                    () => pictureBox1.ToOriginalPoint(pictureBox1.PointToClient(Cursor.Position)));
+                pictureBox1.Refresh();
             };
         }
 
@@ -358,7 +360,7 @@ namespace LeninSearch.Studio.WinForms
 
             if (e.Button == MouseButtons.Right)
             {
-                _selectionStartPoint = e.Location;
+                _pageState.SelectionStartPoint = pictureBox1.ToOriginalPoint(e.Location);
             }
 
             if (e.Button == MouseButtons.Left)
@@ -442,14 +444,15 @@ namespace LeninSearch.Studio.WinForms
             var page = _ocrData.GetPage(fileName);
             if (page == null) return;
 
-            if (e.Button == MouseButtons.Right && _selectionStartPoint != null)
+            if (e.Button == MouseButtons.Right && _pageState.SelectionStartPoint.HasValue)
             {
-                var xs = new List<int> { _selectionStartPoint.Value.X, e.Location.X }.OrderBy(i => i).ToList();
-                var ys = new List<int> { _selectionStartPoint.Value.Y, e.Location.Y }.OrderBy(i => i).ToList();
+                var pbSelectionStartPoint = pictureBox1.ToPictureBoxPoint(_pageState.SelectionStartPoint.Value);
+                var xs = new List<int> { pbSelectionStartPoint.X, e.Location.X }.OrderBy(i => i).ToList();
+                var ys = new List<int> { pbSelectionStartPoint.Y, e.Location.Y }.OrderBy(i => i).ToList();
                 var rect = new Rectangle(xs[0], ys[0], xs[1] - xs[0], ys[1] - ys[0]);
                 var menu = GetPageMenu(page, rect);
                 menu.Show(pictureBox1, e.Location);
-                _selectionStartPoint = null;
+                _pageState.SelectionStartPoint = null;
             }
 
             if (e.Button == MouseButtons.Left)
@@ -518,7 +521,7 @@ namespace LeninSearch.Studio.WinForms
         {
             if (pictureBox1.Image == null) return;
 
-            if (e.Button == MouseButtons.Right && _selectionStartPoint != null)
+            if (e.Button == MouseButtons.Right && _pageState.SelectionStartPoint.HasValue)
             {
                 pictureBox1.Refresh();
             }
@@ -532,60 +535,20 @@ namespace LeninSearch.Studio.WinForms
 
         private void PictureBox1OnPaint(object sender, PaintEventArgs e)
         {
-            var fileName = ocr_lb.SelectedItem as string;
-            if (fileName == null) return;
-            var page = _ocrData.GetPage(fileName);
-            if (page == null) return;
+            var filename = ocr_lb.SelectedItem as string;
 
-            if (_selectionStartPoint != null)
-            {
-                var currentPoint = pictureBox1.PointToClient(Cursor.Position);
-                var xs = new List<int> { _selectionStartPoint.Value.X, currentPoint.X }.OrderBy(i => i).ToList();
-                var ys = new List<int> { _selectionStartPoint.Value.Y, currentPoint.Y }.OrderBy(i => i).ToList();
-                var rect = new Rectangle(xs[0], ys[0], xs[1] - xs[0], ys[1] - ys[0]);
-                e.Graphics.DrawRectangle(Pens.Black, rect);
-            }
+            if (string.IsNullOrEmpty(filename)) return;
 
-            using var ibPen = new Pen(OcrPalette.ImageBlockColor, 2);
-            using var ibBrush = new SolidBrush(OcrPalette.ImageBlockColor);
-            foreach (var ib in page.ImageBlocks)
-            {
-                e.Graphics.DrawRectangle(ibPen, pictureBox1.ToPictureBoxRectangle(ib.Rectangle));
-                foreach (var dragRectangle in ib.AllDragRectangles())
-                {
-                    e.Graphics.FillRectangle(ibBrush, pictureBox1.ToPictureBoxRectangle(dragRectangle));
-                }
-            }
+            var imageFile = Directory.GetFiles(bookFolder_tb.Text)
+                .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == filename);
 
-            using var textBrush = new SolidBrush(Color.DarkViolet);
-            using var font = new Font(Font.FontFamily, 12, FontStyle.Bold);
-            using var tbPen = new Pen(OcrPalette.TitleBlockColor, 2);
-            using var tbBrush = new SolidBrush(OcrPalette.TitleBlockColor);
-            foreach (var tb in page.TitleBlocks ?? new List<OcrTitleBlock>())
-            {
-                var tbpbRect = pictureBox1.ToPictureBoxRectangle(tb.Rectangle);
-                e.Graphics.DrawRectangle(tbPen, tbpbRect);
-                foreach (var dragRectangle in tb.AllDragRectangles())
-                {
-                    e.Graphics.FillRectangle(tbBrush, pictureBox1.ToPictureBoxRectangle(dragRectangle));
-                }
-                e.Graphics.DrawString($"Level: {tb.TitleLevel}, Text: {tb.TitleText}", font, textBrush, tbpbRect.X, tbpbRect.Y - 20);
-            }
+            using var imageStream = new MemoryStream();
 
-            using var dividerPen = new Pen(Color.DarkViolet, 2);
-            using var dividerBrush = new SolidBrush(Color.DarkViolet);
+            _imageRenderer.RenderBmp(imageFile, imageStream, pictureBox1.Width, pictureBox1.Height);
 
-            var topDividerStart = pictureBox1.ToPictureBoxPoint(new Point(page.TopDivider.LeftX, page.TopDivider.Y));
-            var topDividerEnd = pictureBox1.ToPictureBoxPoint(new Point(page.TopDivider.RightX, page.TopDivider.Y));
-            var topDividerDragRectangle = pictureBox1.ToPictureBoxRectangle(page.TopDivider.DragRectangle);
-            e.Graphics.DrawLine(dividerPen, topDividerStart, topDividerEnd);
-            e.Graphics.FillRectangle(dividerBrush, topDividerDragRectangle);
+            var canvasBitmap = new Bitmap(imageStream);
 
-            var bottomDividerStart = pictureBox1.ToPictureBoxPoint(new Point(page.BottomDivider.LeftX, page.BottomDivider.Y));
-            var bottomDividerEnd = pictureBox1.ToPictureBoxPoint(new Point(page.BottomDivider.RightX, page.BottomDivider.Y));
-            var bottomDividerDragRectangle = pictureBox1.ToPictureBoxRectangle(page.BottomDivider.DragRectangle);
-            e.Graphics.DrawLine(dividerPen, bottomDividerStart, bottomDividerEnd);
-            e.Graphics.FillRectangle(dividerBrush, bottomDividerDragRectangle);
+            e.Graphics.DrawImage(canvasBitmap, 0, 0);
         }
 
         private void AddWord(Rectangle pbRectangle, bool isCommentLink)
@@ -920,16 +883,16 @@ namespace LeninSearch.Studio.WinForms
                 }
 
                 var image = new Bitmap(Image.FromFile(imageFile));
-                var page = _ocrData.GetPage(fileName);
+                _pageState.Page = _ocrData.GetPage(fileName);
 
-                if (page != null)
+                if (_pageState.Page != null)
                 {
                     using var g = Graphics.FromImage(image);
                     
                     using var textBrush = new SolidBrush(Color.DarkViolet);
                     var font = new Font(Font.FontFamily, 12, FontStyle.Bold);
 
-                    foreach (var line in page.Lines)
+                    foreach (var line in _pageState.Page.Lines)
                     {
                         using var brush = GetBrush(line);
                         g.FillRectangle(brush, line.Rectangle);

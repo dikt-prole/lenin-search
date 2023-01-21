@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using LeninSearch.Studio.Core.Models;
 using LeninSearch.Studio.WinForms.CV;
 using LeninSearch.Studio.WinForms.Model;
 

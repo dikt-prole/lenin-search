@@ -1,4 +1,6 @@
-﻿namespace LeninSearch.Studio.WinForms.CV
+﻿using LeninSearch.Studio.Core.Models;
+
+namespace LeninSearch.Studio.WinForms.CV
 {
     public class FalseDividerArea
     {

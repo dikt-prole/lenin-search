@@ -1,4 +1,6 @@
-﻿namespace LeninSearch.Studio.WinForms.Model.UncoveredContourMatches
+﻿using LeninSearch.Studio.Core.Models;
+
+namespace LeninSearch.Studio.WinForms.Model.UncoveredContourMatches
 {
     public interface IUncoveredContourMatch
     {

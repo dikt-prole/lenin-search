@@ -56,13 +56,16 @@ namespace LeninSearch.Studio.WinForms
             this.editing_rb = new System.Windows.Forms.RadioButton();
             this.blocks_rb = new System.Windows.Forms.RadioButton();
             this.all_rb = new System.Windows.Forms.RadioButton();
+            this.tableLayoutPanel5 = new System.Windows.Forms.TableLayoutPanel();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.tableLayoutPanel7 = new System.Windows.Forms.TableLayoutPanel();
+            this.openBookFolder_btn = new System.Windows.Forms.Button();
+            this.bookFolder_tb = new System.Windows.Forms.TextBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.detectTitleControl1 = new LeninSearch.Studio.WinForms.Controls.DetectTitleControl();
             this.other_tp = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.openBookFolder_btn = new System.Windows.Forms.Button();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
-            this.bookFolder_tb = new System.Windows.Forms.TextBox();
             this.saveOcrData_btn = new System.Windows.Forms.Button();
             this.regeneratePage_btn = new System.Windows.Forms.Button();
             this.uncoveredLinks_btn = new System.Windows.Forms.Button();
@@ -73,12 +76,13 @@ namespace LeninSearch.Studio.WinForms
             this.generateLines_btn = new System.Windows.Forms.Button();
             this.generateFb2_btn = new System.Windows.Forms.Button();
             this.autoDetectImages_btn = new System.Windows.Forms.Button();
-            this.detectTitleControl1 = new DetectTitleControl();
             this.tableLayoutPanel3.SuspendLayout();
             this.tableLayoutPanel4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.tableLayoutPanel6.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
+            this.tableLayoutPanel5.SuspendLayout();
+            this.tableLayoutPanel7.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.other_tp.SuspendLayout();
@@ -95,7 +99,7 @@ namespace LeninSearch.Studio.WinForms
             this.tableLayoutPanel3.Controls.Add(this.ocr_lb, 0, 0);
             this.tableLayoutPanel3.Controls.Add(this.tableLayoutPanel4, 2, 0);
             this.tableLayoutPanel3.Controls.Add(this.tableLayoutPanel2, 1, 0);
-            this.tableLayoutPanel3.Controls.Add(this.tabControl1, 3, 0);
+            this.tableLayoutPanel3.Controls.Add(this.tableLayoutPanel5, 3, 0);
             this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel3.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel3.Margin = new System.Windows.Forms.Padding(0);
@@ -395,16 +399,79 @@ namespace LeninSearch.Studio.WinForms
             this.all_rb.Text = "All";
             this.all_rb.UseVisualStyleBackColor = true;
             // 
+            // tableLayoutPanel5
+            // 
+            this.tableLayoutPanel5.ColumnCount = 1;
+            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel5.Controls.Add(this.progressBar1, 0, 1);
+            this.tableLayoutPanel5.Controls.Add(this.tableLayoutPanel7, 0, 0);
+            this.tableLayoutPanel5.Controls.Add(this.tabControl1, 0, 2);
+            this.tableLayoutPanel5.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel5.Location = new System.Drawing.Point(770, 0);
+            this.tableLayoutPanel5.Margin = new System.Windows.Forms.Padding(0);
+            this.tableLayoutPanel5.Name = "tableLayoutPanel5";
+            this.tableLayoutPanel5.RowCount = 3;
+            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
+            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel5.Size = new System.Drawing.Size(400, 557);
+            this.tableLayoutPanel5.TabIndex = 6;
+            // 
+            // progressBar1
+            // 
+            this.progressBar1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.progressBar1.Location = new System.Drawing.Point(3, 31);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(394, 14);
+            this.progressBar1.TabIndex = 2;
+            // 
+            // tableLayoutPanel7
+            // 
+            this.tableLayoutPanel7.ColumnCount = 2;
+            this.tableLayoutPanel7.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel7.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
+            this.tableLayoutPanel7.Controls.Add(this.openBookFolder_btn, 1, 0);
+            this.tableLayoutPanel7.Controls.Add(this.bookFolder_tb, 0, 0);
+            this.tableLayoutPanel7.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel7.Location = new System.Drawing.Point(0, 0);
+            this.tableLayoutPanel7.Margin = new System.Windows.Forms.Padding(0);
+            this.tableLayoutPanel7.Name = "tableLayoutPanel7";
+            this.tableLayoutPanel7.RowCount = 1;
+            this.tableLayoutPanel7.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel7.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
+            this.tableLayoutPanel7.Size = new System.Drawing.Size(400, 28);
+            this.tableLayoutPanel7.TabIndex = 0;
+            // 
+            // openBookFolder_btn
+            // 
+            this.openBookFolder_btn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.openBookFolder_btn.Location = new System.Drawing.Point(301, 1);
+            this.openBookFolder_btn.Margin = new System.Windows.Forms.Padding(1);
+            this.openBookFolder_btn.Name = "openBookFolder_btn";
+            this.openBookFolder_btn.Size = new System.Drawing.Size(98, 26);
+            this.openBookFolder_btn.TabIndex = 1;
+            this.openBookFolder_btn.Text = "Open book folder";
+            this.openBookFolder_btn.UseVisualStyleBackColor = true;
+            // 
+            // bookFolder_tb
+            // 
+            this.bookFolder_tb.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.bookFolder_tb.Location = new System.Drawing.Point(3, 3);
+            this.bookFolder_tb.Name = "bookFolder_tb";
+            this.bookFolder_tb.ReadOnly = true;
+            this.bookFolder_tb.Size = new System.Drawing.Size(294, 23);
+            this.bookFolder_tb.TabIndex = 0;
+            // 
             // tabControl1
             // 
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.other_tp);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tabControl1.Location = new System.Drawing.Point(771, 1);
+            this.tabControl1.Location = new System.Drawing.Point(1, 49);
             this.tabControl1.Margin = new System.Windows.Forms.Padding(1);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(398, 555);
+            this.tabControl1.Size = new System.Drawing.Size(398, 507);
             this.tabControl1.TabIndex = 6;
             // 
             // tabPage1
@@ -413,10 +480,18 @@ namespace LeninSearch.Studio.WinForms
             this.tabPage1.Location = new System.Drawing.Point(4, 24);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(390, 527);
+            this.tabPage1.Size = new System.Drawing.Size(390, 479);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Detect Title";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // detectTitleControl1
+            // 
+            this.detectTitleControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.detectTitleControl1.Location = new System.Drawing.Point(3, 3);
+            this.detectTitleControl1.Name = "detectTitleControl1";
+            this.detectTitleControl1.Size = new System.Drawing.Size(384, 473);
+            this.detectTitleControl1.TabIndex = 0;
             // 
             // other_tp
             // 
@@ -424,7 +499,7 @@ namespace LeninSearch.Studio.WinForms
             this.other_tp.Location = new System.Drawing.Point(4, 24);
             this.other_tp.Name = "other_tp";
             this.other_tp.Padding = new System.Windows.Forms.Padding(3);
-            this.other_tp.Size = new System.Drawing.Size(390, 527);
+            this.other_tp.Size = new System.Drawing.Size(390, 479);
             this.other_tp.TabIndex = 1;
             this.other_tp.Text = "Other";
             this.other_tp.UseVisualStyleBackColor = true;
@@ -435,9 +510,6 @@ namespace LeninSearch.Studio.WinForms
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 34F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33F));
-            this.tableLayoutPanel1.Controls.Add(this.openBookFolder_btn, 2, 0);
-            this.tableLayoutPanel1.Controls.Add(this.progressBar1, 0, 1);
-            this.tableLayoutPanel1.Controls.Add(this.bookFolder_tb, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.saveOcrData_btn, 1, 2);
             this.tableLayoutPanel1.Controls.Add(this.regeneratePage_btn, 1, 4);
             this.tableLayoutPanel1.Controls.Add(this.uncoveredLinks_btn, 2, 4);
@@ -460,38 +532,8 @@ namespace LeninSearch.Studio.WinForms
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(384, 521);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(384, 473);
             this.tableLayoutPanel1.TabIndex = 4;
-            // 
-            // openBookFolder_btn
-            // 
-            this.openBookFolder_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.openBookFolder_btn.Location = new System.Drawing.Point(257, 1);
-            this.openBookFolder_btn.Margin = new System.Windows.Forms.Padding(1);
-            this.openBookFolder_btn.Name = "openBookFolder_btn";
-            this.openBookFolder_btn.Size = new System.Drawing.Size(126, 26);
-            this.openBookFolder_btn.TabIndex = 1;
-            this.openBookFolder_btn.Text = "Open book folder";
-            this.openBookFolder_btn.UseVisualStyleBackColor = true;
-            // 
-            // progressBar1
-            // 
-            this.tableLayoutPanel1.SetColumnSpan(this.progressBar1, 3);
-            this.progressBar1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.progressBar1.Location = new System.Drawing.Point(3, 31);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(378, 4);
-            this.progressBar1.TabIndex = 2;
-            // 
-            // bookFolder_tb
-            // 
-            this.tableLayoutPanel1.SetColumnSpan(this.bookFolder_tb, 2);
-            this.bookFolder_tb.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.bookFolder_tb.Location = new System.Drawing.Point(3, 3);
-            this.bookFolder_tb.Name = "bookFolder_tb";
-            this.bookFolder_tb.ReadOnly = true;
-            this.bookFolder_tb.Size = new System.Drawing.Size(250, 23);
-            this.bookFolder_tb.TabIndex = 0;
             // 
             // saveOcrData_btn
             // 
@@ -610,15 +652,6 @@ namespace LeninSearch.Studio.WinForms
             this.autoDetectImages_btn.Text = "Auto Detect Images";
             this.autoDetectImages_btn.UseVisualStyleBackColor = true;
             // 
-            // detectTitleControl1
-            // 
-            this.detectTitleControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.detectTitleControl1.Location = new System.Drawing.Point(3, 3);
-            this.detectTitleControl1.Margin = new System.Windows.Forms.Padding(0);
-            this.detectTitleControl1.Name = "detectTitleControl1";
-            this.detectTitleControl1.Size = new System.Drawing.Size(384, 521);
-            this.detectTitleControl1.TabIndex = 0;
-            // 
             // LabelingForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -634,11 +667,13 @@ namespace LeninSearch.Studio.WinForms
             this.tableLayoutPanel6.PerformLayout();
             this.tableLayoutPanel2.ResumeLayout(false);
             this.tableLayoutPanel2.PerformLayout();
+            this.tableLayoutPanel5.ResumeLayout(false);
+            this.tableLayoutPanel7.ResumeLayout(false);
+            this.tableLayoutPanel7.PerformLayout();
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.other_tp.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);
-            this.tableLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -686,6 +721,8 @@ namespace LeninSearch.Studio.WinForms
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage other_tp;
-        private Controls.DetectTitleControl detectTitleControl1;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel5;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel7;
+        private DetectTitleControl detectTitleControl1;
     }
 }

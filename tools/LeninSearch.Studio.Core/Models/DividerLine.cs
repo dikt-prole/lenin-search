@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using Newtonsoft.Json;
 
-namespace LeninSearch.Studio.WinForms.CV
+namespace LeninSearch.Studio.Core.Models
 {
     public class DividerLine
     {

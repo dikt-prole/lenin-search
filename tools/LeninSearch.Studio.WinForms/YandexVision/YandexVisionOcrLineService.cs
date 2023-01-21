@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using LeninSearch.Studio.Core.Models;
 using LeninSearch.Studio.WinForms.CV;
 using LeninSearch.Studio.WinForms.Model;
 using LeninSearch.Studio.WinForms.Service;

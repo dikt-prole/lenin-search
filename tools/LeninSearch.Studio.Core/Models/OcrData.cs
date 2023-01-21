@@ -2,10 +2,9 @@
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using LeninSearch.Studio.WinForms.CV;
 using Newtonsoft.Json;
 
-namespace LeninSearch.Studio.WinForms.Model
+namespace LeninSearch.Studio.Core.Models
 {
     public class OcrData
     {

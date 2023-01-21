@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
 
-namespace LeninSearch.Studio.WinForms.Model
+namespace LeninSearch.Studio.Core.Models
 {
     public class OcrLineFeatures
     {
