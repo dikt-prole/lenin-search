@@ -7,9 +7,5 @@ namespace LeninSearch.Studio.Core.Detectors
     public interface ITitleDetector
     {
         Rectangle[] Detect(string imageFile, DetectTitleSettings settings, Rectangle[] excludeAreas, Dictionary<string, object> internalValues);
-
-        Rectangle[] Detect(string imageFile, DetectTitleSettings settings, Rectangle[] excludeAreas);
-
-        Rectangle[] Detect(string imageFile, DetectTitleSettings settings);
     }
 }

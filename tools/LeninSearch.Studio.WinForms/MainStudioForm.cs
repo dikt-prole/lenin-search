@@ -16,11 +16,10 @@ using LeninSearch.Studio.WinForms.Model;
 using LeninSearch.Studio.WinForms.Model.UncoveredContourMatches;
 using LeninSearch.Studio.WinForms.Service;
 using LeninSearch.Studio.WinForms.YandexVision;
-using Newtonsoft.Json.Linq;
 
 namespace LeninSearch.Studio.WinForms
 {
-    public partial class LabelingForm : Form
+    public partial class MainStudioForm : Form
     {
         private readonly PageState _pageState = new PageState();
 
@@ -55,7 +54,7 @@ namespace LeninSearch.Studio.WinForms
         private const int ImageTitleAreaHeight = 120;
         private const int MinPageWideTextWidth = 1320;
 
-        public LabelingForm()
+        public MainStudioForm()
         {
             InitializeComponent();
 
@@ -94,17 +93,26 @@ namespace LeninSearch.Studio.WinForms
 
             detectTitleControl1.TestStart += (sender, args) =>
             {
-                var settings = detectTitleControl1.GetSettings();
-                _imageRenderer = new TestDetectTitleImageRenderer(settings);
+                _imageRenderer = new TestDetectTitleImageRenderer(detectTitleControl1.GetSettings());
                 pictureBox1.Refresh();
             };
 
-            detectTitleControl1.TestEnd += (sender, args) =>
+            detectImageControl1.TestStart += (sender, args) =>
             {
-                _imageRenderer = new PageStateRenderer(_pageState,
-                    () => pictureBox1.ToOriginalPoint(pictureBox1.PointToClient(Cursor.Position)));
+                _imageRenderer = new TestDetectImageImageRenderer(detectImageControl1.GetSettings());
                 pictureBox1.Refresh();
             };
+
+            detectTitleControl1.TestEnd += (sender, args) => SetPageStateImageRenderer();
+
+            detectImageControl1.TestEnd += (sender, args) => SetPageStateImageRenderer();
+        }
+
+        private void SetPageStateImageRenderer()
+        {
+            _imageRenderer = new PageStateRenderer(_pageState,
+                () => pictureBox1.ToOriginalPoint(pictureBox1.PointToClient(Cursor.Position)));
+            pictureBox1.Refresh();
         }
 
         private void DetectImagesOnClick(object sender, EventArgs e)

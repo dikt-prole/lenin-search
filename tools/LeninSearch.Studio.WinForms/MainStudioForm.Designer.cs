@@ -3,7 +3,7 @@ using LeninSearch.Studio.WinForms.Controls;
 
 namespace LeninSearch.Studio.WinForms
 {
-    partial class LabelingForm
+    partial class MainStudioForm
     {
         /// <summary>
         /// Required designer variable.
@@ -63,8 +63,10 @@ namespace LeninSearch.Studio.WinForms
             this.bookFolder_tb = new System.Windows.Forms.TextBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.detectImageControl1 = new LeninSearch.Studio.WinForms.Controls.DetectImageControl();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
             this.detectTitleControl1 = new LeninSearch.Studio.WinForms.Controls.DetectTitleControl();
-            this.other_tp = new System.Windows.Forms.TabPage();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.saveOcrData_btn = new System.Windows.Forms.Button();
             this.regeneratePage_btn = new System.Windows.Forms.Button();
@@ -85,7 +87,8 @@ namespace LeninSearch.Studio.WinForms
             this.tableLayoutPanel7.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
-            this.other_tp.SuspendLayout();
+            this.tabPage2.SuspendLayout();
+            this.tabPage3.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -465,7 +468,8 @@ namespace LeninSearch.Studio.WinForms
             // tabControl1
             // 
             this.tabControl1.Controls.Add(this.tabPage1);
-            this.tabControl1.Controls.Add(this.other_tp);
+            this.tabControl1.Controls.Add(this.tabPage2);
+            this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(1, 49);
             this.tabControl1.Margin = new System.Windows.Forms.Padding(1);
@@ -476,14 +480,33 @@ namespace LeninSearch.Studio.WinForms
             // 
             // tabPage1
             // 
-            this.tabPage1.Controls.Add(this.detectTitleControl1);
+            this.tabPage1.Controls.Add(this.detectImageControl1);
             this.tabPage1.Location = new System.Drawing.Point(4, 24);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage1.Size = new System.Drawing.Size(390, 479);
             this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "Detect Title";
+            this.tabPage1.Text = "Detect Image";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // detectImageControl1
+            // 
+            this.detectImageControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.detectImageControl1.Location = new System.Drawing.Point(3, 3);
+            this.detectImageControl1.Name = "detectImageControl1";
+            this.detectImageControl1.Size = new System.Drawing.Size(384, 473);
+            this.detectImageControl1.TabIndex = 0;
+            // 
+            // tabPage2
+            // 
+            this.tabPage2.Controls.Add(this.detectTitleControl1);
+            this.tabPage2.Location = new System.Drawing.Point(4, 24);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(390, 479);
+            this.tabPage2.TabIndex = 2;
+            this.tabPage2.Text = "Detect Title";
+            this.tabPage2.UseVisualStyleBackColor = true;
             // 
             // detectTitleControl1
             // 
@@ -493,16 +516,16 @@ namespace LeninSearch.Studio.WinForms
             this.detectTitleControl1.Size = new System.Drawing.Size(384, 473);
             this.detectTitleControl1.TabIndex = 0;
             // 
-            // other_tp
+            // tabPage3
             // 
-            this.other_tp.Controls.Add(this.tableLayoutPanel1);
-            this.other_tp.Location = new System.Drawing.Point(4, 24);
-            this.other_tp.Name = "other_tp";
-            this.other_tp.Padding = new System.Windows.Forms.Padding(3);
-            this.other_tp.Size = new System.Drawing.Size(390, 479);
-            this.other_tp.TabIndex = 1;
-            this.other_tp.Text = "Other";
-            this.other_tp.UseVisualStyleBackColor = true;
+            this.tabPage3.Controls.Add(this.tableLayoutPanel1);
+            this.tabPage3.Location = new System.Drawing.Point(4, 24);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage3.Size = new System.Drawing.Size(390, 479);
+            this.tabPage3.TabIndex = 3;
+            this.tabPage3.Text = "Other";
+            this.tabPage3.UseVisualStyleBackColor = true;
             // 
             // tableLayoutPanel1
             // 
@@ -652,13 +675,13 @@ namespace LeninSearch.Studio.WinForms
             this.autoDetectImages_btn.Text = "Auto Detect Images";
             this.autoDetectImages_btn.UseVisualStyleBackColor = true;
             // 
-            // LabelingForm
+            // MainStudioForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1170, 557);
             this.Controls.Add(this.tableLayoutPanel3);
-            this.Name = "LabelingForm";
+            this.Name = "MainStudioForm";
             this.Text = "LabelingForm";
             this.tableLayoutPanel3.ResumeLayout(false);
             this.tableLayoutPanel4.ResumeLayout(false);
@@ -672,7 +695,8 @@ namespace LeninSearch.Studio.WinForms
             this.tableLayoutPanel7.PerformLayout();
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
-            this.other_tp.ResumeLayout(false);
+            this.tabPage2.ResumeLayout(false);
+            this.tabPage3.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.ResumeLayout(false);
 
@@ -720,9 +744,11 @@ namespace LeninSearch.Studio.WinForms
         private System.Windows.Forms.Button autoDetectImages_btn;
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.TabPage other_tp;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel5;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel7;
         private DetectTitleControl detectTitleControl1;
+        private DetectImageControl detectImageControl1;
+        private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.TabPage tabPage3;
     }
 }

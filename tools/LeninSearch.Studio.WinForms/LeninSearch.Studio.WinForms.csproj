@@ -28,6 +28,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Controls\DetectImageControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="ModelScopeDialog.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -109,15 +109,5 @@ namespace LeninSearch.Studio.Core.Detectors
 
             return titleRectangles.ToArray();
         }
-
-        public Rectangle[] Detect(string imageFile, DetectTitleSettings settings, Rectangle[] excludeAreas)
-        {
-            return Detect(imageFile, settings, excludeAreas, null);
-        }
-
-        public Rectangle[] Detect(string imageFile, DetectTitleSettings settings)
-        {
-            return Detect(imageFile, settings, null, null);
-        }
     }
 }

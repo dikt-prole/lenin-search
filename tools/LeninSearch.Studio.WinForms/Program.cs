@@ -15,7 +15,7 @@ namespace LeninSearch.Studio.WinForms
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             //Application.Run(new SingleImageOcrForm());
-            Application.Run(new LabelingForm());
+            Application.Run(new MainStudioForm());
         }
     }
 }
