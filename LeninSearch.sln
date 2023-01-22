@@ -29,11 +29,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{0F9557FA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeninSearch.JsonHeadings", "tools\LeninSearch.JsonHeadings\LeninSearch.JsonHeadings.csproj", "{518C9BFE-E146-4EED-BA08-7CE547E84D49}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeninSearch.Studio.WinForms", "Tools\LeninSearch.Studio.WinForms\LeninSearch.Studio.WinForms.csproj", "{78D4EB8A-C5EA-4FCC-BBF7-4246D32CCA47}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BookProject.WinForms", "Tools\BookProject.WinForms\BookProject.WinForms.csproj", "{78D4EB8A-C5EA-4FCC-BBF7-4246D32CCA47}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeninSearch.Script", "tools\LeninSearch.Script\LeninSearch.Script.csproj", "{9B668992-1F0A-4D3F-81B5-8A6388A47A11}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeninSearch.Studio.Core", "tools\LeninSearch.Studio.Core\LeninSearch.Studio.Core.csproj", "{CA1E6178-37F8-4B73-AAF1-FB29494754DE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BookProject.Core", "tools\BookProject.Core\BookProject.Core.csproj", "{CA1E6178-37F8-4B73-AAF1-FB29494754DE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

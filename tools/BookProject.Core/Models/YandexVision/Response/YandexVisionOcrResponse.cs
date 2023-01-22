@@ -1,0 +1,30 @@
+﻿using System.Collections.Generic;
+using System.Linq;
+using BookProject.Core.Models.Ocr;
+
+namespace BookProject.Core.Models.YandexVision.Response
+{
+    public class YandexVisionOcrResponse
+    {
+        public IList<YandexVisionOcrResult> Results { get; set; }
+
+        public OcrPage ToOcrPage()
+        {
+            var page = new OcrPage
+            {
+                Lines = new List<OcrLine>()
+            };
+
+            var responseBlocks = Results[0].Results[0]?.TextDetection?.Pages[0]?.Blocks;
+            if (responseBlocks?.Any() != true)
+            {
+                return page;
+            }
+
+            var pageLines = responseBlocks.SelectMany(b => b.Lines).ToList();
+            page.Lines = pageLines.Select(p => p.ToOcrLine()).ToList();
+
+            return page;
+        }
+    }
+}
