@@ -14,15 +14,17 @@ namespace BookProject.Core.Detectors
     public class CommentLinkNumberDetector : ICommentLinkNumberDetector
     {
         private readonly ICvUtility _cvUtility;
+        private readonly IOcrUtility _ocrUtility;
 
         public const string SmoothBitmapKey = "SMOOTH_BITMAP";
         public const string MatchLineRectangleKey = "MATCH_LINE_RECTANGLE";
 
-        public CommentLinkNumberDetector() : this(new CvUtility()) { }
+        public CommentLinkNumberDetector(IOcrUtility ocrUtility) : this(new CvUtility(), ocrUtility) { }
 
-        public CommentLinkNumberDetector(ICvUtility cvUtility)
+        public CommentLinkNumberDetector(ICvUtility cvUtility, IOcrUtility ocrUtility)
         {
             _cvUtility = cvUtility;
+            _ocrUtility = ocrUtility;
         }
 
         public Rectangle[] Detect(string imageFile, DetectCommentLinkNumberSettings settings, Rectangle[] excludeAreas,
@@ -42,7 +44,7 @@ namespace BookProject.Core.Detectors
             {
                 foreach (var linkRect in linkContourRectangleResult.Rectangles)
                 {
-                    if (Match(lineRect, linkRect))
+                    if (GeometricMatch(lineRect, linkRect, settings))
                     {
                         matchLineRectangles.Add(lineRect);
                         matchLinkRectangles.Add(linkRect);
@@ -50,45 +52,13 @@ namespace BookProject.Core.Detectors
                 }
             }
 
+            matchLinkRectangles = FilterByAllowedSymbols(image, matchLinkRectangles.ToArray(), settings);
+            matchLineRectangles = matchLineRectangles.Where(l => matchLinkRectangles.Any(l.IntersectsWith)).ToList();
+
             if (internalValues != null)
             {
                 internalValues.Add(SmoothBitmapKey, new Bitmap(linkContourRectangleResult.SmoothBitmap));
                 internalValues.Add(MatchLineRectangleKey, matchLineRectangles.ToArray());
-            }
-
-            if (matchLineRectangles.Any())
-            {
-                matchLineRectangles = matchLinkRectangles.OrderBy(r => r.Y).ToList();
-                var maxWidth = matchLineRectangles.Max(x => x.Width);
-                var maxHeight = matchLineRectangles.Min(x => x.Height);
-                var padding = 10;
-                var bitmapWidth = maxWidth + padding * 2;
-                var bitmapHeight = (maxHeight + padding * 2) * matchLineRectangles.Count;
-                using var ocrBitmap = new Bitmap(bitmapWidth, bitmapHeight);
-                using var ocrBackgroundBrush = new SolidBrush(Color.White);
-                using var ocrGraphics = Graphics.FromImage(ocrBitmap);
-                ocrGraphics.FillRectangle(ocrBackgroundBrush, 0, 0, ocrBitmap.Width, ocrBitmap.Height);
-                for (var i = 0; i < matchLineRectangles.Count; i++)
-                {
-                    var lineX = padding;
-                    var lineY = i * (maxHeight + padding * 2) + padding;
-                    using var croppedBitmap = CropImage(image, matchLineRectangles[i]);
-                    ocrGraphics.DrawImage(croppedBitmap, lineX, lineY);
-                }
-
-                using var imageStream = new MemoryStream();
-                ocrBitmap.Save(imageStream, ImageFormat.Jpeg);
-                var imageBytes = imageStream.ToArray();
-
-                Task.Run(() =>
-                {
-                    var ocrUtility = new YandexVisionOcrUtility();
-                    var ocrPage = ocrUtility.GetPage(imageBytes).Result;
-                    foreach (var ocrPageLine in ocrPage.Lines)
-                    {
-                        Debug.WriteLine(ocrPageLine.GetText());
-                    }
-                });
             }
 
             return matchLinkRectangles.ToArray();
@@ -104,20 +74,64 @@ namespace BookProject.Core.Detectors
             }
         }
 
-        private bool Match(Rectangle lineRectangle, Rectangle linkRectangle)
+        private bool GeometricMatch(Rectangle lineRectangle, Rectangle linkRectangle, DetectCommentLinkNumberSettings settings)
         {
-            return Math.Abs(lineRectangle.Y - linkRectangle.Y) <= 2 && 
-                   linkRectangle.Height <= lineRectangle.Height * 3 / 4;
+            return Math.Abs(lineRectangle.Y - linkRectangle.Y) <= settings.LineTopDistanceMax && 
+                   linkRectangle.Height <= lineRectangle.Height * settings.LineHeightPartMax;
+        }
 
-            //if (!lineRectangle.Contains(linkRectangle)) return false;
+        private List<Rectangle> FilterByAllowedSymbols(
+            Bitmap originalBitmap, 
+            Rectangle[] candidateRectangles,
+            DetectCommentLinkNumberSettings settings)
+        {
+            candidateRectangles = candidateRectangles.OrderBy(r => r.Y).ToArray();
 
-            //var lineBottom = new Rectangle(
-            //    lineRectangle.X,
-            //    lineRectangle.Y + 3 * lineRectangle.Height / 4,
-            //    lineRectangle.Width,
-            //    lineRectangle.Height / 4);
+            var ocrCellWidth = candidateRectangles.Max(x => x.Width);
+            var ocrCellHeight = candidateRectangles.Min(x => x.Height);
+            var ocrCellPadding = 10;
+            var ocrBitmapWidth = ocrCellWidth + ocrCellPadding * 2;
+            var ocrBitmapHeight = (ocrCellHeight + ocrCellPadding * 2) * candidateRectangles.Length;
 
-            //return !lineBottom.IntersectsWith(linkRectangle);
+            using var ocrBitmap = new Bitmap(ocrBitmapWidth, ocrBitmapHeight);
+            using var ocrBackgroundBrush = new SolidBrush(Color.White);
+            using var ocrGraphics = Graphics.FromImage(ocrBitmap);
+
+            ocrGraphics.FillRectangle(ocrBackgroundBrush, 0, 0, ocrBitmap.Width, ocrBitmap.Height);
+            for (var i = 0; i < candidateRectangles.Length; i++)
+            {
+                var ocrCellX = ocrCellPadding;
+                var ocrCellY = i * (ocrCellHeight + ocrCellPadding * 2) + ocrCellPadding;
+                using var croppedBitmap = CropImage(originalBitmap, candidateRectangles[i]);
+                ocrGraphics.DrawImage(croppedBitmap, ocrCellX, ocrCellY);
+            }
+
+            using var imageStream = new MemoryStream();
+            ocrBitmap.Save(imageStream, ImageFormat.Jpeg);
+            var imageBytes = imageStream.ToArray();
+            var ocrPage = Task.Run(() => _ocrUtility.GetPageAsync(imageBytes)).Result;
+
+            var resultRectangles = new List<Rectangle>();
+            for (var i = 0; i < candidateRectangles.Length; i++)
+            {
+                var ocrCellX = ocrCellPadding;
+                var ocrCellY = i * (ocrCellHeight + ocrCellPadding * 2) + ocrCellPadding;
+                var ocrCellRectangle = new Rectangle(
+                    ocrCellX,
+                    ocrCellY,
+                    ocrCellWidth + ocrCellPadding * 2,
+                    ocrCellHeight + ocrCellPadding * 2);
+                var ocrLine = ocrPage.Lines.FirstOrDefault(l => l.Rectangle.IntersectsWith(ocrCellRectangle));
+                
+                if (ocrLine == null || string.IsNullOrEmpty(ocrLine.Text)) continue;
+
+                if (settings.AllowedSymbols.Any(s => ocrLine.Text.Contains(s)))
+                {
+                    resultRectangles.Add(candidateRectangles[i]);
+                }
+            }
+
+            return resultRectangles;
         }
     }
 }

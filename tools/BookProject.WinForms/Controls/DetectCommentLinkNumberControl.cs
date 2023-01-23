@@ -24,7 +24,10 @@ namespace BookProject.WinForms.Controls
                 LinkGaussSigma1 = (int)linkGaussSigma1_nud.Value,
                 LinkGaussSigma2 = (int)linkGaussSigma2_nud.Value,
                 LineGaussSigma1 = (int)lineGaussSigma1_nud.Value,
-                LineGaussSigma2 = (int)lineGaussSigma2_nud.Value
+                LineGaussSigma2 = (int)lineGaussSigma2_nud.Value,
+                LineHeightPartMax = (double)lineHeightPartMax_nud.Value,
+                LineTopDistanceMax = (int)lineTopDistMax_nud.Value,
+                AllowedSymbols = allowedSymbols_tb.Text.ToCharArray()
             };
         }
 
@@ -38,6 +41,11 @@ namespace BookProject.WinForms.Controls
             linkGaussSigma2_nud.Value = settings.LinkGaussSigma2;
             lineGaussSigma1_nud.Value = settings.LineGaussSigma1;
             lineGaussSigma2_nud.Value = settings.LineGaussSigma2;
+            lineHeightPartMax_nud.Value = (decimal)settings.LineHeightPartMax;
+            lineTopDistMax_nud.Value = settings.LineTopDistanceMax;
+            allowedSymbols_tb.Text = settings.AllowedSymbols == null 
+                ? "" 
+                : new string(settings.AllowedSymbols);
         }
 
         public DetectCommentLinkNumberControl()
@@ -46,19 +54,19 @@ namespace BookProject.WinForms.Controls
 
             minWidth_nud.Minimum = 1;
             minWidth_nud.Maximum = 50;
-            minWidth_nud.Value = 10;
+            minWidth_nud.Value = 12;
 
             minHeight_nud.Minimum = 1;
             minHeight_nud.Maximum = 50;
-            minHeight_nud.Value = 10;
+            minHeight_nud.Value = 12;
 
             maxWidth_nud.Minimum = 1;
             maxWidth_nud.Maximum = 100;
-            maxWidth_nud.Value = 15;
+            maxWidth_nud.Value = 20;
 
             maxHeight_nud.Minimum = 1;
             maxHeight_nud.Maximum = 100;
-            maxHeight_nud.Value = 15;
+            maxHeight_nud.Value = 20;
 
             linkGaussSigma1_nud.Minimum = 0;
             linkGaussSigma1_nud.Maximum = 25;
@@ -75,6 +83,18 @@ namespace BookProject.WinForms.Controls
             lineGaussSigma2_nud.Minimum = 0;
             lineGaussSigma2_nud.Maximum = 25;
             lineGaussSigma2_nud.Value = 1;
+
+            lineHeightPartMax_nud.DecimalPlaces = 2;
+            lineHeightPartMax_nud.Increment = (decimal)0.1;
+            lineHeightPartMax_nud.Minimum = (decimal)0.25;
+            lineHeightPartMax_nud.Maximum = 1;
+            lineHeightPartMax_nud.Value = (decimal)0.75;
+
+            lineTopDistMax_nud.Minimum = 0;
+            lineTopDistMax_nud.Maximum = 25;
+            lineTopDistMax_nud.Value = 2;
+
+            allowedSymbols_tb.Text = "*";
 
             test_btn.MouseDown += (sender, args) => TestStart?.Invoke(this, EventArgs.Empty);
             test_btn.MouseUp += (sender, args) => TestEnd?.Invoke(this, EventArgs.Empty);

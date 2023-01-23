@@ -15,7 +15,7 @@ namespace BookProject.Core.Utilities
     {
         private static readonly HttpClient HttpClient = new HttpClient();
 
-        public async Task<OcrPage> GetPage(byte[] imageBytes)
+        public async Task<OcrPage> GetPageAsync(byte[] imageBytes)
         {
             var apiKey = Environment.GetEnvironmentVariable("YandexApiKey");
             var ocrRequest = YandexVisionRequest.FromImageBytes(imageBytes);

@@ -2,6 +2,7 @@
 using System.Drawing;
 using BookProject.Core.Detectors;
 using BookProject.Core.Settings;
+using BookProject.Core.Utilities;
 
 namespace BookProject.Core.ImageRendering
 {
@@ -9,7 +10,7 @@ namespace BookProject.Core.ImageRendering
     {
         private readonly ICommentLinkNumberDetector _commentLinkNumberDetector;
         private readonly DetectCommentLinkNumberSettings _settings;
-        public TestCommentLinkNumberImageRenderer(DetectCommentLinkNumberSettings settings) : this(new CommentLinkNumberDetector(), settings) { }
+        public TestCommentLinkNumberImageRenderer(DetectCommentLinkNumberSettings settings, IOcrUtility ocrUtility) : this(new CommentLinkNumberDetector(ocrUtility), settings) { }
 
         public TestCommentLinkNumberImageRenderer(ICommentLinkNumberDetector commentLinkNumberDetector, DetectCommentLinkNumberSettings settings)
         {

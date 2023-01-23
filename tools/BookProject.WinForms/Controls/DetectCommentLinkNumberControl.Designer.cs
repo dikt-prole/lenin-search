@@ -48,6 +48,12 @@
             this.save_btn = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
             this.lineGaussSigma2_nud = new System.Windows.Forms.NumericUpDown();
+            this.label9 = new System.Windows.Forms.Label();
+            this.label10 = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
+            this.lineHeightPartMax_nud = new System.Windows.Forms.NumericUpDown();
+            this.lineTopDistMax_nud = new System.Windows.Forms.NumericUpDown();
+            this.allowedSymbols_tb = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.minWidth_nud)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.minHeight_nud)).BeginInit();
@@ -57,12 +63,14 @@
             ((System.ComponentModel.ISupportInitialize)(this.linkGaussSigma2_nud)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.lineGaussSigma1_nud)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.lineGaussSigma2_nud)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.lineHeightPartMax_nud)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.lineTopDistMax_nud)).BeginInit();
             this.SuspendLayout();
             // 
             // tableLayoutPanel1
             // 
             this.tableLayoutPanel1.ColumnCount = 4;
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 120F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 130F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
@@ -72,8 +80,8 @@
             this.tableLayoutPanel1.Controls.Add(this.label4, 0, 3);
             this.tableLayoutPanel1.Controls.Add(this.label5, 0, 4);
             this.tableLayoutPanel1.Controls.Add(this.label6, 0, 5);
-            this.tableLayoutPanel1.Controls.Add(this.test_btn, 0, 8);
-            this.tableLayoutPanel1.Controls.Add(this.apply_btn, 1, 8);
+            this.tableLayoutPanel1.Controls.Add(this.test_btn, 0, 11);
+            this.tableLayoutPanel1.Controls.Add(this.apply_btn, 1, 11);
             this.tableLayoutPanel1.Controls.Add(this.minWidth_nud, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.minHeight_nud, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.maxWidth_nud, 1, 2);
@@ -82,14 +90,23 @@
             this.tableLayoutPanel1.Controls.Add(this.linkGaussSigma2_nud, 1, 5);
             this.tableLayoutPanel1.Controls.Add(this.label7, 0, 6);
             this.tableLayoutPanel1.Controls.Add(this.lineGaussSigma1_nud, 1, 6);
-            this.tableLayoutPanel1.Controls.Add(this.save_btn, 2, 8);
+            this.tableLayoutPanel1.Controls.Add(this.save_btn, 2, 11);
             this.tableLayoutPanel1.Controls.Add(this.label8, 0, 7);
             this.tableLayoutPanel1.Controls.Add(this.lineGaussSigma2_nud, 1, 7);
+            this.tableLayoutPanel1.Controls.Add(this.label9, 0, 8);
+            this.tableLayoutPanel1.Controls.Add(this.label10, 0, 9);
+            this.tableLayoutPanel1.Controls.Add(this.label11, 0, 10);
+            this.tableLayoutPanel1.Controls.Add(this.lineHeightPartMax_nud, 1, 8);
+            this.tableLayoutPanel1.Controls.Add(this.lineTopDistMax_nud, 1, 9);
+            this.tableLayoutPanel1.Controls.Add(this.allowedSymbols_tb, 1, 10);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 10;
+            this.tableLayoutPanel1.RowCount = 13;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
@@ -166,10 +183,10 @@
             // test_btn
             // 
             this.test_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.test_btn.Location = new System.Drawing.Point(1, 225);
+            this.test_btn.Location = new System.Drawing.Point(1, 309);
             this.test_btn.Margin = new System.Windows.Forms.Padding(1);
             this.test_btn.Name = "test_btn";
-            this.test_btn.Size = new System.Drawing.Size(118, 26);
+            this.test_btn.Size = new System.Drawing.Size(128, 26);
             this.test_btn.TabIndex = 6;
             this.test_btn.Text = "Test";
             this.test_btn.UseVisualStyleBackColor = true;
@@ -177,7 +194,7 @@
             // apply_btn
             // 
             this.apply_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.apply_btn.Location = new System.Drawing.Point(121, 225);
+            this.apply_btn.Location = new System.Drawing.Point(131, 309);
             this.apply_btn.Margin = new System.Windows.Forms.Padding(1);
             this.apply_btn.Name = "apply_btn";
             this.apply_btn.Size = new System.Drawing.Size(98, 26);
@@ -188,7 +205,7 @@
             // minWidth_nud
             // 
             this.minWidth_nud.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.minWidth_nud.Location = new System.Drawing.Point(123, 3);
+            this.minWidth_nud.Location = new System.Drawing.Point(133, 3);
             this.minWidth_nud.Name = "minWidth_nud";
             this.minWidth_nud.Size = new System.Drawing.Size(94, 23);
             this.minWidth_nud.TabIndex = 8;
@@ -196,7 +213,7 @@
             // minHeight_nud
             // 
             this.minHeight_nud.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.minHeight_nud.Location = new System.Drawing.Point(123, 31);
+            this.minHeight_nud.Location = new System.Drawing.Point(133, 31);
             this.minHeight_nud.Name = "minHeight_nud";
             this.minHeight_nud.Size = new System.Drawing.Size(94, 23);
             this.minHeight_nud.TabIndex = 9;
@@ -204,7 +221,7 @@
             // maxWidth_nud
             // 
             this.maxWidth_nud.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.maxWidth_nud.Location = new System.Drawing.Point(123, 59);
+            this.maxWidth_nud.Location = new System.Drawing.Point(133, 59);
             this.maxWidth_nud.Name = "maxWidth_nud";
             this.maxWidth_nud.Size = new System.Drawing.Size(94, 23);
             this.maxWidth_nud.TabIndex = 10;
@@ -212,7 +229,7 @@
             // maxHeight_nud
             // 
             this.maxHeight_nud.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.maxHeight_nud.Location = new System.Drawing.Point(123, 87);
+            this.maxHeight_nud.Location = new System.Drawing.Point(133, 87);
             this.maxHeight_nud.Name = "maxHeight_nud";
             this.maxHeight_nud.Size = new System.Drawing.Size(94, 23);
             this.maxHeight_nud.TabIndex = 11;
@@ -220,7 +237,7 @@
             // linkGaussSigma1_nud
             // 
             this.linkGaussSigma1_nud.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.linkGaussSigma1_nud.Location = new System.Drawing.Point(123, 115);
+            this.linkGaussSigma1_nud.Location = new System.Drawing.Point(133, 115);
             this.linkGaussSigma1_nud.Name = "linkGaussSigma1_nud";
             this.linkGaussSigma1_nud.Size = new System.Drawing.Size(94, 23);
             this.linkGaussSigma1_nud.TabIndex = 12;
@@ -228,7 +245,7 @@
             // linkGaussSigma2_nud
             // 
             this.linkGaussSigma2_nud.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.linkGaussSigma2_nud.Location = new System.Drawing.Point(123, 143);
+            this.linkGaussSigma2_nud.Location = new System.Drawing.Point(133, 143);
             this.linkGaussSigma2_nud.Name = "linkGaussSigma2_nud";
             this.linkGaussSigma2_nud.Size = new System.Drawing.Size(94, 23);
             this.linkGaussSigma2_nud.TabIndex = 13;
@@ -246,7 +263,7 @@
             // lineGaussSigma1_nud
             // 
             this.lineGaussSigma1_nud.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lineGaussSigma1_nud.Location = new System.Drawing.Point(123, 171);
+            this.lineGaussSigma1_nud.Location = new System.Drawing.Point(133, 171);
             this.lineGaussSigma1_nud.Name = "lineGaussSigma1_nud";
             this.lineGaussSigma1_nud.Size = new System.Drawing.Size(94, 23);
             this.lineGaussSigma1_nud.TabIndex = 15;
@@ -254,7 +271,7 @@
             // save_btn
             // 
             this.save_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.save_btn.Location = new System.Drawing.Point(221, 225);
+            this.save_btn.Location = new System.Drawing.Point(231, 309);
             this.save_btn.Margin = new System.Windows.Forms.Padding(1);
             this.save_btn.Name = "save_btn";
             this.save_btn.Size = new System.Drawing.Size(98, 26);
@@ -275,10 +292,63 @@
             // lineGaussSigma2_nud
             // 
             this.lineGaussSigma2_nud.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lineGaussSigma2_nud.Location = new System.Drawing.Point(123, 199);
+            this.lineGaussSigma2_nud.Location = new System.Drawing.Point(133, 199);
             this.lineGaussSigma2_nud.Name = "lineGaussSigma2_nud";
             this.lineGaussSigma2_nud.Size = new System.Drawing.Size(94, 23);
             this.lineGaussSigma2_nud.TabIndex = 18;
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(3, 229);
+            this.label9.Margin = new System.Windows.Forms.Padding(3, 5, 3, 0);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(121, 15);
+            this.label9.TabIndex = 19;
+            this.label9.Text = "Line Height Part Max:";
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(3, 257);
+            this.label10.Margin = new System.Windows.Forms.Padding(3, 5, 3, 0);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(103, 15);
+            this.label10.TabIndex = 20;
+            this.label10.Text = "Line Top Dist Max:";
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(3, 285);
+            this.label11.Margin = new System.Windows.Forms.Padding(3, 5, 3, 0);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(101, 15);
+            this.label11.TabIndex = 21;
+            this.label11.Text = "Allowed Symbols:";
+            // 
+            // lineHeightPartMax_nud
+            // 
+            this.lineHeightPartMax_nud.Location = new System.Drawing.Point(133, 227);
+            this.lineHeightPartMax_nud.Name = "lineHeightPartMax_nud";
+            this.lineHeightPartMax_nud.Size = new System.Drawing.Size(94, 23);
+            this.lineHeightPartMax_nud.TabIndex = 22;
+            // 
+            // lineTopDistMax_nud
+            // 
+            this.lineTopDistMax_nud.Location = new System.Drawing.Point(133, 255);
+            this.lineTopDistMax_nud.Name = "lineTopDistMax_nud";
+            this.lineTopDistMax_nud.Size = new System.Drawing.Size(94, 23);
+            this.lineTopDistMax_nud.TabIndex = 23;
+            // 
+            // allowedSymbols_tb
+            // 
+            this.tableLayoutPanel1.SetColumnSpan(this.allowedSymbols_tb, 2);
+            this.allowedSymbols_tb.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.allowedSymbols_tb.Location = new System.Drawing.Point(133, 283);
+            this.allowedSymbols_tb.Name = "allowedSymbols_tb";
+            this.allowedSymbols_tb.Size = new System.Drawing.Size(194, 23);
+            this.allowedSymbols_tb.TabIndex = 24;
             // 
             // DetectCommentLinkNumberControl
             // 
@@ -297,6 +367,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.linkGaussSigma2_nud)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.lineGaussSigma1_nud)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.lineGaussSigma2_nud)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.lineHeightPartMax_nud)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.lineTopDistMax_nud)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -323,5 +395,11 @@
         private System.Windows.Forms.Button save_btn;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.NumericUpDown lineGaussSigma2_nud;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.NumericUpDown lineHeightPartMax_nud;
+        private System.Windows.Forms.NumericUpDown lineTopDistMax_nud;
+        private System.Windows.Forms.TextBox allowedSymbols_tb;
     }
 }

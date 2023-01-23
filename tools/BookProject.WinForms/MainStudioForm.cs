@@ -11,6 +11,7 @@ using Accord.MachineLearning.DecisionTrees;
 using BookProject.Core.ImageRendering;
 using BookProject.Core.Misc;
 using BookProject.Core.Models.Book;
+using BookProject.Core.Utilities;
 using BookProject.WinForms.CV;
 using BookProject.WinForms.Model;
 using BookProject.WinForms.Model.UncoveredContourMatches;
@@ -105,7 +106,7 @@ namespace BookProject.WinForms
 
             detectCommentLinkNumberControl1.TestStart += (sender, args) =>
             {
-                _imageRenderer = new TestCommentLinkNumberImageRenderer(detectCommentLinkNumberControl1.GetSettings());
+                _imageRenderer = new TestCommentLinkNumberImageRenderer(detectCommentLinkNumberControl1.GetSettings(), new YandexVisionOcrUtility());
                 pictureBox1.Refresh();
             };
 

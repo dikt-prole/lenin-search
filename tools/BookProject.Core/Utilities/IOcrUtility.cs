@@ -6,6 +6,6 @@ namespace BookProject.Core.Utilities
 {
     public interface IOcrUtility
     {
-        Task<OcrPage> GetPage(byte[] imageBytes);
+        Task<OcrPage> GetPageAsync(byte[] imageBytes);
     }
 }

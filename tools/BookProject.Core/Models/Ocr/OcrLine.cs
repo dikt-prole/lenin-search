@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 
 namespace BookProject.Core.Models.Ocr
@@ -15,9 +16,8 @@ namespace BookProject.Core.Models.Ocr
 
         public List<OcrWord> Words { get; set; }
 
-        public string GetText()
-        {
-            return Words == null ? string.Empty : string.Join(" ", Words.Select(w => w.Text));
-        }
+        public Rectangle Rectangle => new Rectangle(TopLeftX, TopLeftY, BottomRightX - TopLeftX, BottomRightY - TopLeftY);
+
+        public string Text => Words == null ? string.Empty : string.Join(" ", Words.Select(w => w.Text));
     }
 }
