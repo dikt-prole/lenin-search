@@ -3,7 +3,7 @@ using BookProject.Core.Models.Book;
 
 namespace BookProject.Core.Misc
 {
-    public static class OcrPalette
+    public static class BookProjectPalette
     {
         public static Color GetColor(BookProjectLabel? label)
         {
@@ -35,5 +35,6 @@ namespace BookProject.Core.Misc
 
         public static Color ImageBlockColor => Color.Coral;
         public static Color TitleBlockColor => Color.HotPink;
+        public static Color GarbageBlockColor => Color.Brown;
     }
 }

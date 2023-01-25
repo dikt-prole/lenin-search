@@ -15,7 +15,7 @@ namespace BookProject.WinForms
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             //Application.Run(new SingleImageOcrForm());
-            Application.Run(new MainStudioForm());
+            Application.Run(new BookProjectForm());
         }
     }
 }

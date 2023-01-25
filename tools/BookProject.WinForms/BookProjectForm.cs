@@ -20,7 +20,7 @@ using BookProject.WinForms.YandexVision;
 
 namespace BookProject.WinForms
 {
-    public partial class MainStudioForm : Form
+    public partial class BookProjectForm : Form
     {
         private readonly PageState _pageState = new PageState();
 
@@ -55,19 +55,19 @@ namespace BookProject.WinForms
         private const int ImageTitleAreaHeight = 120;
         private const int MinPageWideTextWidth = 1320;
 
-        public MainStudioForm()
+        public BookProjectForm()
         {
             InitializeComponent();
 
             ocr_lb.SelectedIndexChanged += OcrLbOnSelectedIndexChanged;
             ocr_lb.KeyDown += OcrLbOnKeyDown;
-            none_panel.BackColor = OcrPalette.GetColor(null);
-            pstart_panel.BackColor = OcrPalette.GetColor(BookProjectLabel.PStart);
-            pmiddle_panel.BackColor = OcrPalette.GetColor(BookProjectLabel.PMiddle);
-            comment_panel.BackColor = OcrPalette.GetColor(BookProjectLabel.Comment);
-            title_panel.BackColor = OcrPalette.GetColor(BookProjectLabel.Title);
-            image_panel.BackColor = OcrPalette.GetColor(BookProjectLabel.Image);
-            garbage_panel.BackColor = OcrPalette.GetColor(BookProjectLabel.Garbage);
+            none_panel.BackColor = BookProjectPalette.GetColor(null);
+            pstart_panel.BackColor = BookProjectPalette.GetColor(BookProjectLabel.PStart);
+            pmiddle_panel.BackColor = BookProjectPalette.GetColor(BookProjectLabel.PMiddle);
+            comment_panel.BackColor = BookProjectPalette.GetColor(BookProjectLabel.Comment);
+            title_panel.BackColor = BookProjectPalette.GetColor(BookProjectLabel.Title);
+            image_panel.BackColor = BookProjectPalette.GetColor(BookProjectLabel.Image);
+            garbage_panel.BackColor = BookProjectPalette.GetColor(BookProjectLabel.Garbage);
 
             pictureBox1.Paint += PictureBox1OnPaint;
             pictureBox1.MouseDown += PictureBox1OnMouseDown;
@@ -106,7 +106,13 @@ namespace BookProject.WinForms
 
             detectCommentLinkNumberControl1.TestStart += (sender, args) =>
             {
-                _imageRenderer = new TestCommentLinkNumberImageRenderer(detectCommentLinkNumberControl1.GetSettings(), new YandexVisionOcrUtility());
+                _imageRenderer = new TestDetectCommentLinkNumberImageRenderer(detectCommentLinkNumberControl1.GetSettings(), new YandexVisionOcrUtility());
+                pictureBox1.Refresh();
+            };
+
+            detectGarbageControl1.TestStart += (sender, args) =>
+            {
+                _imageRenderer = new TestDetectGarbageImageRenderer(detectGarbageControl1.GetSettings());
                 pictureBox1.Refresh();
             };
 
@@ -115,6 +121,8 @@ namespace BookProject.WinForms
             detectImageControl1.TestEnd += (sender, args) => SetPageStateImageRenderer();
 
             detectCommentLinkNumberControl1.TestEnd += (sender, args) => SetPageStateImageRenderer();
+
+            detectGarbageControl1.TestEnd += (sender, args) => SetPageStateImageRenderer();
         }
 
         private void SetPageStateImageRenderer()
@@ -1051,14 +1059,14 @@ namespace BookProject.WinForms
         }
         private Pen GetPen(BookProjectLine line)
         {
-            var color = OcrPalette.GetColor(line.Label);
+            var color = BookProjectPalette.GetColor(line.Label);
 
             return new Pen(color, 2);
         }
 
         private Brush GetBrush(BookProjectLine line)
         {
-            var color = OcrPalette.GetColor(line.Label);
+            var color = BookProjectPalette.GetColor(line.Label);
 
             return new SolidBrush(Color.FromArgb(64, color));
         }

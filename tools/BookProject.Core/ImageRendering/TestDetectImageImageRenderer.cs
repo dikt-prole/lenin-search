@@ -37,7 +37,7 @@ namespace BookProject.Core.ImageRendering
             g.DrawLine(linePen, _settings.MinLeft, 0, _settings.MinLeft, height);
             g.DrawLine(linePen, width - _settings.MinRight, 0, width - _settings.MinRight, height);
 
-            using var titleRectPen = new Pen(OcrPalette.ImageBlockColor, 2);
+            using var titleRectPen = new Pen(BookProjectPalette.GarbageBlockColor, 2);
             foreach (var rect in titleRects)
             {
                 g.DrawRectangle(titleRectPen, rect);

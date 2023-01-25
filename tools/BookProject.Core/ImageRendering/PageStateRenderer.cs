@@ -35,8 +35,8 @@ namespace BookProject.Core.ImageRendering
                 originalGraphics.DrawRectangle(Pens.Black, rect);
             }
 
-            using var ibPen = new Pen(OcrPalette.ImageBlockColor, 2);
-            using var ibBrush = new SolidBrush(OcrPalette.ImageBlockColor);
+            using var ibPen = new Pen(BookProjectPalette.ImageBlockColor, 2);
+            using var ibBrush = new SolidBrush(BookProjectPalette.ImageBlockColor);
             foreach (var ib in _pageState.Page.ImageBlocks)
             {
                 originalGraphics.DrawRectangle(ibPen, ib.Rectangle);
@@ -48,8 +48,8 @@ namespace BookProject.Core.ImageRendering
 
             using var textBrush = new SolidBrush(Color.DarkViolet);
 
-            using var tbPen = new Pen(OcrPalette.TitleBlockColor, 2);
-            using var tbBrush = new SolidBrush(OcrPalette.TitleBlockColor);
+            using var tbPen = new Pen(BookProjectPalette.TitleBlockColor, 2);
+            using var tbBrush = new SolidBrush(BookProjectPalette.TitleBlockColor);
             foreach (var tb in _pageState.Page.TitleBlocks ?? new List<BookProjectTitleBlock>())
             {
                 var tbpbRect = tb.Rectangle;

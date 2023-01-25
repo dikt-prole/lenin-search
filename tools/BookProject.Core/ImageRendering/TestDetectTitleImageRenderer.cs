@@ -44,7 +44,7 @@ namespace BookProject.Core.ImageRendering
                 g.DrawRectangle(rectPen, rect);
             }
 
-            using var titleRectPen = new Pen(OcrPalette.TitleBlockColor, 2);
+            using var titleRectPen = new Pen(BookProjectPalette.TitleBlockColor, 2);
             foreach (var rect in titleRects)
             {
                 g.DrawRectangle(titleRectPen, rect);

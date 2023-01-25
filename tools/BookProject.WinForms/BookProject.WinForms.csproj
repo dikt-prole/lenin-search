@@ -27,6 +27,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Controls\DetectGarbageControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="Controls\DetectImageControl.cs">
       <SubType>UserControl</SubType>
     </Compile>

@@ -6,13 +6,13 @@ using BookProject.Core.Utilities;
 
 namespace BookProject.Core.ImageRendering
 {
-    public class TestCommentLinkNumberImageRenderer : ImageRendererBase
+    public class TestDetectCommentLinkNumberImageRenderer : ImageRendererBase
     {
         private readonly ICommentLinkNumberDetector _commentLinkNumberDetector;
         private readonly DetectCommentLinkNumberSettings _settings;
-        public TestCommentLinkNumberImageRenderer(DetectCommentLinkNumberSettings settings, IOcrUtility ocrUtility) : this(new CommentLinkNumberDetector(ocrUtility), settings) { }
+        public TestDetectCommentLinkNumberImageRenderer(DetectCommentLinkNumberSettings settings, IOcrUtility ocrUtility) : this(new CommentLinkNumberDetector(ocrUtility), settings) { }
 
-        public TestCommentLinkNumberImageRenderer(ICommentLinkNumberDetector commentLinkNumberDetector, DetectCommentLinkNumberSettings settings)
+        public TestDetectCommentLinkNumberImageRenderer(ICommentLinkNumberDetector commentLinkNumberDetector, DetectCommentLinkNumberSettings settings)
         {
             _commentLinkNumberDetector = commentLinkNumberDetector;
             _settings = settings;

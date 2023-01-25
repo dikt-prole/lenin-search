@@ -3,7 +3,7 @@ using BookProject.WinForms.Controls;
 
 namespace BookProject.WinForms
 {
-    partial class MainStudioForm
+    partial class BookProjectForm
     {
         /// <summary>
         /// Required designer variable.
@@ -63,9 +63,12 @@ namespace BookProject.WinForms
             this.bookFolder_tb = new System.Windows.Forms.TextBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.detectImageControl1 = new DetectImageControl();
+            this.detectImageControl1 = new BookProject.WinForms.Controls.DetectImageControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.detectTitleControl1 = new DetectTitleControl();
+            this.detectTitleControl1 = new BookProject.WinForms.Controls.DetectTitleControl();
+            this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.detectCommentLinkNumberControl1 = new BookProject.WinForms.Controls.DetectCommentLinkNumberControl();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.saveOcrData_btn = new System.Windows.Forms.Button();
             this.regeneratePage_btn = new System.Windows.Forms.Button();
@@ -77,9 +80,8 @@ namespace BookProject.WinForms
             this.generateLines_btn = new System.Windows.Forms.Button();
             this.generateFb2_btn = new System.Windows.Forms.Button();
             this.autoDetectImages_btn = new System.Windows.Forms.Button();
-            this.tabPage4 = new System.Windows.Forms.TabPage();
-            this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.detectCommentLinkNumberControl1 = new DetectCommentLinkNumberControl();
+            this.detectGarbageControl1 = new BookProject.WinForms.Controls.DetectGarbageControl();
+            this.tabPage5 = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel3.SuspendLayout();
             this.tableLayoutPanel4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -90,9 +92,10 @@ namespace BookProject.WinForms
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
-            this.tableLayoutPanel1.SuspendLayout();
             this.tabPage4.SuspendLayout();
             this.tabPage3.SuspendLayout();
+            this.tableLayoutPanel1.SuspendLayout();
+            this.tabPage5.SuspendLayout();
             this.SuspendLayout();
             // 
             // tableLayoutPanel3
@@ -101,7 +104,7 @@ namespace BookProject.WinForms
             this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 180F));
             this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 150F));
             this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 400F));
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 500F));
             this.tableLayoutPanel3.Controls.Add(this.ocr_lb, 0, 0);
             this.tableLayoutPanel3.Controls.Add(this.tableLayoutPanel4, 2, 0);
             this.tableLayoutPanel3.Controls.Add(this.tableLayoutPanel2, 1, 0);
@@ -139,7 +142,7 @@ namespace BookProject.WinForms
             this.tableLayoutPanel4.RowCount = 2;
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
-            this.tableLayoutPanel4.Size = new System.Drawing.Size(440, 557);
+            this.tableLayoutPanel4.Size = new System.Drawing.Size(340, 557);
             this.tableLayoutPanel4.TabIndex = 3;
             // 
             // pictureBox1
@@ -148,7 +151,7 @@ namespace BookProject.WinForms
             this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pictureBox1.Location = new System.Drawing.Point(3, 3);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(434, 523);
+            this.pictureBox1.Size = new System.Drawing.Size(334, 523);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox1.TabIndex = 1;
             this.pictureBox1.TabStop = false;
@@ -192,46 +195,46 @@ namespace BookProject.WinForms
             this.tableLayoutPanel6.Name = "tableLayoutPanel6";
             this.tableLayoutPanel6.RowCount = 1;
             this.tableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel6.Size = new System.Drawing.Size(440, 28);
+            this.tableLayoutPanel6.Size = new System.Drawing.Size(340, 28);
             this.tableLayoutPanel6.TabIndex = 2;
             // 
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(306, 6);
+            this.label6.Location = new System.Drawing.Point(241, 6);
             this.label6.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(21, 22);
+            this.label6.Size = new System.Drawing.Size(8, 22);
             this.label6.TabIndex = 11;
             this.label6.Text = "Title (T)";
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(251, 6);
+            this.label5.Location = new System.Drawing.Point(199, 6);
             this.label5.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(20, 22);
+            this.label5.Size = new System.Drawing.Size(8, 22);
             this.label5.TabIndex = 9;
             this.label5.Text = "Comment (C)";
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(141, 6);
+            this.label3.Location = new System.Drawing.Point(115, 6);
             this.label3.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(21, 22);
+            this.label3.Size = new System.Drawing.Size(8, 22);
             this.label3.TabIndex = 7;
             this.label3.Text = "PMiddle (M)";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(86, 6);
+            this.label2.Location = new System.Drawing.Point(73, 6);
             this.label2.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(21, 22);
+            this.label2.Size = new System.Drawing.Size(8, 22);
             this.label2.TabIndex = 6;
             this.label2.Text = "PStart (S)";
             // 
@@ -247,7 +250,7 @@ namespace BookProject.WinForms
             // pstart_panel
             // 
             this.pstart_panel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pstart_panel.Location = new System.Drawing.Point(60, 5);
+            this.pstart_panel.Location = new System.Drawing.Point(47, 5);
             this.pstart_panel.Margin = new System.Windows.Forms.Padding(5);
             this.pstart_panel.Name = "pstart_panel";
             this.pstart_panel.Size = new System.Drawing.Size(18, 18);
@@ -256,7 +259,7 @@ namespace BookProject.WinForms
             // garbage_panel
             // 
             this.garbage_panel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.garbage_panel.Location = new System.Drawing.Point(390, 5);
+            this.garbage_panel.Location = new System.Drawing.Point(299, 5);
             this.garbage_panel.Margin = new System.Windows.Forms.Padding(5);
             this.garbage_panel.Name = "garbage_panel";
             this.garbage_panel.Size = new System.Drawing.Size(18, 18);
@@ -268,14 +271,14 @@ namespace BookProject.WinForms
             this.label1.Location = new System.Drawing.Point(31, 6);
             this.label1.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(21, 22);
+            this.label1.Size = new System.Drawing.Size(8, 22);
             this.label1.TabIndex = 5;
             this.label1.Text = "None (N)";
             // 
             // title_panel
             // 
             this.title_panel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.title_panel.Location = new System.Drawing.Point(280, 5);
+            this.title_panel.Location = new System.Drawing.Point(215, 5);
             this.title_panel.Margin = new System.Windows.Forms.Padding(5);
             this.title_panel.Name = "title_panel";
             this.title_panel.Size = new System.Drawing.Size(18, 18);
@@ -283,7 +286,7 @@ namespace BookProject.WinForms
             // 
             // comment_panel
             // 
-            this.comment_panel.Location = new System.Drawing.Point(225, 5);
+            this.comment_panel.Location = new System.Drawing.Point(173, 5);
             this.comment_panel.Margin = new System.Windows.Forms.Padding(5);
             this.comment_panel.Name = "comment_panel";
             this.comment_panel.Size = new System.Drawing.Size(18, 17);
@@ -292,17 +295,17 @@ namespace BookProject.WinForms
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(361, 6);
+            this.label7.Location = new System.Drawing.Point(283, 6);
             this.label7.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(21, 22);
+            this.label7.Size = new System.Drawing.Size(8, 22);
             this.label7.TabIndex = 13;
             this.label7.Text = "Image (A)";
             // 
             // pmiddle_panel
             // 
             this.pmiddle_panel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pmiddle_panel.Location = new System.Drawing.Point(115, 5);
+            this.pmiddle_panel.Location = new System.Drawing.Point(89, 5);
             this.pmiddle_panel.Margin = new System.Windows.Forms.Padding(5);
             this.pmiddle_panel.Name = "pmiddle_panel";
             this.pmiddle_panel.Size = new System.Drawing.Size(18, 18);
@@ -310,7 +313,7 @@ namespace BookProject.WinForms
             // 
             // image_panel
             // 
-            this.image_panel.Location = new System.Drawing.Point(335, 5);
+            this.image_panel.Location = new System.Drawing.Point(257, 5);
             this.image_panel.Margin = new System.Windows.Forms.Padding(5);
             this.image_panel.Name = "image_panel";
             this.image_panel.Size = new System.Drawing.Size(18, 17);
@@ -319,10 +322,10 @@ namespace BookProject.WinForms
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(416, 6);
+            this.label8.Location = new System.Drawing.Point(325, 6);
             this.label8.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(21, 22);
+            this.label8.Size = new System.Drawing.Size(12, 22);
             this.label8.TabIndex = 15;
             this.label8.Text = "Garbage (G)";
             // 
@@ -413,14 +416,14 @@ namespace BookProject.WinForms
             this.tableLayoutPanel5.Controls.Add(this.tableLayoutPanel7, 0, 0);
             this.tableLayoutPanel5.Controls.Add(this.tabControl1, 0, 2);
             this.tableLayoutPanel5.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel5.Location = new System.Drawing.Point(770, 0);
+            this.tableLayoutPanel5.Location = new System.Drawing.Point(670, 0);
             this.tableLayoutPanel5.Margin = new System.Windows.Forms.Padding(0);
             this.tableLayoutPanel5.Name = "tableLayoutPanel5";
             this.tableLayoutPanel5.RowCount = 3;
             this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel5.Size = new System.Drawing.Size(400, 557);
+            this.tableLayoutPanel5.Size = new System.Drawing.Size(500, 557);
             this.tableLayoutPanel5.TabIndex = 6;
             // 
             // progressBar1
@@ -428,7 +431,7 @@ namespace BookProject.WinForms
             this.progressBar1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.progressBar1.Location = new System.Drawing.Point(3, 31);
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(394, 14);
+            this.progressBar1.Size = new System.Drawing.Size(494, 14);
             this.progressBar1.TabIndex = 2;
             // 
             // tableLayoutPanel7
@@ -445,13 +448,13 @@ namespace BookProject.WinForms
             this.tableLayoutPanel7.RowCount = 1;
             this.tableLayoutPanel7.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel7.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
-            this.tableLayoutPanel7.Size = new System.Drawing.Size(400, 28);
+            this.tableLayoutPanel7.Size = new System.Drawing.Size(500, 28);
             this.tableLayoutPanel7.TabIndex = 0;
             // 
             // openBookFolder_btn
             // 
             this.openBookFolder_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.openBookFolder_btn.Location = new System.Drawing.Point(301, 1);
+            this.openBookFolder_btn.Location = new System.Drawing.Point(401, 1);
             this.openBookFolder_btn.Margin = new System.Windows.Forms.Padding(1);
             this.openBookFolder_btn.Name = "openBookFolder_btn";
             this.openBookFolder_btn.Size = new System.Drawing.Size(98, 26);
@@ -465,7 +468,7 @@ namespace BookProject.WinForms
             this.bookFolder_tb.Location = new System.Drawing.Point(3, 3);
             this.bookFolder_tb.Name = "bookFolder_tb";
             this.bookFolder_tb.ReadOnly = true;
-            this.bookFolder_tb.Size = new System.Drawing.Size(294, 23);
+            this.bookFolder_tb.Size = new System.Drawing.Size(394, 23);
             this.bookFolder_tb.TabIndex = 0;
             // 
             // tabControl1
@@ -474,12 +477,13 @@ namespace BookProject.WinForms
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage4);
             this.tabControl1.Controls.Add(this.tabPage3);
+            this.tabControl1.Controls.Add(this.tabPage5);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(1, 49);
             this.tabControl1.Margin = new System.Windows.Forms.Padding(1);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(398, 507);
+            this.tabControl1.Size = new System.Drawing.Size(498, 507);
             this.tabControl1.TabIndex = 6;
             // 
             // tabPage1
@@ -520,6 +524,36 @@ namespace BookProject.WinForms
             this.detectTitleControl1.Size = new System.Drawing.Size(384, 473);
             this.detectTitleControl1.TabIndex = 0;
             // 
+            // tabPage4
+            // 
+            this.tabPage4.Controls.Add(this.detectCommentLinkNumberControl1);
+            this.tabPage4.Location = new System.Drawing.Point(4, 24);
+            this.tabPage4.Name = "tabPage4";
+            this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage4.Size = new System.Drawing.Size(390, 479);
+            this.tabPage4.TabIndex = 4;
+            this.tabPage4.Text = "Detect Comment Links";
+            this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // detectCommentLinkNumberControl1
+            // 
+            this.detectCommentLinkNumberControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.detectCommentLinkNumberControl1.Location = new System.Drawing.Point(3, 3);
+            this.detectCommentLinkNumberControl1.Name = "detectCommentLinkNumberControl1";
+            this.detectCommentLinkNumberControl1.Size = new System.Drawing.Size(384, 473);
+            this.detectCommentLinkNumberControl1.TabIndex = 0;
+            // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.detectGarbageControl1);
+            this.tabPage3.Location = new System.Drawing.Point(4, 24);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage3.Size = new System.Drawing.Size(490, 479);
+            this.tabPage3.TabIndex = 5;
+            this.tabPage3.Text = "Detect Garbage";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
             // tableLayoutPanel1
             // 
             this.tableLayoutPanel1.ColumnCount = 3;
@@ -548,16 +582,16 @@ namespace BookProject.WinForms
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(384, 473);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(484, 473);
             this.tableLayoutPanel1.TabIndex = 4;
             // 
             // saveOcrData_btn
             // 
             this.saveOcrData_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.saveOcrData_btn.Location = new System.Drawing.Point(131, 39);
+            this.saveOcrData_btn.Location = new System.Drawing.Point(165, 39);
             this.saveOcrData_btn.Margin = new System.Windows.Forms.Padding(1);
             this.saveOcrData_btn.Name = "saveOcrData_btn";
-            this.saveOcrData_btn.Size = new System.Drawing.Size(124, 26);
+            this.saveOcrData_btn.Size = new System.Drawing.Size(157, 26);
             this.saveOcrData_btn.TabIndex = 3;
             this.saveOcrData_btn.Text = "Save Ocr Data";
             this.saveOcrData_btn.UseVisualStyleBackColor = true;
@@ -565,10 +599,10 @@ namespace BookProject.WinForms
             // regeneratePage_btn
             // 
             this.regeneratePage_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.regeneratePage_btn.Location = new System.Drawing.Point(131, 95);
+            this.regeneratePage_btn.Location = new System.Drawing.Point(165, 95);
             this.regeneratePage_btn.Margin = new System.Windows.Forms.Padding(1);
             this.regeneratePage_btn.Name = "regeneratePage_btn";
-            this.regeneratePage_btn.Size = new System.Drawing.Size(124, 26);
+            this.regeneratePage_btn.Size = new System.Drawing.Size(157, 26);
             this.regeneratePage_btn.TabIndex = 9;
             this.regeneratePage_btn.Text = "Regenerate Page";
             this.regeneratePage_btn.UseVisualStyleBackColor = true;
@@ -577,10 +611,10 @@ namespace BookProject.WinForms
             // uncoveredLinks_btn
             // 
             this.uncoveredLinks_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.uncoveredLinks_btn.Location = new System.Drawing.Point(257, 95);
+            this.uncoveredLinks_btn.Location = new System.Drawing.Point(324, 95);
             this.uncoveredLinks_btn.Margin = new System.Windows.Forms.Padding(1);
             this.uncoveredLinks_btn.Name = "uncoveredLinks_btn";
-            this.uncoveredLinks_btn.Size = new System.Drawing.Size(126, 26);
+            this.uncoveredLinks_btn.Size = new System.Drawing.Size(159, 26);
             this.uncoveredLinks_btn.TabIndex = 10;
             this.uncoveredLinks_btn.Text = "Uncovered Links";
             this.uncoveredLinks_btn.UseVisualStyleBackColor = true;
@@ -592,7 +626,7 @@ namespace BookProject.WinForms
             this.breakByDistant_btn.Location = new System.Drawing.Point(1, 123);
             this.breakByDistant_btn.Margin = new System.Windows.Forms.Padding(1);
             this.breakByDistant_btn.Name = "breakByDistant_btn";
-            this.breakByDistant_btn.Size = new System.Drawing.Size(128, 26);
+            this.breakByDistant_btn.Size = new System.Drawing.Size(162, 26);
             this.breakByDistant_btn.TabIndex = 11;
             this.breakByDistant_btn.Text = "Break By Distant";
             this.breakByDistant_btn.UseVisualStyleBackColor = true;
@@ -601,10 +635,10 @@ namespace BookProject.WinForms
             // uncoveredStarts_btn
             // 
             this.uncoveredStarts_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.uncoveredStarts_btn.Location = new System.Drawing.Point(257, 123);
+            this.uncoveredStarts_btn.Location = new System.Drawing.Point(324, 123);
             this.uncoveredStarts_btn.Margin = new System.Windows.Forms.Padding(1);
             this.uncoveredStarts_btn.Name = "uncoveredStarts_btn";
-            this.uncoveredStarts_btn.Size = new System.Drawing.Size(126, 26);
+            this.uncoveredStarts_btn.Size = new System.Drawing.Size(159, 26);
             this.uncoveredStarts_btn.TabIndex = 12;
             this.uncoveredStarts_btn.Text = "Uncovered Starts";
             this.uncoveredStarts_btn.UseVisualStyleBackColor = true;
@@ -613,10 +647,10 @@ namespace BookProject.WinForms
             // removeLinks_btn
             // 
             this.removeLinks_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.removeLinks_btn.Location = new System.Drawing.Point(131, 123);
+            this.removeLinks_btn.Location = new System.Drawing.Point(165, 123);
             this.removeLinks_btn.Margin = new System.Windows.Forms.Padding(1);
             this.removeLinks_btn.Name = "removeLinks_btn";
-            this.removeLinks_btn.Size = new System.Drawing.Size(124, 26);
+            this.removeLinks_btn.Size = new System.Drawing.Size(157, 26);
             this.removeLinks_btn.TabIndex = 13;
             this.removeLinks_btn.Text = "Remove Links";
             this.removeLinks_btn.UseVisualStyleBackColor = true;
@@ -628,7 +662,7 @@ namespace BookProject.WinForms
             this.button1.Location = new System.Drawing.Point(1, 39);
             this.button1.Margin = new System.Windows.Forms.Padding(1);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(128, 26);
+            this.button1.Size = new System.Drawing.Size(162, 26);
             this.button1.TabIndex = 14;
             this.button1.Text = "Train - Apply Model";
             this.button1.UseVisualStyleBackColor = true;
@@ -637,10 +671,10 @@ namespace BookProject.WinForms
             // generateLines_btn
             // 
             this.generateLines_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.generateLines_btn.Location = new System.Drawing.Point(257, 39);
+            this.generateLines_btn.Location = new System.Drawing.Point(324, 39);
             this.generateLines_btn.Margin = new System.Windows.Forms.Padding(1);
             this.generateLines_btn.Name = "generateLines_btn";
-            this.generateLines_btn.Size = new System.Drawing.Size(126, 26);
+            this.generateLines_btn.Size = new System.Drawing.Size(159, 26);
             this.generateLines_btn.TabIndex = 0;
             this.generateLines_btn.Text = "Generate Lines";
             this.generateLines_btn.UseVisualStyleBackColor = true;
@@ -651,7 +685,7 @@ namespace BookProject.WinForms
             this.generateFb2_btn.Location = new System.Drawing.Point(1, 95);
             this.generateFb2_btn.Margin = new System.Windows.Forms.Padding(1);
             this.generateFb2_btn.Name = "generateFb2_btn";
-            this.generateFb2_btn.Size = new System.Drawing.Size(128, 26);
+            this.generateFb2_btn.Size = new System.Drawing.Size(162, 26);
             this.generateFb2_btn.TabIndex = 15;
             this.generateFb2_btn.Text = "Generate FB2";
             this.generateFb2_btn.UseVisualStyleBackColor = true;
@@ -663,48 +697,37 @@ namespace BookProject.WinForms
             this.autoDetectImages_btn.Location = new System.Drawing.Point(1, 67);
             this.autoDetectImages_btn.Margin = new System.Windows.Forms.Padding(1);
             this.autoDetectImages_btn.Name = "autoDetectImages_btn";
-            this.autoDetectImages_btn.Size = new System.Drawing.Size(128, 26);
+            this.autoDetectImages_btn.Size = new System.Drawing.Size(162, 26);
             this.autoDetectImages_btn.TabIndex = 16;
             this.autoDetectImages_btn.Text = "Auto Detect Images";
             this.autoDetectImages_btn.UseVisualStyleBackColor = true;
             // 
-            // tabPage4
+            // detectGarbageControl1
             // 
-            this.tabPage4.Controls.Add(this.detectCommentLinkNumberControl1);
-            this.tabPage4.Location = new System.Drawing.Point(4, 24);
-            this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(390, 479);
-            this.tabPage4.TabIndex = 4;
-            this.tabPage4.Text = "Detect Comment Links";
-            this.tabPage4.UseVisualStyleBackColor = true;
+            this.detectGarbageControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.detectGarbageControl1.Location = new System.Drawing.Point(3, 3);
+            this.detectGarbageControl1.Name = "detectGarbageControl1";
+            this.detectGarbageControl1.Size = new System.Drawing.Size(484, 473);
+            this.detectGarbageControl1.TabIndex = 0;
             // 
-            // tabPage3
+            // tabPage5
             // 
-            this.tabPage3.Controls.Add(this.tableLayoutPanel1);
-            this.tabPage3.Location = new System.Drawing.Point(4, 24);
-            this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(390, 479);
-            this.tabPage3.TabIndex = 5;
-            this.tabPage3.Text = "Other";
-            this.tabPage3.UseVisualStyleBackColor = true;
+            this.tabPage5.Controls.Add(this.tableLayoutPanel1);
+            this.tabPage5.Location = new System.Drawing.Point(4, 24);
+            this.tabPage5.Name = "tabPage5";
+            this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage5.Size = new System.Drawing.Size(490, 479);
+            this.tabPage5.TabIndex = 6;
+            this.tabPage5.Text = "Other";
+            this.tabPage5.UseVisualStyleBackColor = true;
             // 
-            // detectCommentLinkNumberControl1
-            // 
-            this.detectCommentLinkNumberControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.detectCommentLinkNumberControl1.Location = new System.Drawing.Point(3, 3);
-            this.detectCommentLinkNumberControl1.Name = "detectCommentLinkNumberControl1";
-            this.detectCommentLinkNumberControl1.Size = new System.Drawing.Size(384, 473);
-            this.detectCommentLinkNumberControl1.TabIndex = 0;
-            // 
-            // MainStudioForm
+            // BookProjectForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1170, 557);
             this.Controls.Add(this.tableLayoutPanel3);
-            this.Name = "MainStudioForm";
+            this.Name = "BookProjectForm";
             this.Text = "LabelingForm";
             this.tableLayoutPanel3.ResumeLayout(false);
             this.tableLayoutPanel4.ResumeLayout(false);
@@ -719,9 +742,10 @@ namespace BookProject.WinForms
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
-            this.tableLayoutPanel1.ResumeLayout(false);
             this.tabPage4.ResumeLayout(false);
             this.tabPage3.ResumeLayout(false);
+            this.tableLayoutPanel1.ResumeLayout(false);
+            this.tabPage5.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -776,5 +800,7 @@ namespace BookProject.WinForms
         private System.Windows.Forms.TabPage tabPage4;
         private System.Windows.Forms.TabPage tabPage3;
         private DetectCommentLinkNumberControl detectCommentLinkNumberControl1;
+        private DetectGarbageControl detectGarbageControl1;
+        private System.Windows.Forms.TabPage tabPage5;
     }
 }
