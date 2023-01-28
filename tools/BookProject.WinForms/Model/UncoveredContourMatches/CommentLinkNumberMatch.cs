@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using BookProject.Core.Models.Book;
+using BookProject.Core.Models.Book.Old;
 
 namespace BookProject.WinForms.Model.UncoveredContourMatches
 {
@@ -16,7 +17,7 @@ namespace BookProject.WinForms.Model.UncoveredContourMatches
                    (9 <= contour.Rectangle.Height && contour.Rectangle.Height <= 15);
         }
 
-        public void Apply(BookProjectData bookProjectData, UncoveredContour contour)
+        public void Apply(OldBookProjectData bookProjectData, UncoveredContour contour)
         {
             var page = bookProjectData.Pages.FirstOrDefault(p => p.Filename == contour.Filename);
 

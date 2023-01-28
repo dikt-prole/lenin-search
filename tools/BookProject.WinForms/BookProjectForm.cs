@@ -5,116 +5,71 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Accord.MachineLearning.DecisionTrees;
+using BookProject.Core.Detectors;
 using BookProject.Core.ImageRendering;
-using BookProject.Core.Misc;
 using BookProject.Core.Models.Book;
 using BookProject.Core.Utilities;
-using BookProject.WinForms.CV;
-using BookProject.WinForms.Model;
-using BookProject.WinForms.Model.UncoveredContourMatches;
+using BookProject.WinForms.MouseMoveActivities;
 using BookProject.WinForms.Service;
-using BookProject.WinForms.YandexVision;
 
 namespace BookProject.WinForms
 {
     public partial class BookProjectForm : Form
     {
+        private Book _book = null;
+
         private readonly PageState _pageState = new PageState();
 
         private IImageRenderer _imageRenderer;
 
-        private BookProjectData _bookProjectData = BookProjectData.Empty();
-
-        private Action<Point> _moveDragPoint;
-
-        private RandomForest _model;
-
-        private BookProjectLabel? _mouseLeftLabel;
-
-        private readonly IPageProvider _pageProvider;
-
-        private readonly Dictionary<Keys, BookProjectLabel?> _keyLabels = new Dictionary<Keys, BookProjectLabel?>
-        {
-            {Keys.S, BookProjectLabel.PStart},
-            {Keys.M, BookProjectLabel.PMiddle},
-            {Keys.C, BookProjectLabel.Comment},
-            {Keys.T, BookProjectLabel.Title},
-            {Keys.A, BookProjectLabel.Image},
-            {Keys.G, BookProjectLabel.Garbage},
-            {Keys.N, null}
-        };
-
-        private readonly TitleBlockDialog _titleBlockDialog = new TitleBlockDialog();
-
-        private const int MaxLineHeight = 40;
-        private const int MaxWordDistance = 25;
-        private const int SideExpandMax = 50;
-        private const int ImageTitleAreaHeight = 120;
-        private const int MinPageWideTextWidth = 1320;
+        private IMouseMoveActivity _mouseMoveActivity;
 
         public BookProjectForm()
         {
             InitializeComponent();
 
             ocr_lb.SelectedIndexChanged += OcrLbOnSelectedIndexChanged;
-            ocr_lb.KeyDown += OcrLbOnKeyDown;
-            none_panel.BackColor = BookProjectPalette.GetColor(null);
-            pstart_panel.BackColor = BookProjectPalette.GetColor(BookProjectLabel.PStart);
-            pmiddle_panel.BackColor = BookProjectPalette.GetColor(BookProjectLabel.PMiddle);
-            comment_panel.BackColor = BookProjectPalette.GetColor(BookProjectLabel.Comment);
-            title_panel.BackColor = BookProjectPalette.GetColor(BookProjectLabel.Title);
-            image_panel.BackColor = BookProjectPalette.GetColor(BookProjectLabel.Image);
-            garbage_panel.BackColor = BookProjectPalette.GetColor(BookProjectLabel.Garbage);
 
             pictureBox1.Paint += PictureBox1OnPaint;
             pictureBox1.MouseDown += PictureBox1OnMouseDown;
             pictureBox1.MouseUp += PictureBox1OnMouseUp;
             pictureBox1.MouseMove += PictureBox1OnMouseMove;
 
-            saveOcrData_btn.Click += SaveOcrDataClick;
+            saveBook_btn.Click += OnSaveBookClick;
 
             openBookFolder_btn.Click += OpenBookFolderClick;
             generateLines_btn.Click += GenerateLinesClick;
 
-            labeling_rb.Checked = true;
-
-            autoDetectImages_btn.Click += DetectImagesOnClick;
-
-            _pageProvider =
-                new FeatureSettingDecorator(
-                    new IntersectingLineMergerDecorator(
-                        new PageProviderRetryDecorator(
-                            new YandexVisionPageProviderService())));
-
-            _imageRenderer = new PageStateRenderer(_pageState,
-                () => pictureBox1.ToOriginalPoint(pictureBox1.PointToClient(Cursor.Position)));
+            _imageRenderer = new PageStateRenderer(_pageState);
 
             detectTitleControl1.TestStart += (sender, args) =>
             {
                 _imageRenderer = new TestDetectTitleImageRenderer(detectTitleControl1.GetSettings());
                 pictureBox1.Refresh();
             };
+            detectTitleControl1.Detect += OnDetectTitleClick;
 
             detectImageControl1.TestStart += (sender, args) =>
             {
                 _imageRenderer = new TestDetectImageImageRenderer(detectImageControl1.GetSettings());
                 pictureBox1.Refresh();
             };
+            detectImageControl1.Detect += OnDetectImageClick;
 
             detectCommentLinkNumberControl1.TestStart += (sender, args) =>
             {
                 _imageRenderer = new TestDetectCommentLinkNumberImageRenderer(detectCommentLinkNumberControl1.GetSettings(), new YandexVisionOcrUtility());
                 pictureBox1.Refresh();
             };
+            detectCommentLinkNumberControl1.Detect += OnDetectCommentLinkClick;
 
             detectGarbageControl1.TestStart += (sender, args) =>
             {
                 _imageRenderer = new TestDetectGarbageImageRenderer(detectGarbageControl1.GetSettings());
                 pictureBox1.Refresh();
             };
+            detectGarbageControl1.Detect += OnDetectGarbageClick;
 
             detectTitleControl1.TestEnd += (sender, args) => SetPageStateImageRenderer();
 
@@ -123,98 +78,151 @@ namespace BookProject.WinForms
             detectCommentLinkNumberControl1.TestEnd += (sender, args) => SetPageStateImageRenderer();
 
             detectGarbageControl1.TestEnd += (sender, args) => SetPageStateImageRenderer();
+
+            KeyDown += PictureBox1OnKeyDown;
+        }
+
+        private void PictureBox1OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Delete)
+            {
+                var editedBlock = _pageState.Page.GetEditBlock();
+                if (editedBlock != null)
+                {
+                    _pageState.Page.RemoveBlock(editedBlock);
+                }
+            }
+        }
+
+        private void OnDetectGarbageClick(object sender, EventArgs e)
+        {
+            var dialog = new ImageScopeDialog();
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+
+            var imageFiles = dialog.GetMatchingImages(bookFolder_tb.Text);
+
+            progressBar1.Minimum = 0;
+            progressBar1.Maximum = imageFiles.Length;
+            progressBar1.Value = 0;
+
+            for (var i = 0; i < imageFiles.Length; i++)
+            {
+                var imageFile = imageFiles[i];
+                var page = _book.GetPage(Path.GetFileNameWithoutExtension(imageFile));
+                var excludeRects = page.ImageBlocks.Select(b => b.Rectangle)
+                    .Concat(page.TitleBlocks.Select(b => b.Rectangle))
+                    .Concat(page.CommentLinkBlocks.Select(b => b.Rectangle))
+                    .ToArray();
+                var garbageRects = new GarbageDetector()
+                    .Detect(imageFile, detectGarbageControl1.GetSettings(), excludeRects, null);
+                page.GarbageBlocks = garbageRects.Select(GarbageBlock.FromRectangle).ToList();
+                progressBar1.Value = i + 1;
+                Application.DoEvents();
+            }
+
+            pictureBox1.Refresh();
+            MessageBox.Show("Completed!", "Detect Garbage", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            progressBar1.Value = 0;
+        }
+
+        private void OnDetectCommentLinkClick(object sender, EventArgs e)
+        {
+            var dialog = new ImageScopeDialog();
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+
+            var imageFiles = dialog.GetMatchingImages(bookFolder_tb.Text);
+
+            progressBar1.Minimum = 0;
+            progressBar1.Maximum = imageFiles.Length;
+            progressBar1.Value = 0;
+
+            for (var i = 0; i < imageFiles.Length; i++)
+            {
+                var imageFile = imageFiles[i];
+                var page = _book.GetPage(Path.GetFileNameWithoutExtension(imageFile));
+                var excludeRects = page.ImageBlocks.Select(b => b.Rectangle)
+                    .Concat(page.TitleBlocks.Select(b => b.Rectangle))
+                    .ToArray();
+                var commentLinkRects = new CommentLinkDetector(new YandexVisionOcrUtility())
+                    .Detect(imageFile, detectCommentLinkNumberControl1.GetSettings(), excludeRects, null);
+                page.CommentLinkBlocks = commentLinkRects.Select(CommentLinkBlock.FromRectangle).ToList();
+                progressBar1.Value = i + 1;
+                Application.DoEvents();
+            }
+
+            pictureBox1.Refresh();
+            MessageBox.Show("Completed!", "Detect Comment Links", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            progressBar1.Value = 0;
+        }
+
+        private void OnDetectImageClick(object sender, EventArgs e)
+        {
+            var dialog = new ImageScopeDialog();
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+
+            var imageFiles = dialog.GetMatchingImages(bookFolder_tb.Text);
+
+            progressBar1.Minimum = 0;
+            progressBar1.Maximum = imageFiles.Length;
+            progressBar1.Value = 0;
+
+            for (var i = 0; i < imageFiles.Length; i++)
+            {
+                var imageFile = imageFiles[i];
+                var page = _book.GetPage(Path.GetFileNameWithoutExtension(imageFile));
+                var imageRects = new ImageDetector().Detect(imageFile, detectImageControl1.GetSettings(), null, null);
+                page.ImageBlocks = imageRects.Select(ImageBlock.FromRectangle).ToList();
+                progressBar1.Value = i + 1;
+                Application.DoEvents();
+            }
+
+            pictureBox1.Refresh();
+            MessageBox.Show("Completed!", "Detect Images", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            progressBar1.Value = 0;
+        }
+
+        private void OnDetectTitleClick(object sender, EventArgs e)
+        {
+            var dialog = new ImageScopeDialog();
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+
+            var imageFiles = dialog.GetMatchingImages(bookFolder_tb.Text);
+
+            progressBar1.Minimum = 0;
+            progressBar1.Maximum = imageFiles.Length;
+            progressBar1.Value = 0;
+
+            for (var i = 0; i < imageFiles.Length; i++)
+            {
+                var imageFile = imageFiles[i];
+                var page = _book.GetPage(Path.GetFileNameWithoutExtension(imageFile));
+                var excludeRects = page.ImageBlocks.Select(b => b.Rectangle).ToArray();
+                var titleRects = new TitleDetector().Detect(imageFile, detectTitleControl1.GetSettings(), excludeRects, null);
+                page.TitleBlocks = titleRects.Select(TitleBlock.FromRectangle).ToList();
+                progressBar1.Value = i + 1;
+                Application.DoEvents();
+            }
+
+            pictureBox1.Refresh();
+            MessageBox.Show("Completed!", "Detect Titles", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            progressBar1.Value = 0;
         }
 
         private void SetPageStateImageRenderer()
         {
-            _imageRenderer = new PageStateRenderer(_pageState,
-                () => pictureBox1.ToOriginalPoint(pictureBox1.PointToClient(Cursor.Position)));
+            _imageRenderer = new PageStateRenderer(_pageState);
             pictureBox1.Refresh();
-        }
-
-        private void DetectImagesOnClick(object sender, EventArgs e)
-        {
-            if (_bookProjectData == null)
-            {
-                MessageBox.Show("Ocr Data is missing", "Auto Detect Images", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            var dialog = new ImageScopeDialog();
-            if (dialog.ShowDialog() != DialogResult.OK) return;
-
-            var imageFiles = GetImageFiles(bookFolder_tb.Text)
-                .Where(f => dialog.ImageMatch(int.Parse(new string(Path.GetFileNameWithoutExtension(f).Where(char.IsNumber).ToArray()))))
-                .ToList();
-
-            foreach (var imageFile in imageFiles)
-            {
-                var filename = Path.GetFileNameWithoutExtension(imageFile);
-
-                var page = _bookProjectData.GetPage(filename);
-
-                page.ImageBlocks?.Clear();
-
-                var args = new FindImageRectangleArgs
-                {
-                    GaussianArgs = SmoothGaussianArgs.Smooth(8, 1),
-                    MaxLineHeight = MaxLineHeight,
-                    SideExpandMax = SideExpandMax,
-                    ImageTitleAreaHeight = ImageTitleAreaHeight
-                };
-                var imageRectangle = CvUtil.FindImageRectangle(imageFile, args, out _);
-
-                if (imageRectangle.HasValue)
-                {
-                    AddImageBlock(imageRectangle.Value, page);
-                }
-            }
-
-            MessageBox.Show("Success", "Auto Detect Images", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private static async Task<(List<BookProjectPage> Pages, bool Success, string Error)> BatchOcr(IPageProvider pageProvider, List<string> imageFiles, Action<int> progressAction)
-        {
-            var pages = new List<BookProjectPage>();
-            var batchSize = 10;
-            var imageFileBatches = imageFiles.ChunkBy(batchSize);
-            for (var batchIndex = 0; batchIndex < imageFileBatches.Count; batchIndex++)
-            {
-                var batch = imageFileBatches[batchIndex];
-                var tasks = batch.Select(pageProvider.GetOcrPageAsync);
-
-                var imageFileSw = new Stopwatch(); imageFileSw.Start();
-
-                var results = await Task.WhenAll(tasks);
-                progressAction(batchSize * batchIndex + batch.Count);
-                if (results.Any(r => !r.Success))
-                {
-                    return (null, false, results.First(r => !r.Success).Error);
-                }
-                pages.AddRange(results.Select(r => r.Page));
-
-                imageFileSw.Stop();
-
-                var waitDelta = 1000 - imageFileSw.Elapsed.TotalMilliseconds;
-                if (waitDelta > 0)
-                {
-                    await Task.Delay(1 + (int)waitDelta);
-                }
-            }
-
-            return (pages, true, null);
         }
 
         private async void GenerateLinesClick(object? sender, EventArgs e)
         {
+            /*
             var dialog = new ImageScopeDialog();
             if (dialog.ShowDialog() != DialogResult.OK) return;
 
             var imageFiles = GetImageFiles(bookFolder_tb.Text)
                 .Where(f => dialog.ImageMatch(int.Parse(new string(Path.GetFileNameWithoutExtension(f).Where(char.IsNumber).ToArray()))))
                 .ToList();
-
-            _bookProjectData.Pages ??= new List<BookProjectPage>();
 
             progressBar1.Minimum = 0;
             progressBar1.Maximum = imageFiles.Count;
@@ -223,86 +231,16 @@ namespace BookProject.WinForms
             for (var i = 0; i < imageFiles.Count; i++)
             {
                 var imageFile = imageFiles[i];
-                var existingPage = _bookProjectData.Pages.FirstOrDefault(p => p.Filename == Path.GetFileNameWithoutExtension(imageFile));
-
-                // prepare ocr file
-                var ocrFile = imageFile;
-                if (existingPage?.ImageBlocks?.Any() == true)
-                {
-                    ocrFile = Path.GetTempFileName() + ".jpg";
-                    using var image = new Bitmap(Image.FromStream(new MemoryStream(File.ReadAllBytes(imageFile))));
-                    using var g = Graphics.FromImage(image);
-                    using var brush = new SolidBrush(Color.White);
-                    foreach (var ib in existingPage.ImageBlocks)
-                    {
-                        g.FillRectangle(brush, ib.Rectangle);
-                    }
-                    image.Save(ocrFile, ImageFormat.Jpeg);
-                }
-
-                // do ocr
-                var ocrResult = await _pageProvider.GetOcrPageAsync(ocrFile);
-                if (!ocrResult.Success)
-                {
-                    MessageBox.Show(ocrResult.Error, "Ocr Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                // set correct filename & delete temp file
-                if (ocrFile != imageFile)
-                {
-                    ocrResult.Page.Filename = Path.GetFileNameWithoutExtension(imageFile);
-                    File.Delete(ocrFile);
-                }
-
-                // break by distance
-                var linesToBreak = ocrResult.Page.Lines.ToArray();
-                foreach (var pageLine in linesToBreak)
-                {
-                    ocrResult.Page.BreakLineByDistantWord(pageLine, MaxWordDistance);
-                }
-
-                // merge pages
-                if (existingPage != null)
-                {
-                    existingPage.MergePage(ocrResult.Page);
-                }
-                else
-                {
-                    _bookProjectData.Pages.Add(ocrResult.Page);
-                }
-
                 progressBar1.Value = i + 1;
             }
 
             MessageBox.Show("Ocr completed", "Ocr", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private async void RegeneratePageClick(object sender, EventArgs e)
-        {
-            await RegeneratePage();
-        }
-
-        private async Task RegeneratePage()
-        {
-            var filename = ocr_lb.SelectedItem as string;
-            var imageFile = Directory.GetFiles(bookFolder_tb.Text)
-                .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == filename);
-            var ocrResult = await _pageProvider.GetOcrPageAsync(imageFile);
-            if (!ocrResult.Success)
-            {
-                MessageBox.Show(ocrResult.Error, "Ocr Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            _bookProjectData.Pages.RemoveAll(p => p.Filename == filename);
-            _bookProjectData.Pages.Add(ocrResult.Page);
-
-            ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
+            */
         }
 
         private void UncoveredLinksClick(object sender, EventArgs e)
         {
+            /*
             var dialog = new ImageScopeDialog();
             if (dialog.ShowDialog() != DialogResult.OK) return;
 
@@ -342,6 +280,7 @@ namespace BookProject.WinForms
                 MessageBox.Show("Uncovered link number contours were not found", "Uncovered link number contours",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
+            */
         }
 
         private void OpenBookFolderClick(object? sender, EventArgs e)
@@ -350,13 +289,13 @@ namespace BookProject.WinForms
 
             if (dialog.ShowDialog() != DialogResult.OK) return;
 
-            _bookProjectData = BookProjectData.Load(dialog.SelectedPath);
+            _book = Book.Load(dialog.SelectedPath);
 
             bookFolder_tb.Text = dialog.SelectedPath;
 
             ocr_lb.Items.Clear();
 
-            var fileNames = GetImageFiles(bookFolder_tb.Text)
+            var fileNames = Directory.GetFiles(bookFolder_tb.Text, "*.jpg")
                 .Select(Path.GetFileNameWithoutExtension)
                 .OrderBy(f => int.Parse(new string(Path.GetFileNameWithoutExtension(f).Where(char.IsNumber).ToArray())))
                 .ToList();
@@ -367,9 +306,9 @@ namespace BookProject.WinForms
             }
         }
 
-        private void SaveOcrDataClick(object? sender, EventArgs e)
+        private void OnSaveBookClick(object? sender, EventArgs e)
         {
-            _bookProjectData.Save(bookFolder_tb.Text);
+            _book.Save(bookFolder_tb.Text);
 
             MessageBox.Show("Ocr data saved", "Ocr data", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
@@ -379,9 +318,8 @@ namespace BookProject.WinForms
             if (pictureBox1.Image == null) return;
             var filename = ocr_lb.SelectedItem as string;
             if (filename == null) return;
-            var page = _bookProjectData.GetPage(filename);
+            var page = _book.GetPage(filename);
             if (page == null) return;
-
 
             if (e.Button == MouseButtons.Right)
             {
@@ -391,153 +329,94 @@ namespace BookProject.WinForms
             if (e.Button == MouseButtons.Left)
             {
                 var originalPoint = pictureBox1.ToOriginalPoint(e.Location);
-                _moveDragPoint = null;
-
-                var draggedOcrBlock = 
-                    page.ImageBlocks?.FirstOrDefault(ib => ib.IsInDragRectangle(originalPoint)) ??
-                        (BookProjectBlock)page.TitleBlocks?.FirstOrDefault(tb => tb.IsInDragRectangle(originalPoint));
-
-                if (draggedOcrBlock != null)
+                var editBlock = page.GetEditBlock();
+                if (editBlock?.LeftDragRectangle.Contains(originalPoint) == true)
                 {
-                    var isTop = draggedOcrBlock.TopDragRectangle.Contains(originalPoint);
-                    var isBottom = draggedOcrBlock.BottomDragRectangle.Contains(originalPoint);
-                    var isLeft = draggedOcrBlock.LeftDragRectangle.Contains(originalPoint);
-                    var isRight = draggedOcrBlock.RightDragRectangle.Contains(originalPoint);
-
-                    _moveDragPoint = p =>
-                    {
-                        if (isTop)
-                        {
-                            draggedOcrBlock.TopLeftY = p.Y;
-                        }
-                        if (isBottom)
-                        {
-                            draggedOcrBlock.BottomRightY = p.Y;
-                        }
-                        if (isLeft)
-                        {
-                            draggedOcrBlock.TopLeftX = p.X;
-                        }
-                        if (isRight)
-                        {
-                            draggedOcrBlock.BottomRightX = p.X;
-                        }
-
-                        if (draggedOcrBlock is BookProjectImageBlock ocrImageBLock)
-                        {
-                            ImageBlockPostEdit(page, ocrImageBLock, true);
-                        }
-
-                        pictureBox1.Refresh();
-                    };
+                    _mouseMoveActivity = new DragBlockLeftMouseMoveActivity(editBlock);
                 }
-                else if (page.TopDivider.DragRectangle.Contains(originalPoint))
+                else if (editBlock?.RightDragRectangle.Contains(originalPoint) == true)
                 {
-                    _moveDragPoint = p =>
-                    {
-                        page.TopDivider.Y = p.Y;
-                        page.CalculateLineDividerFeaturesAndLabels();
-                        pictureBox1.Refresh();
-                    };
+                    _mouseMoveActivity = new DragBlockRightMouseMoveActivity(editBlock);
                 }
-                else if (page.BottomDivider.DragRectangle.Contains(originalPoint))
+                else if (editBlock?.TopDragRectangle.Contains(originalPoint) == true)
                 {
-                    _moveDragPoint = p =>
-                    {
-                        page.BottomDivider.Y = p.Y;
-                        page.CalculateLineDividerFeaturesAndLabels();
-                        pictureBox1.Refresh();
-                    };
+                    _mouseMoveActivity = new DragBlockTopMouseMoveActivity(editBlock);
+                }
+                else if (editBlock?.BottomDragRectangle.Contains(originalPoint) == true)
+                {
+                    _mouseMoveActivity = new DragBlockBottomMouseMoveActivity(editBlock);
                 }
                 else
                 {
-                    var linesAtPoint = page.Lines.Where(b => b.Rectangle.Contains(originalPoint)).ToList();
-                    foreach (var line in linesAtPoint)
+                    _mouseMoveActivity = null;
+                    var blockAtCursor = page.GetAllBlocks().FirstOrDefault(b => b.Rectangle.Contains(originalPoint));
+                    if (blockAtCursor != null)
                     {
-                        line.Label = _mouseLeftLabel;
+                        page.SetEditBlock(blockAtCursor);
+                        pictureBox1.Refresh();
                     }
-
-                    ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
                 }
             }
         }
 
         private void PictureBox1OnMouseUp(object sender, MouseEventArgs e)
         {
-            var fileName = ocr_lb.SelectedItem as string;
-            if (fileName == null) return;
-            var page = _bookProjectData.GetPage(fileName);
-            if (page == null) return;
+            if (_pageState.Page == null) return;
+
+            _mouseMoveActivity = null;
 
             if (e.Button == MouseButtons.Right && _pageState.SelectionStartPoint.HasValue)
             {
-                var pbSelectionStartPoint = pictureBox1.ToPictureBoxPoint(_pageState.SelectionStartPoint.Value);
-                var xs = new List<int> { pbSelectionStartPoint.X, e.Location.X }.OrderBy(i => i).ToList();
-                var ys = new List<int> { pbSelectionStartPoint.Y, e.Location.Y }.OrderBy(i => i).ToList();
-                var rect = new Rectangle(xs[0], ys[0], xs[1] - xs[0], ys[1] - ys[0]);
-                var menu = GetPageMenu(page, rect);
+                var originalLocation = pictureBox1.ToOriginalPoint(e.Location);
+
+                var xs = new List<int>
+                {
+                    _pageState.SelectionStartPoint.Value.X,
+                    originalLocation.X
+                }
+                    .OrderBy(i => i).ToList();
+
+                var ys = new List<int>
+                {
+                    _pageState.SelectionStartPoint.Value.Y,
+                    originalLocation.Y
+                }
+                    .OrderBy(i => i).ToList();
+
+                var originalRect = new Rectangle(xs[0], ys[0], xs[1] - xs[0], ys[1] - ys[0]);
+                var menu = GetPageMenu(_pageState.Page, originalRect);
                 menu.Show(pictureBox1, e.Location);
                 _pageState.SelectionStartPoint = null;
             }
-
-            if (e.Button == MouseButtons.Left)
-            {
-                _moveDragPoint = null;
-                foreach (var imageBlock in page.ImageBlocks)
-                {
-                    foreach (var line in page.GetIntersectingLines(imageBlock.Rectangle))
-                    {
-                        line.Label = BookProjectLabel.Image;
-                    }
-                }
-                ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
-            }
         }
 
-        private ContextMenuStrip GetPageMenu(BookProjectPage page, Rectangle rect)
+        private ContextMenuStrip GetPageMenu(Page page, Rectangle originalRect)
         {
             var menu = new ContextMenuStrip();
 
-            // 1. labeling section
-            if (labeling_rb.Checked || all_rb.Checked)
+            menu.Items.Add("Add Image Block", null, (o, a) =>
             {
-                menu.Items.Add("PStart", null, (o, a) => SetLabelForIntersectingLines(rect, BookProjectLabel.PStart));
-                menu.Items.Add("PMiddle", null, (o, a) => SetLabelForIntersectingLines(rect, BookProjectLabel.PMiddle));
-                menu.Items.Add("Comment", null, (o, a) => SetLabelForIntersectingLines(rect, BookProjectLabel.Comment));
-                menu.Items.Add("Title", null, (o, a) => SetLabelForIntersectingLines(rect, BookProjectLabel.Title));
-                menu.Items.Add("Image", null, (o, a) => SetLabelForIntersectingLines(rect, BookProjectLabel.Image));
-                menu.Items.Add("Garbage", null, (o, a) => SetLabelForIntersectingLines(rect, BookProjectLabel.Garbage));
-                menu.Items.Add("None", null, (o, a) => SetLabelForIntersectingLines(rect, null));
-                if (all_rb.Checked) menu.Items.Add(new ToolStripSeparator());
-            }
+                page.ImageBlocks.Add(ImageBlock.FromRectangle(originalRect));
+                pictureBox1.Refresh();
+            });
 
-            // 2. editing section
-            if (editing_rb.Checked || all_rb.Checked)
+            menu.Items.Add("Add Title Block", null, (o, a) =>
             {
-                menu.Items.Add("Break Into Words", null, (o, a) => BreakIntoWords(rect));
-                menu.Items.Add("Merge Lines", null, (o, a) => MergeLines(rect));
-                menu.Items.Add("Add Word", null, (o, a) => AddWord(rect, false));
-                menu.Items.Add("Add Comment Link", null, (o, a) => AddWord(rect, true));
-                menu.Items.Add("Set Word Text", null, (o, a) => SetWordText(rect));
-                menu.Items.Add("Remove Line", null, (o, a) => RemoveLine(rect));
-                menu.Items.Add("Show Features", null, (o, a) => ShowLineFeatures(rect));
+                page.TitleBlocks.Add(TitleBlock.FromRectangle(originalRect));
+                pictureBox1.Refresh();
+            });
 
-                if (all_rb.Checked) menu.Items.Add(new ToolStripSeparator());
-            }
-
-            // 3. image blocks section
-            if (blocks_rb.Checked || all_rb.Checked)
+            menu.Items.Add("Add Comment Link Block", null, (o, a) =>
             {
-                menu.Items.Add("Add Image Block", null, (o, a) =>
-                {
-                    var filename = ocr_lb.SelectedItem as string;
-                    AddImageBlockAndRefresh(rect, filename);
-                });
-                menu.Items.Add("Add Page Wide Image Block", null, (o, a) => AddPageWideImageBlock(rect));
-                menu.Items.Add("Remove Image Block", null, (o, a) => RemoveImageBlock(rect));
-                menu.Items.Add("Add Title Block", null, (o, a) => AddTitleBlock(rect));
-                menu.Items.Add("Remove Title Block", null, (o, a) => RemoveTitleBlock(rect));
-            }
+                page.CommentLinkBlocks.Add(CommentLinkBlock.FromRectangle(originalRect));
+                pictureBox1.Refresh();
+            });
+
+            menu.Items.Add("Add Garbage Block", null, (o, a) =>
+            {
+                page.GarbageBlocks.Add(GarbageBlock.FromRectangle(originalRect));
+                pictureBox1.Refresh();
+            });
 
             return menu;
         }
@@ -546,15 +425,17 @@ namespace BookProject.WinForms
         {
             if (pictureBox1.Image == null) return;
 
+            _pageState.MouseAt = pictureBox1.ToOriginalPoint(e.Location);
+
             if (e.Button == MouseButtons.Right && _pageState.SelectionStartPoint.HasValue)
             {
                 pictureBox1.Refresh();
             }
 
-            if (e.Button == MouseButtons.Left)
+            if (_mouseMoveActivity != null)
             {
-                var originalPoint = pictureBox1.ToOriginalPoint(e.Location);
-                _moveDragPoint?.Invoke(originalPoint);
+                _mouseMoveActivity.Perform(pictureBox1, e);
+                pictureBox1.Refresh();
             }
         }
 
@@ -576,656 +457,19 @@ namespace BookProject.WinForms
             e.Graphics.DrawImage(canvasBitmap, 0, 0);
         }
 
-        private void AddWord(Rectangle pbRectangle, bool isCommentLink)
-        {
-            var fileName = ocr_lb.SelectedItem as string;
-            if (fileName == null) return;
-            var page = _bookProjectData.GetPage(fileName);
-            if (page == null) return;
-            var dialog = new WordTextDialog();
-            if (dialog.ShowDialog() != DialogResult.OK) return;
-
-            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
-
-            var word = new BookProjectWord
-            {
-                TopLeftX = originalRect.X,
-                TopLeftY = originalRect.Y,
-                BottomRightX = originalRect.X + originalRect.Width,
-                BottomRightY = originalRect.Y + originalRect.Height,
-                Text = dialog.WordText,
-                IsCommentLinkNumber = isCommentLink
-            };
-
-            var wordLine = page.Lines.FirstOrDefault(l => l.PageWideRectangle(page.Width).IntersectsWith(word.Rectangle));
-
-            if (wordLine == null)
-            {
-                wordLine = new BookProjectLine {Words = new List<BookProjectWord>( )};
-                page.Lines.Add(wordLine);
-                wordLine.Features = BookProjectFeatures.Calculate(page, wordLine);
-                page.Lines = page.Lines.OrderBy(l => l.TopLeftY).ToList();
-                for (var i = 0; i < page.Lines.Count; i++) page.Lines[i].LineIndex = i;
-            }
-            
-            wordLine.Words.Add(word);
-            wordLine.Words = wordLine.Words.OrderBy(w => w.TopLeftX).ToList();
-            wordLine.FitRectangleToWords();
-
-            ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
-        }
-
-        private void SetLabelForIntersectingLines(Rectangle pbRectangle, BookProjectLabel? label)
-        {
-            var fileName = ocr_lb.SelectedItem as string;
-            if (fileName == null) return;
-            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
-
-            foreach (var line in _bookProjectData.GetPage(fileName).Lines)
-            {
-                if (line.Rectangle.IntersectsWith(originalRect))
-                {
-                    line.Label = label;
-                }
-            }
-
-            ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
-        }
-
-        private void AddPageWideImageBlock(Rectangle pbRectangle)
-        {
-            var fileName = ocr_lb.SelectedItem as string;
-            if (fileName == null) return;
-            var page = _bookProjectData.GetPage(fileName);
-            if (page == null) return;
-
-            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
-
-            var imageBlock = new BookProjectImageBlock
-            {
-                TopLeftX = 20,
-                TopLeftY = originalRect.Y,
-                BottomRightX = page.Width - 20,
-                BottomRightY = originalRect.Y + originalRect.Size.Height
-            };
-
-            page.ImageBlocks.Add(imageBlock);
-
-            foreach (var line in page.GetIntersectingLines(imageBlock.Rectangle)) line.Label = BookProjectLabel.Image;
-
-            ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
-        }
-
-        private void AddImageBlockAndRefresh(Rectangle pbRectangle, string filename)
-        {
-            if (filename == null) return;
-            var page = _bookProjectData.GetPage(filename);
-            if (page == null) return;
-
-            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
-
-            var imageBlock = new BookProjectImageBlock
-            {
-                TopLeftX = originalRect.X,
-                TopLeftY = originalRect.Y,
-                BottomRightX = originalRect.X + originalRect.Width,
-                BottomRightY = originalRect.Y + originalRect.Size.Height
-            };
-
-            page.ImageBlocks.Add(imageBlock);
-
-            ImageBlockPostEdit(page, imageBlock, true);
-
-            ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
-        }
-
-        private BookProjectImageBlock AddImageBlock(Rectangle originalRect, BookProjectPage page)
-        {
-            var imageBlock = new BookProjectImageBlock
-            {
-                TopLeftX = originalRect.X,
-                TopLeftY = originalRect.Y,
-                BottomRightX = originalRect.X + originalRect.Width,
-                BottomRightY = originalRect.Y + originalRect.Size.Height
-            };
-
-            page.ImageBlocks.Add(imageBlock);
-
-            ImageBlockPostEdit(page, imageBlock, false);
-
-            return imageBlock;
-        }
-
-        private void ImageBlockPostEdit(BookProjectPage page, BookProjectImageBlock imageBlock, bool doBreakLines = false)
-        {
-            var intersectingLines = page.GetIntersectingLines(imageBlock.Rectangle);
-            foreach (var intersectingLine in intersectingLines)
-            {
-                intersectingLine.Label = BookProjectLabel.Image;
-
-                if (doBreakLines)
-                {
-                    var breakLines = page.BreakIntoWords(intersectingLine);
-                    var breakIntersectingLines = breakLines.Where(l => l.Rectangle.IntersectsWith(imageBlock.Rectangle)).ToArray();
-                    var breakNonIntersectingLines = breakLines.Except(breakIntersectingLines).ToArray();
-                    foreach (var breakIntersectingLine in breakIntersectingLines)
-                    {
-                        breakIntersectingLine.Label = BookProjectLabel.Image;
-                    }
-
-                    if (breakNonIntersectingLines.Length > 0)
-                    {
-                        page.MergeLines(breakNonIntersectingLines[0], breakNonIntersectingLines.Skip(1).ToArray());
-                        foreach (var breakNonIntersectingLine in breakNonIntersectingLines)
-                        {
-                            breakNonIntersectingLine.Label = BookProjectLabel.PMiddle;
-                        }
-                    }
-                }
-            }
-
-            var nonIntersectingImageLines = page.Lines
-                .Where(l => page.ImageBlocks.All(ib => !ib.Rectangle.IntersectsWith(l.Rectangle)))
-                .Where(l => l.Label == BookProjectLabel.Image);
-            foreach (var nonIntersectingImageLine in nonIntersectingImageLines)
-            {
-                nonIntersectingImageLine.Label = BookProjectLabel.PMiddle;
-            }
-        }
-
-        private void RemoveImageBlock(Rectangle pbRectangle)
-        {
-            var fileName = ocr_lb.SelectedItem as string;
-            if (fileName == null) return;
-            var page = _bookProjectData.GetPage(fileName);
-            if (page == null) return;
-
-            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
-            page.ImageBlocks.RemoveAll(ib => ib.Rectangle.IntersectsWith(originalRect));
-
-            var nonIntersectingImageLines = page.Lines
-                .Where(l => page.ImageBlocks.All(ib => !ib.Rectangle.IntersectsWith(l.Rectangle)))
-                .Where(l => l.Label == BookProjectLabel.Image);
-            foreach (var nonIntersectingImageLine in nonIntersectingImageLines)
-            {
-                nonIntersectingImageLine.Label = BookProjectLabel.PMiddle;
-            }
-
-            ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
-        }
-
-        private void AddTitleBlock(Rectangle pbRectangle)
-        {
-            var fileName = ocr_lb.SelectedItem as string;
-            if (fileName == null) return;
-            var page = _bookProjectData.GetPage(fileName);
-            if (page == null) return;
-
-            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
-
-            var titleLines = page.GetIntersectingLines(originalRect).ToList();
-
-            var text = string.Join(" ", titleLines.Select(l => string.Join(" ", l.Words.Select(w => w.Text))));
-
-            text = text.ToLower();
-
-            text = text[0].ToString().ToUpper() + text.Substring(1);
-
-            text = InitialsToUpper(text);
-
-            _titleBlockDialog.TitleText = text;
-
-            if (_titleBlockDialog.ShowDialog() != DialogResult.OK) return;
-
-            var commentWords = titleLines.SelectMany(l => l.Words).Where(w => w.IsCommentLinkNumber).ToList();
-
-            var titleBlock = new BookProjectTitleBlock
-            {
-                TopLeftX = originalRect.X,
-                TopLeftY = originalRect.Y,
-                BottomRightX = originalRect.X + originalRect.Size.Width,
-                BottomRightY = originalRect.Y + originalRect.Size.Height,
-                TitleLevel = _titleBlockDialog.TitleLevel,
-                TitleText = _titleBlockDialog.TitleText,
-                CommentLinks = commentWords.Select(w => 
-                    new BookProjectWord
-                    {
-                        Text = w.Text,
-                        IsCommentLinkNumber = true
-                    }).ToList()
-            };
-
-            page.TitleBlocks ??= new List<BookProjectTitleBlock>();
-
-            page.TitleBlocks.Add(titleBlock);
-
-            foreach (var line in titleLines) line.Label = BookProjectLabel.Title;
-
-            ocr_lb.Items[ocr_lb.SelectedIndex] = fileName;
-        }
-
-        private string InitialsToUpper(string text)
-        {
-            if (string.IsNullOrEmpty(text)) return text;
-
-            var spaceSplit = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-            var words = new List<string>();
-
-            foreach (var s in spaceSplit)
-            {
-                if (s.Length == 2 && s.EndsWith('.'))
-                {
-                    words.Add(s.ToUpper());
-                }
-                else
-                {
-                    words.Add(s);
-                }
-            }
-
-            return string.Join(' ', words);
-        }
-
-        private void RemoveTitleBlock(Rectangle pbRectangle)
-        {
-            var fileName = ocr_lb.SelectedItem as string;
-            if (fileName == null) return;
-            var page = _bookProjectData.GetPage(fileName);
-            if (page == null) return;
-
-            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
-            page.TitleBlocks.RemoveAll(ib => ib.Rectangle.IntersectsWith(originalRect));
-
-            pictureBox1.Refresh();
-        }
-
-        private void RegenerateFeaturesClick(object? sender, EventArgs e)
-        {
-            foreach (var page in _bookProjectData.Pages)
-            {
-                foreach (var line in page.Lines)
-                {
-                    line.Features = BookProjectFeatures.Calculate(page, line);
-                }
-            }
-
-            MessageBox.Show("Features were regenerated", "Features", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private async void OcrLbOnKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.R)
-            {
-                await RegeneratePage();
-            }
-
-            if (!_keyLabels.ContainsKey(e.KeyCode)) return;
-
-            var label = _keyLabels[e.KeyCode];
-
-            _mouseLeftLabel = label;
-            SetLabelPanelSelected(label);
-        }
-
-        private void SetLabelPanelSelected(BookProjectLabel? label)
-        {
-            pstart_panel.BorderStyle = label == BookProjectLabel.PStart
-                ? BorderStyle.Fixed3D
-                : BorderStyle.None;
-            pmiddle_panel.BorderStyle = label == BookProjectLabel.PMiddle
-                ? BorderStyle.Fixed3D
-                : BorderStyle.None;
-            comment_panel.BorderStyle = label == BookProjectLabel.Comment
-                ? BorderStyle.Fixed3D
-                : BorderStyle.None;
-            title_panel.BorderStyle = label == BookProjectLabel.Title
-                ? BorderStyle.Fixed3D
-                : BorderStyle.None;
-            image_panel.BorderStyle = label == BookProjectLabel.Image
-                ? BorderStyle.Fixed3D
-                : BorderStyle.None;
-            garbage_panel.BorderStyle = label == BookProjectLabel.Garbage
-                ? BorderStyle.Fixed3D
-                : BorderStyle.None;
-            none_panel.BorderStyle = label == null
-                ? BorderStyle.Fixed3D
-                : BorderStyle.None;
-        }
-
         private void OcrLbOnSelectedIndexChanged(object? sender, EventArgs e)
         {
-            try
+            var fileName = ocr_lb.SelectedItem as string;
+            if (fileName == null) return;
+
+            var imageFile = Directory.GetFiles(bookFolder_tb.Text).FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == fileName);
+            if (imageFile == null)
             {
-                var fileName = ocr_lb.SelectedItem as string;
-
-                if (fileName == null) return;
-
-                var imageFile = Directory.GetFiles(bookFolder_tb.Text).FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == fileName);
-                if (imageFile == null)
-                {
-                    MessageBox.Show("Image file not found", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-
-                var image = new Bitmap(Image.FromFile(imageFile));
-                _pageState.Page = _bookProjectData.GetPage(fileName);
-
-                if (_pageState.Page != null)
-                {
-                    using var g = Graphics.FromImage(image);
-                    
-                    using var textBrush = new SolidBrush(Color.DarkViolet);
-                    var font = new Font(Font.FontFamily, 12, FontStyle.Bold);
-
-                    foreach (var line in _pageState.Page.Lines)
-                    {
-                        using var brush = GetBrush(line);
-                        g.FillRectangle(brush, line.Rectangle);
-
-                        using var pen = GetPen(line);
-                        g.DrawRectangle(pen, line.Rectangle);
-
-                        using var commentLinkBrush = new SolidBrush(Color.FromArgb(100, 0, 0, 255));
-                        using var commentLinkPen = new Pen(Color.Blue, 1);
-                        using var linkTextBrush = new SolidBrush(Color.White);
-
-                        foreach (var word in line.Words ?? new List<BookProjectWord>())
-                        {
-                            if (word.IsCommentLinkNumber)
-                            {
-                                var ellipseX = word.BottomRightX;
-                                var ellipseY = word.TopLeftY - BookProjectSettings.WordCircleRadius * 2;
-                                var ellipseSize = BookProjectSettings.WordCircleRadius * 2;
-                                g.FillEllipse(commentLinkBrush, ellipseX, ellipseY, ellipseSize, ellipseSize);
-                                g.DrawString(word.Text, font, linkTextBrush, ellipseX + 6, ellipseY + 4);
-                                g.DrawRectangle(commentLinkPen, word.Rectangle);
-                            }
-                        }
-                    }
-                }
-                pictureBox1.Image = image;
-            }
-            catch (Exception exc)
-            {
-                Debug.WriteLine(exc);
-                throw;
-            }
-        }
-
-        private void MergeLines(Rectangle pbRectangle)
-        {
-            var filename = ocr_lb.SelectedItem as string;
-            if (filename == null) return;
-            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
-            var page = _bookProjectData.GetPage(filename);
-            if (page == null) return;
-
-            var intersectingLines = page.Lines.Where(l => l.Rectangle.IntersectsWith(originalRect)).ToList();
-
-            while (intersectingLines.Any())
-            {
-                var mergeRectangle = intersectingLines[0].PageWideRectangle(page.Width);
-                var linesToMerge = intersectingLines.Where(l => l.Rectangle.IntersectsWith(mergeRectangle)).ToList();
-                foreach (var line in linesToMerge)
-                {
-                    intersectingLines.Remove(line);
-                }
-                page.MergeLines(linesToMerge[0], linesToMerge.Skip(1).ToArray());
+                MessageBox.Show("Image file not found", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
-            ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
-        }
-
-        private void ShowLineFeatures(Rectangle pbRectangle)
-        {
-            var filename = ocr_lb.SelectedItem as string;
-            if (filename == null) return;
-            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
-            var page = _bookProjectData.GetPage(filename);
-            if (page == null) return;
-
-            var intersectingLine = page.Lines.FirstOrDefault(l => l.Rectangle.IntersectsWith(originalRect));
-
-            if (intersectingLine == null) return;
-
-            var dialog = new LineFeaturesDialog();
-
-            dialog.SetFeatures(intersectingLine.Features);
-
-            dialog.ShowDialog();
-        }
-
-        private void BreakIntoWords(Rectangle pbRectangle)
-        {
-            var filename = ocr_lb.SelectedItem as string;
-            if (filename == null) return;
-            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
-            var page = _bookProjectData.GetPage(filename);
-            if (page == null) return;
-
-            var intersectingLines = page.Lines.Where(l => l.Rectangle.IntersectsWith(originalRect)).ToList();
-
-            foreach (var intersectingLine in intersectingLines)
-            {
-                page.BreakIntoWords(intersectingLine);
-            }
-
-            ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
-        }
-
-        private void SetWordText(Rectangle pbRectangle)
-        {
-            var filename = ocr_lb.SelectedItem as string;
-            if (filename == null) return;
-            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
-            var page = _bookProjectData.GetPage(filename);
-            if (page == null) return;
-
-            var intersectingLine = page.Lines.FirstOrDefault(l => l.Rectangle.IntersectsWith(originalRect));
-
-            if (intersectingLine?.Words?.Any() != true) return;
-
-            var intersectingWord = intersectingLine.Words.FirstOrDefault(w => w.Rectangle.IntersectsWith(originalRect));
-
-            if (intersectingWord == null) return;
-
-            var dialog = new WordTextDialog {WordText = intersectingWord.Text};
-
-            if (dialog.ShowDialog() != DialogResult.OK) return;
-
-            intersectingWord.Text = dialog.WordText;
-            intersectingLine.DisplayText = true;
-
-            ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
-        }
-
-        private void RemoveLine(Rectangle pbRectangle)
-        {
-            var filename = ocr_lb.SelectedItem as string;
-            if (filename == null) return;
-            var originalRect = pictureBox1.ToOriginalRectangle(pbRectangle);
-            var page = _bookProjectData.GetPage(filename);
-            if (page == null) return;
-
-            var intersectingLine = page.Lines.FirstOrDefault(l => l.Rectangle.IntersectsWith(originalRect));
-
-            if (intersectingLine == null) return;
-
-            page.Lines.Remove(intersectingLine);
-
-            page.ReindexLines();
-
-            ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
-        }
-        private Pen GetPen(BookProjectLine line)
-        {
-            var color = BookProjectPalette.GetColor(line.Label);
-
-            return new Pen(color, 2);
-        }
-
-        private Brush GetBrush(BookProjectLine line)
-        {
-            var color = BookProjectPalette.GetColor(line.Label);
-
-            return new SolidBrush(Color.FromArgb(64, color));
-        }
-
-        private string[] GetImageFiles(string folder)
-        {
-            return Directory.GetFiles(folder)
-                .Where(f => f.EndsWith(".png") || f.EndsWith(".jpg") || f.EndsWith(".jpeg"))
-                .ToArray();
-        }
-
-        private void BreakByDistantClick(object sender, EventArgs e)
-        {
-            var filename = ocr_lb.SelectedItem as string;
-            if (filename == null) return;
-            var page = _bookProjectData.GetPage(filename);
-            if (page == null) return;
-            var lines = page.Lines.ToArray();
-            foreach (var line in lines)
-            {
-                page.BreakLineByDistantWord(line, MaxWordDistance);
-            }
-
-            ocr_lb.Items[ocr_lb.SelectedIndex] = filename;
-        }
-
-        private void UncoveredStartsClick(object sender, EventArgs e)
-        {
-            var dialog = new ImageScopeDialog();
-            if (dialog.ShowDialog() != DialogResult.OK) return;
-
-            var pages = _bookProjectData.Pages.OrderBy(p => p.ImageIndex)
-                .Skip(dialog.MinImageIndex)
-                .Take(1 + dialog.MaxImageIndex - dialog.MinImageIndex)
-                .ToList();
-
-            // find uncovered contours
-            var uncoveredContours = new List<UncoveredContour>();
-            foreach (var page in pages)
-            {
-                var imageFile = Directory.GetFiles(bookFolder_tb.Text)
-                    .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == page.Filename);
-                uncoveredContours.AddRange(CvUtil.GetUncoveredContours(imageFile, page));
-            }
-
-            // find line start contours
-            var lineStartMatch = new LineStartMatch();
-            var lineStartContours = uncoveredContours.Where(lineStartMatch.Match).ToList();
-            if (lineStartContours.Any())
-            {
-                var lineStartDialog = new UncoveredContourDialog
-                {
-                    Text = "Mark uncovered line starts"
-                };
-                lineStartDialog.SetContours(lineStartContours);
-                lineStartDialog.ShowDialog();
-                lineStartContours = lineStartContours.Where(lc => !string.IsNullOrEmpty(lc.Word.Text)).ToList();
-                foreach (var contour in lineStartContours)
-                {
-                    lineStartMatch.Apply(_bookProjectData, contour);
-                }
-            }
-            else
-            {
-                MessageBox.Show("Uncovered line start contours were not found", "Uncovered line start contours",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-        }
-
-        private void RemoveLinksClick(object sender, EventArgs e)
-        {
-            var dialog = new ImageScopeDialog();
-            if (dialog.ShowDialog() != DialogResult.OK) return;
-
-            var pages = _bookProjectData.Pages.OrderBy(p => p.ImageIndex)
-                .Skip(dialog.MinImageIndex)
-                .Take(1 + dialog.MaxImageIndex - dialog.MinImageIndex)
-                .ToList();
-
-            foreach (var page in pages)
-            {
-                var lines = page.Lines.ToList();
-                foreach (var line in lines)
-                {
-                    var words = line.Words?.ToList() ?? new List<BookProjectWord>();
-
-                    var linkWords = words.Where(w => w.IsCommentLinkNumber).ToList();
-
-                    if (!linkWords.Any()) continue;
-
-                    if (linkWords.Count == words.Count)
-                    {
-                        page.Lines.Remove(line);
-                        continue;
-                    }
-
-                    foreach (var linkWord in linkWords)
-                    {
-                        line.Words.Remove(linkWord);
-                    }
-                }
-            }
-        }
-
-        private void TrainApplyModelClick(object sender, EventArgs e)
-        {
-            var filename = ocr_lb.SelectedItem as string;
-            if (filename == null) return;
-            var page = _bookProjectData.GetPage(filename);
-            if (page == null) return;
-
-            var dialog = new ModelScopeDialog
-            {
-                ImageIndex = page.ImageIndex,
-                TakeBefore = 20,
-                TakeAfter = 1000
-            };
-
-            if (dialog.ShowDialog() != DialogResult.OK) return;
-
-            var labeledLines = _bookProjectData.Pages.Where(dialog.BeforePageMatch)
-                .SelectMany(p => p.GetExcludingLabels(BookProjectLabel.Comment, BookProjectLabel.Garbage, BookProjectLabel.Image, BookProjectLabel.Title))
-                .Where(r => r.Label.HasValue && r.Features != null)
-                .ToList();
-
-            double[][] inputs = labeledLines.Select(l => l.Features.ToFeatureRow()).ToArray();
-            int[] outputs = labeledLines.Select(l => (int)l.Label).ToArray();
-
-            Accord.Math.Random.Generator.Seed = 1;
-            var teacher = new RandomForestLearning
-            {
-                NumberOfTrees = 20
-            };
-
-            try
-            {
-                _model = teacher.Learn(inputs, outputs);
-
-                var featuredLines = _bookProjectData.Pages.Where(dialog.AfterPageMatch)
-                    .SelectMany(p => p.GetExcludingLabels(BookProjectLabel.Comment, BookProjectLabel.Garbage, BookProjectLabel.Image, BookProjectLabel.Title))
-                    .Where(b => b.Features != null)
-                    .ToList();
-
-                var applyInputs = featuredLines.Select(l => l.Features.ToFeatureRow()).ToArray();
-                var predicted = _model.Decide(applyInputs);
-
-                for (var i = 0; i < featuredLines.Count; i++)
-                {
-                    featuredLines[i].Label = (BookProjectLabel)predicted[i];
-                }
-
-                MessageBox.Show("Model trained and applied", "Model", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-            }
-            catch (Exception exc)
-            {
-                MessageBox.Show(exc.Message, "Error", MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-            }
+            _pageState.Page = _book.GetPage(fileName);
+            pictureBox1.Image = ImageUtility.Load(imageFile);
         }
 
         private void GenerateFb2Click(object sender, EventArgs e)
@@ -1263,12 +507,12 @@ namespace BookProject.WinForms
                 service.GenerateFb2File(bookFolder_tb.Text, saveFileDialog.FileName, template);
 
                 if (MessageBox.Show("FB2 file was generated fine. Do you want to open the file?", "FB2",
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) 
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
                     return;
 
                 using var process = new Process
                 {
-                    StartInfo = {FileName = "explorer", Arguments = $"\"{saveFileDialog.FileName}\""}
+                    StartInfo = { FileName = "explorer", Arguments = $"\"{saveFileDialog.FileName}\"" }
                 };
                 process.Start();
             }

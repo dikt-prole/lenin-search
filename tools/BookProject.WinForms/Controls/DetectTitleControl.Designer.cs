@@ -36,7 +36,7 @@
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.test_btn = new System.Windows.Forms.Button();
-            this.apply_btn = new System.Windows.Forms.Button();
+            this.detect_btn = new System.Windows.Forms.Button();
             this.minLeft_nud = new System.Windows.Forms.NumericUpDown();
             this.minRight_nud = new System.Windows.Forms.NumericUpDown();
             this.minTop_nud = new System.Windows.Forms.NumericUpDown();
@@ -73,7 +73,7 @@
             this.tableLayoutPanel1.Controls.Add(this.label5, 0, 4);
             this.tableLayoutPanel1.Controls.Add(this.label6, 0, 5);
             this.tableLayoutPanel1.Controls.Add(this.test_btn, 0, 8);
-            this.tableLayoutPanel1.Controls.Add(this.apply_btn, 1, 8);
+            this.tableLayoutPanel1.Controls.Add(this.detect_btn, 1, 8);
             this.tableLayoutPanel1.Controls.Add(this.minLeft_nud, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.minRight_nud, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.minTop_nud, 1, 2);
@@ -174,16 +174,16 @@
             this.test_btn.Text = "Test";
             this.test_btn.UseVisualStyleBackColor = true;
             // 
-            // apply_btn
+            // detect_btn
             // 
-            this.apply_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.apply_btn.Location = new System.Drawing.Point(101, 225);
-            this.apply_btn.Margin = new System.Windows.Forms.Padding(1);
-            this.apply_btn.Name = "apply_btn";
-            this.apply_btn.Size = new System.Drawing.Size(98, 26);
-            this.apply_btn.TabIndex = 7;
-            this.apply_btn.Text = "Apply";
-            this.apply_btn.UseVisualStyleBackColor = true;
+            this.detect_btn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.detect_btn.Location = new System.Drawing.Point(101, 225);
+            this.detect_btn.Margin = new System.Windows.Forms.Padding(1);
+            this.detect_btn.Name = "detect_btn";
+            this.detect_btn.Size = new System.Drawing.Size(98, 26);
+            this.detect_btn.TabIndex = 7;
+            this.detect_btn.Text = "Detect";
+            this.detect_btn.UseVisualStyleBackColor = true;
             // 
             // minLeft_nud
             // 
@@ -311,7 +311,7 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Button test_btn;
-        private System.Windows.Forms.Button apply_btn;
+        private System.Windows.Forms.Button detect_btn;
         private System.Windows.Forms.NumericUpDown minLeft_nud;
         private System.Windows.Forms.NumericUpDown minRight_nud;
         private System.Windows.Forms.NumericUpDown minTop_nud;

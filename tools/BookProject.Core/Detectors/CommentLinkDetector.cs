@@ -11,7 +11,7 @@ using BookProject.Core.Utilities;
 
 namespace BookProject.Core.Detectors
 {
-    public class CommentLinkNumberDetector : ICommentLinkNumberDetector
+    public class CommentLinkDetector : ICommentLinkNumberDetector
     {
         private readonly ICvUtility _cvUtility;
         private readonly IOcrUtility _ocrUtility;
@@ -19,9 +19,9 @@ namespace BookProject.Core.Detectors
         public const string SmoothBitmapKey = "SMOOTH_BITMAP";
         public const string MatchLineRectangleKey = "MATCH_LINE_RECTANGLE";
 
-        public CommentLinkNumberDetector(IOcrUtility ocrUtility) : this(new CvUtility(), ocrUtility) { }
+        public CommentLinkDetector(IOcrUtility ocrUtility) : this(new CvUtility(), ocrUtility) { }
 
-        public CommentLinkNumberDetector(ICvUtility cvUtility, IOcrUtility ocrUtility)
+        public CommentLinkDetector(ICvUtility cvUtility, IOcrUtility ocrUtility)
         {
             _cvUtility = cvUtility;
             _ocrUtility = ocrUtility;

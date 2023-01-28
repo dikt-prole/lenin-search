@@ -1,6 +1,6 @@
-﻿namespace BookProject.Core.Models.Book
+﻿namespace BookProject.Core.Models.Book.Old
 {
-    public enum BookProjectLabel
+    public enum OldBookProjectLabel
     {
         PStart = 0,
         PMiddle = 1,

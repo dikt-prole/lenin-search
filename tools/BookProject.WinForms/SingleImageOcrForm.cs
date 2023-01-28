@@ -5,20 +5,18 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using BookProject.Core.Detectors;
-using BookProject.Core.Models.Book;
+using BookProject.Core.Models.Book.Old;
 using BookProject.Core.Models.YandexVision.Response;
 using BookProject.Core.Settings;
 using BookProject.WinForms.CV;
 using BookProject.WinForms.Model;
-using BookProject.WinForms.Service;
-using BookProject.WinForms.YandexVision;
 using Newtonsoft.Json;
 
 namespace BookProject.WinForms
 {
     public partial class SingleImageOcrForm : Form
     {
-        private BookProjectPage _bookProjectPage;
+        private OldBookProjectPage _bookProjectPage;
         public SingleImageOcrForm()
         {
             InitializeComponent();
@@ -107,52 +105,6 @@ namespace BookProject.WinForms
 
         private async void Ocr_btnOnClick(object? sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(file_tb.Text)) return;
-
-            var clSettings = new CommentLinkSettings
-            {
-                MinWidth = 3,
-                MaxWidth = 10,
-                MinHeight = 9,
-                MaxHeight = 15,
-                MinLineBottomDistance = 5,
-                MaxLineBottomDistance = 15,
-                MaxLineTopDistance = 3,
-                MinLineTopDistance = -6
-            };
-            var ocrService =
-                new FeatureSettingDecorator(
-                    new IntersectingLineMergerDecorator(
-                            new YandexVisionPageProviderService()));
-
-            var ocrResult = await ocrService.GetOcrPageAsync(file_tb.Text);
-            _bookProjectPage = ocrResult.Page;
-
-            var clCandidates = CvUtil.GetUncoveredContours(file_tb.Text, _bookProjectPage).ToList();
-
-            var commentLinkWords = clCandidates.Select(c => c.Word).ToList();
-            foreach (var clw in commentLinkWords) clw.IsCommentLinkNumber = true;
-
-            // draw blocks on an image
-            var image = new Bitmap(Image.FromFile(file_tb.Text));
-            using var g = Graphics.FromImage(image);
-
-            using var lineBrush = new SolidBrush(Color.FromArgb(100, Color.Red));
-            using var commentLinkPen = new Pen(Color.Blue, 2);
-            foreach (var line in _bookProjectPage.Lines)
-            {
-                g.FillRectangle(lineBrush, line.Rectangle);
-            }
-
-            foreach (var word in commentLinkWords)
-            {
-                var circleX = word.CenterX - BookProjectSettings.WordCircleRadius;
-                var circleY = word.CenterY - BookProjectSettings.WordCircleRadius;
-                var diameter = BookProjectSettings.WordCircleRadius * 2;
-                g.DrawEllipse(commentLinkPen, circleX, circleY, diameter, diameter);
-            }
-
-            processed_pb.Image = image;
         }
 
         private void DrawBoundingBox(Graphics g, YandexVisionBoundingBox box, Color color)

@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using BookProject.Core.Models.Book;
+using BookProject.Core.Models.Book.Old;
 
 namespace BookProject.WinForms.Model.Fb2
 {
@@ -15,8 +16,8 @@ namespace BookProject.WinForms.Model.Fb2
         public int TopLeftY { get; set; }
         public int TitleLevel { get; set; }
         public string TitleText { get; set; }
-        public List<BookProjectWord> TitleCommentLinks { get; set; }
-        public List<BookProjectLine> Lines { get; set; }
+        public List<OldBookProjectWord> TitleCommentLinks { get; set; }
+        public List<OldBookProjectLine> Lines { get; set; }
         public Fb2LineType Type { get; set; }
         public int ImageIndex { get; set; }
         public string ImageBase64 { get; set; }
@@ -56,7 +57,7 @@ namespace BookProject.WinForms.Model.Fb2
             }
         }
 
-        public string GetWordXml(BookProjectWord word)
+        public string GetWordXml(OldBookProjectWord word)
         {
             if (Type != Fb2LineType.Comment && word.IsCommentLinkNumber)
                 return $"<a l:href=\"#n_{word.Text}\" type=\"note\">[{word.Text}]</a>";
@@ -88,23 +89,23 @@ namespace BookProject.WinForms.Model.Fb2
             return null;
         }
 
-        public static Fb2Line Construct(BookProjectLine line)
+        public static Fb2Line Construct(OldBookProjectLine line)
         {
             var fb2Line = new Fb2Line
             {
-                Type = line.Label == BookProjectLabel.Title
+                Type = line.Label == OldBookProjectLabel.Title
                     ? Fb2LineType.Title
-                    : line.Label == BookProjectLabel.Comment
+                    : line.Label == OldBookProjectLabel.Comment
                         ? Fb2LineType.Comment
                         : Fb2LineType.Paragraph,
-                Lines = new List<BookProjectLine> { line },
+                Lines = new List<OldBookProjectLine> { line },
                 TopLeftY = line.TopLeftY
             };
 
             return fb2Line;
         }
 
-        public static Fb2Line Construct(BookProjectImageBlock imageBlock, string bookFolder, BookProjectPage page, int imageIndex)
+        public static Fb2Line Construct(OldBookProjectImageBlock imageBlock, string bookFolder, OldBookProjectPage page, int imageIndex)
         {
             try
             {
@@ -141,7 +142,7 @@ namespace BookProject.WinForms.Model.Fb2
             }
         }
 
-        public static Fb2Line Construct(BookProjectTitleBlock titleBlock)
+        public static Fb2Line Construct(OldBookProjectTitleBlock titleBlock)
         {
             return new Fb2Line
             {

@@ -1,5 +1,8 @@
-﻿using System.Windows.Forms;
+﻿using System.IO;
+using System.Linq;
+using System.Windows.Forms;
 using BookProject.Core.Models.Book;
+using BookProject.Core.Models.Book.Old;
 
 namespace BookProject.WinForms
 {
@@ -27,7 +30,7 @@ namespace BookProject.WinForms
             };
         }
 
-        public bool PageMatch(BookProjectPage page)
+        public bool PageMatch(OldBookProjectPage page)
         {
             return MinImageIndex <= page.ImageIndex && page.ImageIndex <= MaxImageIndex;
         }
@@ -35,6 +38,14 @@ namespace BookProject.WinForms
         public bool ImageMatch(int imageIndex)
         {
             return MinImageIndex <= imageIndex && imageIndex <= MaxImageIndex;
+        }
+
+        public string[] GetMatchingImages(string bookFolder)
+        {
+            return Directory.GetFiles(bookFolder, "*.jpg")
+                .Where(f => ImageMatch(
+                    int.Parse(new string(Path.GetFileNameWithoutExtension(f).Where(char.IsNumber).ToArray()))))
+                .ToArray();
         }
     }
 }

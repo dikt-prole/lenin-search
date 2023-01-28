@@ -1,14 +1,14 @@
 ﻿using System.Drawing;
 using Newtonsoft.Json;
 
-namespace BookProject.Core.Models.Book
+namespace BookProject.Core.Models.Book.Old
 {
-    public class BookProjectDividerLine
+    public class OldBookProjectDividerLine
     {
         private const int DragPointSize = 20;
-        public BookProjectDividerLine() { }
+        public OldBookProjectDividerLine() { }
 
-        public BookProjectDividerLine(int y, int leftX, int rightX)
+        public OldBookProjectDividerLine(int y, int leftX, int rightX)
         {
             Y = y;
             LeftX = leftX;

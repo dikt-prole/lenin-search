@@ -10,7 +10,7 @@ namespace BookProject.WinForms.Controls
 
         public event EventHandler TestEnd;
 
-        public event EventHandler Apply;
+        public event EventHandler Detect;
 
         public event EventHandler Save;
         public DetectTitleSettings GetSettings()
@@ -78,7 +78,7 @@ namespace BookProject.WinForms.Controls
 
             test_btn.MouseDown += (sender, args) => TestStart?.Invoke(this, EventArgs.Empty);
             test_btn.MouseUp += (sender, args) => TestEnd?.Invoke(this, EventArgs.Empty);
-            apply_btn.Click += (sender, args) => Apply?.Invoke(this, EventArgs.Empty);
+            detect_btn.Click += (sender, args) => Detect?.Invoke(this, EventArgs.Empty);
             save_btn.Click += (sender, args) => Save?.Invoke(this, EventArgs.Empty);
         }
     }

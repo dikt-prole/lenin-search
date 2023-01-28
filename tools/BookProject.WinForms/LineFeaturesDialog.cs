@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using System.Windows.Forms;
 using BookProject.Core.Models.Book;
+using BookProject.Core.Models.Book.Old;
 
 namespace BookProject.WinForms
 {
@@ -17,13 +18,13 @@ namespace BookProject.WinForms
             };
         }
 
-        public void SetFeatures(BookProjectFeatures features)
+        public void SetFeatures(OldBookProjectFeatures features)
         {
             features_lb.Items.Clear();
 
             if (features == null) return;
 
-            var props = typeof(BookProjectFeatures).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+            var props = typeof(OldBookProjectFeatures).GetProperties(BindingFlags.Instance | BindingFlags.Public);
             foreach (var prop in props)
             {
                 features_lb.Items.Add($"{prop.Name} = {(double) prop.GetValue(features):F2}");

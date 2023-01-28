@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace BookProject.Core.Models.Book
 {
-    public class BookProjectBlock
+    public class Block
     {
         private const int DragPointSize = 20;
 
@@ -18,6 +18,9 @@ namespace BookProject.Core.Models.Book
 
         [JsonProperty("bry")]
         public int BottomRightY { get; set; }
+
+        [JsonProperty("stt")]
+        public BlockState State { get; set; }
 
         [JsonIgnore]
         public Rectangle Rectangle => new Rectangle(TopLeftX, TopLeftY, BottomRightX - TopLeftX, BottomRightY - TopLeftY);

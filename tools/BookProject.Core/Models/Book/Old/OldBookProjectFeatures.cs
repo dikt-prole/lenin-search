@@ -3,9 +3,9 @@ using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
 
-namespace BookProject.Core.Models.Book
+namespace BookProject.Core.Models.Book.Old
 {
-    public class BookProjectFeatures
+    public class OldBookProjectFeatures
     {
         [JsonProperty("li")]
         public double LeftIndent { get; set; }
@@ -27,7 +27,7 @@ namespace BookProject.Core.Models.Book
 
         public double[] ToFeatureRow(Dictionary<string, bool> rowModel)
         {
-            var props = typeof(BookProjectFeatures).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+            var props = typeof(OldBookProjectFeatures).GetProperties(BindingFlags.Instance | BindingFlags.Public);
             var rowValues = new List<double>();
             foreach (var propName in rowModel.Keys)
             {
@@ -54,14 +54,14 @@ namespace BookProject.Core.Models.Book
             return rowValues;
         }
 
-        public static BookProjectFeatures Calculate(BookProjectPage page, BookProjectLine line)
+        public static OldBookProjectFeatures Calculate(OldBookProjectPage page, OldBookProjectLine line)
         {
             var lineRectangle = line.Rectangle;
             var lineText = line.Words?.Any(w => !string.IsNullOrEmpty(w.Text)) == true
                 ? string.Join(" ", line.Words.Select(w => w.Text))
                 : null;
 
-            return new BookProjectFeatures
+            return new OldBookProjectFeatures
             {
                 // geometric features
                 LeftIndent = line.TopLeftY,
@@ -79,7 +79,7 @@ namespace BookProject.Core.Models.Book
 
         public static Dictionary<string, bool> GetDefaultRowModel()
         {
-            var props = typeof(BookProjectFeatures).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+            var props = typeof(OldBookProjectFeatures).GetProperties(BindingFlags.Instance | BindingFlags.Public);
 
             var rowModel = props.ToDictionary(p => p.Name, p => true);
 

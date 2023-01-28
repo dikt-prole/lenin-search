@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using BookProject.Core.Models.Book;
+using BookProject.Core.Models.Book.Old;
 using BookProject.WinForms.Model.Fb2;
 
 namespace BookProject.WinForms.Service
@@ -13,7 +14,7 @@ namespace BookProject.WinForms.Service
         public void GenerateFb2File(string ocrFolder, string fb2File, string fb2Template)
         {
             // 1. load ocr data
-            var ocrData = BookProjectData.Load(ocrFolder);
+            var ocrData = OldBookProjectData.Load(ocrFolder);
 
             var ocrPages = ocrData.Pages.OrderBy(p => p.ImageIndex).ToList();
 
@@ -29,7 +30,7 @@ namespace BookProject.WinForms.Service
                 var page = ocrPages[pageIndex];
 
                 var textLinesFb2 = new List<Fb2Line>();
-                var ocrTextLines = page.Lines.Where(l => l.Label == BookProjectLabel.PStart || l.Label == BookProjectLabel.PMiddle).ToList();
+                var ocrTextLines = page.Lines.Where(l => l.Label == OldBookProjectLabel.PStart || l.Label == OldBookProjectLabel.PMiddle).ToList();
                 if (ocrTextLines.Any())
                 {
                     var currentParagraphLineFb2 = Fb2Line.Construct(ocrTextLines[0]);
@@ -39,7 +40,7 @@ namespace BookProject.WinForms.Service
                     {
                         var currentLine = ocrTextLines[paragraphOcrLineIndex];
 
-                        if (currentLine.Label == BookProjectLabel.PStart)
+                        if (currentLine.Label == OldBookProjectLabel.PStart)
                         {
                             currentParagraphLineFb2 = Fb2Line.Construct(currentLine);
                             textLinesFb2.Add(currentParagraphLineFb2);
@@ -60,7 +61,7 @@ namespace BookProject.WinForms.Service
                 }
 
                 var titleFb2Lines = new List<Fb2Line>();
-                foreach (var titleBlock in page.TitleBlocks ?? new List<BookProjectTitleBlock>())
+                foreach (var titleBlock in page.TitleBlocks ?? new List<OldBookProjectTitleBlock>())
                 {
                     titleFb2Lines.Add(Fb2Line.Construct(titleBlock));
                 }
@@ -119,7 +120,7 @@ namespace BookProject.WinForms.Service
             var notes = new List<Fb2Line>();
             foreach (var page in ocrPages)
             {
-                var commentLines = page.GetLabeledLines(BookProjectLabel.Comment).ToList();
+                var commentLines = page.GetLabeledLines(OldBookProjectLabel.Comment).ToList();
                 if (commentLines.Any())
                 {
                     var currentCommentLineFb2 = Fb2Line.Construct(commentLines[0]);
@@ -174,22 +175,22 @@ namespace BookProject.WinForms.Service
             File.WriteAllText(fb2File, fb2Xml);
         }
 
-        private static List<BookProjectWord> FixCommentRelatedStuff(BookProjectData bookProjectData)
+        private static List<OldBookProjectWord> FixCommentRelatedStuff(OldBookProjectData bookProjectData)
         {
-            var emptyLinks = new List<BookProjectWord>();
+            var emptyLinks = new List<OldBookProjectWord>();
 
             var ocrPages = bookProjectData.Pages.OrderBy(p => p.ImageIndex).ToList();
 
             // 1. throughout note labeling (1-100, not 1-2 on each page)
-            var processedLinkedTextWords = new List<BookProjectWord>();
+            var processedLinkedTextWords = new List<OldBookProjectWord>();
             for (var pageIndex = 1; pageIndex < ocrPages.Count; pageIndex++)
             {
                 var page = ocrPages[pageIndex];
-                var commentLines = page.GetLabeledLines(BookProjectLabel.Comment).ToList();
-                var textLines = page.GetLabeledLines(BookProjectLabel.PStart, BookProjectLabel.PMiddle).ToList();
+                var commentLines = page.GetLabeledLines(OldBookProjectLabel.Comment).ToList();
+                var textLines = page.GetLabeledLines(OldBookProjectLabel.PStart, OldBookProjectLabel.PMiddle).ToList();
 
                 var titleBlockLinkedTextWords = page.TitleBlocks == null
-                    ? new List<BookProjectWord>()
+                    ? new List<OldBookProjectWord>()
                     : page.TitleBlocks.Where(tb => tb.CommentLinks != null).SelectMany(tb => tb.CommentLinks);
 
                 var linkedTextWords = textLines
@@ -222,7 +223,7 @@ namespace BookProject.WinForms.Service
             // 2. comment should start and end on the same page
             for (var pageIndex = 1; pageIndex < ocrPages.Count; pageIndex++)
             {
-                var middleLines = ocrPages[pageIndex].GetLabeledLines(BookProjectLabel.Comment)
+                var middleLines = ocrPages[pageIndex].GetLabeledLines(OldBookProjectLabel.Comment)
                     .TakeWhile(l => l.Words.All(w => !w.IsCommentLinkNumber))
                     .ToList();
 
@@ -230,7 +231,7 @@ namespace BookProject.WinForms.Service
 
                 for (var reversePageIndex = pageIndex - 1; reversePageIndex >= 0; reversePageIndex--)
                 {
-                    if (ocrPages[reversePageIndex].GetLabeledLines(BookProjectLabel.Comment).Any())
+                    if (ocrPages[reversePageIndex].GetLabeledLines(OldBookProjectLabel.Comment).Any())
                     {
                         foreach (var middleLine in middleLines)
                         {
@@ -246,7 +247,7 @@ namespace BookProject.WinForms.Service
             return emptyLinks;
         }
 
-        private static void FixTextRelatedStuff(BookProjectData bookProjectData)
+        private static void FixTextRelatedStuff(OldBookProjectData bookProjectData)
         {
             var ocrPages = bookProjectData.Pages.OrderBy(p => p.ImageIndex).ToList();
 
@@ -254,15 +255,15 @@ namespace BookProject.WinForms.Service
             for (var pageIndex = 1; pageIndex < ocrPages.Count; pageIndex++)
             {
                 var middleLines = ocrPages[pageIndex].Lines
-                    .Where(l => l.Label == BookProjectLabel.PStart || l.Label == BookProjectLabel.PMiddle)
-                    .TakeWhile(l => l.Label == BookProjectLabel.PMiddle)
+                    .Where(l => l.Label == OldBookProjectLabel.PStart || l.Label == OldBookProjectLabel.PMiddle)
+                    .TakeWhile(l => l.Label == OldBookProjectLabel.PMiddle)
                     .ToList();
 
                 if (!middleLines.Any()) continue;
 
                 for (var reversePageIndex = pageIndex - 1; reversePageIndex >= 0; reversePageIndex--)
                 {
-                    if (ocrPages[reversePageIndex].Lines.Any(l => l.Label == BookProjectLabel.PStart))
+                    if (ocrPages[reversePageIndex].Lines.Any(l => l.Label == OldBookProjectLabel.PStart))
                     {
                         foreach (var middleLine in middleLines)
                         {

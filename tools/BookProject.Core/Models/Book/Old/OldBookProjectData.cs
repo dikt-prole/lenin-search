@@ -4,23 +4,23 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 
-namespace BookProject.Core.Models.Book
+namespace BookProject.Core.Models.Book.Old
 {
-    public class BookProjectData
+    public class OldBookProjectData
     {
-        public List<BookProjectPage> Pages { get; set; }
-        public static BookProjectData Empty()
+        public List<OldBookProjectPage> Pages { get; set; }
+        public static OldBookProjectData Empty()
         {
-            return new BookProjectData { Pages = new List<BookProjectPage>() };
+            return new OldBookProjectData { Pages = new List<OldBookProjectPage>() };
         }
 
-        public static BookProjectData Load(string bookFolder)
+        public static OldBookProjectData Load(string bookFolder)
         {
             var file = Path.Combine(bookFolder, "ocr-data.json");
             if (File.Exists(file))
             {
                 var json = File.ReadAllText(file);
-                return JsonConvert.DeserializeObject<BookProjectData>(json);
+                return JsonConvert.DeserializeObject<OldBookProjectData>(json);
             }
 
             var ocrData = Empty();
@@ -28,16 +28,16 @@ namespace BookProject.Core.Models.Book
             foreach (var jpegFile in jpegFiles)
             {
                 using var image = Image.FromStream(new MemoryStream(File.ReadAllBytes(jpegFile)));
-                var page = new BookProjectPage
+                var page = new OldBookProjectPage
                 {
                     Filename = Path.GetFileNameWithoutExtension(jpegFile),
-                    Lines = new List<BookProjectLine>(),
+                    Lines = new List<OldBookProjectLine>(),
                     Width = image.Width,
                     Height = image.Height,
-                    BottomDivider = new BookProjectDividerLine(image.Height - 1, 0, image.Width),
-                    TopDivider = new BookProjectDividerLine(1, 0, image.Width),
-                    TitleBlocks = new List<BookProjectTitleBlock>(),
-                    ImageBlocks = new List<BookProjectImageBlock>()
+                    BottomDivider = new OldBookProjectDividerLine(image.Height - 1, 0, image.Width),
+                    TopDivider = new OldBookProjectDividerLine(1, 0, image.Width),
+                    TitleBlocks = new List<OldBookProjectTitleBlock>(),
+                    ImageBlocks = new List<OldBookProjectImageBlock>()
                 };
                 ocrData.Pages.Add(page);
             }
@@ -52,7 +52,7 @@ namespace BookProject.Core.Models.Book
             File.WriteAllText(file, json);
         }
 
-        public BookProjectPage GetPage(string filename)
+        public OldBookProjectPage GetPage(string filename)
         {
             return Pages.FirstOrDefault(p => p.Filename == filename);
         }

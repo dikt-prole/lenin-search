@@ -3,9 +3,9 @@ using System.Drawing;
 using System.Linq;
 using Newtonsoft.Json;
 
-namespace BookProject.Core.Models.Book
+namespace BookProject.Core.Models.Book.Old
 {
-    public class BookProjectLine
+    public class OldBookProjectLine
     {
         [JsonProperty("li")]
         public int LineIndex { get; set; }
@@ -23,13 +23,13 @@ namespace BookProject.Core.Models.Book
         public int BottomRightY { get; set; }
 
         [JsonProperty("fts")]
-        public BookProjectFeatures Features { get; set; }
+        public OldBookProjectFeatures Features { get; set; }
 
         [JsonProperty("lbl")]
-        public BookProjectLabel? Label { get; set; }
+        public OldBookProjectLabel? Label { get; set; }
 
         [JsonProperty("wds")]
-        public List<BookProjectWord> Words { get; set; }
+        public List<OldBookProjectWord> Words { get; set; }
 
         [JsonProperty("dst")]
         public bool DisplayText { get; set; }

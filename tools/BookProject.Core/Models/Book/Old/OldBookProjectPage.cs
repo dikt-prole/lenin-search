@@ -4,21 +4,21 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 
-namespace BookProject.Core.Models.Book
+namespace BookProject.Core.Models.Book.Old
 {
-    public class BookProjectPage
+    public class OldBookProjectPage
     {
         [JsonProperty("fn")]
         public string Filename { get; set; }
 
         [JsonProperty("td")]
-        public BookProjectDividerLine TopDivider { get; set; }
+        public OldBookProjectDividerLine TopDivider { get; set; }
 
         [JsonProperty("bd")]
-        public BookProjectDividerLine BottomDivider { get; set; }
+        public OldBookProjectDividerLine BottomDivider { get; set; }
 
         [JsonProperty("lns")]
-        public List<BookProjectLine> Lines { get; set; }
+        public List<OldBookProjectLine> Lines { get; set; }
 
         [JsonProperty("w")]
         public int Width { get; set; }
@@ -27,17 +27,17 @@ namespace BookProject.Core.Models.Book
         public int Height { get; set; }
 
         [JsonProperty("ibs")]
-        public List<BookProjectImageBlock> ImageBlocks { get; set; }
+        public List<OldBookProjectImageBlock> ImageBlocks { get; set; }
 
         [JsonProperty("tbs")]
-        public List<BookProjectTitleBlock> TitleBlocks { get; set; }
+        public List<OldBookProjectTitleBlock> TitleBlocks { get; set; }
 
         [JsonIgnore]
         public int ImageIndex => int.Parse(new string((Path.GetFileNameWithoutExtension(Filename) ?? string.Empty)
             .Where(char.IsNumber).ToArray()));
 
         [JsonIgnore]
-        public List<BookProjectLine> NonImageBlockLines => Lines.Where(l =>
+        public List<OldBookProjectLine> NonImageBlockLines => Lines.Where(l =>
             ImageBlocks == null || ImageBlocks.All(ib => !ib.Rectangle.IntersectsWith(l.Rectangle))).ToList();
 
         public override string ToString()
@@ -45,14 +45,14 @@ namespace BookProject.Core.Models.Book
             return $"Filename: {Filename}, Lines: {Lines?.Count ?? 0}";
         }
 
-        public void MergePage(BookProjectPage page)
+        public void MergePage(OldBookProjectPage page)
         {
             TopDivider = page.TopDivider;
             BottomDivider = page.BottomDivider;
-            Lines = page.Lines ?? new List<BookProjectLine>();
+            Lines = page.Lines ?? new List<OldBookProjectLine>();
         }
 
-        public void MergeLines(BookProjectLine intoLine, params BookProjectLine[] mergeLines)
+        public void MergeLines(OldBookProjectLine intoLine, params OldBookProjectLine[] mergeLines)
         {
             foreach (var line in mergeLines) Lines.Remove(line);
 
@@ -67,26 +67,26 @@ namespace BookProject.Core.Models.Book
             foreach (var word in intoLine.Words) word.LineBottomDistance = intoLine.BottomRightY - word.BottomRightY;
         }
 
-        public List<BookProjectLine> BreakIntoWords(BookProjectLine line)
+        public List<OldBookProjectLine> BreakIntoWords(OldBookProjectLine line)
         {
             var lineIndex = Lines.IndexOf(line);
 
             Lines.Remove(line);
 
-            var wordLines = new List<BookProjectLine>();
+            var wordLines = new List<OldBookProjectLine>();
             foreach (var word in line.Words)
             {
-                var wordLine = new BookProjectLine
+                var wordLine = new OldBookProjectLine
                 {
                     TopLeftX = word.TopLeftX,
                     TopLeftY = word.TopLeftY,
                     BottomRightX = word.BottomRightX,
                     BottomRightY = word.BottomRightY,
                     DisplayText = true,
-                    Words = new List<BookProjectWord> { word },
+                    Words = new List<OldBookProjectWord> { word },
                     Label = line.Label
                 };
-                wordLine.Features = BookProjectFeatures.Calculate(this, wordLine);
+                wordLine.Features = OldBookProjectFeatures.Calculate(this, wordLine);
                 wordLines.Add(wordLine);
             }
 
@@ -97,7 +97,7 @@ namespace BookProject.Core.Models.Book
             return wordLines;
         }
 
-        public void BreakLineByDistantWord(BookProjectLine line, int maxDistance)
+        public void BreakLineByDistantWord(OldBookProjectLine line, int maxDistance)
         {
             if (line.Words == null) return;
 
@@ -129,7 +129,7 @@ namespace BookProject.Core.Models.Book
             }
         }
 
-        public List<BookProjectLine> GetIntersectingLines(Rectangle rect)
+        public List<OldBookProjectLine> GetIntersectingLines(Rectangle rect)
         {
             return Lines.Where(l => l.Rectangle.IntersectsWith(rect)).ToList();
         }
@@ -149,31 +149,31 @@ namespace BookProject.Core.Models.Book
                 line.Features.AboveBottomDivider = line.TopLeftY < BottomDivider.Y ? 1 : 0;
                 if (line.Features.BelowTopDivider == 0)
                 {
-                    line.Label = BookProjectLabel.Garbage;
+                    line.Label = OldBookProjectLabel.Garbage;
                 }
                 else if (line.Features.AboveBottomDivider == 0)
                 {
-                    line.Label = BookProjectLabel.Comment;
+                    line.Label = OldBookProjectLabel.Comment;
                 }
                 else
                 {
-                    line.Label = BookProjectLabel.PMiddle;
+                    line.Label = OldBookProjectLabel.PMiddle;
                 }
             }
         }
 
-        public BookProjectLine AddContourLine(Rectangle rect)
+        public OldBookProjectLine AddContourLine(Rectangle rect)
         {
-            var rectLine = new BookProjectLine
+            var rectLine = new OldBookProjectLine
             {
                 TopLeftX = rect.X,
                 TopLeftY = rect.Y,
                 BottomRightX = rect.X + rect.Width,
                 BottomRightY = rect.Y + rect.Height,
                 DisplayText = true,
-                Words = new List<BookProjectWord>
+                Words = new List<OldBookProjectWord>
                 {
-                    new BookProjectWord
+                    new OldBookProjectWord
                     {
                         TopLeftX = rect.X,
                         TopLeftY = rect.Y,
@@ -191,7 +191,7 @@ namespace BookProject.Core.Models.Book
             return rectLine;
         }
 
-        public IEnumerable<BookProjectLine> GetLabeledLines(params BookProjectLabel[] labels)
+        public IEnumerable<OldBookProjectLine> GetLabeledLines(params OldBookProjectLabel[] labels)
         {
             foreach (var line in Lines)
             {
@@ -201,7 +201,7 @@ namespace BookProject.Core.Models.Book
             }
         }
 
-        public IEnumerable<BookProjectLine> GetExcludingLabels(params BookProjectLabel[] labels)
+        public IEnumerable<OldBookProjectLine> GetExcludingLabels(params OldBookProjectLabel[] labels)
         {
             foreach (var line in Lines)
             {

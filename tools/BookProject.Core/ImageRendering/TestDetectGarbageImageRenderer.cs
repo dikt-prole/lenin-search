@@ -3,6 +3,7 @@ using System.Drawing;
 using BookProject.Core.Detectors;
 using BookProject.Core.Misc;
 using BookProject.Core.Models.Book;
+using BookProject.Core.Models.Book.Old;
 using BookProject.Core.Settings;
 
 namespace BookProject.Core.ImageRendering
@@ -36,7 +37,7 @@ namespace BookProject.Core.ImageRendering
             g.DrawLine(linePen, _settings.MinLeft, 0, _settings.MinLeft, height);
             g.DrawLine(linePen, width - _settings.MinRight, 0, width - _settings.MinRight, height);
 
-            using var garbageRectPen = new Pen(BookProjectPalette.GetColor(BookProjectLabel.Garbage), 2);
+            using var garbageRectPen = new Pen(BookProjectPalette.GetColor(OldBookProjectLabel.Garbage), 2);
             foreach (var rect in garbageRects)
             {
                 g.DrawRectangle(garbageRectPen, rect);

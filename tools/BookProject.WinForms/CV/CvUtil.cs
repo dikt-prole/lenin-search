@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using BookProject.Core.Models.Book;
+using BookProject.Core.Models.Book.Old;
 using BookProject.WinForms.Model;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -14,99 +14,6 @@ namespace BookProject.WinForms.CV
 {
     public static class CvUtil
     {
-        public static BookProjectDividerLine GetBottomDivider(string imageFile, List<FalseDividerArea> falseAreas)
-        {
-            using var image = new Bitmap(Image.FromFile(imageFile));
-
-            var minY = image.Height * 1 / 2;
-            var maxY = image.Height;
-
-            var lineRectangle = new Rectangle(0, minY, image.Width, maxY - minY);
-            var lineImage = image.Clone(lineRectangle, image.PixelFormat);
-            var lineBgr = lineImage.ToImage<Bgr, byte>();
-            var dividerLines = GetAllDividerLines(lineBgr).ToList();
-            foreach (var dl in dividerLines)
-            {
-                dl.Y += minY;
-            }
-
-            dividerLines = dividerLines.Where(dl => falseAreas.All(fa => !fa.Match(dl))).OrderByDescending(l => l.Length).ToList();
-
-            var bottomDividerY = dividerLines.FirstOrDefault()?.Y ?? image.Height - 40;
-            return new BookProjectDividerLine(bottomDividerY, 20, image.Width - 20);
-        }
-
-        public static BookProjectDividerLine GetTopDivider(string imageFile, List<FalseDividerArea> falseAreas)
-        {
-            using var image = new Bitmap(Image.FromFile(imageFile));
-
-            var minY = 0;
-            var maxY = image.Height / 4;
-
-            var lineRectangle = new Rectangle(0, minY, image.Width, maxY - minY);
-            var lineImage = image.Clone(lineRectangle, image.PixelFormat);
-            var lineBgr = lineImage.ToImage<Bgr, byte>();
-            var dividerLines = GetAllDividerLines(lineBgr).ToList();
-            foreach (var dl in dividerLines)
-            {
-                dl.Y += minY;
-            }
-
-            dividerLines = dividerLines.Where(dl => falseAreas.All(fa => !fa.Match(dl))).OrderByDescending(l => l.Length).ToList();
-
-            var topDividerY = dividerLines.FirstOrDefault()?.Y ?? 40;
-            return new BookProjectDividerLine(topDividerY, 20, image.Width - 20);
-        }
-
-        public static IEnumerable<BookProjectDividerLine> GetAllDividerLines(Image<Bgr, Byte> bgrImage)
-        {
-            using UMat gray = new UMat();
-            using UMat cannyEdges = new UMat();
-
-            CvInvoke.CvtColor(bgrImage, gray, ColorConversion.Bgr2Gray);
-
-            double cannyThreshold = 180.0;
-            double cannyThresholdLinking = 60.0;
-            CvInvoke.Canny(gray, cannyEdges, cannyThreshold, cannyThresholdLinking);
-            LineSegment2D[] lines = CvInvoke.HoughLinesP(
-                cannyEdges,
-                1, //Distance resolution in pixel-related units
-                Math.PI / 2, //Angle resolution measured in radians.
-                2, //threshold
-                20, //min Line width
-                1); //gap between lines
-
-            var horizontal = new LineSegment2D(new Point(0, 0), new Point(10, 0));
-
-            var lineSource = lines.Where(l => Math.Abs(l.GetExteriorAngleDegree(horizontal)) < 3).ToList();
-            var lineGroups = new List<List<LineSegment2D>>();
-            while (lineSource.Any())
-            {
-                var attractorLine = lineSource[0];
-
-                lineSource.Remove(attractorLine);
-                var attractedLines = lineSource
-                    .Where(l => Math.Abs(l.P1.Y - attractorLine.P1.Y) < 3)
-                    //.Where(l => GetMinDistance(attractorLine, l) < 10)
-                    .ToList();
-
-                foreach (var l in attractedLines) lineSource.Remove(l);
-                attractedLines.Add(attractorLine);
-                lineGroups.Add(attractedLines);
-            }
-
-            foreach (var lineGroup in lineGroups)
-            {
-                var allPoints = lineGroup.SelectMany(l => new[] { l.P1, l.P2 }).ToList();
-                yield return new BookProjectDividerLine
-                {
-                    Y = lineGroup.Last().P1.Y,
-                    LeftX = allPoints.Select(p => p.X).Min(),
-                    RightX = allPoints.Select(p => p.X).Max()
-                };
-            }
-        }
-
         public static IEnumerable<Rectangle> GetSmoothedContourRectangles(string imageFile)
         {
             using var image = new Bitmap(Image.FromFile(imageFile));
@@ -369,7 +276,7 @@ namespace BookProject.WinForms.CV
             return imageRect;
         }
 
-        public static IEnumerable<UncoveredContour> GetUncoveredContours(string imageFile, BookProjectPage page)
+        public static IEnumerable<UncoveredContour> GetUncoveredContours(string imageFile, OldBookProjectPage page)
         {
             var rects = GetSmoothedContourRectangles(imageFile).ToList();
             foreach (var rect in rects)
@@ -383,7 +290,7 @@ namespace BookProject.WinForms.CV
                     ImageFile = imageFile,
                     Rectangle = rect,
                     Page = page,
-                    Word = new BookProjectWord
+                    Word = new OldBookProjectWord
                     {
                         TopLeftX = rect.X,
                         TopLeftY = rect.Y,
@@ -398,7 +305,7 @@ namespace BookProject.WinForms.CV
             }
         }
 
-        private static bool CommentLinkMatch(Rectangle candidateRect, BookProjectPage page, CommentLinkSettings settings)
+        private static bool CommentLinkMatch(Rectangle candidateRect, OldBookProjectPage page, CommentLinkSettings settings)
         {
             var line = page.Lines.FirstOrDefault(l => l.PageWideRectangle(page.Width).IntersectsWith(candidateRect));
 

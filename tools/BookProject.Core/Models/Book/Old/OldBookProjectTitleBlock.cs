@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace BookProject.Core.Models.Book
+namespace BookProject.Core.Models.Book.Old
 {
-    public class BookProjectTitleBlock : BookProjectBlock
+    public class OldBookProjectTitleBlock : OldBookProjectBlock
     {
         [JsonProperty("tll")]
         public int TitleLevel { get; set; }
@@ -12,6 +12,6 @@ namespace BookProject.Core.Models.Book
         public string TitleText { get; set; }
 
         [JsonProperty("ctl")]
-        public List<BookProjectWord> CommentLinks { get; set; }
+        public List<OldBookProjectWord> CommentLinks { get; set; }
     }
 }

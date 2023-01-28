@@ -1,9 +1,9 @@
 ﻿using System.Drawing;
 using Newtonsoft.Json;
 
-namespace BookProject.Core.Models.Book
+namespace BookProject.Core.Models.Book.Old
 {
-    public class BookProjectWord
+    public class OldBookProjectWord
     {
         [JsonProperty("tlx")]
         public int TopLeftX { get; set; }
@@ -54,7 +54,7 @@ namespace BookProject.Core.Models.Book
         {
             // dx^2 + dy^2 <= R^2
             return (point.X - CenterX) * (point.X - CenterX) + (point.Y - CenterY) * (point.Y - CenterY) <=
-                   BookProjectSettings.WordCircleRadius * BookProjectSettings.WordCircleRadius;
+                   OldBookProjectSettings.WordCircleRadius * OldBookProjectSettings.WordCircleRadius;
         }
     }
 }

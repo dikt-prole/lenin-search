@@ -10,7 +10,7 @@ namespace BookProject.Core.ImageRendering
     {
         private readonly ICommentLinkNumberDetector _commentLinkNumberDetector;
         private readonly DetectCommentLinkNumberSettings _settings;
-        public TestDetectCommentLinkNumberImageRenderer(DetectCommentLinkNumberSettings settings, IOcrUtility ocrUtility) : this(new CommentLinkNumberDetector(ocrUtility), settings) { }
+        public TestDetectCommentLinkNumberImageRenderer(DetectCommentLinkNumberSettings settings, IOcrUtility ocrUtility) : this(new CommentLinkDetector(ocrUtility), settings) { }
 
         public TestDetectCommentLinkNumberImageRenderer(ICommentLinkNumberDetector commentLinkNumberDetector, DetectCommentLinkNumberSettings settings)
         {
@@ -23,8 +23,8 @@ namespace BookProject.Core.ImageRendering
             var internalValues = new Dictionary<string, object>();
             var linkRects = _commentLinkNumberDetector.Detect(imageFile, _settings, null, internalValues);
 
-            var originalBitmap = internalValues[CommentLinkNumberDetector.SmoothBitmapKey] as Bitmap;
-            var lineRects = internalValues[CommentLinkNumberDetector.MatchLineRectangleKey] as Rectangle[];
+            var originalBitmap = internalValues[CommentLinkDetector.SmoothBitmapKey] as Bitmap;
+            var lineRects = internalValues[CommentLinkDetector.MatchLineRectangleKey] as Rectangle[];
             using var g = Graphics.FromImage(originalBitmap);
 
             var linePen = new Pen(Color.GreenYellow, 2);
