@@ -81,26 +81,7 @@ namespace BookProject.WinForms
 
         private void TestClick(object? sender, EventArgs e)
         {
-            var settings = new DetectTitleSettings
-            {
-                GaussSigma1 = 12,
-                GaussSigma2 = 12,
-                MinBottom = 100,
-                MinTop = 100,
-                MinRight = 160,
-                MinLeft = 160
-            };
-            var internalValues = new Dictionary<string, object>();
-            var titleDetector = new TitleDetector();
-            var titleRectangles = titleDetector.Detect(file_tb.Text, settings, null, internalValues);
-            var resultImage = internalValues["invertedGray"] as Bitmap;
-            using var pen = new Pen(Color.Red, 4);
-            using var g = Graphics.FromImage(resultImage);
-            foreach (var titleRectangle in titleRectangles)
-            {
-                g.DrawRectangle(pen, titleRectangle);
-            }
-            processed_pb.Image = resultImage;
+           
         }
 
         private async void Ocr_btnOnClick(object? sender, EventArgs e)

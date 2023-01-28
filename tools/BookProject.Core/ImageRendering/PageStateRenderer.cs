@@ -1,8 +1,6 @@
-﻿using System;
-using System.Drawing;
+﻿using System.Drawing;
 using BookProject.Core.Misc;
 using BookProject.Core.Models.Book;
-using BookProject.Core.Utilities;
 
 namespace BookProject.Core.ImageRendering
 {
@@ -15,31 +13,27 @@ namespace BookProject.Core.ImageRendering
             _pageState = pageState;
         }
 
-        protected override Bitmap RenderOriginalBitmap(string imageFile)
+        public override void Render(Bitmap originalBitmap, Graphics g)
         {
-            var originalBitmap = ImageUtility.Load(imageFile);
             if (_pageState.Page == null)
             {
-                return originalBitmap;
+                return;
             }
 
-            using var g = Graphics.FromImage(originalBitmap);
             var blocks = _pageState.Page.GetAllBlocks();
             foreach (var block in blocks)
             {
                 using var blockBorderPen = BookProjectPalette.GetBlockBorderPen(block, 4);
-                g.DrawRectangle(blockBorderPen, block.Rectangle);
+                DrawRect(block.Rectangle, blockBorderPen, g, originalBitmap);
                 if (block.State == BlockState.Edit)
                 {
                     using var blockElementBrush = BookProjectPalette.GetBlockElementBrush(block);
                     foreach (var dragRectangle in block.AllDragRectangles())
                     {
-                        g.FillRectangle(blockElementBrush, dragRectangle);   
+                        FillRect(dragRectangle, blockElementBrush, g, originalBitmap);   
                     }
                 }
             }
-
-            return originalBitmap;
         }
     }
 }

@@ -27,10 +27,9 @@ namespace BookProject.Core.Detectors
             _ocrUtility = ocrUtility;
         }
 
-        public Rectangle[] Detect(string imageFile, DetectCommentLinkNumberSettings settings, Rectangle[] excludeAreas,
+        public Rectangle[] Detect(Bitmap image, DetectCommentLinkNumberSettings settings, Rectangle[] excludeAreas,
             Dictionary<string, object> internalValues)
         {
-            using var image = new Bitmap(Image.FromStream(new MemoryStream(File.ReadAllBytes(imageFile))));
 
             var lineContourRectangleResult =
                 _cvUtility.GetContourRectangles(image, settings.LineGaussSigma1, settings.LineGaussSigma2);

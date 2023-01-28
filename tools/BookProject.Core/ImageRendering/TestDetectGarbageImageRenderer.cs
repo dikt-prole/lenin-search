@@ -22,28 +22,26 @@ namespace BookProject.Core.ImageRendering
         public TestDetectGarbageImageRenderer(DetectGarbageSettings settings) : this(settings, new GarbageDetector())
         { }
 
-        protected override Bitmap RenderOriginalBitmap(string imageFile)
+        public override void Render(Bitmap originalBitmap, Graphics g)
         {
             var internalValues = new Dictionary<string, object>();
-            var garbageRects = _garbageDetector.Detect(imageFile, _settings, null, internalValues);
+            var garbageRects = _garbageDetector.Detect(originalBitmap, _settings, null, internalValues);
 
-            var originalImage = internalValues[GarbageDetector.SmoothBitmapKey] as Bitmap;
-            using var g = Graphics.FromImage(originalImage);
+            originalBitmap = internalValues[GarbageDetector.SmoothBitmapKey] as Bitmap;
 
-            var width = originalImage.Width;
-            var height = originalImage.Height;
+            DrawOriginalBitmap(originalBitmap, g);
 
+            var width = originalBitmap.Width;
+            var height = originalBitmap.Height;
             using var linePen = new Pen(Color.LimeGreen, 2);
-            g.DrawLine(linePen, _settings.MinLeft, 0, _settings.MinLeft, height);
-            g.DrawLine(linePen, width - _settings.MinRight, 0, width - _settings.MinRight, height);
+            DrawLine(_settings.MinLeft, 0, _settings.MinLeft, height, linePen, g, originalBitmap);
+            DrawLine(width - _settings.MinRight, 0, width - _settings.MinRight, height, linePen, g, originalBitmap);
 
             using var garbageRectPen = new Pen(BookProjectPalette.GetColor(OldBookProjectLabel.Garbage), 2);
             foreach (var rect in garbageRects)
             {
-                g.DrawRectangle(garbageRectPen, rect);
+                DrawRect(rect, garbageRectPen, g, originalBitmap);
             }
-
-            return originalImage;
         }
     }
 }

@@ -28,7 +28,7 @@ namespace BookProject.WinForms
         {
             InitializeComponent();
 
-            ocr_lb.SelectedIndexChanged += OcrLbOnSelectedIndexChanged;
+            page_lb.SelectedIndexChanged += PageLbOnSelectedIndexChanged;
 
             pictureBox1.Paint += PictureBox1OnPaint;
             pictureBox1.MouseDown += PictureBox1OnMouseDown;
@@ -114,7 +114,7 @@ namespace BookProject.WinForms
                     .Concat(page.CommentLinkBlocks.Select(b => b.Rectangle))
                     .ToArray();
                 var garbageRects = new GarbageDetector()
-                    .Detect(imageFile, detectGarbageControl1.GetSettings(), excludeRects, null);
+                    .Detect(ImageUtility.Load(imageFile), detectGarbageControl1.GetSettings(), excludeRects, null);
                 page.GarbageBlocks = garbageRects.Select(GarbageBlock.FromRectangle).ToList();
                 progressBar1.Value = i + 1;
                 Application.DoEvents();
@@ -144,7 +144,7 @@ namespace BookProject.WinForms
                     .Concat(page.TitleBlocks.Select(b => b.Rectangle))
                     .ToArray();
                 var commentLinkRects = new CommentLinkDetector(new YandexVisionOcrUtility())
-                    .Detect(imageFile, detectCommentLinkNumberControl1.GetSettings(), excludeRects, null);
+                    .Detect(ImageUtility.Load(imageFile), detectCommentLinkNumberControl1.GetSettings(), excludeRects, null);
                 page.CommentLinkBlocks = commentLinkRects.Select(CommentLinkBlock.FromRectangle).ToList();
                 progressBar1.Value = i + 1;
                 Application.DoEvents();
@@ -170,7 +170,7 @@ namespace BookProject.WinForms
             {
                 var imageFile = imageFiles[i];
                 var page = _book.GetPage(Path.GetFileNameWithoutExtension(imageFile));
-                var imageRects = new ImageDetector().Detect(imageFile, detectImageControl1.GetSettings(), null, null);
+                var imageRects = new ImageDetector().Detect(ImageUtility.Load(imageFile), detectImageControl1.GetSettings(), null, null);
                 page.ImageBlocks = imageRects.Select(ImageBlock.FromRectangle).ToList();
                 progressBar1.Value = i + 1;
                 Application.DoEvents();
@@ -197,7 +197,7 @@ namespace BookProject.WinForms
                 var imageFile = imageFiles[i];
                 var page = _book.GetPage(Path.GetFileNameWithoutExtension(imageFile));
                 var excludeRects = page.ImageBlocks.Select(b => b.Rectangle).ToArray();
-                var titleRects = new TitleDetector().Detect(imageFile, detectTitleControl1.GetSettings(), excludeRects, null);
+                var titleRects = new TitleDetector().Detect(ImageUtility.Load(imageFile), detectTitleControl1.GetSettings(), excludeRects, null);
                 page.TitleBlocks = titleRects.Select(TitleBlock.FromRectangle).ToList();
                 progressBar1.Value = i + 1;
                 Application.DoEvents();
@@ -293,7 +293,7 @@ namespace BookProject.WinForms
 
             bookFolder_tb.Text = dialog.SelectedPath;
 
-            ocr_lb.Items.Clear();
+            page_lb.Items.Clear();
 
             var fileNames = Directory.GetFiles(bookFolder_tb.Text, "*.jpg")
                 .Select(Path.GetFileNameWithoutExtension)
@@ -302,7 +302,7 @@ namespace BookProject.WinForms
 
             foreach (var fileName in fileNames)
             {
-                ocr_lb.Items.Add(fileName);
+                page_lb.Items.Add(fileName);
             }
         }
 
@@ -439,25 +439,14 @@ namespace BookProject.WinForms
 
         private void PictureBox1OnPaint(object sender, PaintEventArgs e)
         {
-            var filename = ocr_lb.SelectedItem as string;
+            if (_pageState.Page == null) return;
 
-            if (string.IsNullOrEmpty(filename)) return;
-
-            var imageFile = Directory.GetFiles(bookFolder_tb.Text)
-                .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == filename);
-
-            using var imageStream = new MemoryStream();
-
-            _imageRenderer.RenderBmp(imageFile, imageStream, pictureBox1.Width, pictureBox1.Height);
-
-            var canvasBitmap = new Bitmap(imageStream);
-
-            e.Graphics.DrawImage(canvasBitmap, 0, 0);
+            _imageRenderer.Render(_pageState.OriginalPageBitmap, e.Graphics);
         }
 
-        private void OcrLbOnSelectedIndexChanged(object? sender, EventArgs e)
+        private void PageLbOnSelectedIndexChanged(object? sender, EventArgs e)
         {
-            var fileName = ocr_lb.SelectedItem as string;
+            var fileName = page_lb.SelectedItem as string;
             if (fileName == null) return;
 
             var imageFile = Directory.GetFiles(bookFolder_tb.Text).FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == fileName);
@@ -467,7 +456,8 @@ namespace BookProject.WinForms
             }
 
             _pageState.Page = _book.GetPage(fileName);
-            pictureBox1.Image = ImageUtility.Load(imageFile);
+            _pageState.OriginalPageBitmap = ImageUtility.Load(imageFile);
+            pictureBox1.Image = _pageState.OriginalPageBitmap;
         }
 
         private void GenerateFb2Click(object sender, EventArgs e)

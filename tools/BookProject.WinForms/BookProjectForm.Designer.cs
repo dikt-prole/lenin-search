@@ -33,7 +33,7 @@ namespace BookProject.WinForms
         {
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.ocr_lb = new System.Windows.Forms.ListBox();
+            this.page_lb = new System.Windows.Forms.ListBox();
             this.tableLayoutPanel5 = new System.Windows.Forms.TableLayoutPanel();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.tableLayoutPanel7 = new System.Windows.Forms.TableLayoutPanel();
@@ -74,7 +74,7 @@ namespace BookProject.WinForms
             this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 500F));
             this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel3.Controls.Add(this.pictureBox1, 1, 0);
-            this.tableLayoutPanel3.Controls.Add(this.ocr_lb, 0, 0);
+            this.tableLayoutPanel3.Controls.Add(this.page_lb, 0, 0);
             this.tableLayoutPanel3.Controls.Add(this.tableLayoutPanel5, 2, 0);
             this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel3.Location = new System.Drawing.Point(0, 0);
@@ -96,15 +96,15 @@ namespace BookProject.WinForms
             this.pictureBox1.TabIndex = 1;
             this.pictureBox1.TabStop = false;
             // 
-            // ocr_lb
+            // page_lb
             // 
-            this.ocr_lb.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ocr_lb.FormattingEnabled = true;
-            this.ocr_lb.ItemHeight = 15;
-            this.ocr_lb.Location = new System.Drawing.Point(3, 3);
-            this.ocr_lb.Name = "ocr_lb";
-            this.ocr_lb.Size = new System.Drawing.Size(174, 551);
-            this.ocr_lb.TabIndex = 1;
+            this.page_lb.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.page_lb.FormattingEnabled = true;
+            this.page_lb.ItemHeight = 15;
+            this.page_lb.Location = new System.Drawing.Point(3, 3);
+            this.page_lb.Name = "page_lb";
+            this.page_lb.Size = new System.Drawing.Size(174, 551);
+            this.page_lb.TabIndex = 1;
             // 
             // tableLayoutPanel5
             // 
@@ -356,7 +356,7 @@ namespace BookProject.WinForms
         #endregion
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
         private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.ListBox ocr_lb;
+        private System.Windows.Forms.ListBox page_lb;
         private System.Windows.Forms.TextBox bookFolder_tb;
         private System.Windows.Forms.Button openBookFolder_btn;
         private System.Windows.Forms.Button generateLines_btn;

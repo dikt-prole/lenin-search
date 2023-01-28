@@ -23,10 +23,8 @@ namespace BookProject.Core.Detectors
             _cvUtility = cvUtility;
         }
 
-        public Rectangle[] Detect(string imageFile, DetectTitleSettings settings, Rectangle[] excludeAreas, Dictionary<string, object> internalValues)
+        public Rectangle[] Detect(Bitmap image, DetectTitleSettings settings, Rectangle[] excludeAreas, Dictionary<string, object> internalValues)
         {
-            using var image = ImageUtility.Load(imageFile);
-
             var contourRectangleResult =
                 _cvUtility.GetContourRectangles(image, settings.GaussSigma1, settings.GaussSigma2);
 

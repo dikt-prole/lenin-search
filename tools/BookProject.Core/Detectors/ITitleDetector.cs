@@ -7,6 +7,6 @@ namespace BookProject.Core.Detectors
 {
     public interface ITitleDetector
     {
-        Rectangle[] Detect(string imageFile, DetectTitleSettings settings, Rectangle[] excludeAreas, Dictionary<string, object> internalValues);
+        Rectangle[] Detect(Bitmap image, DetectTitleSettings settings, Rectangle[] excludeAreas, Dictionary<string, object> internalValues);
     }
 }

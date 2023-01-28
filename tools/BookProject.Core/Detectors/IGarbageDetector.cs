@@ -6,6 +6,6 @@ namespace BookProject.Core.Detectors
 {
     public interface IGarbageDetector
     {
-        Rectangle[] Detect(string imageFile, DetectGarbageSettings settings, Rectangle[] excludeAreas, Dictionary<string, object> internalValues);
+        Rectangle[] Detect(Bitmap image, DetectGarbageSettings settings, Rectangle[] excludeAreas, Dictionary<string, object> internalValues);
     }
 }

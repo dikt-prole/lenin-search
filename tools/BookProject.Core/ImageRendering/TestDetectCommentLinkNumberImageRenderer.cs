@@ -18,28 +18,26 @@ namespace BookProject.Core.ImageRendering
             _settings = settings;
         }
 
-        protected override Bitmap RenderOriginalBitmap(string imageFile)
+        public override void Render(Bitmap originalBitmap, Graphics g)
         {
             var internalValues = new Dictionary<string, object>();
-            var linkRects = _commentLinkNumberDetector.Detect(imageFile, _settings, null, internalValues);
+            var linkRects = _commentLinkNumberDetector.Detect(originalBitmap, _settings, null, internalValues);
 
-            var originalBitmap = internalValues[CommentLinkDetector.SmoothBitmapKey] as Bitmap;
+            originalBitmap = internalValues[CommentLinkDetector.SmoothBitmapKey] as Bitmap;
             var lineRects = internalValues[CommentLinkDetector.MatchLineRectangleKey] as Rectangle[];
-            using var g = Graphics.FromImage(originalBitmap);
 
+            DrawOriginalBitmap(originalBitmap, g);
             var linePen = new Pen(Color.GreenYellow, 2);
             foreach (var lineRect in lineRects)
             {
-                g.DrawRectangle(linePen, lineRect);
+                DrawRect(lineRect, linePen, g, originalBitmap);
             }
-            
+
             var linkPen = new Pen(Color.DeepSkyBlue, 2);
             foreach (var linkRect in linkRects)
             {
-                g.DrawRectangle(linkPen, linkRect);
+                DrawRect(linkRect, linkPen, g, originalBitmap);
             }
-
-            return originalBitmap;
         }
     }
 }

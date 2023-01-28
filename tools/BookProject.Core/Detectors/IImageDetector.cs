@@ -6,6 +6,6 @@ namespace BookProject.Core.Detectors
 {
     public interface IImageDetector
     {
-        Rectangle[] Detect(string imageFile, DetectImageSettings settings, Rectangle[] excludeAreas, Dictionary<string, object> internalValues);
+        Rectangle[] Detect(Bitmap image, DetectImageSettings settings, Rectangle[] excludeAreas, Dictionary<string, object> internalValues);
     }
 }

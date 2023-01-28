@@ -21,11 +21,9 @@ namespace BookProject.Core.Detectors
             _cvUtility = cvUtility;
         }
 
-        public Rectangle[] Detect(string imageFile, DetectGarbageSettings settings, Rectangle[] excludeAreas,
+        public Rectangle[] Detect(Bitmap image, DetectGarbageSettings settings, Rectangle[] excludeAreas,
             Dictionary<string, object> internalValues)
         {
-            using var image = new Bitmap(Image.FromStream(new MemoryStream(File.ReadAllBytes(imageFile))));
-
             var contourRectangleResult =
                 _cvUtility.GetContourRectangles(image, settings.GaussSigma1, settings.GaussSigma2);
 

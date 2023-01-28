@@ -1,45 +1,71 @@
 ﻿using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
+using BookProject.Core.Misc;
 
 namespace BookProject.Core.ImageRendering
 {
     public abstract class ImageRendererBase : IImageRenderer
     {
-        public void RenderJpeg(string imageFile, Stream outStream, int canvasWidth, int canvasHeight)
+        public abstract void Render(Bitmap originalImage, Graphics g);
+
+        protected void DrawLine(
+            Point originalPointFrom, 
+            Point originalPointTo, 
+            Pen pen, 
+            Graphics pictureBoxGraphics, 
+            Bitmap originalImage)
         {
-            using var originalBitmap = RenderOriginalBitmap(imageFile);
-            using var canvasBitmap = ToCanvasBitmap(originalBitmap, canvasWidth, canvasHeight);
-            canvasBitmap.Save(outStream, ImageFormat.Jpeg);
+            var pbPointFrom = pictureBoxGraphics.ToPictureBoxPoint(originalPointFrom, originalImage);
+            var pbPointTo = pictureBoxGraphics.ToPictureBoxPoint(originalPointTo, originalImage);
+            pictureBoxGraphics.DrawLine(pen, pbPointFrom, pbPointTo);
         }
-        public void RenderBmp(string imageFile, Stream outStream, int canvasWidth, int canvasHeight)
+
+        protected void DrawLine(
+            int originalFromX,
+            int originalFromY,
+            int originalToX,
+            int originalToY,
+            Pen pen,
+            Graphics pictureBoxGraphics,
+            Bitmap originalImage)
         {
-            using var originalBitmap = RenderOriginalBitmap(imageFile);
-            using var canvasBitmap = ToCanvasBitmap(originalBitmap, canvasWidth, canvasHeight);
-            canvasBitmap.Save(outStream, ImageFormat.Bmp);
+            DrawLine(new Point(originalFromX, originalFromY), new Point(originalToX, originalToY), pen,
+                pictureBoxGraphics, originalImage);
         }
 
-        protected abstract Bitmap RenderOriginalBitmap(string imageFile);
-
-        protected Bitmap ToCanvasBitmap(Bitmap originalBitmap, int canvasWidth, int canvasHeight)
+        protected void DrawRect(
+            Rectangle originalRect,
+            Pen pen,
+            Graphics pictureBoxGraphics,
+            Bitmap originalImage)
         {
-            var canvasBitmap = new Bitmap(canvasWidth, canvasHeight);
+            var pbRect = pictureBoxGraphics.ToPictureBoxRectangle(originalRect, originalImage);
+            pictureBoxGraphics.DrawRectangle(pen, pbRect);
+        }
 
-            using var canvasGraphics = Graphics.FromImage(canvasBitmap);
+        protected void FillRect(
+            Rectangle originalRect,
+            Brush brush,
+            Graphics pictureBoxGraphics,
+            Bitmap originalImage)
+        {
+            var pbRect = pictureBoxGraphics.ToPictureBoxRectangle(originalRect, originalImage);
+            pictureBoxGraphics.FillRectangle(brush, pbRect);
+        }
 
-            using var canvasBackgroundBrush = new SolidBrush(Color.DarkGray);
+        protected void DrawOriginalBitmap(
+            Bitmap originalBitmap,
+            Graphics pictureBoxGraphics)
+        {
+            var pbHeight = pictureBoxGraphics.VisibleClipBounds.Height;
+            var pbWidth = pictureBoxGraphics.VisibleClipBounds.Width;
 
-            canvasGraphics.FillRectangle(canvasBackgroundBrush, 0, 0, canvasWidth, canvasHeight);
-
-            var scale = 1.0 * canvasHeight / originalBitmap.Height;
+            var scale = 1.0 * pbHeight / originalBitmap.Height;
 
             var scaledImageWidth = (int)(originalBitmap.Width * scale);
 
-            var leftPadding = (canvasWidth - scaledImageWidth) / 2;
+            var leftPadding = (pbWidth - scaledImageWidth) / 2;
 
-            canvasGraphics.DrawImage(originalBitmap, leftPadding, 0, scaledImageWidth, canvasHeight);
-
-            return canvasBitmap;
+            pictureBoxGraphics.DrawImage(originalBitmap, leftPadding, 0, scaledImageWidth, pbHeight);
         }
     }
 }
