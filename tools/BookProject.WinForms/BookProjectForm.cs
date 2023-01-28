@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -79,7 +78,7 @@ namespace BookProject.WinForms
 
             detectGarbageControl1.TestEnd += (sender, args) => SetPageStateImageRenderer();
 
-            KeyDown += PictureBox1OnKeyDown;
+            pictureBox1.KeyDown += PictureBox1OnKeyDown;
         }
 
         private void PictureBox1OnKeyDown(object sender, KeyEventArgs e)
@@ -90,6 +89,7 @@ namespace BookProject.WinForms
                 if (editedBlock != null)
                 {
                     _pageState.Page.RemoveBlock(editedBlock);
+                    pictureBox1.Refresh();
                 }
             }
         }
@@ -315,11 +315,9 @@ namespace BookProject.WinForms
 
         private void PictureBox1OnMouseDown(object sender, MouseEventArgs e)
         {
+            pictureBox1.Focus();
+
             if (pictureBox1.Image == null) return;
-            var filename = ocr_lb.SelectedItem as string;
-            if (filename == null) return;
-            var page = _book.GetPage(filename);
-            if (page == null) return;
 
             if (e.Button == MouseButtons.Right)
             {
@@ -329,7 +327,7 @@ namespace BookProject.WinForms
             if (e.Button == MouseButtons.Left)
             {
                 var originalPoint = pictureBox1.ToOriginalPoint(e.Location);
-                var editBlock = page.GetEditBlock();
+                var editBlock = _pageState.Page.GetEditBlock();
                 if (editBlock?.LeftDragRectangle.Contains(originalPoint) == true)
                 {
                     _mouseMoveActivity = new DragBlockLeftMouseMoveActivity(editBlock);
@@ -349,10 +347,10 @@ namespace BookProject.WinForms
                 else
                 {
                     _mouseMoveActivity = null;
-                    var blockAtCursor = page.GetAllBlocks().FirstOrDefault(b => b.Rectangle.Contains(originalPoint));
+                    var blockAtCursor = _pageState.Page.GetAllBlocks().FirstOrDefault(b => b.Rectangle.Contains(originalPoint));
                     if (blockAtCursor != null)
                     {
-                        page.SetEditBlock(blockAtCursor);
+                        _pageState.Page.SetEditBlock(blockAtCursor);
                         pictureBox1.Refresh();
                     }
                 }
