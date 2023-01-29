@@ -15,6 +15,14 @@ using BookProject.WinForms.Service;
 
 namespace BookProject.WinForms
 {
+    /*
+     * todo:
+     * 1. перемещение выделения блока страницы (TAB или Left-Right Arrows)
+     * 2. новый детектор для comment link - через top margin (приблизительно половина сверзу - половина снизу)
+     * 3. распознавание выделенного куска текста и копировать в буфер обмена
+     * 4. comment link - details - use explicit text
+     * 5. title block - details - ocr
+     */
     public partial class BookProjectForm : Form
     {
         private Book _book = null;
