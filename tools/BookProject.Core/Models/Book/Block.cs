@@ -5,7 +5,7 @@ namespace BookProject.Core.Models.Book
 {
     public class Block
     {
-        private const int DragPointSize = 20;
+        public const int PbDragPointSize = 10;
 
         [JsonProperty("tlx")]
         public int TopLeftX { get; set; }
@@ -26,51 +26,35 @@ namespace BookProject.Core.Models.Book
         public Rectangle Rectangle => new Rectangle(TopLeftX, TopLeftY, BottomRightX - TopLeftX, BottomRightY - TopLeftY);
 
         [JsonIgnore]
-        public Rectangle TopDragRectangle => new Rectangle(
-            (TopLeftX + BottomRightX) / 2 - DragPointSize / 2,
-            TopLeftY - DragPointSize / 2,
-            DragPointSize,
-            DragPointSize);
+        public Point TopDragCenter => new Point((TopLeftX + BottomRightX) / 2, TopLeftY);
 
         [JsonIgnore]
-        public Rectangle BottomDragRectangle => new Rectangle(
-            (TopLeftX + BottomRightX) / 2 - DragPointSize / 2,
-            BottomRightY - DragPointSize / 2,
-            DragPointSize,
-            DragPointSize);
+        public Point BottomDragCenter => new Point((TopLeftX + BottomRightX) / 2, BottomRightY);
 
         [JsonIgnore]
-        public Rectangle LeftDragRectangle => new Rectangle(
-            TopLeftX - DragPointSize / 2,
-            (TopLeftY + BottomRightY) / 2 - DragPointSize / 2,
-            DragPointSize,
-            DragPointSize);
+        public Point LeftDragCenter => new Point(TopLeftX, (TopLeftY + BottomRightY) / 2);
 
         [JsonIgnore]
-        public Rectangle RightDragRectangle => new Rectangle(
-            BottomRightX - DragPointSize / 2,
-            (TopLeftY + BottomRightY) / 2 - DragPointSize / 2,
-            DragPointSize,
-            DragPointSize);
+        public Point RightDragCenter => new Point(BottomRightX, (TopLeftY + BottomRightY) / 2);
 
-        public Rectangle[] AllDragRectangles()
+        public Point[] AllDragCenters()
         {
             return new[]
             {
-                TopDragRectangle,
-                BottomDragRectangle,
-                LeftDragRectangle,
-                RightDragRectangle
+                TopDragCenter,
+                BottomDragCenter,
+                LeftDragCenter,
+                RightDragCenter
             };
         }
 
-        public bool IsInDragRectangle(Point point)
+        public static Rectangle GetPbDragRectangle(Point pbCenter)
         {
-            return
-                TopDragRectangle.Contains(point) ||
-                BottomDragRectangle.Contains(point) ||
-                LeftDragRectangle.Contains(point) ||
-                RightDragRectangle.Contains(point);
+            return new Rectangle(
+                pbCenter.X - PbDragPointSize / 2,
+                pbCenter.Y - PbDragPointSize / 2,
+                PbDragPointSize,
+                PbDragPointSize);
         }
     }
 }

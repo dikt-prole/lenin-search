@@ -7,7 +7,7 @@ namespace BookProject.Core.ImageRendering
     {
         public abstract void Render(Bitmap originalImage, Graphics g);
 
-        protected void DrawLine(
+        protected void DrawOriginalLine(
             Point originalPointFrom, 
             Point originalPointTo, 
             Pen pen, 
@@ -19,7 +19,7 @@ namespace BookProject.Core.ImageRendering
             pictureBoxGraphics.DrawLine(pen, pbPointFrom, pbPointTo);
         }
 
-        protected void DrawLine(
+        protected void DrawOriginalLine(
             int originalFromX,
             int originalFromY,
             int originalToX,
@@ -28,11 +28,11 @@ namespace BookProject.Core.ImageRendering
             Graphics pictureBoxGraphics,
             Bitmap originalImage)
         {
-            DrawLine(new Point(originalFromX, originalFromY), new Point(originalToX, originalToY), pen,
+            DrawOriginalLine(new Point(originalFromX, originalFromY), new Point(originalToX, originalToY), pen,
                 pictureBoxGraphics, originalImage);
         }
 
-        protected void DrawRect(
+        protected void DrawOriginalRect(
             Rectangle originalRect,
             Pen pen,
             Graphics pictureBoxGraphics,
@@ -42,7 +42,7 @@ namespace BookProject.Core.ImageRendering
             pictureBoxGraphics.DrawRectangle(pen, pbRect);
         }
 
-        protected void FillRect(
+        protected void FillOriginalRect(
             Rectangle originalRect,
             Brush brush,
             Graphics pictureBoxGraphics,

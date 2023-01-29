@@ -18,7 +18,8 @@ namespace BookProject.Core.Models.Book
                 TopLeftX = rect.X,
                 TopLeftY = rect.Y,
                 BottomRightX = rect.X + rect.Width,
-                BottomRightY = rect.Y + rect.Height
+                BottomRightY = rect.Y + rect.Height,
+                State = BlockState.Normal
             };
         }
     }

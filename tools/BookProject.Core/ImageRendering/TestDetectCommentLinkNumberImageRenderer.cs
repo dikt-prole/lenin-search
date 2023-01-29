@@ -30,13 +30,13 @@ namespace BookProject.Core.ImageRendering
             var linePen = new Pen(Color.GreenYellow, 2);
             foreach (var lineRect in lineRects)
             {
-                DrawRect(lineRect, linePen, g, originalBitmap);
+                DrawOriginalRect(lineRect, linePen, g, originalBitmap);
             }
 
             var linkPen = new Pen(Color.DeepSkyBlue, 2);
             foreach (var linkRect in linkRects)
             {
-                DrawRect(linkRect, linkPen, g, originalBitmap);
+                DrawOriginalRect(linkRect, linkPen, g, originalBitmap);
             }
         }
     }

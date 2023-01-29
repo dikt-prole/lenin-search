@@ -32,22 +32,22 @@ namespace BookProject.Core.ImageRendering
             var width = originalBitmap.Width;
             var height = originalBitmap.Height;
             using var linePen = new Pen(Color.LimeGreen, 2);
-            DrawLine(0, _settings.MinTop, width, _settings.MinTop, linePen, g, originalBitmap);
-            DrawLine(0, height - _settings.MinBottom, width, height - _settings.MinBottom, linePen, g, originalBitmap);
-            DrawLine(_settings.MinLeft, 0, _settings.MinLeft, height, linePen, g, originalBitmap);
-            DrawLine(width - _settings.MinRight, 0, width - _settings.MinRight, height, linePen, g, originalBitmap);
+            DrawOriginalLine(0, _settings.MinTop, width, _settings.MinTop, linePen, g, originalBitmap);
+            DrawOriginalLine(0, height - _settings.MinBottom, width, height - _settings.MinBottom, linePen, g, originalBitmap);
+            DrawOriginalLine(_settings.MinLeft, 0, _settings.MinLeft, height, linePen, g, originalBitmap);
+            DrawOriginalLine(width - _settings.MinRight, 0, width - _settings.MinRight, height, linePen, g, originalBitmap);
 
             var rectangles = internalValues[TitleDetector.IntermediateRectanglesKey] as List<Rectangle>;
             using var rectPen = new Pen(Color.Aqua, 2);
             foreach (var rect in rectangles)
             {
-                DrawRect(rect, rectPen, g, originalBitmap);
+                DrawOriginalRect(rect, rectPen, g, originalBitmap);
             }
 
             using var titleRectPen = new Pen(BookProjectPalette.TitleBlockColor, 2);
             foreach (var rect in titleRects)
             {
-                DrawRect(rect, titleRectPen, g, originalBitmap);
+                DrawOriginalRect(rect, titleRectPen, g, originalBitmap);
             }
         }
     }

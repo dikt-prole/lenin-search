@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.Drawing.Drawing2D;
 using BookProject.Core.Misc;
 using BookProject.Core.Models.Book;
 
@@ -24,15 +25,30 @@ namespace BookProject.Core.ImageRendering
             foreach (var block in blocks)
             {
                 using var blockBorderPen = BookProjectPalette.GetBlockBorderPen(block, 4);
-                DrawRect(block.Rectangle, blockBorderPen, g, originalBitmap);
+                DrawOriginalRect(block.Rectangle, blockBorderPen, g, originalBitmap);
                 if (block.State == BlockState.Edit)
                 {
                     using var blockElementBrush = BookProjectPalette.GetBlockElementBrush(block);
-                    foreach (var dragRectangle in block.AllDragRectangles())
+                    foreach (var dragCenter in block.AllDragCenters())
                     {
-                        FillRect(dragRectangle, blockElementBrush, g, originalBitmap);   
+                        var dragPbCenter = g.ToPictureBoxPoint(dragCenter, originalBitmap);
+                        g.FillRectangle(
+                            blockElementBrush, 
+                            dragPbCenter.X - Block.PbDragPointSize / 2,
+                            dragPbCenter.Y - Block.PbDragPointSize / 2,
+                            Block.PbDragPointSize,
+                            Block.PbDragPointSize);
                     }
                 }
+            }
+
+            if (_pageState.PbSelectionStartPoint.HasValue)
+            {
+                using var selectionPen = new Pen(Color.Black, 1)
+                {
+                    DashStyle = DashStyle.Dot
+                };
+                g.DrawRectangle(selectionPen, _pageState.PbSelectionStartPoint.Value, _pageState.PbMouseAt);
             }
         }
     }

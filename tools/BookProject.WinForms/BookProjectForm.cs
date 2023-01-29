@@ -321,39 +321,49 @@ namespace BookProject.WinForms
 
             if (e.Button == MouseButtons.Right)
             {
-                _pageState.SelectionStartPoint = pictureBox1.ToOriginalPoint(e.Location);
+                _pageState.OriginalSelectionStartPoint = pictureBox1.ToOriginalPoint(e.Location);
+                _pageState.PbSelectionStartPoint = e.Location;
             }
 
             if (e.Button == MouseButtons.Left)
             {
                 var originalPoint = pictureBox1.ToOriginalPoint(e.Location);
                 var editBlock = _pageState.Page.GetEditBlock();
-                if (editBlock?.LeftDragRectangle.Contains(originalPoint) == true)
+                if (editBlock != null)
                 {
-                    _mouseMoveActivity = new DragBlockLeftMouseMoveActivity(editBlock);
-                }
-                else if (editBlock?.RightDragRectangle.Contains(originalPoint) == true)
-                {
-                    _mouseMoveActivity = new DragBlockRightMouseMoveActivity(editBlock);
-                }
-                else if (editBlock?.TopDragRectangle.Contains(originalPoint) == true)
-                {
-                    _mouseMoveActivity = new DragBlockTopMouseMoveActivity(editBlock);
-                }
-                else if (editBlock?.BottomDragRectangle.Contains(originalPoint) == true)
-                {
-                    _mouseMoveActivity = new DragBlockBottomMouseMoveActivity(editBlock);
-                }
-                else
-                {
-                    _mouseMoveActivity = null;
-                    var blockAtCursor = _pageState.Page.GetAllBlocks().FirstOrDefault(b => b.Rectangle.Contains(originalPoint));
-                    if (blockAtCursor != null)
+                    var leftPbDragRectangle = Block.GetPbDragRectangle(pictureBox1.ToPictureBoxPoint(editBlock.LeftDragCenter));
+                    if (leftPbDragRectangle.Contains(e.Location))
                     {
-                        _pageState.Page.SetEditBlock(blockAtCursor);
-                        pictureBox1.Refresh();
+                        _mouseMoveActivity = new DragBlockLeftMouseMoveActivity(editBlock);
+                        return;
+                    }
+
+                    var rightPbDragRectangle = Block.GetPbDragRectangle(pictureBox1.ToPictureBoxPoint(editBlock.RightDragCenter));
+                    if (rightPbDragRectangle.Contains(e.Location))
+                    {
+                        _mouseMoveActivity = new DragBlockRightMouseMoveActivity(editBlock);
+                        return;
+                    }
+
+                    var topPbDragRectangle = Block.GetPbDragRectangle(pictureBox1.ToPictureBoxPoint(editBlock.TopDragCenter));
+                    if (topPbDragRectangle.Contains(e.Location))
+                    {
+                        _mouseMoveActivity = new DragBlockTopMouseMoveActivity(editBlock);
+                        return;
+                    }
+
+                    var bottomPbDragRectangle = Block.GetPbDragRectangle(pictureBox1.ToPictureBoxPoint(editBlock.BottomDragCenter));
+                    if (bottomPbDragRectangle.Contains(e.Location))
+                    {
+                        _mouseMoveActivity = new DragBlockBottomMouseMoveActivity(editBlock);
+                        return;
                     }
                 }
+
+                _mouseMoveActivity = null;
+                var blockAtCursor = _pageState.Page.GetAllBlocks().FirstOrDefault(b => b.Rectangle.Contains(originalPoint));
+                _pageState.Page.SetEditBlock(blockAtCursor);
+                pictureBox1.Refresh();
             }
         }
 
@@ -363,20 +373,20 @@ namespace BookProject.WinForms
 
             _mouseMoveActivity = null;
 
-            if (e.Button == MouseButtons.Right && _pageState.SelectionStartPoint.HasValue)
+            if (e.Button == MouseButtons.Right && _pageState.OriginalSelectionStartPoint.HasValue)
             {
                 var originalLocation = pictureBox1.ToOriginalPoint(e.Location);
 
                 var xs = new List<int>
                 {
-                    _pageState.SelectionStartPoint.Value.X,
+                    _pageState.OriginalSelectionStartPoint.Value.X,
                     originalLocation.X
                 }
                     .OrderBy(i => i).ToList();
 
                 var ys = new List<int>
                 {
-                    _pageState.SelectionStartPoint.Value.Y,
+                    _pageState.OriginalSelectionStartPoint.Value.Y,
                     originalLocation.Y
                 }
                     .OrderBy(i => i).ToList();
@@ -384,7 +394,8 @@ namespace BookProject.WinForms
                 var originalRect = new Rectangle(xs[0], ys[0], xs[1] - xs[0], ys[1] - ys[0]);
                 var menu = GetPageMenu(_pageState.Page, originalRect);
                 menu.Show(pictureBox1, e.Location);
-                _pageState.SelectionStartPoint = null;
+                _pageState.OriginalSelectionStartPoint = null;
+                _pageState.PbSelectionStartPoint = null;
             }
         }
 
@@ -423,9 +434,10 @@ namespace BookProject.WinForms
         {
             if (pictureBox1.Image == null) return;
 
-            _pageState.MouseAt = pictureBox1.ToOriginalPoint(e.Location);
+            _pageState.OriginalMouseAt = pictureBox1.ToOriginalPoint(e.Location);
+            _pageState.PbMouseAt = e.Location;
 
-            if (e.Button == MouseButtons.Right && _pageState.SelectionStartPoint.HasValue)
+            if (e.Button == MouseButtons.Right && _pageState.OriginalSelectionStartPoint.HasValue)
             {
                 pictureBox1.Refresh();
             }

@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.Linq;
 
 namespace BookProject.Core.Misc
 {
@@ -26,6 +27,13 @@ namespace BookProject.Core.Misc
             var pbLeftMargin = (pbWidth - originalImage.Width * originalToPb) / 2;
             var pbX = (int)(originalPoint.X * originalToPb + pbLeftMargin);
             return new Point(pbX, pbY);
+        }
+
+        public static void DrawRectangle(this Graphics g, Pen pen, Point selectionStart, Point selectionEnd)
+        {
+            var xs = new[] { selectionStart.X, selectionEnd.X }.OrderBy(x => x).ToArray();
+            var ys = new[] { selectionStart.Y, selectionEnd.Y }.OrderBy(y => y).ToArray();
+            g.DrawRectangle(pen, xs[0], ys[0], xs[1]- xs[0], ys[1] - ys[0]);
         }
     }
 }
