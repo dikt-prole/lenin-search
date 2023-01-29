@@ -5,7 +5,7 @@ namespace BookProject.Core.Models.Book
     public class CommentLinkBlock : Block
     {
         public override int PbDragPointSize => 6;
-        public override int BorderWidth => 1;
+        public override int BorderWidth => 2;
 
         public override DragPointLabel[] GetActiveDragLabels()
         {

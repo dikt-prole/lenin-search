@@ -54,6 +54,8 @@
             this.lineHeightPartMax_nud = new System.Windows.Forms.NumericUpDown();
             this.lineTopDistMax_nud = new System.Windows.Forms.NumericUpDown();
             this.allowedSymbols_tb = new System.Windows.Forms.TextBox();
+            this.label12 = new System.Windows.Forms.Label();
+            this.addPadding_nud = new System.Windows.Forms.NumericUpDown();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.minWidth_nud)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.minHeight_nud)).BeginInit();
@@ -65,6 +67,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.lineGaussSigma2_nud)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.lineHeightPartMax_nud)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.lineTopDistMax_nud)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.addPadding_nud)).BeginInit();
             this.SuspendLayout();
             // 
             // tableLayoutPanel1
@@ -80,8 +83,8 @@
             this.tableLayoutPanel1.Controls.Add(this.label4, 0, 3);
             this.tableLayoutPanel1.Controls.Add(this.label5, 0, 4);
             this.tableLayoutPanel1.Controls.Add(this.label6, 0, 5);
-            this.tableLayoutPanel1.Controls.Add(this.test_btn, 0, 11);
-            this.tableLayoutPanel1.Controls.Add(this.detect_btn, 1, 11);
+            this.tableLayoutPanel1.Controls.Add(this.test_btn, 0, 12);
+            this.tableLayoutPanel1.Controls.Add(this.detect_btn, 1, 12);
             this.tableLayoutPanel1.Controls.Add(this.minWidth_nud, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.minHeight_nud, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.maxWidth_nud, 1, 2);
@@ -90,20 +93,23 @@
             this.tableLayoutPanel1.Controls.Add(this.linkGaussSigma2_nud, 1, 5);
             this.tableLayoutPanel1.Controls.Add(this.label7, 0, 6);
             this.tableLayoutPanel1.Controls.Add(this.lineGaussSigma1_nud, 1, 6);
-            this.tableLayoutPanel1.Controls.Add(this.save_btn, 2, 11);
+            this.tableLayoutPanel1.Controls.Add(this.save_btn, 2, 12);
             this.tableLayoutPanel1.Controls.Add(this.label8, 0, 7);
             this.tableLayoutPanel1.Controls.Add(this.lineGaussSigma2_nud, 1, 7);
             this.tableLayoutPanel1.Controls.Add(this.label9, 0, 8);
             this.tableLayoutPanel1.Controls.Add(this.label10, 0, 9);
-            this.tableLayoutPanel1.Controls.Add(this.label11, 0, 10);
+            this.tableLayoutPanel1.Controls.Add(this.label11, 0, 11);
             this.tableLayoutPanel1.Controls.Add(this.lineHeightPartMax_nud, 1, 8);
             this.tableLayoutPanel1.Controls.Add(this.lineTopDistMax_nud, 1, 9);
-            this.tableLayoutPanel1.Controls.Add(this.allowedSymbols_tb, 1, 10);
+            this.tableLayoutPanel1.Controls.Add(this.allowedSymbols_tb, 1, 11);
+            this.tableLayoutPanel1.Controls.Add(this.label12, 0, 10);
+            this.tableLayoutPanel1.Controls.Add(this.addPadding_nud, 1, 10);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 13;
+            this.tableLayoutPanel1.RowCount = 14;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
@@ -117,7 +123,7 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(467, 344);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(467, 416);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // label1
@@ -183,7 +189,7 @@
             // test_btn
             // 
             this.test_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.test_btn.Location = new System.Drawing.Point(1, 309);
+            this.test_btn.Location = new System.Drawing.Point(1, 337);
             this.test_btn.Margin = new System.Windows.Forms.Padding(1);
             this.test_btn.Name = "test_btn";
             this.test_btn.Size = new System.Drawing.Size(128, 26);
@@ -194,7 +200,7 @@
             // detect_btn
             // 
             this.detect_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.detect_btn.Location = new System.Drawing.Point(131, 309);
+            this.detect_btn.Location = new System.Drawing.Point(131, 337);
             this.detect_btn.Margin = new System.Windows.Forms.Padding(1);
             this.detect_btn.Name = "detect_btn";
             this.detect_btn.Size = new System.Drawing.Size(98, 26);
@@ -271,7 +277,7 @@
             // save_btn
             // 
             this.save_btn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.save_btn.Location = new System.Drawing.Point(231, 309);
+            this.save_btn.Location = new System.Drawing.Point(231, 337);
             this.save_btn.Margin = new System.Windows.Forms.Padding(1);
             this.save_btn.Name = "save_btn";
             this.save_btn.Size = new System.Drawing.Size(98, 26);
@@ -320,7 +326,7 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(3, 285);
+            this.label11.Location = new System.Drawing.Point(3, 313);
             this.label11.Margin = new System.Windows.Forms.Padding(3, 5, 3, 0);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(101, 15);
@@ -345,10 +351,27 @@
             // 
             this.tableLayoutPanel1.SetColumnSpan(this.allowedSymbols_tb, 2);
             this.allowedSymbols_tb.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.allowedSymbols_tb.Location = new System.Drawing.Point(133, 283);
+            this.allowedSymbols_tb.Location = new System.Drawing.Point(133, 311);
             this.allowedSymbols_tb.Name = "allowedSymbols_tb";
             this.allowedSymbols_tb.Size = new System.Drawing.Size(194, 23);
             this.allowedSymbols_tb.TabIndex = 24;
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(3, 285);
+            this.label12.Margin = new System.Windows.Forms.Padding(3, 5, 3, 0);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(79, 15);
+            this.label12.TabIndex = 25;
+            this.label12.Text = "Add Padding:";
+            // 
+            // addPadding_nud
+            // 
+            this.addPadding_nud.Location = new System.Drawing.Point(133, 283);
+            this.addPadding_nud.Name = "addPadding_nud";
+            this.addPadding_nud.Size = new System.Drawing.Size(94, 23);
+            this.addPadding_nud.TabIndex = 26;
             // 
             // DetectCommentLinkNumberControl
             // 
@@ -356,7 +379,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.tableLayoutPanel1);
             this.Name = "DetectCommentLinkNumberControl";
-            this.Size = new System.Drawing.Size(467, 344);
+            this.Size = new System.Drawing.Size(467, 416);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.minWidth_nud)).EndInit();
@@ -369,6 +392,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.lineGaussSigma2_nud)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.lineHeightPartMax_nud)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.lineTopDistMax_nud)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.addPadding_nud)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -401,5 +425,7 @@
         private System.Windows.Forms.NumericUpDown lineHeightPartMax_nud;
         private System.Windows.Forms.NumericUpDown lineTopDistMax_nud;
         private System.Windows.Forms.TextBox allowedSymbols_tb;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.NumericUpDown addPadding_nud;
     }
 }

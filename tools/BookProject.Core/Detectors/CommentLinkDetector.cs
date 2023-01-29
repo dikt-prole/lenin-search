@@ -6,6 +6,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using BookProject.Core.Misc;
 using BookProject.Core.Settings;
 using BookProject.Core.Utilities;
 
@@ -45,8 +46,11 @@ namespace BookProject.Core.Detectors
                 {
                     if (GeometricMatch(lineRect, linkRect, settings))
                     {
-                        matchLineRectangles.Add(lineRect);
-                        matchLinkRectangles.Add(linkRect);
+                        if (excludeAreas == null || excludeAreas.All(ea => !ea.IntersectsWith(linkRect)))
+                        {
+                            matchLineRectangles.Add(lineRect);
+                            matchLinkRectangles.Add(linkRect);
+                        }
                     }
                 }
             }
@@ -60,7 +64,7 @@ namespace BookProject.Core.Detectors
                 internalValues.Add(MatchLineRectangleKey, matchLineRectangles.ToArray());
             }
 
-            return matchLinkRectangles.ToArray();
+            return matchLinkRectangles.Select(r => r.AddPadding(settings.AddPadding)).ToArray();
         }
 
         public Bitmap CropImage(Bitmap source, Rectangle section)
@@ -75,8 +79,11 @@ namespace BookProject.Core.Detectors
 
         private bool GeometricMatch(Rectangle lineRectangle, Rectangle linkRectangle, DetectCommentLinkNumberSettings settings)
         {
-            return Math.Abs(lineRectangle.Y - linkRectangle.Y) <= settings.LineTopDistanceMax && 
-                   linkRectangle.Height <= lineRectangle.Height * settings.LineHeightPartMax;
+            return 
+                linkRectangle.Height > 0 && 
+                linkRectangle.Width > 0 &&
+                Math.Abs(lineRectangle.Y - linkRectangle.Y) <= settings.LineTopDistanceMax && 
+                linkRectangle.Height <= lineRectangle.Height * settings.LineHeightPartMax;
         }
 
         private List<Rectangle> FilterByAllowedSymbols(
@@ -84,6 +91,11 @@ namespace BookProject.Core.Detectors
             Rectangle[] candidateRectangles,
             DetectCommentLinkNumberSettings settings)
         {
+            if (candidateRectangles.Length == 0)
+            {
+                return candidateRectangles.ToList();
+            }
+
             candidateRectangles = candidateRectangles.OrderBy(r => r.Y).ToArray();
 
             var ocrCellWidth = candidateRectangles.Max(x => x.Width);

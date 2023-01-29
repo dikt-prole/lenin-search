@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using BookProject.Core.Detectors;
 using BookProject.Core.ImageRendering;
 using BookProject.Core.Models.Book;
+using BookProject.Core.Settings;
 using BookProject.Core.Utilities;
 using BookProject.WinForms.DragActivities;
 using BookProject.WinForms.Service;
@@ -23,6 +24,8 @@ namespace BookProject.WinForms
         private IImageRenderer _imageRenderer;
 
         private IDragActivity _dragActivity;
+
+        private BookProjectSettings _settings;
 
         public BookProjectForm()
         {
@@ -42,43 +45,75 @@ namespace BookProject.WinForms
 
             _imageRenderer = new PageStateRenderer(_pageState);
 
-            detectTitleControl1.TestStart += (sender, args) =>
-            {
-                _imageRenderer = new TestDetectTitleImageRenderer(detectTitleControl1.GetSettings());
-                pictureBox1.Refresh();
-            };
-            detectTitleControl1.Detect += OnDetectTitleClick;
+            _settings = BookProjectSettings.Load();
 
+            // image detection
+            detectImageControl1.SetSettings(_settings.ImageDetection);
             detectImageControl1.TestStart += (sender, args) =>
             {
                 _imageRenderer = new TestDetectImageImageRenderer(detectImageControl1.GetSettings());
                 pictureBox1.Refresh();
             };
             detectImageControl1.Detect += OnDetectImageClick;
+            detectImageControl1.TestEnd += (sender, args) => SetPageStateImageRenderer();
+            detectImageControl1.Save += (sender, args) =>
+            {
+                _settings.ImageDetection = detectImageControl1.GetSettings();
+                _settings.Save();
+                MessageBox.Show("Saved!", "Image detection settings", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            };
 
+            // title detection
+            detectTitleControl1.SetSettings(_settings.TitleDetection);
+            detectTitleControl1.TestStart += (sender, args) =>
+            {
+                _imageRenderer = new TestDetectTitleImageRenderer(detectTitleControl1.GetSettings());
+                pictureBox1.Refresh();
+            };
+            detectTitleControl1.Detect += OnDetectTitleClick;
+            detectTitleControl1.TestEnd += (sender, args) => SetPageStateImageRenderer();
+            detectTitleControl1.Save += (sender, args) =>
+            {
+                _settings.TitleDetection = detectTitleControl1.GetSettings();
+                _settings.Save();
+                MessageBox.Show("Saved!", "Title detection settings", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            };
+
+            // comment link detection
+            detectCommentLinkNumberControl1.SetSettings(_settings.CommentLinkDetection);
             detectCommentLinkNumberControl1.TestStart += (sender, args) =>
             {
                 _imageRenderer = new TestDetectCommentLinkNumberImageRenderer(detectCommentLinkNumberControl1.GetSettings(), new YandexVisionOcrUtility());
                 pictureBox1.Refresh();
             };
             detectCommentLinkNumberControl1.Detect += OnDetectCommentLinkClick;
+            detectCommentLinkNumberControl1.TestEnd += (sender, args) => SetPageStateImageRenderer();
+            detectCommentLinkNumberControl1.Save += (sender, args) =>
+            {
+                _settings.CommentLinkDetection = detectCommentLinkNumberControl1.GetSettings();
+                _settings.Save();
+                MessageBox.Show("Saved!", "Comment link detection settings", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            };
 
+            // garbage detection
+            detectGarbageControl1.SetSettings(_settings.GarbageDetection);
             detectGarbageControl1.TestStart += (sender, args) =>
             {
                 _imageRenderer = new TestDetectGarbageImageRenderer(detectGarbageControl1.GetSettings());
                 pictureBox1.Refresh();
             };
             detectGarbageControl1.Detect += OnDetectGarbageClick;
-
-            detectTitleControl1.TestEnd += (sender, args) => SetPageStateImageRenderer();
-
-            detectImageControl1.TestEnd += (sender, args) => SetPageStateImageRenderer();
-
-            detectCommentLinkNumberControl1.TestEnd += (sender, args) => SetPageStateImageRenderer();
-
             detectGarbageControl1.TestEnd += (sender, args) => SetPageStateImageRenderer();
+            detectGarbageControl1.Save += (sender, args) =>
+            {
+                _settings.GarbageDetection = detectGarbageControl1.GetSettings();
+                _settings.Save();
+                MessageBox.Show("Saved!", "Garbage detection settings", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            };
 
             pictureBox1.KeyDown += PictureBox1OnKeyDown;
+
+            
         }
 
         private void PictureBox1OnKeyDown(object sender, KeyEventArgs e)
@@ -91,6 +126,11 @@ namespace BookProject.WinForms
                     _pageState.Page.RemoveBlock(editedBlock);
                     pictureBox1.Refresh();
                 }
+            }
+
+            if (e.KeyCode == Keys.Up || e.KeyCode == Keys.Down)
+            {
+                page_lb.Focus();
             }
         }
 
@@ -141,7 +181,6 @@ namespace BookProject.WinForms
                 var imageFile = imageFiles[i];
                 var page = _book.GetPage(Path.GetFileNameWithoutExtension(imageFile));
                 var excludeRects = page.ImageBlocks.Select(b => b.Rectangle)
-                    .Concat(page.TitleBlocks.Select(b => b.Rectangle))
                     .ToArray();
                 var commentLinkRects = new CommentLinkDetector(new YandexVisionOcrUtility())
                     .Detect(ImageUtility.Load(imageFile), detectCommentLinkNumberControl1.GetSettings(), excludeRects, null);

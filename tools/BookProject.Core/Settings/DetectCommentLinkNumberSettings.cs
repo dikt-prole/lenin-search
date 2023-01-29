@@ -12,6 +12,7 @@
         public int LineGaussSigma2 { get; set; }
         public double LineHeightPartMax { get; set; }
         public int LineTopDistanceMax { get; set; }
-        public char[] AllowedSymbols { get; set; }
+        public int AddPadding { get; set; }
+        public string AllowedSymbols { get; set; }
     }
 }

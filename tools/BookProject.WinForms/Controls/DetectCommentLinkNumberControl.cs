@@ -27,7 +27,8 @@ namespace BookProject.WinForms.Controls
                 LineGaussSigma2 = (int)lineGaussSigma2_nud.Value,
                 LineHeightPartMax = (double)lineHeightPartMax_nud.Value,
                 LineTopDistanceMax = (int)lineTopDistMax_nud.Value,
-                AllowedSymbols = allowedSymbols_tb.Text.ToCharArray()
+                AllowedSymbols = allowedSymbols_tb.Text,
+                AddPadding = (int)addPadding_nud.Value
             };
         }
 
@@ -43,9 +44,8 @@ namespace BookProject.WinForms.Controls
             lineGaussSigma2_nud.Value = settings.LineGaussSigma2;
             lineHeightPartMax_nud.Value = (decimal)settings.LineHeightPartMax;
             lineTopDistMax_nud.Value = settings.LineTopDistanceMax;
-            allowedSymbols_tb.Text = settings.AllowedSymbols == null 
-                ? "" 
-                : new string(settings.AllowedSymbols);
+            allowedSymbols_tb.Text = settings.AllowedSymbols;
+            addPadding_nud.Value = settings.AddPadding;
         }
 
         public DetectCommentLinkNumberControl()
@@ -93,6 +93,10 @@ namespace BookProject.WinForms.Controls
             lineTopDistMax_nud.Minimum = 0;
             lineTopDistMax_nud.Maximum = 25;
             lineTopDistMax_nud.Value = 2;
+
+            addPadding_nud.Minimum = 0;
+            addPadding_nud.Maximum = 100;
+            addPadding_nud.Value = 2;
 
             allowedSymbols_tb.Text = "*";
 

@@ -35,5 +35,14 @@ namespace BookProject.Core.Misc
             var ys = new[] { selectionStart.Y, selectionEnd.Y }.OrderBy(y => y).ToArray();
             g.DrawRectangle(pen, xs[0], ys[0], xs[1]- xs[0], ys[1] - ys[0]);
         }
+
+        public static Rectangle AddPadding(this Rectangle rect, int padding)
+        {
+            return new Rectangle(
+                rect.X - padding,
+                rect.Y - padding,
+                rect.Width + padding * 2,
+                rect.Height + padding * 2);
+        }
     }
 }
