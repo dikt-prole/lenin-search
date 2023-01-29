@@ -9,7 +9,7 @@ using BookProject.Core.Detectors;
 using BookProject.Core.ImageRendering;
 using BookProject.Core.Models.Book;
 using BookProject.Core.Utilities;
-using BookProject.WinForms.MouseMoveActivities;
+using BookProject.WinForms.DragActivities;
 using BookProject.WinForms.Service;
 
 namespace BookProject.WinForms
@@ -22,7 +22,7 @@ namespace BookProject.WinForms
 
         private IImageRenderer _imageRenderer;
 
-        private IMouseMoveActivity _mouseMoveActivity;
+        private IDragActivity _dragActivity;
 
         public BookProjectForm()
         {
@@ -331,36 +331,15 @@ namespace BookProject.WinForms
                 var editBlock = _pageState.Page.GetEditBlock();
                 if (editBlock != null)
                 {
-                    var leftPbDragRectangle = Block.GetPbDragRectangle(pictureBox1.ToPictureBoxPoint(editBlock.LeftDragCenter));
-                    if (leftPbDragRectangle.Contains(e.Location))
+                    var dragPointLabel = DragPointLabelResolver.GetDragLabelAtPoint(editBlock, pictureBox1, e.Location);
+                    if (dragPointLabel.HasValue)
                     {
-                        _mouseMoveActivity = new DragBlockLeftMouseMoveActivity(editBlock);
-                        return;
-                    }
-
-                    var rightPbDragRectangle = Block.GetPbDragRectangle(pictureBox1.ToPictureBoxPoint(editBlock.RightDragCenter));
-                    if (rightPbDragRectangle.Contains(e.Location))
-                    {
-                        _mouseMoveActivity = new DragBlockRightMouseMoveActivity(editBlock);
-                        return;
-                    }
-
-                    var topPbDragRectangle = Block.GetPbDragRectangle(pictureBox1.ToPictureBoxPoint(editBlock.TopDragCenter));
-                    if (topPbDragRectangle.Contains(e.Location))
-                    {
-                        _mouseMoveActivity = new DragBlockTopMouseMoveActivity(editBlock);
-                        return;
-                    }
-
-                    var bottomPbDragRectangle = Block.GetPbDragRectangle(pictureBox1.ToPictureBoxPoint(editBlock.BottomDragCenter));
-                    if (bottomPbDragRectangle.Contains(e.Location))
-                    {
-                        _mouseMoveActivity = new DragBlockBottomMouseMoveActivity(editBlock);
+                        _dragActivity = DragActivityFactory.ConstructDragActivity(editBlock, dragPointLabel.Value);
                         return;
                     }
                 }
 
-                _mouseMoveActivity = null;
+                _dragActivity = null;
                 var blockAtCursor = _pageState.Page.GetAllBlocks().FirstOrDefault(b => b.Rectangle.Contains(originalPoint));
                 _pageState.Page.SetEditBlock(blockAtCursor);
                 pictureBox1.Refresh();
@@ -371,7 +350,7 @@ namespace BookProject.WinForms
         {
             if (_pageState.Page == null) return;
 
-            _mouseMoveActivity = null;
+            _dragActivity = null;
 
             if (e.Button == MouseButtons.Right && _pageState.OriginalSelectionStartPoint.HasValue)
             {
@@ -442,9 +421,9 @@ namespace BookProject.WinForms
                 pictureBox1.Refresh();
             }
 
-            if (_mouseMoveActivity != null)
+            if (_dragActivity != null)
             {
-                _mouseMoveActivity.Perform(pictureBox1, e);
+                _dragActivity.Perform(pictureBox1, e);
                 pictureBox1.Refresh();
             }
         }

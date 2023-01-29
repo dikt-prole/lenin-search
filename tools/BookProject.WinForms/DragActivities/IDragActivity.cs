@@ -1,8 +1,8 @@
 ﻿using System.Windows.Forms;
 
-namespace BookProject.WinForms.MouseMoveActivities
+namespace BookProject.WinForms.DragActivities
 {
-    public interface IMouseMoveActivity
+    public interface IDragActivity
     {
         void Perform(PictureBox pictureBox, MouseEventArgs args);
     }

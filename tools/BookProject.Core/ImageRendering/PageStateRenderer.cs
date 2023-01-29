@@ -24,20 +24,15 @@ namespace BookProject.Core.ImageRendering
             var blocks = _pageState.Page.GetAllBlocks();
             foreach (var block in blocks)
             {
-                using var blockBorderPen = BookProjectPalette.GetBlockBorderPen(block, 4);
+                using var blockBorderPen = BookProjectPalette.GetBlockBorderPen(block, block.BorderWidth);
                 DrawOriginalRect(block.Rectangle, blockBorderPen, g, originalBitmap);
                 if (block.State == BlockState.Edit)
                 {
                     using var blockElementBrush = BookProjectPalette.GetBlockElementBrush(block);
-                    foreach (var dragCenter in block.AllDragCenters())
+                    foreach (var dragPoint in block.GetActiveDragPoints())
                     {
-                        var dragPbCenter = g.ToPictureBoxPoint(dragCenter, originalBitmap);
-                        g.FillRectangle(
-                            blockElementBrush, 
-                            dragPbCenter.X - Block.PbDragPointSize / 2,
-                            dragPbCenter.Y - Block.PbDragPointSize / 2,
-                            Block.PbDragPointSize,
-                            Block.PbDragPointSize);
+                        var dragPbPoint = g.ToPictureBoxPoint(dragPoint, originalBitmap);
+                        g.FillRectangle(blockElementBrush, block.GetPbDragRectangle(dragPbPoint));
                     }
                 }
             }

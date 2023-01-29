@@ -4,6 +4,20 @@ namespace BookProject.Core.Models.Book
 {
     public class CommentLinkBlock : Block
     {
+        public override int PbDragPointSize => 6;
+        public override int BorderWidth => 1;
+
+        public override DragPointLabel[] GetActiveDragLabels()
+        {
+            return new[]
+            {
+                DragPointLabel.TopLeft,
+                DragPointLabel.BottomRight,
+                DragPointLabel.TopRight,
+                DragPointLabel.BottomLeft
+            };
+        }
+
         public static CommentLinkBlock FromRectangle(Rectangle rect)
         {
             return new CommentLinkBlock

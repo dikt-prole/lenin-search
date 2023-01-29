@@ -1,12 +1,12 @@
 ﻿using System.Windows.Forms;
 using BookProject.Core.Models.Book;
 
-namespace BookProject.WinForms.MouseMoveActivities
+namespace BookProject.WinForms.DragActivities
 {
-    public class DragBlockBottomMouseMoveActivity : IMouseMoveActivity
+    public class TopLeftDragActivity : IDragActivity
     {
         private readonly Block _block;
-        public DragBlockBottomMouseMoveActivity(Block block)
+        public TopLeftDragActivity(Block block)
         {
             _block = block;
         }
@@ -14,7 +14,8 @@ namespace BookProject.WinForms.MouseMoveActivities
         public void Perform(PictureBox pictureBox, MouseEventArgs args)
         {
             var originalPoint = pictureBox.ToOriginalPoint(args.Location);
-            _block.BottomRightY = originalPoint.Y;
+            _block.TopLeftX = originalPoint.X;
+            _block.TopLeftY = originalPoint.Y;
         }
     }
 }
