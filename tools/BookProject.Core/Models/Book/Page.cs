@@ -93,6 +93,26 @@ namespace BookProject.Core.Models.Book
             }
         }
 
+        public void SetNextEditBlock()
+        {
+            var blocks = GetAllBlocks().OrderBy(b => b.TopLeftY).ThenBy(b => b.TopLeftX).ToList();
+
+            if (blocks.Count == 0) return;
+
+            var editIndex = blocks.FindIndex(b => b.State == BlockState.Edit);
+
+            if (editIndex == -1)
+            {
+                blocks[0].State = BlockState.Edit;
+                return;
+            }
+
+            var nextEditIndex = (editIndex + 1) % blocks.Count;
+
+            blocks[editIndex].State = BlockState.Normal;
+            blocks[nextEditIndex].State = BlockState.Edit;
+        }
+
         public void RemoveBlock(Block block)
         {
             if (block is ImageBlock imageBlock)

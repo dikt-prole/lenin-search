@@ -119,12 +119,20 @@ namespace BookProject.WinForms
                 MessageBox.Show("Saved!", "Garbage detection settings", MessageBoxButtons.OK, MessageBoxIcon.Information);
             };
 
-            pictureBox1.KeyDown += PictureBox1OnKeyDown;
-
-            
+            pictureBox1.PreviewKeyDown += PictureBox1OnPreviewKeyDown;
+            page_lb.PreviewKeyDown += PageLbOnPreviewKeyDown;
         }
 
-        private void PictureBox1OnKeyDown(object sender, KeyEventArgs e)
+        private void PageLbOnPreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            if (e.KeyCode == Keys.Tab)
+            {
+                pictureBox1.Focus();
+                PictureBox1OnPreviewKeyDown(pictureBox1, e);
+            }
+        }
+
+        private void PictureBox1OnPreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
             if (e.KeyCode == Keys.Delete)
             {
@@ -134,6 +142,13 @@ namespace BookProject.WinForms
                     _pageState.Page.RemoveBlock(editedBlock);
                     pictureBox1.Refresh();
                 }
+            }
+
+            if (e.KeyCode == Keys.Tab)
+            {
+                e.IsInputKey = true;
+                _pageState.Page.SetNextEditBlock();
+                pictureBox1.Refresh();
             }
 
             if (e.KeyCode == Keys.Up || e.KeyCode == Keys.Down)
