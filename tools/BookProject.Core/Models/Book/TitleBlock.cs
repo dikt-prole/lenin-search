@@ -22,5 +22,19 @@ namespace BookProject.Core.Models.Book
                 State = BlockState.Normal
             };
         }
+
+        public static TitleBlock Copy(TitleBlock proto)
+        {
+            return new TitleBlock
+            {
+                Level = proto.Level,
+                Text = proto.Text,
+                TopLeftX = proto.TopLeftX,
+                TopLeftY = proto.TopLeftY,
+                BottomRightX = proto.BottomRightX,
+                BottomRightY = proto.BottomRightY,
+                State = BlockState.Normal
+            };
+        }
     }
 }

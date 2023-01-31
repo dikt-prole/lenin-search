@@ -1,6 +1,7 @@
 ﻿using System.Windows.Forms;
 using BookProject.Core.Models.Book;
 using BookProject.WinForms.PageActions.AddBlock;
+using BookProject.WinForms.PageActions.Clipboard;
 using BookProject.WinForms.PageActions.Move;
 using BookProject.WinForms.PageActions.Resize;
 
@@ -14,7 +15,6 @@ namespace BookProject.WinForms.PageActions
         public const int DefaultBlockHeight = 200;
         public const int DefaultCommentLinkBlockWidth = 25;
         public const int DefaultCommentLinkBlockHeight = 25;
-
         public IPageAction Construct(PreviewKeyDownEventArgs args)
         {
             switch (args.KeyCode)
@@ -26,25 +26,25 @@ namespace BookProject.WinForms.PageActions
                 case Keys.Up:
                     if (args.Shift)
                     {
-                        return new ResizeEditBlockTopPageAction(ResizeStep);
+                        return new IncreaseEditBlockHeightPageAction(ResizeStep);                        
                     }
                     return new MoveEditBlockTopPageAction(MoveStep);
                 case Keys.Down:
                     if (args.Shift)
                     {
-                        return new ResizeEditBlockBottomPageAction(ResizeStep);
+                        return new DecreaseEditBlockHeightPageAction(ResizeStep);
                     }
                     return new MoveEditBlockBottomPageAction(MoveStep);
                 case Keys.Left:
                     if (args.Shift)
                     {
-                        return new ResizeEditBlockLeftPageAction(ResizeStep);
+                        return new DecreaseEditBlockWidthPageAction(ResizeStep);
                     }
                     return new MoveEditBlockLeftPageAction(MoveStep);
                 case Keys.Right:
                     if (args.Shift)
                     {
-                        return new ResizeEditBlockRightPageAction(ResizeStep);
+                        return new IncreaseEditBlockWidthPageAction(ResizeStep);
                     }
                     return new MoveEditBlockRightPageAction(MoveStep);
             }
@@ -59,8 +59,12 @@ namespace BookProject.WinForms.PageActions
                         return new AddBlockPageAction<TitleBlock>(DefaultBlockWidth, DefaultBlockHeight);
                     case Keys.G:
                         return new AddBlockPageAction<GarbageBlock>(DefaultBlockWidth, DefaultBlockHeight);
-                    case Keys.C:
+                    case Keys.N:
                         return new AddBlockPageAction<CommentLinkBlock>(DefaultCommentLinkBlockWidth, DefaultCommentLinkBlockHeight);
+                    case Keys.C:
+                        return new CopyEditBlockPageAction();
+                    case Keys.V:
+                        return new PasteEditBlockPageAction();
                 }
             }
 

@@ -15,5 +15,17 @@ namespace BookProject.Core.Models.Book
                 State = BlockState.Normal
             };
         }
+
+        public static GarbageBlock Copy(GarbageBlock proto)
+        {
+            return new GarbageBlock
+            {
+                TopLeftX = proto.TopLeftX,
+                TopLeftY = proto.TopLeftY,
+                BottomRightX = proto.BottomRightX,
+                BottomRightY = proto.BottomRightY,
+                State = BlockState.Normal
+            };
+        }
     }
 }

@@ -2,11 +2,11 @@
 
 namespace BookProject.WinForms.PageActions.Resize
 {
-    public class ResizeEditBlockLeftPageAction : IPageAction
+    public class IncreaseEditBlockHeightPageAction : IPageAction
     {
         private readonly int _step;
 
-        public ResizeEditBlockLeftPageAction(int step = 5)
+        public IncreaseEditBlockHeightPageAction(int step = 5)
         {
             _step = step;
         }
@@ -16,7 +16,8 @@ namespace BookProject.WinForms.PageActions.Resize
             var editBlock = page.GetEditBlock();
             if (editBlock != null)
             {
-                editBlock.BottomRightX -= _step;
+                editBlock.BottomRightY += _step;
+                editBlock.TopLeftY -= _step;
             }
         }
     }

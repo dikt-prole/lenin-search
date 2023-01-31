@@ -10,6 +10,7 @@ namespace BookProject.WinForms.PageActions
             if (editedBlock != null)
             {
                 page.RemoveBlock(editedBlock);
+                page.SetNextEditBlock();
             }
         }
     }
