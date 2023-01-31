@@ -11,6 +11,7 @@ using BookProject.Core.Models.Book;
 using BookProject.Core.Settings;
 using BookProject.Core.Utilities;
 using BookProject.WinForms.DragActivities;
+using BookProject.WinForms.PageActions;
 using BookProject.WinForms.Service;
 
 namespace BookProject.WinForms
@@ -34,6 +35,9 @@ namespace BookProject.WinForms
         private IDragActivity _dragActivity;
 
         private BookProjectSettings _settings;
+
+        private readonly PreviewKeyDownPageActionFactory
+            _previewKeyDownPageActionFactory = new PreviewKeyDownPageActionFactory();
 
         public BookProjectForm()
         {
@@ -130,30 +134,40 @@ namespace BookProject.WinForms
                 pictureBox1.Focus();
                 PictureBox1OnPreviewKeyDown(pictureBox1, e);
             }
+
+            if (e.KeyCode == Keys.W)
+            {
+                e.IsInputKey = true;
+                if (page_lb.SelectedIndex > 0)
+                {
+                    page_lb.SelectedIndex -= 1;
+                }
+            }
+
+            if (e.KeyCode == Keys.S)
+            {
+                e.IsInputKey = true;
+                if (page_lb.SelectedIndex < page_lb.Items.Count - 1)
+                {
+                    page_lb.SelectedIndex += 1;
+                }
+            }
         }
 
         private void PictureBox1OnPreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
-            if (e.KeyCode == Keys.Delete)
-            {
-                var editedBlock = _pageState.Page.GetEditBlock();
-                if (editedBlock != null)
-                {
-                    _pageState.Page.RemoveBlock(editedBlock);
-                    pictureBox1.Refresh();
-                }
-            }
-
-            if (e.KeyCode == Keys.Tab)
+            var pageAction = _previewKeyDownPageActionFactory.Construct(e);
+            if (pageAction != null)
             {
                 e.IsInputKey = true;
-                _pageState.Page.SetNextEditBlock();
+                pageAction.Execute(_pageState.Page);
                 pictureBox1.Refresh();
             }
 
-            if (e.KeyCode == Keys.Up || e.KeyCode == Keys.Down)
+            if (e.KeyCode == Keys.W || e.KeyCode == Keys.S)
             {
                 page_lb.Focus();
+                PageLbOnPreviewKeyDown(sender, e);
             }
         }
 
