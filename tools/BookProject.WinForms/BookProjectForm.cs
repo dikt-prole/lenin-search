@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -38,6 +39,8 @@ namespace BookProject.WinForms
 
         private readonly PreviewKeyDownPageActionFactory
             _previewKeyDownPageActionFactory = new PreviewKeyDownPageActionFactory();
+
+        private readonly IOcrUtility _ocrUtility = new YandexVisionOcrUtility();
 
         public BookProjectForm()
         {
@@ -480,6 +483,16 @@ namespace BookProject.WinForms
             {
                 page.GarbageBlocks.Add(GarbageBlock.FromRectangle(originalRect));
                 pictureBox1.Refresh();
+            });
+
+            menu.Items.Add("Recognize Text", null, async (o, a) =>
+            {
+                using var ocrBitmap = ImageUtility.Crop(pictureBox1.Image as Bitmap, originalRect);
+                using var ocrStream = new MemoryStream();
+                ocrBitmap.Save(ocrStream, ImageFormat.Jpeg);
+                var ocrPage = await _ocrUtility.GetPageAsync(ocrStream.ToArray());
+                Clipboard.SetText(ocrPage.GetText());
+                MessageBox.Show("Text copied to clipboard", "Recognize Text", MessageBoxButtons.OK, MessageBoxIcon.Information);
             });
 
             return menu;
