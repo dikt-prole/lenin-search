@@ -33,8 +33,8 @@ namespace BookProject.Core.ImageRendering
                     }
 
                     var pbRectangle = g.ToPictureBoxRectangle(block.Rectangle, originalBitmap);
-                    var levelX = pbRectangle.X;
-                    var levelY = pbRectangle.Y - 20;
+                    var levelX = pbRectangle.X - 20;
+                    var levelY = pbRectangle.Y;
                     using var titleBlockLevelBrush = new SolidBrush(BookProjectPalette.TitleBlockColor);
                     g.DrawString(
                         titleBlock.Level.ToString(), 
@@ -42,6 +42,15 @@ namespace BookProject.Core.ImageRendering
                         titleBlockLevelBrush, 
                         levelX, 
                         levelY );
+                }
+
+                if (block is CommentLinkBlock commentLinkBlock)
+                {
+                    if (!string.IsNullOrEmpty(commentLinkBlock.CommentText))
+                    {
+                        using var commentLinkBlockFillBrush = new SolidBrush(Color.FromArgb(50, BookProjectPalette.CommentLinkBlockColor));
+                        FillOriginalRect(block.Rectangle, commentLinkBlockFillBrush, g, originalBitmap);
+                    }
                 }
 
                 using var blockBorderPen = BookProjectPalette.GetBlockBorderPen(block, block.BorderWidth);

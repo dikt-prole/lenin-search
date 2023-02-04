@@ -1,6 +1,6 @@
-﻿namespace BookProject.WinForms.Controls
+﻿namespace BookProject.WinForms.Controls.Detect
 {
-    partial class DetectImageControl
+    partial class DetectTitleControl
     {
         /// <summary> 
         /// Required designer variable.
@@ -44,7 +44,7 @@
             this.gaussSigma1_nud = new System.Windows.Forms.NumericUpDown();
             this.gaussSigma2_nud = new System.Windows.Forms.NumericUpDown();
             this.label7 = new System.Windows.Forms.Label();
-            this.minHight_nud = new System.Windows.Forms.NumericUpDown();
+            this.maxLineDist_nud = new System.Windows.Forms.NumericUpDown();
             this.save_btn = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
             this.addPadding_nud = new System.Windows.Forms.NumericUpDown();
@@ -55,7 +55,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.minBottom_nud)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gaussSigma1_nud)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gaussSigma2_nud)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.minHight_nud)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.maxLineDist_nud)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.addPadding_nud)).BeginInit();
             this.SuspendLayout();
             // 
@@ -81,7 +81,7 @@
             this.tableLayoutPanel1.Controls.Add(this.gaussSigma1_nud, 1, 4);
             this.tableLayoutPanel1.Controls.Add(this.gaussSigma2_nud, 1, 5);
             this.tableLayoutPanel1.Controls.Add(this.label7, 0, 6);
-            this.tableLayoutPanel1.Controls.Add(this.minHight_nud, 1, 6);
+            this.tableLayoutPanel1.Controls.Add(this.maxLineDist_nud, 1, 6);
             this.tableLayoutPanel1.Controls.Add(this.save_btn, 2, 8);
             this.tableLayoutPanel1.Controls.Add(this.label8, 0, 7);
             this.tableLayoutPanel1.Controls.Add(this.addPadding_nud, 1, 7);
@@ -239,17 +239,17 @@
             this.label7.Location = new System.Drawing.Point(3, 173);
             this.label7.Margin = new System.Windows.Forms.Padding(3, 5, 3, 0);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(70, 15);
+            this.label7.Size = new System.Drawing.Size(81, 15);
             this.label7.TabIndex = 14;
-            this.label7.Text = "Min Height:";
+            this.label7.Text = "Max Line Dist:";
             // 
-            // minHight_nud
+            // maxLineDist_nud
             // 
-            this.minHight_nud.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.minHight_nud.Location = new System.Drawing.Point(103, 171);
-            this.minHight_nud.Name = "minHight_nud";
-            this.minHight_nud.Size = new System.Drawing.Size(94, 23);
-            this.minHight_nud.TabIndex = 15;
+            this.maxLineDist_nud.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.maxLineDist_nud.Location = new System.Drawing.Point(103, 171);
+            this.maxLineDist_nud.Name = "maxLineDist_nud";
+            this.maxLineDist_nud.Size = new System.Drawing.Size(94, 23);
+            this.maxLineDist_nud.TabIndex = 15;
             // 
             // save_btn
             // 
@@ -280,12 +280,12 @@
             this.addPadding_nud.Size = new System.Drawing.Size(94, 23);
             this.addPadding_nud.TabIndex = 18;
             // 
-            // DetectImageControl
+            // DetectTitleControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.tableLayoutPanel1);
-            this.Name = "DetectImageControl";
+            this.Name = "DetectTitleControl";
             this.Size = new System.Drawing.Size(467, 344);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
@@ -295,7 +295,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.minBottom_nud)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.gaussSigma1_nud)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.gaussSigma2_nud)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.minHight_nud)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.maxLineDist_nud)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.addPadding_nud)).EndInit();
             this.ResumeLayout(false);
 
@@ -319,7 +319,7 @@
         private System.Windows.Forms.NumericUpDown gaussSigma1_nud;
         private System.Windows.Forms.NumericUpDown gaussSigma2_nud;
         private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.NumericUpDown minHight_nud;
+        private System.Windows.Forms.NumericUpDown maxLineDist_nud;
         private System.Windows.Forms.Button save_btn;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.NumericUpDown addPadding_nud;

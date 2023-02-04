@@ -29,15 +29,15 @@
         private void InitializeComponent()
         {
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
+            this.level_nud = new System.Windows.Forms.NumericUpDown();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.text_tb = new System.Windows.Forms.TextBox();
             this.recognizeText_btn = new System.Windows.Forms.Button();
             this.toUpper_btn = new System.Windows.Forms.Button();
             this.toLower_btn = new System.Windows.Forms.Button();
+            this.text_tb = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.level_nud)).BeginInit();
             this.SuspendLayout();
             // 
             // tableLayoutPanel1
@@ -50,13 +50,13 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 50F));
-            this.tableLayoutPanel1.Controls.Add(this.numericUpDown1, 6, 0);
+            this.tableLayoutPanel1.Controls.Add(this.level_nud, 6, 0);
             this.tableLayoutPanel1.Controls.Add(this.label2, 5, 0);
             this.tableLayoutPanel1.Controls.Add(this.label1, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.text_tb, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.recognizeText_btn, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.toUpper_btn, 2, 2);
             this.tableLayoutPanel1.Controls.Add(this.toLower_btn, 3, 2);
+            this.tableLayoutPanel1.Controls.Add(this.text_tb, 0, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -67,13 +67,13 @@
             this.tableLayoutPanel1.Size = new System.Drawing.Size(699, 251);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
-            // numericUpDown1
+            // level_nud
             // 
-            this.numericUpDown1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.numericUpDown1.Location = new System.Drawing.Point(652, 3);
-            this.numericUpDown1.Name = "numericUpDown1";
-            this.numericUpDown1.Size = new System.Drawing.Size(44, 23);
-            this.numericUpDown1.TabIndex = 3;
+            this.level_nud.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.level_nud.Location = new System.Drawing.Point(652, 3);
+            this.level_nud.Name = "level_nud";
+            this.level_nud.Size = new System.Drawing.Size(44, 23);
+            this.level_nud.TabIndex = 3;
             // 
             // label2
             // 
@@ -90,22 +90,12 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.label1.Location = new System.Drawing.Point(3, 10);
-            this.label1.Margin = new System.Windows.Forms.Padding(3);
+            this.label1.Location = new System.Drawing.Point(3, 13);
+            this.label1.Margin = new System.Windows.Forms.Padding(3, 5, 3, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(44, 15);
             this.label1.TabIndex = 0;
             this.label1.Text = "Text:";
-            // 
-            // text_tb
-            // 
-            this.tableLayoutPanel1.SetColumnSpan(this.text_tb, 7);
-            this.text_tb.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.text_tb.Location = new System.Drawing.Point(3, 31);
-            this.text_tb.Multiline = true;
-            this.text_tb.Name = "text_tb";
-            this.text_tb.Size = new System.Drawing.Size(693, 189);
-            this.text_tb.TabIndex = 1;
             // 
             // recognizeText_btn
             // 
@@ -141,6 +131,16 @@
             this.toLower_btn.Text = "To Lower";
             this.toLower_btn.UseVisualStyleBackColor = true;
             // 
+            // text_tb
+            // 
+            this.tableLayoutPanel1.SetColumnSpan(this.text_tb, 7);
+            this.text_tb.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.text_tb.Location = new System.Drawing.Point(3, 31);
+            this.text_tb.Multiline = true;
+            this.text_tb.Name = "text_tb";
+            this.text_tb.Size = new System.Drawing.Size(693, 189);
+            this.text_tb.TabIndex = 1;
+            // 
             // TitleBlockDetailsControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -150,7 +150,7 @@
             this.Size = new System.Drawing.Size(699, 251);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.level_nud)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -161,7 +161,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox text_tb;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.NumericUpDown numericUpDown1;
+        private System.Windows.Forms.NumericUpDown level_nud;
         private System.Windows.Forms.Button recognizeText_btn;
         private System.Windows.Forms.Button toUpper_btn;
         private System.Windows.Forms.Button toLower_btn;

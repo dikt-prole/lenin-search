@@ -2,9 +2,9 @@
 using System.Windows.Forms;
 using BookProject.Core.Settings;
 
-namespace BookProject.WinForms.Controls
+namespace BookProject.WinForms.Controls.Detect
 {
-    public partial class DetectTitleControl : UserControl
+    public partial class DetectImageControl : UserControl
     {
         public event EventHandler TestStart;
 
@@ -13,9 +13,9 @@ namespace BookProject.WinForms.Controls
         public event EventHandler Detect;
 
         public event EventHandler Save;
-        public DetectTitleSettings GetSettings()
+        public DetectImageSettings GetSettings()
         {
-            return new DetectTitleSettings
+            return new DetectImageSettings
             {
                 MinLeft = (int)minLeft_nud.Value,
                 MinRight = (int)minRight_nud.Value,
@@ -23,12 +23,12 @@ namespace BookProject.WinForms.Controls
                 MinTop = (int)minTop_nud.Value,
                 GaussSigma1 = (int)gaussSigma1_nud.Value,
                 GaussSigma2 = (int)gaussSigma2_nud.Value,
-                MaxLineDist = (int)maxLineDist_nud.Value,
+                MinHeight = (int)minHight_nud.Value,
                 AddPadding = (int)addPadding_nud.Value
             };
         }
 
-        public void SetSettings(DetectTitleSettings settings)
+        public void SetSettings(DetectImageSettings settings)
         {
             minLeft_nud.Value = settings.MinLeft;
             minRight_nud.Value = settings.MinRight;
@@ -36,11 +36,11 @@ namespace BookProject.WinForms.Controls
             minBottom_nud.Value = settings.MinBottom;
             gaussSigma1_nud.Value = settings.GaussSigma1;
             gaussSigma2_nud.Value = settings.GaussSigma2;
-            maxLineDist_nud.Value = settings.MaxLineDist;
+            minHight_nud.Value = settings.MinHeight;
             addPadding_nud.Value = settings.AddPadding;
         }
 
-        public DetectTitleControl()
+        public DetectImageControl()
         {
             InitializeComponent();
 
@@ -68,9 +68,9 @@ namespace BookProject.WinForms.Controls
             gaussSigma2_nud.Maximum = 25;
             gaussSigma2_nud.Value = 4;
 
-            maxLineDist_nud.Minimum = 0;
-            maxLineDist_nud.Maximum = 500;
-            maxLineDist_nud.Value = 10;
+            minHight_nud.Minimum = 10;
+            minHight_nud.Maximum = 500;
+            minHight_nud.Value = 100;
 
             addPadding_nud.Minimum = 0;
             addPadding_nud.Maximum = 50;

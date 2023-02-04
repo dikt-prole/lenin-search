@@ -6,7 +6,7 @@ namespace BookProject.Core.Models.Book
     public class CommentLinkBlock : Block
     {
         [JsonProperty("utx")]
-        public string  UseText { get; set; }
+        public string  CommentText { get; set; }
 
         [JsonIgnore]
         public override int PbDragPointSize => 6;

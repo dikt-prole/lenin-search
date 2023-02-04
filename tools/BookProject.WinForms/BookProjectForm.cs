@@ -5,15 +5,17 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using Accord.Math;
 using BookProject.Core.Detectors;
 using BookProject.Core.ImageRendering;
 using BookProject.Core.Models.Book;
 using BookProject.Core.Settings;
 using BookProject.Core.Utilities;
-using BookProject.WinForms.Controls;
 using BookProject.WinForms.Controls.BlockDetails;
 using BookProject.WinForms.DragActivities;
+using BookProject.WinForms.Model;
 using BookProject.WinForms.PageActions;
 using BookProject.WinForms.Service;
 
@@ -21,11 +23,7 @@ namespace BookProject.WinForms
 {
     /*
      * todo:
-     * 1. перемещение выделения блока страницы (TAB или Left-Right Arrows)
      * 2. новый детектор для comment link - через top margin (приблизительно половина сверзу - половина снизу)
-     * 3. распознавание выделенного куска текста и копировать в буфер обмена
-     * 4. comment link - details - use explicit text
-     * 5. title block - details - ocr
      */
     public partial class BookProjectForm : Form
     {
@@ -44,7 +42,7 @@ namespace BookProject.WinForms
 
         private readonly IOcrUtility _ocrUtility = new YandexVisionOcrUtility();
 
-        private readonly CommentLinkBlockDetailsControl _commentLinkBlockDetailsControl = new CommentLinkBlockDetailsControl();
+        private readonly CommentLinkBlockDetailsControl _commentLinkBlockDetailsControl;
 
         private readonly TitleBlockDetailsControl _titleBlockDetailsControl;
 
@@ -135,16 +133,40 @@ namespace BookProject.WinForms
             pictureBox1.PreviewKeyDown += PictureBox1OnPreviewKeyDown;
             page_lb.PreviewKeyDown += PageLbOnPreviewKeyDown;
 
+            _commentLinkBlockDetailsControl = new CommentLinkBlockDetailsControl();
+            _commentLinkBlockDetailsControl.BlockChanged += (sender, block) =>
+            {
+                pictureBox1.Refresh();
+            };
+
             _titleBlockDetailsControl = new TitleBlockDetailsControl();
-            _titleBlockDetailsControl.RecognizeText += async (sender, titleBlock) =>
+            _titleBlockDetailsControl.RecognizeText += (sender, titleBlock) =>
             {
                 using var ocrBitmap = ImageUtility.Crop(pictureBox1.Image as Bitmap, titleBlock.Rectangle);
                 using var ocrStream = new MemoryStream();
                 ocrBitmap.Save(ocrStream, ImageFormat.Jpeg);
-                var ocrPage = await _ocrUtility.GetPageAsync(ocrStream.ToArray());
+                var ocrPage = Task.Run(() => _ocrUtility.GetPageAsync(ocrStream.ToArray())).Result;
                 titleBlock.Text = ocrPage.GetText();
-                _titleBlockDetailsControl.SetBlock(titleBlock);
             };
+            _titleBlockDetailsControl.BlockChanged += (sender, titleBlock) =>
+            {
+                titleListControl1.UpdateTitleList(_book, titleBlock);
+                pictureBox1.Refresh();
+            };
+
+            titleListControl1.TitleSelected += OnTitleSelected;
+        }
+
+        private void OnTitleSelected(object sender, TitleListRow titleListRow)
+        {
+            var filenames = page_lb.Items.OfType<string>().ToArray();
+            var selectedFilename = filenames.FirstOrDefault(f => f == titleListRow.Page.ImageFile);
+            if (selectedFilename == null)
+            {
+                return;
+            }
+            page_lb.SelectedIndex = filenames.IndexOf(selectedFilename);
+            _pageState.Page.SetEditBlock(titleListRow.TitleBlock);
         }
 
         private void PageLbOnPreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
@@ -400,6 +422,8 @@ namespace BookProject.WinForms
             {
                 page_lb.Items.Add(fileName);
             }
+
+            titleListControl1.UpdateTitleList(_book, null);
         }
 
         private void OnSaveBookClick(object? sender, EventArgs e)
@@ -557,6 +581,7 @@ namespace BookProject.WinForms
                 _pageState.Page.EditBlockChanged -= EditBlockChanged;
             }
             _pageState.Page = _book.GetPage(fileName);
+            _pageState.Page.SetEditBlock(null);
             _pageState.OriginalPageBitmap = ImageUtility.Load(imageFile);
             _pageState.Page.EditBlockChanged += EditBlockChanged;
             pictureBox1.Image = _pageState.OriginalPageBitmap;
@@ -578,6 +603,7 @@ namespace BookProject.WinForms
                 _titleBlockDetailsControl.SetBlock(titleBlock);
                 blockDetails_panel.Controls.Add(_titleBlockDetailsControl);
                 _titleBlockDetailsControl.Dock = DockStyle.Fill;
+                titleListControl1.UpdateTitleList(_book, titleBlock);
             }
         }
 

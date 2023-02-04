@@ -30,7 +30,7 @@
         {
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.label1 = new System.Windows.Forms.Label();
-            this.useText_tb = new System.Windows.Forms.TextBox();
+            this.commentText_tb = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -40,7 +40,7 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel1.Controls.Add(this.label1, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.useText_tb, 0, 1);
+            this.tableLayoutPanel1.Controls.Add(this.commentText_tb, 0, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -62,12 +62,12 @@
             // 
             // useText_tb
             // 
-            this.useText_tb.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.useText_tb.Location = new System.Drawing.Point(3, 23);
-            this.useText_tb.Multiline = true;
-            this.useText_tb.Name = "useText_tb";
-            this.useText_tb.Size = new System.Drawing.Size(601, 175);
-            this.useText_tb.TabIndex = 1;
+            this.commentText_tb.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.commentText_tb.Location = new System.Drawing.Point(3, 23);
+            this.commentText_tb.Multiline = true;
+            this.commentText_tb.Name = "commentText_tb";
+            this.commentText_tb.Size = new System.Drawing.Size(601, 175);
+            this.commentText_tb.TabIndex = 1;
             // 
             // CommentLinkBlockDetailsControl
             // 
@@ -86,6 +86,6 @@
 
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox useText_tb;
+        private System.Windows.Forms.TextBox commentText_tb;
     }
 }

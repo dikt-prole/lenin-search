@@ -30,13 +30,13 @@
     <Compile Update="Controls\BlockDetails\TitleBlockDetailsControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="Controls\DetectGarbageControl.cs">
+    <Compile Update="Controls\Detect\DetectGarbageControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="Controls\DetectImageControl.cs">
+    <Compile Update="Controls\Detect\DetectImageControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="Controls\DetectCommentLinkNumberControl.cs">
+    <Compile Update="Controls\Detect\DetectCommentLinkNumberControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="ImageScopeDialog.cs">

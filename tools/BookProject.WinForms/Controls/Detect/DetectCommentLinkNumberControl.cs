@@ -2,7 +2,7 @@
 using System.Windows.Forms;
 using BookProject.Core.Settings;
 
-namespace BookProject.WinForms.Controls
+namespace BookProject.WinForms.Controls.Detect
 {
     public partial class DetectCommentLinkNumberControl : UserControl
     {
