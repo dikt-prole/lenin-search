@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -9,6 +10,9 @@ namespace BookProject.Core.Models.Book
 {
     public class Page
     {
+        [JsonIgnore]
+        public EventHandler<Block> EditBlockChanged;
+
         [JsonProperty("ibl")]
         public List<ImageBlock> ImageBlocks { get; set; }
 
@@ -91,6 +95,8 @@ namespace BookProject.Core.Models.Book
             {
                 b.State = b == block ? BlockState.Edit : BlockState.Normal;
             }
+
+            EditBlockChanged?.Invoke(this, block);
         }
 
         public void SetNextEditBlock()
@@ -103,14 +109,13 @@ namespace BookProject.Core.Models.Book
 
             if (editIndex == -1)
             {
-                blocks[0].State = BlockState.Edit;
+                SetEditBlock(blocks[0]);
                 return;
             }
 
             var nextEditIndex = (editIndex + 1) % blocks.Count;
 
-            blocks[editIndex].State = BlockState.Normal;
-            blocks[nextEditIndex].State = BlockState.Edit;
+            SetEditBlock(blocks[nextEditIndex]);
         }
 
         public void RemoveBlock(Block block)
@@ -134,6 +139,41 @@ namespace BookProject.Core.Models.Book
             else if (block is Line line)
             {
                 Lines.Remove(line);
+            }
+
+            SetNextEditBlock();
+        }
+
+        public void AddBlock(Block block, bool setEdit = true)
+        {
+            if (block is ImageBlock imageBlock)
+            {
+                ImageBlocks.Add(imageBlock);
+            }
+
+            else if (block is TitleBlock titleBlock)
+            {
+                TitleBlocks.Add(titleBlock);
+            }
+
+            else if (block is CommentLinkBlock commentLinkBlock)
+            {
+                CommentLinkBlocks.Add(commentLinkBlock);
+            }
+
+            else if (block is GarbageBlock garbageBlock)
+            {
+                GarbageBlocks.Add(garbageBlock);
+            }
+
+            else if (block is Line line)
+            {
+                Lines.Add(line);
+            }
+
+            if (setEdit)
+            {
+                SetEditBlock(block);
             }
         }
     }

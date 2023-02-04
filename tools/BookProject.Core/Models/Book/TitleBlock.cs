@@ -11,6 +11,23 @@ namespace BookProject.Core.Models.Book
         [JsonProperty("txt")]
         public string? Text { get; set; }
 
+        [JsonIgnore]
+        public override int PbDragPointSize => 6;
+
+        [JsonIgnore]
+        public override int BorderWidth => 2;
+
+        public override DragPointLabel[] GetActiveDragLabels()
+        {
+            return new[]
+            {
+                DragPointLabel.TopLeft,
+                DragPointLabel.BottomRight,
+                DragPointLabel.TopRight,
+                DragPointLabel.BottomLeft
+            };
+        }
+
         public static TitleBlock FromRectangle(Rectangle rect)
         {
             return new TitleBlock

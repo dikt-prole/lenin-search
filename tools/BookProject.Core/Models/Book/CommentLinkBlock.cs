@@ -1,10 +1,17 @@
 ﻿using System.Drawing;
+using Newtonsoft.Json;
 
 namespace BookProject.Core.Models.Book
 {
     public class CommentLinkBlock : Block
     {
+        [JsonProperty("utx")]
+        public string  UseText { get; set; }
+
+        [JsonIgnore]
         public override int PbDragPointSize => 6;
+
+        [JsonIgnore]
         public override int BorderWidth => 2;
 
         public override DragPointLabel[] GetActiveDragLabels()

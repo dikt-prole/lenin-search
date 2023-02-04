@@ -11,6 +11,8 @@ using BookProject.Core.ImageRendering;
 using BookProject.Core.Models.Book;
 using BookProject.Core.Settings;
 using BookProject.Core.Utilities;
+using BookProject.WinForms.Controls;
+using BookProject.WinForms.Controls.BlockDetails;
 using BookProject.WinForms.DragActivities;
 using BookProject.WinForms.PageActions;
 using BookProject.WinForms.Service;
@@ -41,6 +43,10 @@ namespace BookProject.WinForms
             _previewKeyDownPageActionFactory = new PreviewKeyDownPageActionFactory();
 
         private readonly IOcrUtility _ocrUtility = new YandexVisionOcrUtility();
+
+        private readonly CommentLinkBlockDetailsControl _commentLinkBlockDetailsControl = new CommentLinkBlockDetailsControl();
+
+        private readonly TitleBlockDetailsControl _titleBlockDetailsControl;
 
         public BookProjectForm()
         {
@@ -128,6 +134,17 @@ namespace BookProject.WinForms
 
             pictureBox1.PreviewKeyDown += PictureBox1OnPreviewKeyDown;
             page_lb.PreviewKeyDown += PageLbOnPreviewKeyDown;
+
+            _titleBlockDetailsControl = new TitleBlockDetailsControl();
+            _titleBlockDetailsControl.RecognizeText += async (sender, titleBlock) =>
+            {
+                using var ocrBitmap = ImageUtility.Crop(pictureBox1.Image as Bitmap, titleBlock.Rectangle);
+                using var ocrStream = new MemoryStream();
+                ocrBitmap.Save(ocrStream, ImageFormat.Jpeg);
+                var ocrPage = await _ocrUtility.GetPageAsync(ocrStream.ToArray());
+                titleBlock.Text = ocrPage.GetText();
+                _titleBlockDetailsControl.SetBlock(titleBlock);
+            };
         }
 
         private void PageLbOnPreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
@@ -463,25 +480,25 @@ namespace BookProject.WinForms
 
             menu.Items.Add("Add Image Block", null, (o, a) =>
             {
-                page.ImageBlocks.Add(ImageBlock.FromRectangle(originalRect));
+                page.AddBlock(ImageBlock.FromRectangle(originalRect));
                 pictureBox1.Refresh();
             });
 
             menu.Items.Add("Add Title Block", null, (o, a) =>
             {
-                page.TitleBlocks.Add(TitleBlock.FromRectangle(originalRect));
+                page.AddBlock(TitleBlock.FromRectangle(originalRect));
                 pictureBox1.Refresh();
             });
 
             menu.Items.Add("Add Comment Link Block", null, (o, a) =>
             {
-                page.CommentLinkBlocks.Add(CommentLinkBlock.FromRectangle(originalRect));
+                page.AddBlock(CommentLinkBlock.FromRectangle(originalRect));
                 pictureBox1.Refresh();
             });
 
             menu.Items.Add("Add Garbage Block", null, (o, a) =>
             {
-                page.GarbageBlocks.Add(GarbageBlock.FromRectangle(originalRect));
+                page.AddBlock(GarbageBlock.FromRectangle(originalRect));
                 pictureBox1.Refresh();
             });
 
@@ -535,9 +552,33 @@ namespace BookProject.WinForms
                 MessageBox.Show("Image file not found", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
+            if (_pageState.Page != null)
+            {
+                _pageState.Page.EditBlockChanged -= EditBlockChanged;
+            }
             _pageState.Page = _book.GetPage(fileName);
             _pageState.OriginalPageBitmap = ImageUtility.Load(imageFile);
+            _pageState.Page.EditBlockChanged += EditBlockChanged;
             pictureBox1.Image = _pageState.OriginalPageBitmap;
+        }
+
+        private void EditBlockChanged(object sender, Block block)
+        {
+            blockDetails_panel.Controls.Clear();
+
+            if (block is CommentLinkBlock commentLinkBlock)
+            {
+                _commentLinkBlockDetailsControl.SetBlock(commentLinkBlock);
+                blockDetails_panel.Controls.Add(_commentLinkBlockDetailsControl);
+                _commentLinkBlockDetailsControl.Dock = DockStyle.Fill;
+            }
+
+            if (block is TitleBlock titleBlock)
+            {
+                _titleBlockDetailsControl.SetBlock(titleBlock);
+                blockDetails_panel.Controls.Add(_titleBlockDetailsControl);
+                _titleBlockDetailsControl.Dock = DockStyle.Fill;
+            }
         }
 
         private void GenerateFb2Click(object sender, EventArgs e)

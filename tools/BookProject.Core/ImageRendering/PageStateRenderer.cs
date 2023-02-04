@@ -24,6 +24,26 @@ namespace BookProject.Core.ImageRendering
             var blocks = _pageState.Page.GetAllBlocks();
             foreach (var block in blocks)
             {
+                if (block is TitleBlock titleBlock)
+                {
+                    if (!string.IsNullOrEmpty(titleBlock.Text))
+                    {
+                        using var titleBlockFillBrush = new SolidBrush(Color.FromArgb(50, BookProjectPalette.TitleBlockColor));
+                        FillOriginalRect(block.Rectangle, titleBlockFillBrush, g, originalBitmap);
+                    }
+
+                    var pbRectangle = g.ToPictureBoxRectangle(block.Rectangle, originalBitmap);
+                    var levelX = pbRectangle.X;
+                    var levelY = pbRectangle.Y - 20;
+                    using var titleBlockLevelBrush = new SolidBrush(BookProjectPalette.TitleBlockColor);
+                    g.DrawString(
+                        titleBlock.Level.ToString(), 
+                        new Font(FontFamily.GenericSansSerif, 12),
+                        titleBlockLevelBrush, 
+                        levelX, 
+                        levelY );
+                }
+
                 using var blockBorderPen = BookProjectPalette.GetBlockBorderPen(block, block.BorderWidth);
                 DrawOriginalRect(block.Rectangle, blockBorderPen, g, originalBitmap);
                 if (block.State == BlockState.Edit)
