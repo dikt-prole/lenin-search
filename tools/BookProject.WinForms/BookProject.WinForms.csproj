@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <Folder Include="FB2\" />
+    <Folder Include="Model\Fb2\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -43,9 +44,6 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="WordTextDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="LineFeaturesDialog.cs">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>

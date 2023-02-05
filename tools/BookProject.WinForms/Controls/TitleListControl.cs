@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using BookProject.Core.Models.Book;
+using BookProject.Core.Models.Domain;
 using BookProject.WinForms.Model;
 
 namespace BookProject.WinForms.Controls
@@ -20,11 +20,14 @@ namespace BookProject.WinForms.Controls
         {
             title_lb.SelectedIndexChanged -= Title_lbOnSelectedIndexChanged;
 
-            title_lb.Items.Clear();
             var titleRows = GetTitleRowList(book).ToList();
-            foreach (var titleRow in titleRows)
+            if (titleRows.Count != title_lb.Items.Count)
             {
-                title_lb.Items.Add(titleRow);
+                title_lb.Items.Clear();
+                foreach (var titleRow in titleRows)
+                {
+                    title_lb.Items.Add(titleRow);
+                }
             }
 
             if (selectedBlock != null)
@@ -33,8 +36,11 @@ namespace BookProject.WinForms.Controls
                 if (selectedRow != null)
                 {
                     title_lb.SelectedIndex = titleRows.IndexOf(selectedRow);
+                    title_lb.Items[title_lb.SelectedIndex] = selectedRow;
                 }
             }
+
+            title_lb.Refresh();
 
             title_lb.SelectedIndexChanged += Title_lbOnSelectedIndexChanged;
         }
@@ -48,9 +54,9 @@ namespace BookProject.WinForms.Controls
         {
             if (book?.Pages == null) yield break;
 
-            foreach (var page in book.Pages)
+            foreach (var page in book.Pages.OrderBy(p => p.Index))
             {
-                foreach (var titleBlock in page.TitleBlocks)
+                foreach (var titleBlock in page.TitleBlocks.OrderBy(tb => tb.TopLeftY))
                 {
                     yield return new TitleListRow
                     {

@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Windows.Forms;
-using BookProject.Core.Models.Book;
+using BookProject.Core.Models.Domain;
+using BookProject.Core.Models.ViewModel;
 
 namespace BookProject.WinForms.Controls.BlockDetails
 {
     public partial class CommentLinkBlockDetailsControl : UserControl
     {
-        public EventHandler<CommentLinkBlock> BlockChanged;
-
         private CommentLinkBlock _commentLinkBlock;
+        private BookViewModel _bookVm;
+
         public CommentLinkBlockDetailsControl()
         {
             InitializeComponent();
@@ -16,14 +17,17 @@ namespace BookProject.WinForms.Controls.BlockDetails
             {
                 if (_commentLinkBlock != null)
                 {
-                    _commentLinkBlock.CommentText = commentText_tb.Text;
-                    BlockChanged?.Invoke(this, _commentLinkBlock);
+                    _bookVm.ModifyBlock(_commentLinkBlock, b =>
+                    {
+                        b.CommentText = commentText_tb.Text;
+                    });
                 }
             };
         }
 
-        public void SetBlock(CommentLinkBlock commentLinkBlock)
+        public void SetBlock(BookViewModel bookVm, CommentLinkBlock commentLinkBlock)
         {
+            _bookVm = bookVm;
             _commentLinkBlock = commentLinkBlock;
             commentText_tb.Text = _commentLinkBlock.CommentText;
         }

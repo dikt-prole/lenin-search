@@ -1,12 +1,13 @@
-﻿using BookProject.Core.Models.Book;
+﻿using BookProject.Core.Models.Domain;
+using BookProject.Core.Models.ViewModel;
 
 namespace BookProject.WinForms.PageActions.Clipboard
 {
     public class CopyEditBlockPageAction : BlockClipboardPageAction
     {
-        public override void Execute(Page page)
+        public override void Execute(BookViewModel bookVm)
         {
-            ProtoBlock = page.GetEditBlock();
+            ProtoBlock = bookVm.CurrentPage.GetEditBlock();
         }
     }
 }

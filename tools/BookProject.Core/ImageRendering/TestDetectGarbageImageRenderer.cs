@@ -2,8 +2,6 @@
 using System.Drawing;
 using BookProject.Core.Detectors;
 using BookProject.Core.Misc;
-using BookProject.Core.Models.Book;
-using BookProject.Core.Models.Book.Old;
 using BookProject.Core.Settings;
 
 namespace BookProject.Core.ImageRendering
@@ -37,7 +35,7 @@ namespace BookProject.Core.ImageRendering
             DrawOriginalLine(_settings.MinLeft, 0, _settings.MinLeft, height, linePen, g, originalBitmap);
             DrawOriginalLine(width - _settings.MinRight, 0, width - _settings.MinRight, height, linePen, g, originalBitmap);
 
-            using var garbageRectPen = new Pen(BookProjectPalette.GetColor(OldBookProjectLabel.Garbage), 2);
+            using var garbageRectPen = new Pen(BookProjectPalette.GarbageBlockColor, 2);
             foreach (var rect in garbageRects)
             {
                 DrawOriginalRect(rect, garbageRectPen, g, originalBitmap);

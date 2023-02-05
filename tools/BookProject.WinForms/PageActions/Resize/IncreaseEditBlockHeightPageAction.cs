@@ -1,4 +1,5 @@
-﻿using BookProject.Core.Models.Book;
+﻿using BookProject.Core.Models.Domain;
+using BookProject.Core.Models.ViewModel;
 
 namespace BookProject.WinForms.PageActions.Resize
 {
@@ -11,13 +12,16 @@ namespace BookProject.WinForms.PageActions.Resize
             _step = step;
         }
 
-        public void Execute(Page page)
+        public void Execute(BookViewModel bookVm)
         {
-            var editBlock = page.GetEditBlock();
+            var editBlock = bookVm.CurrentPage.GetEditBlock();
             if (editBlock != null)
             {
-                editBlock.BottomRightY += _step;
-                editBlock.TopLeftY -= _step;
+                bookVm.ModifyBlock(editBlock, b =>
+                {
+                    b.BottomRightY += _step;
+                    b.TopLeftY -= _step;
+                });
             }
         }
     }

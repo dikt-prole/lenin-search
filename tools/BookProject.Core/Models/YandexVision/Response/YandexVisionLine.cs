@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using BookProject.Core.Models.Book;
 using BookProject.Core.Models.Ocr;
 
 namespace BookProject.Core.Models.YandexVision.Response

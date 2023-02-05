@@ -1,27 +1,28 @@
 ﻿using System.Drawing;
 using System.Drawing.Drawing2D;
 using BookProject.Core.Misc;
-using BookProject.Core.Models.Book;
+using BookProject.Core.Models.Domain;
+using BookProject.Core.Models.ViewModel;
 
 namespace BookProject.Core.ImageRendering
 {
     public class PageStateRenderer : ImageRendererBase
     {
-        private readonly PageState _pageState;
+        private readonly BookViewModel _bookVm;
 
-        public PageStateRenderer(PageState pageState)
+        public PageStateRenderer(BookViewModel bookVm)
         {
-            _pageState = pageState;
+            _bookVm = bookVm;
         }
 
         public override void Render(Bitmap originalBitmap, Graphics g)
         {
-            if (_pageState.Page == null)
+            if (_bookVm.CurrentPage == null)
             {
                 return;
             }
 
-            var blocks = _pageState.Page.GetAllBlocks();
+            var blocks = _bookVm.CurrentPage.GetAllBlocks();
             foreach (var block in blocks)
             {
                 if (block is TitleBlock titleBlock)
@@ -66,13 +67,13 @@ namespace BookProject.Core.ImageRendering
                 }
             }
 
-            if (_pageState.PbSelectionStartPoint.HasValue)
+            if (_bookVm.PbSelectionStartPoint.HasValue)
             {
                 using var selectionPen = new Pen(Color.Black, 1)
                 {
                     DashStyle = DashStyle.Dot
                 };
-                g.DrawRectangle(selectionPen, _pageState.PbSelectionStartPoint.Value, _pageState.PbMouseAt);
+                g.DrawRectangle(selectionPen, _bookVm.PbSelectionStartPoint.Value, _bookVm.PictureBoxMouseAt);
             }
         }
     }

@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace BookProject.Core.Models.Book
+﻿namespace BookProject.Core.Models.Domain
 {
     public enum DragPointLabel
     {

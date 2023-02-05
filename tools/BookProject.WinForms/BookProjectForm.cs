@@ -1,23 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Accord.Math;
 using BookProject.Core.Detectors;
 using BookProject.Core.ImageRendering;
-using BookProject.Core.Models.Book;
+using BookProject.Core.Models.Domain;
+using BookProject.Core.Models.ViewModel;
 using BookProject.Core.Settings;
 using BookProject.Core.Utilities;
 using BookProject.WinForms.Controls.BlockDetails;
 using BookProject.WinForms.DragActivities;
 using BookProject.WinForms.Model;
 using BookProject.WinForms.PageActions;
-using BookProject.WinForms.Service;
 
 namespace BookProject.WinForms
 {
@@ -27,9 +25,7 @@ namespace BookProject.WinForms
      */
     public partial class BookProjectForm : Form
     {
-        private Book _book = null;
-
-        private readonly PageState _pageState = new PageState();
+        private readonly BookViewModel _bookVm;
 
         private IImageRenderer _imageRenderer;
 
@@ -50,6 +46,12 @@ namespace BookProject.WinForms
         {
             InitializeComponent();
 
+            _bookVm = new BookViewModel();
+            _bookVm.EditBlockSelectionChanged += EditBlockSelectionChanged;
+            _bookVm.BlockAdded += BlockAdded;
+            _bookVm.BlockRemoved += BlockRemoved;
+            _bookVm.BlockModified += BlockModified;
+
             page_lb.SelectedIndexChanged += PageLbOnSelectedIndexChanged;
 
             pictureBox1.Paint += PictureBox1OnPaint;
@@ -59,10 +61,10 @@ namespace BookProject.WinForms
 
             saveBook_btn.Click += OnSaveBookClick;
 
-            openBookFolder_btn.Click += OpenBookFolderClick;
+            openBookFolder_btn.Click += OnOpenBookFolderClick;
             generateLines_btn.Click += GenerateLinesClick;
 
-            _imageRenderer = new PageStateRenderer(_pageState);
+            _imageRenderer = new PageStateRenderer(_bookVm);
 
             _settings = BookProjectSettings.Load();
 
@@ -134,27 +136,75 @@ namespace BookProject.WinForms
             page_lb.PreviewKeyDown += PageLbOnPreviewKeyDown;
 
             _commentLinkBlockDetailsControl = new CommentLinkBlockDetailsControl();
-            _commentLinkBlockDetailsControl.BlockChanged += (sender, block) =>
-            {
-                pictureBox1.Refresh();
-            };
-
-            _titleBlockDetailsControl = new TitleBlockDetailsControl();
-            _titleBlockDetailsControl.RecognizeText += (sender, titleBlock) =>
-            {
-                using var ocrBitmap = ImageUtility.Crop(pictureBox1.Image as Bitmap, titleBlock.Rectangle);
-                using var ocrStream = new MemoryStream();
-                ocrBitmap.Save(ocrStream, ImageFormat.Jpeg);
-                var ocrPage = Task.Run(() => _ocrUtility.GetPageAsync(ocrStream.ToArray())).Result;
-                titleBlock.Text = ocrPage.GetText();
-            };
-            _titleBlockDetailsControl.BlockChanged += (sender, titleBlock) =>
-            {
-                titleListControl1.UpdateTitleList(_book, titleBlock);
-                pictureBox1.Refresh();
-            };
+            _titleBlockDetailsControl = new TitleBlockDetailsControl { OcrUtility = _ocrUtility };
 
             titleListControl1.TitleSelected += OnTitleSelected;
+        }
+
+        private void BlockModified(object sender, BlockEventArgs e)
+        {
+            if (e.Block is TitleBlock titleBlock)
+            {
+                titleListControl1.UpdateTitleList(_bookVm.Book, titleBlock);
+            }
+
+            if (e.Page == _bookVm.CurrentPage)
+            {
+                pictureBox1.Refresh();
+            }
+        }
+
+        private void BlockRemoved(object sender, BlockEventArgs e)
+        {
+            if (e.Block is TitleBlock)
+            {
+                titleListControl1.UpdateTitleList(_bookVm.Book, null);
+            }
+
+            if (e.Page == _bookVm.CurrentPage)
+            {
+                pictureBox1.Refresh();
+            }
+        }
+
+        private void BlockAdded(object sender, BlockEventArgs e)
+        {
+            if (e.Block is TitleBlock titleBlock)
+            {
+                titleListControl1.UpdateTitleList(_bookVm.Book, titleBlock);
+            }
+
+            if (e.Page == _bookVm.CurrentPage)
+            {
+                pictureBox1.Refresh();
+            }
+
+            
+        }
+
+        private void EditBlockSelectionChanged(object sender, BlockEventArgs e)
+        {
+            blockDetails_panel.Controls.Clear();
+
+            if (e.Block is CommentLinkBlock commentLinkBlock)
+            {
+                _commentLinkBlockDetailsControl.SetBlock(_bookVm, commentLinkBlock);
+                blockDetails_panel.Controls.Add(_commentLinkBlockDetailsControl);
+                _commentLinkBlockDetailsControl.Dock = DockStyle.Fill;
+            }
+
+            if (e.Block is TitleBlock titleBlock)
+            {
+                _titleBlockDetailsControl.SetBlock(_bookVm, titleBlock);
+                blockDetails_panel.Controls.Add(_titleBlockDetailsControl);
+                _titleBlockDetailsControl.Dock = DockStyle.Fill;
+                titleListControl1.UpdateTitleList(_bookVm.Book, titleBlock);
+            }
+
+            if (e.Page == _bookVm.CurrentPage)
+            {
+                pictureBox1.Refresh();
+            }
         }
 
         private void OnTitleSelected(object sender, TitleListRow titleListRow)
@@ -166,7 +216,7 @@ namespace BookProject.WinForms
                 return;
             }
             page_lb.SelectedIndex = filenames.IndexOf(selectedFilename);
-            _pageState.Page.SetEditBlock(titleListRow.TitleBlock);
+            _bookVm.SetEditBlock(titleListRow.TitleBlock, _bookVm.CurrentPage);
         }
 
         private void PageLbOnPreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
@@ -202,8 +252,7 @@ namespace BookProject.WinForms
             if (pageAction != null)
             {
                 e.IsInputKey = true;
-                pageAction.Execute(_pageState.Page);
-                pictureBox1.Refresh();
+                pageAction.Execute(_bookVm);
             }
 
             if (e.KeyCode == Keys.W || e.KeyCode == Keys.S)
@@ -227,19 +276,18 @@ namespace BookProject.WinForms
             for (var i = 0; i < imageFiles.Length; i++)
             {
                 var imageFile = imageFiles[i];
-                var page = _book.GetPage(Path.GetFileNameWithoutExtension(imageFile));
+                var page = _bookVm.Book.GetPage(Path.GetFileNameWithoutExtension(imageFile));
                 var excludeRects = page.ImageBlocks.Select(b => b.Rectangle)
                     .Concat(page.TitleBlocks.Select(b => b.Rectangle))
                     .Concat(page.CommentLinkBlocks.Select(b => b.Rectangle))
                     .ToArray();
                 var garbageRects = new GarbageDetector()
                     .Detect(ImageUtility.Load(imageFile), detectGarbageControl1.GetSettings(), excludeRects, null);
-                page.GarbageBlocks = garbageRects.Select(GarbageBlock.FromRectangle).ToList();
+                _bookVm.SetPageBlocks(page, garbageRects.Select(GarbageBlock.FromRectangle));
                 progressBar1.Value = i + 1;
                 Application.DoEvents();
             }
 
-            pictureBox1.Refresh();
             MessageBox.Show("Completed!", "Detect Garbage", MessageBoxButtons.OK, MessageBoxIcon.Information);
             progressBar1.Value = 0;
         }
@@ -258,17 +306,16 @@ namespace BookProject.WinForms
             for (var i = 0; i < imageFiles.Length; i++)
             {
                 var imageFile = imageFiles[i];
-                var page = _book.GetPage(Path.GetFileNameWithoutExtension(imageFile));
+                var page = _bookVm.Book.GetPage(Path.GetFileNameWithoutExtension(imageFile));
                 var excludeRects = page.ImageBlocks.Select(b => b.Rectangle)
                     .ToArray();
                 var commentLinkRects = new CommentLinkDetector(new YandexVisionOcrUtility())
                     .Detect(ImageUtility.Load(imageFile), detectCommentLinkNumberControl1.GetSettings(), excludeRects, null);
-                page.CommentLinkBlocks = commentLinkRects.Select(CommentLinkBlock.FromRectangle).ToList();
+                _bookVm.SetPageBlocks(page, commentLinkRects.Select(GarbageBlock.FromRectangle));
                 progressBar1.Value = i + 1;
                 Application.DoEvents();
             }
 
-            pictureBox1.Refresh();
             MessageBox.Show("Completed!", "Detect Comment Links", MessageBoxButtons.OK, MessageBoxIcon.Information);
             progressBar1.Value = 0;
         }
@@ -287,14 +334,13 @@ namespace BookProject.WinForms
             for (var i = 0; i < imageFiles.Length; i++)
             {
                 var imageFile = imageFiles[i];
-                var page = _book.GetPage(Path.GetFileNameWithoutExtension(imageFile));
+                var page = _bookVm.Book.GetPage(Path.GetFileNameWithoutExtension(imageFile));
                 var imageRects = new ImageDetector().Detect(ImageUtility.Load(imageFile), detectImageControl1.GetSettings(), null, null);
-                page.ImageBlocks = imageRects.Select(ImageBlock.FromRectangle).ToList();
+                _bookVm.SetPageBlocks(page, imageRects.Select(ImageBlock.FromRectangle));
                 progressBar1.Value = i + 1;
                 Application.DoEvents();
             }
 
-            pictureBox1.Refresh();
             MessageBox.Show("Completed!", "Detect Images", MessageBoxButtons.OK, MessageBoxIcon.Information);
             progressBar1.Value = 0;
         }
@@ -313,22 +359,21 @@ namespace BookProject.WinForms
             for (var i = 0; i < imageFiles.Length; i++)
             {
                 var imageFile = imageFiles[i];
-                var page = _book.GetPage(Path.GetFileNameWithoutExtension(imageFile));
+                var page = _bookVm.Book.GetPage(Path.GetFileNameWithoutExtension(imageFile));
                 var excludeRects = page.ImageBlocks.Select(b => b.Rectangle).ToArray();
                 var titleRects = new TitleDetector().Detect(ImageUtility.Load(imageFile), detectTitleControl1.GetSettings(), excludeRects, null);
-                page.TitleBlocks = titleRects.Select(TitleBlock.FromRectangle).ToList();
+                _bookVm.SetPageBlocks(page, titleRects.Select(TitleBlock.FromRectangle));
                 progressBar1.Value = i + 1;
                 Application.DoEvents();
             }
 
-            pictureBox1.Refresh();
             MessageBox.Show("Completed!", "Detect Titles", MessageBoxButtons.OK, MessageBoxIcon.Information);
             progressBar1.Value = 0;
         }
 
         private void SetPageStateImageRenderer()
         {
-            _imageRenderer = new PageStateRenderer(_pageState);
+            _imageRenderer = new PageStateRenderer(_bookVm);
             pictureBox1.Refresh();
         }
 
@@ -401,34 +446,29 @@ namespace BookProject.WinForms
             */
         }
 
-        private void OpenBookFolderClick(object? sender, EventArgs e)
+        private void OnOpenBookFolderClick(object? sender, EventArgs e)
         {
             var dialog = new FolderBrowserDialog();
 
             if (dialog.ShowDialog() != DialogResult.OK) return;
 
-            _book = Book.Load(dialog.SelectedPath);
+            _bookVm.Book = Book.Load(dialog.SelectedPath);
 
             bookFolder_tb.Text = dialog.SelectedPath;
 
             page_lb.Items.Clear();
 
-            var fileNames = Directory.GetFiles(bookFolder_tb.Text, "*.jpg")
-                .Select(Path.GetFileNameWithoutExtension)
-                .OrderBy(f => int.Parse(new string(Path.GetFileNameWithoutExtension(f).Where(char.IsNumber).ToArray())))
-                .ToList();
-
-            foreach (var fileName in fileNames)
+            foreach (var page in _bookVm.Book.Pages.OrderBy(p => p.Index))
             {
-                page_lb.Items.Add(fileName);
+                page_lb.Items.Add(page.ImageFile);
             }
 
-            titleListControl1.UpdateTitleList(_book, null);
+            titleListControl1.UpdateTitleList(_bookVm.Book, null);
         }
 
         private void OnSaveBookClick(object? sender, EventArgs e)
         {
-            _book.Save(bookFolder_tb.Text);
+            _bookVm.Book.Save(bookFolder_tb.Text);
 
             MessageBox.Show("Ocr data saved", "Ocr data", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
@@ -441,60 +481,59 @@ namespace BookProject.WinForms
 
             if (e.Button == MouseButtons.Right)
             {
-                _pageState.OriginalSelectionStartPoint = pictureBox1.ToOriginalPoint(e.Location);
-                _pageState.PbSelectionStartPoint = e.Location;
+                _bookVm.OriginalSelectionStartPoint = pictureBox1.ToOriginalPoint(e.Location);
+                _bookVm.PbSelectionStartPoint = e.Location;
             }
 
             if (e.Button == MouseButtons.Left)
             {
                 var originalPoint = pictureBox1.ToOriginalPoint(e.Location);
-                var editBlock = _pageState.Page.GetEditBlock();
+                var editBlock = _bookVm.CurrentPage.GetEditBlock();
                 if (editBlock != null)
                 {
                     var dragPointLabel = DragPointLabelResolver.GetDragLabelAtPoint(editBlock, pictureBox1, e.Location);
                     if (dragPointLabel.HasValue)
                     {
-                        _dragActivity = DragActivityFactory.ConstructDragActivity(editBlock, dragPointLabel.Value);
+                        _dragActivity = DragActivityFactory.ConstructDragActivity(_bookVm, editBlock, dragPointLabel.Value);
                         return;
                     }
                 }
 
                 _dragActivity = null;
-                var blockAtCursor = _pageState.Page.GetAllBlocks().FirstOrDefault(b => b.Rectangle.Contains(originalPoint));
-                _pageState.Page.SetEditBlock(blockAtCursor);
-                pictureBox1.Refresh();
+                var blockAtCursor = _bookVm.CurrentPage.GetAllBlocks().FirstOrDefault(b => b.Rectangle.Contains(originalPoint));
+                _bookVm.SetEditBlock(blockAtCursor, _bookVm.CurrentPage);
             }
         }
 
         private void PictureBox1OnMouseUp(object sender, MouseEventArgs e)
         {
-            if (_pageState.Page == null) return;
+            if (_bookVm.CurrentPage == null) return;
 
             _dragActivity = null;
 
-            if (e.Button == MouseButtons.Right && _pageState.OriginalSelectionStartPoint.HasValue)
+            if (e.Button == MouseButtons.Right && _bookVm.OriginalSelectionStartPoint.HasValue)
             {
                 var originalLocation = pictureBox1.ToOriginalPoint(e.Location);
 
                 var xs = new List<int>
                 {
-                    _pageState.OriginalSelectionStartPoint.Value.X,
+                    _bookVm.OriginalSelectionStartPoint.Value.X,
                     originalLocation.X
                 }
                     .OrderBy(i => i).ToList();
 
                 var ys = new List<int>
                 {
-                    _pageState.OriginalSelectionStartPoint.Value.Y,
+                    _bookVm.OriginalSelectionStartPoint.Value.Y,
                     originalLocation.Y
                 }
                     .OrderBy(i => i).ToList();
 
                 var originalRect = new Rectangle(xs[0], ys[0], xs[1] - xs[0], ys[1] - ys[0]);
-                var menu = GetPageMenu(_pageState.Page, originalRect);
+                var menu = GetPageMenu(_bookVm.CurrentPage, originalRect);
                 menu.Show(pictureBox1, e.Location);
-                _pageState.OriginalSelectionStartPoint = null;
-                _pageState.PbSelectionStartPoint = null;
+                _bookVm.OriginalSelectionStartPoint = null;
+                _bookVm.PbSelectionStartPoint = null;
             }
         }
 
@@ -502,33 +541,21 @@ namespace BookProject.WinForms
         {
             var menu = new ContextMenuStrip();
 
-            menu.Items.Add("Add Image Block", null, (o, a) =>
-            {
-                page.AddBlock(ImageBlock.FromRectangle(originalRect));
-                pictureBox1.Refresh();
-            });
+            menu.Items.Add("Add Image Block", null,
+                (o, a) => _bookVm.AddBlock(ImageBlock.FromRectangle(originalRect), _bookVm.CurrentPage));
 
-            menu.Items.Add("Add Title Block", null, (o, a) =>
-            {
-                page.AddBlock(TitleBlock.FromRectangle(originalRect));
-                pictureBox1.Refresh();
-            });
+            menu.Items.Add("Add Title Block", null,
+                (o, a) => _bookVm.AddBlock(TitleBlock.FromRectangle(originalRect), _bookVm.CurrentPage));
 
-            menu.Items.Add("Add Comment Link Block", null, (o, a) =>
-            {
-                page.AddBlock(CommentLinkBlock.FromRectangle(originalRect));
-                pictureBox1.Refresh();
-            });
+            menu.Items.Add("Add Comment Link Block", null, 
+                (o, a) => _bookVm.AddBlock(CommentLinkBlock.FromRectangle(originalRect), _bookVm.CurrentPage));
 
-            menu.Items.Add("Add Garbage Block", null, (o, a) =>
-            {
-                page.AddBlock(GarbageBlock.FromRectangle(originalRect));
-                pictureBox1.Refresh();
-            });
+            menu.Items.Add("Add Garbage Block", null, 
+                (o, a) => _bookVm.AddBlock(GarbageBlock.FromRectangle(originalRect), _bookVm.CurrentPage));
 
             menu.Items.Add("Recognize Text", null, async (o, a) =>
             {
-                using var ocrBitmap = ImageUtility.Crop(pictureBox1.Image as Bitmap, originalRect);
+                using var ocrBitmap = ImageUtility.Crop(_bookVm.OriginalPageBitmap, originalRect);
                 using var ocrStream = new MemoryStream();
                 ocrBitmap.Save(ocrStream, ImageFormat.Jpeg);
                 var ocrPage = await _ocrUtility.GetPageAsync(ocrStream.ToArray());
@@ -543,10 +570,10 @@ namespace BookProject.WinForms
         {
             if (pictureBox1.Image == null) return;
 
-            _pageState.OriginalMouseAt = pictureBox1.ToOriginalPoint(e.Location);
-            _pageState.PbMouseAt = e.Location;
+            _bookVm.OriginalMouseAt = pictureBox1.ToOriginalPoint(e.Location);
+            _bookVm.PictureBoxMouseAt = e.Location;
 
-            if (e.Button == MouseButtons.Right && _pageState.OriginalSelectionStartPoint.HasValue)
+            if (e.Button == MouseButtons.Right && _bookVm.OriginalSelectionStartPoint.HasValue)
             {
                 pictureBox1.Refresh();
             }
@@ -554,15 +581,14 @@ namespace BookProject.WinForms
             if (_dragActivity != null)
             {
                 _dragActivity.Perform(pictureBox1, e);
-                pictureBox1.Refresh();
             }
         }
 
         private void PictureBox1OnPaint(object sender, PaintEventArgs e)
         {
-            if (_pageState.Page == null) return;
+            if (_bookVm.CurrentPage == null) return;
 
-            _imageRenderer.Render(_pageState.OriginalPageBitmap, e.Graphics);
+            _imageRenderer.Render(_bookVm.OriginalPageBitmap, e.Graphics);
         }
 
         private void PageLbOnSelectedIndexChanged(object? sender, EventArgs e)
@@ -576,39 +602,15 @@ namespace BookProject.WinForms
                 MessageBox.Show("Image file not found", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
-            if (_pageState.Page != null)
-            {
-                _pageState.Page.EditBlockChanged -= EditBlockChanged;
-            }
-            _pageState.Page = _book.GetPage(fileName);
-            _pageState.Page.SetEditBlock(null);
-            _pageState.OriginalPageBitmap = ImageUtility.Load(imageFile);
-            _pageState.Page.EditBlockChanged += EditBlockChanged;
-            pictureBox1.Image = _pageState.OriginalPageBitmap;
-        }
-
-        private void EditBlockChanged(object sender, Block block)
-        {
-            blockDetails_panel.Controls.Clear();
-
-            if (block is CommentLinkBlock commentLinkBlock)
-            {
-                _commentLinkBlockDetailsControl.SetBlock(commentLinkBlock);
-                blockDetails_panel.Controls.Add(_commentLinkBlockDetailsControl);
-                _commentLinkBlockDetailsControl.Dock = DockStyle.Fill;
-            }
-
-            if (block is TitleBlock titleBlock)
-            {
-                _titleBlockDetailsControl.SetBlock(titleBlock);
-                blockDetails_panel.Controls.Add(_titleBlockDetailsControl);
-                _titleBlockDetailsControl.Dock = DockStyle.Fill;
-                titleListControl1.UpdateTitleList(_book, titleBlock);
-            }
+            _bookVm.CurrentPage = _bookVm.Book.GetPage(fileName);
+            _bookVm.OriginalPageBitmap = ImageUtility.Load(imageFile);
+            pictureBox1.Image = _bookVm.OriginalPageBitmap;
+            _bookVm.SetEditBlock(null, _bookVm.CurrentPage);
         }
 
         private void GenerateFb2Click(object sender, EventArgs e)
         {
+            /*
             var templateDialog = new Fb2Dialog();
 
             if (templateDialog.ShowDialog() != DialogResult.OK) return;
@@ -655,6 +657,7 @@ namespace BookProject.WinForms
             {
                 MessageBox.Show(exc.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+            */
         }
     }
 }

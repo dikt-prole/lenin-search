@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 using System.Windows.Forms;
-using BookProject.Core.Models.Book;
+using BookProject.Core.Models.Domain;
 
 namespace BookProject.WinForms.DragActivities
 {

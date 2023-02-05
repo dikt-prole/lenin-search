@@ -1,21 +1,27 @@
 ﻿using System.Windows.Forms;
-using BookProject.Core.Models.Book;
+using BookProject.Core.Models.Domain;
+using BookProject.Core.Models.ViewModel;
 
 namespace BookProject.WinForms.DragActivities
 {
     public class TopLeftDragActivity : IDragActivity
     {
+        private readonly BookViewModel _bookVm;
         private readonly Block _block;
-        public TopLeftDragActivity(Block block)
+        public TopLeftDragActivity(BookViewModel bookVm, Block block)
         {
+            _bookVm = bookVm;
             _block = block;
         }
 
         public void Perform(PictureBox pictureBox, MouseEventArgs args)
         {
-            var originalPoint = pictureBox.ToOriginalPoint(args.Location);
-            _block.TopLeftX = originalPoint.X;
-            _block.TopLeftY = originalPoint.Y;
+            _bookVm.ModifyBlock(_block, b =>
+            {
+                var originalPoint = pictureBox.ToOriginalPoint(args.Location);
+                b.TopLeftX = originalPoint.X;
+                b.TopLeftY = originalPoint.Y;
+            });
         }
     }
 }

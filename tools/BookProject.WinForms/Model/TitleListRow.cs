@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using BookProject.Core.Models.Book;
+using BookProject.Core.Models.Domain;
 
 namespace BookProject.WinForms.Model
 {

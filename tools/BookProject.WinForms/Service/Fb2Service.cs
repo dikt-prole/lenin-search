@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using BookProject.Core.Models.Book;
-using BookProject.Core.Models.Book.Old;
-using BookProject.WinForms.Model.Fb2;
-
-namespace BookProject.WinForms.Service
+﻿namespace BookProject.WinForms.Service
 {
+    /*
     public class Fb2Service : IFb2Service
     {
         public void GenerateFb2File(string ocrFolder, string fb2File, string fb2Template)
@@ -284,4 +276,5 @@ namespace BookProject.WinForms.Service
             public const string BinaryContent = "[binary-content]";
         }
     }
+    */
 }

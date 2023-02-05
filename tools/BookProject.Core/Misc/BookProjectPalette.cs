@@ -1,41 +1,11 @@
 ﻿using System;
 using System.Drawing;
-using BookProject.Core.Models.Book;
-using BookProject.Core.Models.Book.Old;
-using Emgu.CV.Features2D;
+using BookProject.Core.Models.Domain;
 
 namespace BookProject.Core.Misc
 {
     public static class BookProjectPalette
     {
-        public static Color GetColor(OldBookProjectLabel? label)
-        {
-            if (label == null) return Color.Gray;
-
-            switch (label.Value)
-            {
-                case OldBookProjectLabel.PStart:
-                    return Color.Green;
-
-                case OldBookProjectLabel.PMiddle:
-                    return Color.MediumAquamarine;
-
-                case OldBookProjectLabel.Garbage:
-                    return Color.Brown;
-
-                case OldBookProjectLabel.Image:
-                    return Color.Orange;
-
-                case OldBookProjectLabel.Comment:
-                    return Color.DodgerBlue;
-                
-                case OldBookProjectLabel.Title:
-                    return Color.Red;
-            }
-
-            return Color.Black; 
-        }
-
         public static Color ImageBlockColor => Color.Orange;
         public static Color CommentLinkBlockColor => Color.DodgerBlue;
         public static Color TitleBlockColor => Color.Red;

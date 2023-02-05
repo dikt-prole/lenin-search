@@ -39,7 +39,6 @@ namespace BookProject.Core.Utilities
             }
 
             var ocrResponseJson = await response.Content.ReadAsStringAsync();
-            Debug.WriteLine(ocrResponseJson);
             var yandexVisionOcrResponse = JsonConvert.DeserializeObject<YandexVisionOcrResponse>(ocrResponseJson);
 
             return yandexVisionOcrResponse.ToOcrPage();

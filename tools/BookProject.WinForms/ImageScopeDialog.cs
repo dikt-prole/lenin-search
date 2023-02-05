@@ -1,8 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using BookProject.Core.Models.Book;
-using BookProject.Core.Models.Book.Old;
 
 namespace BookProject.WinForms
 {
@@ -28,11 +26,6 @@ namespace BookProject.WinForms
                 DialogResult = DialogResult.OK;
                 Close();
             };
-        }
-
-        public bool PageMatch(OldBookProjectPage page)
-        {
-            return MinImageIndex <= page.ImageIndex && page.ImageIndex <= MaxImageIndex;
         }
 
         public bool ImageMatch(int imageIndex)

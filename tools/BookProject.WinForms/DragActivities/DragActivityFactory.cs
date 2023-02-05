@@ -1,33 +1,32 @@
-﻿using System.Drawing;
-using System.Windows.Forms;
-using BookProject.Core.Models.Book;
+﻿using BookProject.Core.Models.Domain;
+using BookProject.Core.Models.ViewModel;
 
 namespace BookProject.WinForms.DragActivities
 {
     public static class DragActivityFactory
     {
-        public static IDragActivity ConstructDragActivity(Block block, DragPointLabel dragPointLabel)
+        public static IDragActivity ConstructDragActivity(BookViewModel bookVm, Block block, DragPointLabel dragPointLabel)
         {
             switch (dragPointLabel)
             {
                 case DragPointLabel.Left:
-                    return new LeftDragActivity(block);
+                    return new LeftDragActivity(bookVm, block);
                 case DragPointLabel.Right:
-                    return new RightDragActivity(block);
+                    return new RightDragActivity(bookVm, block);
                 case DragPointLabel.Bottom:
-                    return new BottomDragActivity(block);
+                    return new BottomDragActivity(bookVm, block);
                 case DragPointLabel.Top:
-                    return new TopDragActivity(block);
+                    return new TopDragActivity(bookVm, block);
                 case DragPointLabel.TopLeft:
-                    return new TopLeftDragActivity(block);
+                    return new TopLeftDragActivity(bookVm, block);
                 case DragPointLabel.BottomLeft:
-                    return new BottomLeftDragActivity(block);
+                    return new BottomLeftDragActivity(bookVm, block);
                 case DragPointLabel.TopRight:
-                    return new TopRightDragActivity(block);
+                    return new TopRightDragActivity(bookVm, block);
                 case DragPointLabel.BottomRight:
-                    return new BottomRightDragActivity(block);
+                    return new BottomRightDragActivity(bookVm, block);
                 default:
-                    return new CenterDragActivity(block);
+                    return new CenterDragActivity(bookVm, block);
             }
         }
     }

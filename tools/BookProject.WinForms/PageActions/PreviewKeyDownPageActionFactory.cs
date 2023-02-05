@@ -1,5 +1,5 @@
 ﻿using System.Windows.Forms;
-using BookProject.Core.Models.Book;
+using BookProject.Core.Models.Domain;
 using BookProject.WinForms.PageActions.AddBlock;
 using BookProject.WinForms.PageActions.Clipboard;
 using BookProject.WinForms.PageActions.Move;
@@ -22,7 +22,7 @@ namespace BookProject.WinForms.PageActions
                 case Keys.Tab:
                     return new SetNextEditBlockPageAction();
                 case Keys.Delete:
-                    return new DeleteEditBlockPageAction();
+                    return new RemoveEditBlockPageAction();
                 case Keys.Up:
                     if (args.Shift)
                     {

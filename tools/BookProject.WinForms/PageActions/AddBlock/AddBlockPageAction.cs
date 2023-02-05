@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
-using BookProject.Core.Models.Book;
+using BookProject.Core.Models.Domain;
+using BookProject.Core.Models.ViewModel;
 
 namespace BookProject.WinForms.PageActions.AddBlock
 {
@@ -14,38 +15,34 @@ namespace BookProject.WinForms.PageActions.AddBlock
             _height = height;
         }
 
-        public void Execute(Page page)
+        public void Execute(BookViewModel bookVm)
         {
-            var blockRect = new Rectangle((page.Width - _width) / 2, (page.Height - _height) / 2, _width, _height);
+            var blockRect = new Rectangle(
+                (bookVm.CurrentPage.Width - _width) / 2, 
+                (bookVm.CurrentPage.Height - _height) / 2, 
+                _width, 
+                _height);
 
             var blockType = typeof(TBlock);
 
             if (blockType == typeof(ImageBlock))
             {
-                var imageBlock = ImageBlock.FromRectangle(blockRect);
-                page.ImageBlocks.Add(imageBlock);
-                page.SetEditBlock(imageBlock);
+                bookVm.AddBlock(ImageBlock.FromRectangle(blockRect), bookVm.CurrentPage);
             }
 
             if (blockType == typeof(TitleBlock))
             {
-                var titleBlock = TitleBlock.FromRectangle(blockRect);
-                page.TitleBlocks.Add(titleBlock);
-                page.SetEditBlock(titleBlock);
+                bookVm.AddBlock(TitleBlock.FromRectangle(blockRect), bookVm.CurrentPage);
             }
 
             if (blockType == typeof(GarbageBlock))
             {
-                var garbageBlock = GarbageBlock.FromRectangle(blockRect);
-                page.GarbageBlocks.Add(garbageBlock);
-                page.SetEditBlock(garbageBlock);
+                bookVm.AddBlock(GarbageBlock.FromRectangle(blockRect), bookVm.CurrentPage);
             }
 
             if (blockType == typeof(CommentLinkBlock))
             {
-                var commentLinkBlock = CommentLinkBlock.FromRectangle(blockRect);
-                page.CommentLinkBlocks.Add(commentLinkBlock);
-                page.SetEditBlock(commentLinkBlock);
+                bookVm.AddBlock(CommentLinkBlock.FromRectangle(blockRect), bookVm.CurrentPage);
             }
         }
     }

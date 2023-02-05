@@ -1,9 +1,10 @@
-﻿using BookProject.Core.Models.Book;
+﻿using BookProject.Core.Models.Domain;
+using BookProject.Core.Models.ViewModel;
 
 namespace BookProject.WinForms.PageActions
 {
     public interface IPageAction
     {
-        void Execute(Page page);
+        void Execute(BookViewModel bookVm);
     }
 }

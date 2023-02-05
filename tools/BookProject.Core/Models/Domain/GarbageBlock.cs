@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace BookProject.Core.Models.Book
+namespace BookProject.Core.Models.Domain
 {
     public class GarbageBlock : Block
     {
