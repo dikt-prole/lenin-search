@@ -22,31 +22,31 @@ namespace BookProject.WinForms.PageActions
                 case Keys.Tab:
                     return new SetNextEditBlockPageAction();
                 case Keys.Delete:
-                    return new RemoveEditBlockPageAction();
+                    return new RemoveSelectedBlockPageAction();
                 case Keys.Up:
                     if (args.Shift)
                     {
-                        return new IncreaseEditBlockHeightPageAction(ResizeStep);                        
+                        return new IncreaseSelectedBlockHeightPageAction(ResizeStep);                        
                     }
-                    return new MoveEditBlockTopPageAction(MoveStep);
+                    return new MoveSelectedBlockTopPageAction(MoveStep);
                 case Keys.Down:
                     if (args.Shift)
                     {
-                        return new DecreaseEditBlockHeightPageAction(ResizeStep);
+                        return new DecreaseSelectedBlockHeightPageAction(ResizeStep);
                     }
-                    return new MoveEditBlockBottomPageAction(MoveStep);
+                    return new MoveSelectedBlockBottomPageAction(MoveStep);
                 case Keys.Left:
                     if (args.Shift)
                     {
-                        return new DecreaseEditBlockWidthPageAction(ResizeStep);
+                        return new DecreaseSelectedBlockWidthPageAction(ResizeStep);
                     }
-                    return new MoveEditBlockLeftPageAction(MoveStep);
+                    return new MoveSelectedBlockLeftPageAction(MoveStep);
                 case Keys.Right:
                     if (args.Shift)
                     {
-                        return new IncreaseEditBlockWidthPageAction(ResizeStep);
+                        return new IncreaseSelectedBlockWidthPageAction(ResizeStep);
                     }
-                    return new MoveEditBlockRightPageAction(MoveStep);
+                    return new MoveSelectedBlockRightPageAction(MoveStep);
             }
 
             if (args.Control)

@@ -3,21 +3,21 @@ using BookProject.Core.Models.ViewModel;
 
 namespace BookProject.WinForms.PageActions.Resize
 {
-    public class DecreaseEditBlockHeightPageAction : IPageAction
+    public class DecreaseSelectedBlockHeightPageAction : IPageAction
     {
         private readonly int _step;
 
-        public DecreaseEditBlockHeightPageAction(int step = 5)
+        public DecreaseSelectedBlockHeightPageAction(int step = 5)
         {
             _step = step;
         }
 
         public void Execute(BookViewModel bookVm)
         {
-            var editBlock = bookVm.CurrentPage.GetEditBlock();
-            if (editBlock != null)
+            var selectedBlock = bookVm.SelectedBlock;
+            if (selectedBlock != null && !(selectedBlock is Page))
             {
-                bookVm.ModifyBlock(editBlock, b =>
+                bookVm.ModifyBlock(selectedBlock, b =>
                 {
                     b.BottomRightY -= _step;
                     b.TopLeftY += _step;

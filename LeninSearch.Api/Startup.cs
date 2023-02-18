@@ -1,10 +1,12 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using LeninSearch.Api.Services;
+using LeninSearch.Api.Validation;
 using LeninSearch.Standard.Core.Search;
 using LeninSearch.Standard.Core.Search.CorpusSearching;
 using LeninSearch.Standard.Core.Search.TokenVarying;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,7 +23,6 @@ namespace LeninSearch.Api
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers().AddNewtonsoftJson();
@@ -39,9 +40,14 @@ namespace LeninSearch.Api
             services.AddSingleton<ISearchQueryFactory, SearchQueryFactory>();
             
             services.AddSingleton<IMemoryCache, MemoryCache>();
+
+            services.AddSwaggerGen();
+
+            // fluent validation
+            services.AddValidatorsFromAssemblyContaining<ValidationAssemblyMarker>();
+            services.AddFluentValidationAutoValidation();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             //app.UseMiddleware<SimpleLoggingMiddleware>();
@@ -61,6 +67,9 @@ namespace LeninSearch.Api
             {
                 endpoints.MapControllers();
             });
+
+            app.UseSwagger();
+            app.UseSwaggerUI();
         }
     }
 }

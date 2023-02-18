@@ -56,7 +56,7 @@ namespace BookProject.Core.ImageRendering
 
                 using var blockBorderPen = BookProjectPalette.GetBlockBorderPen(block, block.BorderWidth);
                 DrawOriginalRect(block.Rectangle, blockBorderPen, g, originalBitmap);
-                if (block.State == BlockState.Edit)
+                if (block == _bookVm.SelectedBlock)
                 {
                     using var blockElementBrush = BookProjectPalette.GetBlockElementBrush(block);
                     foreach (var dragPoint in block.GetActiveDragPoints())

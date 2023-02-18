@@ -3,14 +3,14 @@ using BookProject.Core.Models.ViewModel;
 
 namespace BookProject.WinForms.PageActions
 {
-    public class RemoveEditBlockPageAction : IPageAction
+    public class RemoveSelectedBlockPageAction : IPageAction
     {
         public void Execute(BookViewModel bookVm)
         {
-            var editedBlock = bookVm.CurrentPage.GetEditBlock();
-            if (editedBlock != null)
+            var selectedBlock = bookVm.SelectedBlock;
+            if (selectedBlock != null && !(selectedBlock is Page))
             {
-                bookVm.RemoveBlock(editedBlock);
+                bookVm.RemoveBlock(selectedBlock);
             }
         }
     }

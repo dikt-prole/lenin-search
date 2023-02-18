@@ -8,8 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 using LeninSearch.Standard.Core.Api;
@@ -24,6 +22,7 @@ namespace LeninSearch.Api.Controllers.V1
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
     [ApiVersion("1.0")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class CorpusController : ControllerBase
     {
         private readonly ILogger<CorpusController> _logger;

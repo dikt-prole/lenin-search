@@ -32,8 +32,7 @@ namespace BookProject.Core.Models.Domain
                 TopLeftX = rect.X,
                 TopLeftY = rect.Y,
                 BottomRightX = rect.X + rect.Width,
-                BottomRightY = rect.Y + rect.Height,
-                State = BlockState.Normal 
+                BottomRightY = rect.Y + rect.Height
             };
         }
 
@@ -44,8 +43,7 @@ namespace BookProject.Core.Models.Domain
                 TopLeftX = proto.TopLeftX,
                 TopLeftY = proto.TopLeftY,
                 BottomRightX = proto.BottomRightX,
-                BottomRightY = proto.BottomRightY,
-                State = BlockState.Normal
+                BottomRightY = proto.BottomRightY
             };
         }
     }

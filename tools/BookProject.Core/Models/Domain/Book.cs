@@ -10,6 +10,9 @@ namespace BookProject.Core.Models.Domain
         [JsonProperty("pgs")]
         public List<Page> Pages { get; set; }
 
+        [JsonIgnore]
+        public string Folder { get; set; }
+
         public void Save(string bookFolder)
         {
             var file = Path.Combine(bookFolder, "book.json");
@@ -23,20 +26,26 @@ namespace BookProject.Core.Models.Domain
             if (File.Exists(file))
             {
                 var json = File.ReadAllText(file);
-                return JsonConvert.DeserializeObject<Book>(json);
-            }
+                var book = JsonConvert.DeserializeObject<Book>(json);
+                book.Folder = bookFolder;
 
-            var book = new Book
-            {
-                Pages = new List<Page>()
-            };
-            var imageFiles = Directory.GetFiles(bookFolder, "*.jpg");
-            foreach (var imageFile in imageFiles)
-            {
-                book.Pages.Add(Page.ConstructEmpty(imageFile));
+                return book;
             }
+            else
+            {
+                var book = new Book
+                {
+                    Pages = new List<Page>(),
+                    Folder = bookFolder
+                };
+                var imageFiles = Directory.GetFiles(bookFolder, "*.jpg");
+                foreach (var imageFile in imageFiles)
+                {
+                    book.Pages.Add(Page.ConstructEmpty(imageFile));
+                }
 
-            return book;
+                return book;
+            }
         }
 
         public Page GetPage(string imageFile)

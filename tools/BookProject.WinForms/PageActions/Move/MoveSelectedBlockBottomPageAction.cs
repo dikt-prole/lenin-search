@@ -3,21 +3,21 @@ using BookProject.Core.Models.ViewModel;
 
 namespace BookProject.WinForms.PageActions.Move
 {
-    public class MoveEditBlockBottomPageAction : IPageAction
+    public class MoveSelectedBlockBottomPageAction : IPageAction
     {
         private readonly int _step;
 
-        public MoveEditBlockBottomPageAction(int step = 10)
+        public MoveSelectedBlockBottomPageAction(int step = 10)
         {
             _step = step;
         }
 
         public void Execute(BookViewModel bookVm)
         {
-            var editBlock = bookVm.CurrentPage.GetEditBlock();
-            if (editBlock != null)
+            var selectedBlock = bookVm.SelectedBlock;
+            if (!(selectedBlock is Page) && selectedBlock != null)
             {
-                bookVm.ModifyBlock(editBlock, b =>
+                bookVm.ModifyBlock(selectedBlock, b =>
                 {
                     b.TopLeftY += _step;
                     b.BottomRightY += _step;

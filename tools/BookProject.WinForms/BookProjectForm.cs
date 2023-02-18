@@ -47,7 +47,7 @@ namespace BookProject.WinForms
             InitializeComponent();
 
             _bookVm = new BookViewModel();
-            _bookVm.EditBlockSelectionChanged += EditBlockSelectionChanged;
+            _bookVm.SelectedBlockChanged += EditBlockSelectionChanged;
             _bookVm.BlockAdded += BlockAdded;
             _bookVm.BlockRemoved += BlockRemoved;
             _bookVm.BlockModified += BlockModified;
@@ -137,88 +137,55 @@ namespace BookProject.WinForms
 
             _commentLinkBlockDetailsControl = new CommentLinkBlockDetailsControl();
             _titleBlockDetailsControl = new TitleBlockDetailsControl { OcrUtility = _ocrUtility };
-
-            titleListControl1.TitleSelected += OnTitleSelected;
         }
 
-        private void BlockModified(object sender, BlockEventArgs e)
+        private void BlockModified(object sender, Block e)
         {
-            if (e.Block is TitleBlock titleBlock)
-            {
-                titleListControl1.UpdateTitleList(_bookVm.Book, titleBlock);
-            }
-
-            if (e.Page == _bookVm.CurrentPage)
+            if (_bookVm.GetBlockPage(e) == _bookVm.CurrentPage)
             {
                 pictureBox1.Refresh();
             }
         }
 
-        private void BlockRemoved(object sender, BlockEventArgs e)
+        private void BlockRemoved(object sender, Block e)
         {
-            if (e.Block is TitleBlock)
-            {
-                titleListControl1.UpdateTitleList(_bookVm.Book, null);
-            }
-
-            if (e.Page == _bookVm.CurrentPage)
+            if (_bookVm.GetBlockPage(e) == _bookVm.CurrentPage)
             {
                 pictureBox1.Refresh();
             }
         }
 
-        private void BlockAdded(object sender, BlockEventArgs e)
+        private void BlockAdded(object sender, Block e)
         {
-            if (e.Block is TitleBlock titleBlock)
-            {
-                titleListControl1.UpdateTitleList(_bookVm.Book, titleBlock);
-            }
-
-            if (e.Page == _bookVm.CurrentPage)
+            if (_bookVm.GetBlockPage(e) == _bookVm.CurrentPage)
             {
                 pictureBox1.Refresh();
             }
-
-            
         }
 
-        private void EditBlockSelectionChanged(object sender, BlockEventArgs e)
+        private void EditBlockSelectionChanged(object sender, Block e)
         {
             blockDetails_panel.Controls.Clear();
 
-            if (e.Block is CommentLinkBlock commentLinkBlock)
+            if (e is CommentLinkBlock commentLinkBlock)
             {
                 _commentLinkBlockDetailsControl.SetBlock(_bookVm, commentLinkBlock);
                 blockDetails_panel.Controls.Add(_commentLinkBlockDetailsControl);
                 _commentLinkBlockDetailsControl.Dock = DockStyle.Fill;
             }
 
-            if (e.Block is TitleBlock titleBlock)
+            if (e is TitleBlock titleBlock)
             {
                 _titleBlockDetailsControl.SetBlock(_bookVm, titleBlock);
                 blockDetails_panel.Controls.Add(_titleBlockDetailsControl);
                 _titleBlockDetailsControl.Dock = DockStyle.Fill;
-                titleListControl1.UpdateTitleList(_bookVm.Book, titleBlock);
             }
 
-            if (e.Page == _bookVm.CurrentPage)
+            if (_bookVm.GetBlockPage(e) == _bookVm.CurrentPage)
             {
                 pictureBox1.Refresh();
             }
         }
-
-        private void OnTitleSelected(object sender, TitleListRow titleListRow)
-        {
-            var filenames = page_lb.Items.OfType<string>().ToArray();
-            var selectedFilename = filenames.FirstOrDefault(f => f == titleListRow.Page.ImageFile);
-            if (selectedFilename == null)
-            {
-                return;
-            }
-            page_lb.SelectedIndex = filenames.IndexOf(selectedFilename);
-            _bookVm.SetEditBlock(titleListRow.TitleBlock, _bookVm.CurrentPage);
-        }
-
         private void PageLbOnPreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
             if (e.KeyCode == Keys.Tab)
@@ -462,8 +429,6 @@ namespace BookProject.WinForms
             {
                 page_lb.Items.Add(page.ImageFile);
             }
-
-            titleListControl1.UpdateTitleList(_bookVm.Book, null);
         }
 
         private void OnSaveBookClick(object? sender, EventArgs e)
@@ -488,7 +453,7 @@ namespace BookProject.WinForms
             if (e.Button == MouseButtons.Left)
             {
                 var originalPoint = pictureBox1.ToOriginalPoint(e.Location);
-                var editBlock = _bookVm.CurrentPage.GetEditBlock();
+                var editBlock = _bookVm.SelectedBlock;
                 if (editBlock != null)
                 {
                     var dragPointLabel = DragPointLabelResolver.GetDragLabelAtPoint(editBlock, pictureBox1, e.Location);
@@ -501,7 +466,7 @@ namespace BookProject.WinForms
 
                 _dragActivity = null;
                 var blockAtCursor = _bookVm.CurrentPage.GetAllBlocks().FirstOrDefault(b => b.Rectangle.Contains(originalPoint));
-                _bookVm.SetEditBlock(blockAtCursor, _bookVm.CurrentPage);
+                _bookVm.SetBlockSelected(blockAtCursor);
             }
         }
 
@@ -602,10 +567,8 @@ namespace BookProject.WinForms
                 MessageBox.Show("Image file not found", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
-            _bookVm.CurrentPage = _bookVm.Book.GetPage(fileName);
-            _bookVm.OriginalPageBitmap = ImageUtility.Load(imageFile);
+            _bookVm.SetBlockSelected(_bookVm.Book.GetPage(fileName));
             pictureBox1.Image = _bookVm.OriginalPageBitmap;
-            _bookVm.SetEditBlock(null, _bookVm.CurrentPage);
         }
 
         private void GenerateFb2Click(object sender, EventArgs e)

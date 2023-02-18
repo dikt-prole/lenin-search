@@ -1,28 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using BookProject.Core.Models.Domain;
+using BookProject.Core.Utilities;
 
 namespace BookProject.Core.Models.ViewModel
 {
     public class BookViewModel
     {
-        public EventHandler<BlockEventArgs> EditBlockSelectionChanged;
+        public EventHandler<Block> SelectedBlockChanged;
 
-        public EventHandler<BlockEventArgs> BlockAdded;
+        public EventHandler<Block> BlockAdded;
 
-        public EventHandler<BlockEventArgs> BlockRemoved;
+        public EventHandler<Block> BlockRemoved;
 
-        public EventHandler<BlockEventArgs> BlockModified;
+        public EventHandler<Block> BlockModified;
 
         public Book Book { get; set; }
-        public Page CurrentPage { get; set; }
+        public Page CurrentPage => GetBlockPage(SelectedBlock);
         public Point? OriginalSelectionStartPoint { get; set; }
         public Point? PbSelectionStartPoint { get; set; }
         public Point OriginalMouseAt { get; set; }
         public Point PictureBoxMouseAt { get; set; }
-        public Bitmap OriginalPageBitmap { get; set; }
+        public Bitmap OriginalPageBitmap { get; private set; }
+        public Block SelectedBlock { get; private set; }
 
         public void AddBlock(Block block, Page page, bool setEdit = true)
         {
@@ -47,10 +50,10 @@ namespace BookProject.Core.Models.ViewModel
                 page.Lines.Add(line);
             }
 
-            BlockAdded?.Invoke(this, new BlockEventArgs(page, block));
+            BlockAdded?.Invoke(this, block);
             if (setEdit)
             {
-                SetEditBlock(block, page);
+                SetBlockSelected(block);
             }
         }
 
@@ -81,7 +84,7 @@ namespace BookProject.Core.Models.ViewModel
                 page.Lines.Remove(line);
             }
 
-            BlockRemoved?.Invoke(this, new BlockEventArgs(page, block));
+            BlockRemoved?.Invoke(this, block);
             if (setEdit)
             {
                 SetNextEditBlock(page);
@@ -96,7 +99,7 @@ namespace BookProject.Core.Models.ViewModel
 
             modifyAction(block);
 
-            BlockModified?.Invoke(this, new BlockEventArgs(page, block));
+            BlockModified?.Invoke(this, block);
         }
 
         public void SetPageBlocks<TBlock>(Page page, IEnumerable<TBlock> blocks) where TBlock : Block
@@ -137,14 +140,13 @@ namespace BookProject.Core.Models.ViewModel
             }
         }
 
-        public void SetEditBlock(Block block, Page page)
+        public void SetBlockSelected(Block block)
         {
-            foreach (var b in page.GetAllBlocks())
-            {
-                b.State = b == block ? BlockState.Edit : BlockState.Normal;
-            }
-
-            EditBlockSelectionChanged?.Invoke(this, new BlockEventArgs(page, block));
+            SelectedBlock = block;
+            var page = GetBlockPage(block);
+            var imageFile = Path.Combine(Book.Folder, $"{page.ImageFile}.jpg");
+            OriginalPageBitmap = ImageUtility.Load(imageFile);
+            SelectedBlockChanged?.Invoke(this, block);
         }
 
         public void SetNextEditBlock(Page page)
@@ -153,17 +155,24 @@ namespace BookProject.Core.Models.ViewModel
 
             if (blocks.Count == 0) return;
 
-            var editIndex = blocks.FindIndex(b => b.State == BlockState.Edit);
+            var editIndex = blocks.FindIndex(b => b == SelectedBlock);
 
             if (editIndex == -1)
             {
-                SetEditBlock(blocks[0], page);
+                SetBlockSelected(blocks[0]);
                 return;
             }
 
             var nextEditIndex = (editIndex + 1) % blocks.Count;
 
-            SetEditBlock(blocks[nextEditIndex], page);
+            SetBlockSelected(blocks[nextEditIndex]);
+        }
+
+        public Page GetBlockPage(Block block)
+        {
+            if (block == null) return null;
+
+            return Book.Pages?.FirstOrDefault(p => p.GetAllBlocks().Contains(block));
         }
     }
 }

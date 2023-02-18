@@ -18,8 +18,8 @@ namespace BookProject.WinForms.PageActions.AddBlock
         public void Execute(BookViewModel bookVm)
         {
             var blockRect = new Rectangle(
-                (bookVm.CurrentPage.Width - _width) / 2, 
-                (bookVm.CurrentPage.Height - _height) / 2, 
+                (bookVm.CurrentPage.Rectangle.Width - _width) / 2, 
+                (bookVm.CurrentPage.Rectangle.Height - _height) / 2, 
                 _width, 
                 _height);
 

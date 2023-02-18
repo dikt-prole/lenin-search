@@ -2,6 +2,7 @@
 {
     public enum SearchMode
     {
-        Paragraph = 0, Heading = 1
+        Paragraph = 0, 
+        Heading = 1
     }
 }

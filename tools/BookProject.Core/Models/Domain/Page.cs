@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace BookProject.Core.Models.Domain
 {
-    public class Page
+    public class Page : Block
     {
         [JsonProperty("ibl")]
         public List<ImageBlock> ImageBlocks { get; set; }
@@ -26,18 +26,12 @@ namespace BookProject.Core.Models.Domain
         [JsonProperty("ifl")]
         public string ImageFile { get; set; }
 
-        [JsonProperty("wdt")]
-        public int Width { get; set; }
-
-        [JsonProperty("hgt")]
-        public int Height { get; set; }
-
         [JsonIgnore]
         public int Index => int.Parse(new string(ImageFile.Where(char.IsNumber).ToArray()));
 
         public IEnumerable<Block> GetAllBlocks()
         {
-            var blocks = new List<Block>();
+            var blocks = new List<Block> { this };
 
             if (ImageBlocks?.Any() == true)
             {
@@ -77,14 +71,11 @@ namespace BookProject.Core.Models.Domain
                 TitleBlocks = new List<TitleBlock>(),
                 CommentLinkBlocks = new List<CommentLinkBlock>(),
                 GarbageBlocks = new List<GarbageBlock>(),
-                Width = image.Width,
-                Height = image.Height
+                TopLeftY = 0,
+                TopLeftX = 0,
+                BottomRightX = image.Width,
+                BottomRightY = image.Height
             };
-        }
-
-        public Block GetEditBlock()
-        {
-            return GetAllBlocks().FirstOrDefault(b => b.State == BlockState.Edit);
         }
     }
 }

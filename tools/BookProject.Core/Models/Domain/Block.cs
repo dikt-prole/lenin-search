@@ -24,9 +24,6 @@ namespace BookProject.Core.Models.Domain
         [JsonProperty("bry")]
         public int BottomRightY { get; set; }
 
-        [JsonProperty("stt")]
-        public BlockState State { get; set; }
-
         [JsonIgnore]
         public Rectangle Rectangle => new Rectangle(TopLeftX, TopLeftY, BottomRightX - TopLeftX, BottomRightY - TopLeftY);
 

@@ -43,15 +43,9 @@ namespace BookProject.WinForms
             this.bookFolder_tb = new System.Windows.Forms.TextBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.detectImageControl1 = new BookProject.WinForms.Controls.Detect.DetectImageControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.detectTitleControl1 = new BookProject.WinForms.Controls.Detect.DetectTitleControl();
             this.tabPage4 = new System.Windows.Forms.TabPage();
-            this.detectCommentLinkNumberControl1 = new BookProject.WinForms.Controls.Detect.DetectCommentLinkNumberControl();
             this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.detectGarbageControl1 = new BookProject.WinForms.Controls.Detect.DetectGarbageControl();
-            this.tabPage5 = new System.Windows.Forms.TabPage();
-            this.titleListControl1 = new BookProject.WinForms.Controls.TitleListControl();
             this.tabPage6 = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.generateLines_btn = new System.Windows.Forms.Button();
@@ -62,11 +56,6 @@ namespace BookProject.WinForms
             this.tableLayoutPanel5.SuspendLayout();
             this.tableLayoutPanel7.SuspendLayout();
             this.tabControl1.SuspendLayout();
-            this.tabPage1.SuspendLayout();
-            this.tabPage2.SuspendLayout();
-            this.tabPage4.SuspendLayout();
-            this.tabPage3.SuspendLayout();
-            this.tabPage5.SuspendLayout();
             this.tabPage6.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
@@ -195,7 +184,6 @@ namespace BookProject.WinForms
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage4);
             this.tabControl1.Controls.Add(this.tabPage3);
-            this.tabControl1.Controls.Add(this.tabPage5);
             this.tabControl1.Controls.Add(this.tabPage6);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(1, 199);
@@ -207,7 +195,6 @@ namespace BookProject.WinForms
             // 
             // tabPage1
             // 
-            this.tabPage1.Controls.Add(this.detectImageControl1);
             this.tabPage1.Location = new System.Drawing.Point(4, 24);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
@@ -216,17 +203,8 @@ namespace BookProject.WinForms
             this.tabPage1.Text = "Detect Image";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
-            // detectImageControl1
-            // 
-            this.detectImageControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.detectImageControl1.Location = new System.Drawing.Point(3, 3);
-            this.detectImageControl1.Name = "detectImageControl1";
-            this.detectImageControl1.Size = new System.Drawing.Size(484, 447);
-            this.detectImageControl1.TabIndex = 0;
-            // 
             // tabPage2
             // 
-            this.tabPage2.Controls.Add(this.detectTitleControl1);
             this.tabPage2.Location = new System.Drawing.Point(4, 24);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
@@ -235,17 +213,8 @@ namespace BookProject.WinForms
             this.tabPage2.Text = "Detect Title";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
-            // detectTitleControl1
-            // 
-            this.detectTitleControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.detectTitleControl1.Location = new System.Drawing.Point(3, 3);
-            this.detectTitleControl1.Name = "detectTitleControl1";
-            this.detectTitleControl1.Size = new System.Drawing.Size(484, 447);
-            this.detectTitleControl1.TabIndex = 0;
-            // 
             // tabPage4
             // 
-            this.tabPage4.Controls.Add(this.detectCommentLinkNumberControl1);
             this.tabPage4.Location = new System.Drawing.Point(4, 24);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
@@ -254,17 +223,8 @@ namespace BookProject.WinForms
             this.tabPage4.Text = "Detect Comment Links";
             this.tabPage4.UseVisualStyleBackColor = true;
             // 
-            // detectCommentLinkNumberControl1
-            // 
-            this.detectCommentLinkNumberControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.detectCommentLinkNumberControl1.Location = new System.Drawing.Point(3, 3);
-            this.detectCommentLinkNumberControl1.Name = "detectCommentLinkNumberControl1";
-            this.detectCommentLinkNumberControl1.Size = new System.Drawing.Size(484, 447);
-            this.detectCommentLinkNumberControl1.TabIndex = 0;
-            // 
             // tabPage3
             // 
-            this.tabPage3.Controls.Add(this.detectGarbageControl1);
             this.tabPage3.Location = new System.Drawing.Point(4, 24);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
@@ -272,33 +232,6 @@ namespace BookProject.WinForms
             this.tabPage3.TabIndex = 5;
             this.tabPage3.Text = "Detect Garbage";
             this.tabPage3.UseVisualStyleBackColor = true;
-            // 
-            // detectGarbageControl1
-            // 
-            this.detectGarbageControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.detectGarbageControl1.Location = new System.Drawing.Point(3, 3);
-            this.detectGarbageControl1.Name = "detectGarbageControl1";
-            this.detectGarbageControl1.Size = new System.Drawing.Size(484, 447);
-            this.detectGarbageControl1.TabIndex = 0;
-            // 
-            // tabPage5
-            // 
-            this.tabPage5.Controls.Add(this.titleListControl1);
-            this.tabPage5.Location = new System.Drawing.Point(4, 24);
-            this.tabPage5.Name = "tabPage5";
-            this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage5.Size = new System.Drawing.Size(490, 453);
-            this.tabPage5.TabIndex = 6;
-            this.tabPage5.Text = "Titles";
-            this.tabPage5.UseVisualStyleBackColor = true;
-            // 
-            // titleListControl1
-            // 
-            this.titleListControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.titleListControl1.Location = new System.Drawing.Point(3, 3);
-            this.titleListControl1.Name = "titleListControl1";
-            this.titleListControl1.Size = new System.Drawing.Size(484, 447);
-            this.titleListControl1.TabIndex = 9;
             // 
             // tabPage6
             // 
@@ -381,11 +314,6 @@ namespace BookProject.WinForms
             this.tableLayoutPanel7.ResumeLayout(false);
             this.tableLayoutPanel7.PerformLayout();
             this.tabControl1.ResumeLayout(false);
-            this.tabPage1.ResumeLayout(false);
-            this.tabPage2.ResumeLayout(false);
-            this.tabPage4.ResumeLayout(false);
-            this.tabPage3.ResumeLayout(false);
-            this.tabPage5.ResumeLayout(false);
             this.tabPage6.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -395,7 +323,6 @@ namespace BookProject.WinForms
         #endregion
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
         private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.ListBox page_lb;
         private System.Windows.Forms.TextBox bookFolder_tb;
         private System.Windows.Forms.Button openBookFolder_btn;
         private System.Windows.Forms.Button generateLines_btn;
@@ -410,13 +337,12 @@ namespace BookProject.WinForms
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.TabPage tabPage4;
         private System.Windows.Forms.TabPage tabPage3;
-        private System.Windows.Forms.TabPage tabPage5;
         private DetectImageControl detectImageControl1;
         private DetectTitleControl detectTitleControl1;
         private DetectCommentLinkNumberControl detectCommentLinkNumberControl1;
         private DetectGarbageControl detectGarbageControl1;
         private System.Windows.Forms.Panel blockDetails_panel;
-        private TitleListControl titleListControl1;
         private System.Windows.Forms.TabPage tabPage6;
+        private System.Windows.Forms.ListBox page_lb;
     }
 }

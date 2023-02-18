@@ -1,5 +1,4 @@
-﻿using BookProject.Core.Models.Domain;
-using BookProject.Core.Models.ViewModel;
+﻿using BookProject.Core.Models.ViewModel;
 
 namespace BookProject.WinForms.PageActions.Clipboard
 {
@@ -7,7 +6,7 @@ namespace BookProject.WinForms.PageActions.Clipboard
     {
         public override void Execute(BookViewModel bookVm)
         {
-            ProtoBlock = bookVm.CurrentPage.GetEditBlock();
+            ProtoBlock = bookVm.SelectedBlock;
         }
     }
 }
