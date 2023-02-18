@@ -5,7 +5,6 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using Accord.Math;
 using BookProject.Core.Detectors;
 using BookProject.Core.ImageRendering;
 using BookProject.Core.Models.Domain;
@@ -14,7 +13,6 @@ using BookProject.Core.Settings;
 using BookProject.Core.Utilities;
 using BookProject.WinForms.Controls.BlockDetails;
 using BookProject.WinForms.DragActivities;
-using BookProject.WinForms.Model;
 using BookProject.WinForms.PageActions;
 
 namespace BookProject.WinForms
@@ -51,8 +49,6 @@ namespace BookProject.WinForms
             _bookVm.BlockAdded += BlockAdded;
             _bookVm.BlockRemoved += BlockRemoved;
             _bookVm.BlockModified += BlockModified;
-
-            page_lb.SelectedIndexChanged += PageLbOnSelectedIndexChanged;
 
             pictureBox1.Paint += PictureBox1OnPaint;
             pictureBox1.MouseDown += PictureBox1OnMouseDown;
@@ -133,7 +129,6 @@ namespace BookProject.WinForms
             };
 
             pictureBox1.PreviewKeyDown += PictureBox1OnPreviewKeyDown;
-            page_lb.PreviewKeyDown += PageLbOnPreviewKeyDown;
 
             _commentLinkBlockDetailsControl = new CommentLinkBlockDetailsControl();
             _titleBlockDetailsControl = new TitleBlockDetailsControl { OcrUtility = _ocrUtility };
@@ -186,32 +181,6 @@ namespace BookProject.WinForms
                 pictureBox1.Refresh();
             }
         }
-        private void PageLbOnPreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
-        {
-            if (e.KeyCode == Keys.Tab)
-            {
-                pictureBox1.Focus();
-                PictureBox1OnPreviewKeyDown(pictureBox1, e);
-            }
-
-            if (e.KeyCode == Keys.W)
-            {
-                e.IsInputKey = true;
-                if (page_lb.SelectedIndex > 0)
-                {
-                    page_lb.SelectedIndex -= 1;
-                }
-            }
-
-            if (e.KeyCode == Keys.S)
-            {
-                e.IsInputKey = true;
-                if (page_lb.SelectedIndex < page_lb.Items.Count - 1)
-                {
-                    page_lb.SelectedIndex += 1;
-                }
-            }
-        }
 
         private void PictureBox1OnPreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
@@ -220,12 +189,6 @@ namespace BookProject.WinForms
             {
                 e.IsInputKey = true;
                 pageAction.Execute(_bookVm);
-            }
-
-            if (e.KeyCode == Keys.W || e.KeyCode == Keys.S)
-            {
-                page_lb.Focus();
-                PageLbOnPreviewKeyDown(sender, e);
             }
         }
 
@@ -423,12 +386,7 @@ namespace BookProject.WinForms
 
             bookFolder_tb.Text = dialog.SelectedPath;
 
-            page_lb.Items.Clear();
-
-            foreach (var page in _bookVm.Book.Pages.OrderBy(p => p.Index))
-            {
-                page_lb.Items.Add(page.ImageFile);
-            }
+            blockListControl1.SetBookVm(_bookVm);
         }
 
         private void OnSaveBookClick(object? sender, EventArgs e)
@@ -554,21 +512,6 @@ namespace BookProject.WinForms
             if (_bookVm.CurrentPage == null) return;
 
             _imageRenderer.Render(_bookVm.OriginalPageBitmap, e.Graphics);
-        }
-
-        private void PageLbOnSelectedIndexChanged(object? sender, EventArgs e)
-        {
-            var fileName = page_lb.SelectedItem as string;
-            if (fileName == null) return;
-
-            var imageFile = Directory.GetFiles(bookFolder_tb.Text).FirstOrDefault(f => Path.GetFileNameWithoutExtension(f) == fileName);
-            if (imageFile == null)
-            {
-                MessageBox.Show("Image file not found", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            _bookVm.SetBlockSelected(_bookVm.Book.GetPage(fileName));
-            pictureBox1.Image = _bookVm.OriginalPageBitmap;
         }
 
         private void GenerateFb2Click(object sender, EventArgs e)

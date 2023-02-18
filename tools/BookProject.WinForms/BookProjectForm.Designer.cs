@@ -34,7 +34,6 @@ namespace BookProject.WinForms
         {
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.page_lb = new System.Windows.Forms.ListBox();
             this.tableLayoutPanel5 = new System.Windows.Forms.TableLayoutPanel();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.tableLayoutPanel7 = new System.Windows.Forms.TableLayoutPanel();
@@ -51,6 +50,7 @@ namespace BookProject.WinForms
             this.generateLines_btn = new System.Windows.Forms.Button();
             this.generateFb2_btn = new System.Windows.Forms.Button();
             this.blockDetails_panel = new System.Windows.Forms.Panel();
+            this.blockListControl1 = new BookProject.WinForms.Controls.BlockListControl();
             this.tableLayoutPanel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.tableLayoutPanel5.SuspendLayout();
@@ -63,13 +63,12 @@ namespace BookProject.WinForms
             // tableLayoutPanel3
             // 
             this.tableLayoutPanel3.ColumnCount = 3;
-            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 180F));
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 300F));
             this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 500F));
-            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel3.Controls.Add(this.pictureBox1, 1, 0);
-            this.tableLayoutPanel3.Controls.Add(this.page_lb, 0, 0);
             this.tableLayoutPanel3.Controls.Add(this.tableLayoutPanel5, 2, 0);
+            this.tableLayoutPanel3.Controls.Add(this.blockListControl1, 0, 0);
             this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel3.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel3.Margin = new System.Windows.Forms.Padding(0);
@@ -83,22 +82,12 @@ namespace BookProject.WinForms
             // 
             this.pictureBox1.BackColor = System.Drawing.Color.Silver;
             this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pictureBox1.Location = new System.Drawing.Point(183, 3);
+            this.pictureBox1.Location = new System.Drawing.Point(303, 3);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(484, 675);
+            this.pictureBox1.Size = new System.Drawing.Size(364, 675);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox1.TabIndex = 1;
             this.pictureBox1.TabStop = false;
-            // 
-            // page_lb
-            // 
-            this.page_lb.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.page_lb.FormattingEnabled = true;
-            this.page_lb.ItemHeight = 15;
-            this.page_lb.Location = new System.Drawing.Point(3, 3);
-            this.page_lb.Name = "page_lb";
-            this.page_lb.Size = new System.Drawing.Size(174, 675);
-            this.page_lb.TabIndex = 1;
             // 
             // tableLayoutPanel5
             // 
@@ -300,6 +289,14 @@ namespace BookProject.WinForms
             this.blockDetails_panel.Size = new System.Drawing.Size(500, 150);
             this.blockDetails_panel.TabIndex = 8;
             // 
+            // blockListControl1
+            // 
+            this.blockListControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.blockListControl1.Location = new System.Drawing.Point(3, 3);
+            this.blockListControl1.Name = "blockListControl1";
+            this.blockListControl1.Size = new System.Drawing.Size(294, 675);
+            this.blockListControl1.TabIndex = 7;
+            // 
             // BookProjectForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -343,6 +340,6 @@ namespace BookProject.WinForms
         private DetectGarbageControl detectGarbageControl1;
         private System.Windows.Forms.Panel blockDetails_panel;
         private System.Windows.Forms.TabPage tabPage6;
-        private System.Windows.Forms.ListBox page_lb;
+        private BlockListControl blockListControl1;
     }
 }

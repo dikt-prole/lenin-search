@@ -23,7 +23,7 @@ namespace BookProject.WinForms.Controls
             block_lb.DrawItem += OnDrawItem;
         }
 
-        public void SetBook(BookViewModel bookVm)
+        public void SetBookVm(BookViewModel bookVm)
         {
             if (_bookVm != null)
             {
