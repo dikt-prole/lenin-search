@@ -12,12 +12,12 @@ namespace BookProject.WinForms.PageActions.Resize
             _step = step;
         }
 
-        public void Execute(BookViewModel bookVm)
+        public void Execute(object sender, BookViewModel bookVm)
         {
             var selectedBlock = bookVm.SelectedBlock;
             if (selectedBlock != null && !(selectedBlock is Page))
             {
-                bookVm.ModifyBlock(selectedBlock, b =>
+                bookVm.ModifyBlock(sender, selectedBlock, b =>
                 {
                     b.BottomRightX -= _step;
                     b.TopLeftX += _step;

@@ -5,9 +5,9 @@ namespace BookProject.WinForms.PageActions
 {
     public class SetNextEditBlockPageAction : IPageAction
     {
-        public void Execute(BookViewModel bookVm)
+        public void Execute(object sender, BookViewModel bookVm)
         {
-            bookVm.SetNextEditBlock(bookVm.CurrentPage);
+            bookVm.SetNextEditBlock(sender, bookVm.CurrentPage);
         }
     }
 }

@@ -27,7 +27,7 @@ namespace BookProject.Core.Models.ViewModel
         public Bitmap OriginalPageBitmap { get; private set; }
         public Block SelectedBlock { get; private set; }
 
-        public void AddBlock(Block block, Page page, bool setEdit = true)
+        public void AddBlock(object sender, Block block, Page page, bool setEdit = true)
         {
             if (block is ImageBlock imageBlock)
             {
@@ -50,14 +50,14 @@ namespace BookProject.Core.Models.ViewModel
                 page.Lines.Add(line);
             }
 
-            BlockAdded?.Invoke(this, block);
+            BlockAdded?.Invoke(sender, block);
             if (setEdit)
             {
-                SetBlockSelected(block);
+                SetBlockSelected(sender, block);
             }
         }
 
-        public void RemoveBlock(Block block, bool setEdit = true)
+        public void RemoveBlock(object sender, Block block, bool setEdit = true)
         {
             var page = Book.Pages.FirstOrDefault(p => p.GetAllBlocks().Count(b => b == block) > 0);
 
@@ -84,14 +84,14 @@ namespace BookProject.Core.Models.ViewModel
                 page.Lines.Remove(line);
             }
 
-            BlockRemoved?.Invoke(this, block);
+            BlockRemoved?.Invoke(sender, block);
             if (setEdit)
             {
-                SetNextEditBlock(page);
+                SetNextEditBlock(sender, page);
             }
         }
 
-        public void ModifyBlock<TBlock>(TBlock block, Action<TBlock> modifyAction)  where TBlock : Block
+        public void ModifyBlock<TBlock>(object sender, TBlock block, Action<TBlock> modifyAction)  where TBlock : Block
         {
             var page = Book.Pages.FirstOrDefault(p => p.GetAllBlocks().Count(b => b == block) > 0);
 
@@ -99,10 +99,10 @@ namespace BookProject.Core.Models.ViewModel
 
             modifyAction(block);
 
-            BlockModified?.Invoke(this, block);
+            BlockModified?.Invoke(sender, block);
         }
 
-        public void SetPageBlocks<TBlock>(Page page, IEnumerable<TBlock> blocks) where TBlock : Block
+        public void SetPageBlocks<TBlock>(object sender, Page page, IEnumerable<TBlock> blocks) where TBlock : Block
         {
             IEnumerable<Block> removeBlocks = null;
 
@@ -130,26 +130,26 @@ namespace BookProject.Core.Models.ViewModel
             {
                 foreach (var b in removeBlocks)
                 {
-                    RemoveBlock(b, false);
+                    RemoveBlock(sender, b, false);
                 }
             }
 
             foreach (var block in blocks)
             {
-                AddBlock(block, page);
+                AddBlock(sender, block, page);
             }
         }
 
-        public void SetBlockSelected(Block block)
+        public void SetBlockSelected(object sender, Block block)
         {
             SelectedBlock = block;
             var page = GetBlockPage(block);
             var imageFile = Path.Combine(Book.Folder, $"{page.ImageFile}.jpg");
             OriginalPageBitmap = ImageUtility.Load(imageFile);
-            SelectedBlockChanged?.Invoke(this, block);
+            SelectedBlockChanged?.Invoke(sender, block);
         }
 
-        public void SetNextEditBlock(Page page)
+        public void SetNextEditBlock(object sender, Page page)
         {
             var blocks = page.GetAllBlocks().OrderBy(b => b.TopLeftY).ThenBy(b => b.TopLeftX).ToList();
 
@@ -159,13 +159,13 @@ namespace BookProject.Core.Models.ViewModel
 
             if (editIndex == -1)
             {
-                SetBlockSelected(blocks[0]);
+                SetBlockSelected(sender, blocks[0]);
                 return;
             }
 
             var nextEditIndex = (editIndex + 1) % blocks.Count;
 
-            SetBlockSelected(blocks[nextEditIndex]);
+            SetBlockSelected(sender, blocks[nextEditIndex]);
         }
 
         public Page GetBlockPage(Block block)

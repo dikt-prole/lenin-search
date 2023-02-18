@@ -17,7 +17,7 @@ namespace BookProject.WinForms.Controls.BlockDetails
             {
                 if (_commentLinkBlock != null)
                 {
-                    _bookVm.ModifyBlock(_commentLinkBlock, b =>
+                    _bookVm.ModifyBlock(this, _commentLinkBlock, b =>
                     {
                         b.CommentText = commentText_tb.Text;
                     });

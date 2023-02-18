@@ -7,6 +7,6 @@ namespace BookProject.WinForms.PageActions.Clipboard
     public abstract class BlockClipboardPageAction : IPageAction
     {
         protected static Block ProtoBlock { get; set; }
-        public abstract void Execute(BookViewModel bookVm);
+        public abstract void Execute(object sender, BookViewModel bookVm);
     }
 }

@@ -21,7 +21,7 @@ namespace BookProject.WinForms.Controls.BlockDetails
             {
                 if (_titleBlock != null)
                 {
-                    _bookVm.ModifyBlock(_titleBlock, b =>
+                    _bookVm.ModifyBlock(this, _titleBlock, b =>
                     {
                         b.Text = text_tb.Text;
                     });
@@ -35,7 +35,7 @@ namespace BookProject.WinForms.Controls.BlockDetails
             {
                 if (_titleBlock != null)
                 {
-                    _bookVm.ModifyBlock(_titleBlock, b =>
+                    _bookVm.ModifyBlock(this, _titleBlock, b =>
                     {
                         _titleBlock.Level = (int)level_nud.Value;
                     });
@@ -46,7 +46,7 @@ namespace BookProject.WinForms.Controls.BlockDetails
             {
                 if (_titleBlock != null && OcrUtility != null)
                 {
-                    _bookVm.ModifyBlock(_titleBlock, b =>
+                    _bookVm.ModifyBlock(this, _titleBlock, b =>
                     {
                         using var ocrBitmap = ImageUtility.Crop(_bookVm.OriginalPageBitmap, _titleBlock.Rectangle);
                         using var ocrStream = new MemoryStream();
@@ -62,7 +62,7 @@ namespace BookProject.WinForms.Controls.BlockDetails
             {
                 if (_titleBlock != null)
                 {
-                    _bookVm.ModifyBlock(_titleBlock, b =>
+                    _bookVm.ModifyBlock(this, _titleBlock, b =>
                     {
                         b.Text = b.Text?.ToLower();
                         text_tb.Text = b.Text;
@@ -73,7 +73,7 @@ namespace BookProject.WinForms.Controls.BlockDetails
             {
                 if (_titleBlock != null)
                 {
-                    _bookVm.ModifyBlock(_titleBlock, b =>
+                    _bookVm.ModifyBlock(this, _titleBlock, b =>
                     {
                         b.Text = b.Text?.ToUpper();
                         text_tb.Text = b.Text;

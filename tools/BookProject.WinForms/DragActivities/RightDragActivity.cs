@@ -15,9 +15,9 @@ namespace BookProject.WinForms.DragActivities
             _block = block;
         }
 
-        public void Perform(PictureBox pictureBox, MouseEventArgs args)
+        public void Perform(object sender, PictureBox pictureBox, MouseEventArgs args)
         {
-            _bookVm.ModifyBlock(_block, b =>
+            _bookVm.ModifyBlock(sender, _block, b =>
             {
                 var originalPoint = pictureBox.ToOriginalPoint(args.Location);
                 b.BottomRightX = originalPoint.X;

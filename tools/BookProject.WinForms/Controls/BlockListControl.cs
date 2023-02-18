@@ -45,24 +45,34 @@ namespace BookProject.WinForms.Controls
 
         private void OnBlockAction(object sender, Block e)
         {
-            RefreshList(_bookVm.SelectedBlock);
+            if (sender != this)
+            {
+                RefreshList(_bookVm.SelectedBlock);
+            }
         }
 
         private void OnDrawItem(object sender, DrawItemEventArgs e)
         {
-            var blockListItem = block_lb.Items[e.Index] as BlockListItem;
-            var isSelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
-
             e.DrawBackground();
-            using var backgroundBrush = isSelected 
-                ? new SolidBrush(Color.Blue) 
-                : new SolidBrush(blockListItem.GetColor());
-            using var fontBrush = isSelected
-                ? new SolidBrush(Color.White)
-                : new SolidBrush(Color.Black);
 
-            e.Graphics.FillRectangle(backgroundBrush, e.Bounds);
-            e.Graphics.DrawString(blockListItem.ToString(), e.Font, fontBrush, 0, 0);
+            if (e.Index >= 0 && e.Index < block_lb.Items.Count)
+            {
+                var itemRectangle = block_lb.GetItemRectangle(e.Index);
+
+
+                var blockListItem = block_lb.Items[e.Index] as BlockListItem;
+                var isSelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+
+                using var backgroundBrush = isSelected
+                    ? new SolidBrush(Color.FromArgb(255, 0, 95, 184))
+                    : new SolidBrush(blockListItem.GetColor());
+                using var fontBrush = isSelected
+                    ? new SolidBrush(Color.White)
+                    : new SolidBrush(Color.Black);
+
+                e.Graphics.FillRectangle(backgroundBrush, itemRectangle);
+                e.Graphics.DrawString(blockListItem.ToString(), e.Font, fontBrush, itemRectangle.Location);
+            }
 
             e.DrawFocusRectangle();
         }
@@ -90,7 +100,7 @@ namespace BookProject.WinForms.Controls
         private void OnSelectedIndexChanged(object sender, EventArgs e)
         {
             var blockListItem = block_lb.SelectedItem as BlockListItem;
-            _bookVm.SetBlockSelected(blockListItem.Block);
+            _bookVm.SetBlockSelected(this, blockListItem.Block);
         }
 
         private IEnumerable<BlockListItem> GetBlockListItems(Book book)

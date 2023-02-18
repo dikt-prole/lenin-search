@@ -12,12 +12,12 @@ namespace BookProject.WinForms.PageActions.Move
             _step = step;
         }
 
-        public void Execute(BookViewModel bookVm)
+        public void Execute(object sender, BookViewModel bookVm)
         {
             var selectedBlock = bookVm.SelectedBlock;
             if (!(selectedBlock is Page) && selectedBlock != null)
             {
-                bookVm.ModifyBlock(selectedBlock, b =>
+                bookVm.ModifyBlock(sender, selectedBlock, b =>
                 {
                     b.TopLeftY += _step;
                     b.BottomRightY += _step;

@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Linq;
 using BookProject.Core.Misc;
 using BookProject.Core.Models.Domain;
 using BookProject.Core.Models.ViewModel;
@@ -22,7 +23,7 @@ namespace BookProject.Core.ImageRendering
                 return;
             }
 
-            var blocks = _bookVm.CurrentPage.GetAllBlocks();
+            var blocks = _bookVm.CurrentPage.GetAllBlocks().Where(b => !(b is Page)).ToArray();
             foreach (var block in blocks)
             {
                 if (block is TitleBlock titleBlock)

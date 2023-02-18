@@ -5,12 +5,12 @@ namespace BookProject.WinForms.PageActions
 {
     public class RemoveSelectedBlockPageAction : IPageAction
     {
-        public void Execute(BookViewModel bookVm)
+        public void Execute(object sender, BookViewModel bookVm)
         {
             var selectedBlock = bookVm.SelectedBlock;
             if (selectedBlock != null && !(selectedBlock is Page))
             {
-                bookVm.RemoveBlock(selectedBlock);
+                bookVm.RemoveBlock(sender, selectedBlock);
             }
         }
     }

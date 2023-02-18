@@ -15,7 +15,7 @@ namespace BookProject.WinForms.PageActions.AddBlock
             _height = height;
         }
 
-        public void Execute(BookViewModel bookVm)
+        public void Execute(object sender, BookViewModel bookVm)
         {
             var blockRect = new Rectangle(
                 (bookVm.CurrentPage.Rectangle.Width - _width) / 2, 
@@ -27,22 +27,22 @@ namespace BookProject.WinForms.PageActions.AddBlock
 
             if (blockType == typeof(ImageBlock))
             {
-                bookVm.AddBlock(ImageBlock.FromRectangle(blockRect), bookVm.CurrentPage);
+                bookVm.AddBlock(sender, ImageBlock.FromRectangle(blockRect), bookVm.CurrentPage);
             }
 
             if (blockType == typeof(TitleBlock))
             {
-                bookVm.AddBlock(TitleBlock.FromRectangle(blockRect), bookVm.CurrentPage);
+                bookVm.AddBlock(sender, TitleBlock.FromRectangle(blockRect), bookVm.CurrentPage);
             }
 
             if (blockType == typeof(GarbageBlock))
             {
-                bookVm.AddBlock(GarbageBlock.FromRectangle(blockRect), bookVm.CurrentPage);
+                bookVm.AddBlock(sender, GarbageBlock.FromRectangle(blockRect), bookVm.CurrentPage);
             }
 
             if (blockType == typeof(CommentLinkBlock))
             {
-                bookVm.AddBlock(CommentLinkBlock.FromRectangle(blockRect), bookVm.CurrentPage);
+                bookVm.AddBlock(sender, CommentLinkBlock.FromRectangle(blockRect), bookVm.CurrentPage);
             }
         }
     }

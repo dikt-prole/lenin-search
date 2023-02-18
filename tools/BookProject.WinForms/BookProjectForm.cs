@@ -188,7 +188,7 @@ namespace BookProject.WinForms
             if (pageAction != null)
             {
                 e.IsInputKey = true;
-                pageAction.Execute(_bookVm);
+                pageAction.Execute(this, _bookVm);
             }
         }
 
@@ -213,7 +213,7 @@ namespace BookProject.WinForms
                     .ToArray();
                 var garbageRects = new GarbageDetector()
                     .Detect(ImageUtility.Load(imageFile), detectGarbageControl1.GetSettings(), excludeRects, null);
-                _bookVm.SetPageBlocks(page, garbageRects.Select(GarbageBlock.FromRectangle));
+                _bookVm.SetPageBlocks(this, page, garbageRects.Select(GarbageBlock.FromRectangle));
                 progressBar1.Value = i + 1;
                 Application.DoEvents();
             }
@@ -241,7 +241,7 @@ namespace BookProject.WinForms
                     .ToArray();
                 var commentLinkRects = new CommentLinkDetector(new YandexVisionOcrUtility())
                     .Detect(ImageUtility.Load(imageFile), detectCommentLinkNumberControl1.GetSettings(), excludeRects, null);
-                _bookVm.SetPageBlocks(page, commentLinkRects.Select(GarbageBlock.FromRectangle));
+                _bookVm.SetPageBlocks(this, page, commentLinkRects.Select(GarbageBlock.FromRectangle));
                 progressBar1.Value = i + 1;
                 Application.DoEvents();
             }
@@ -266,7 +266,7 @@ namespace BookProject.WinForms
                 var imageFile = imageFiles[i];
                 var page = _bookVm.Book.GetPage(Path.GetFileNameWithoutExtension(imageFile));
                 var imageRects = new ImageDetector().Detect(ImageUtility.Load(imageFile), detectImageControl1.GetSettings(), null, null);
-                _bookVm.SetPageBlocks(page, imageRects.Select(ImageBlock.FromRectangle));
+                _bookVm.SetPageBlocks(this, page, imageRects.Select(ImageBlock.FromRectangle));
                 progressBar1.Value = i + 1;
                 Application.DoEvents();
             }
@@ -292,7 +292,7 @@ namespace BookProject.WinForms
                 var page = _bookVm.Book.GetPage(Path.GetFileNameWithoutExtension(imageFile));
                 var excludeRects = page.ImageBlocks.Select(b => b.Rectangle).ToArray();
                 var titleRects = new TitleDetector().Detect(ImageUtility.Load(imageFile), detectTitleControl1.GetSettings(), excludeRects, null);
-                _bookVm.SetPageBlocks(page, titleRects.Select(TitleBlock.FromRectangle));
+                _bookVm.SetPageBlocks(this, page, titleRects.Select(TitleBlock.FromRectangle));
                 progressBar1.Value = i + 1;
                 Application.DoEvents();
             }
@@ -424,7 +424,7 @@ namespace BookProject.WinForms
 
                 _dragActivity = null;
                 var blockAtCursor = _bookVm.CurrentPage.GetAllBlocks().FirstOrDefault(b => b.Rectangle.Contains(originalPoint));
-                _bookVm.SetBlockSelected(blockAtCursor);
+                _bookVm.SetBlockSelected(this, blockAtCursor);
             }
         }
 
@@ -465,16 +465,16 @@ namespace BookProject.WinForms
             var menu = new ContextMenuStrip();
 
             menu.Items.Add("Add Image Block", null,
-                (o, a) => _bookVm.AddBlock(ImageBlock.FromRectangle(originalRect), _bookVm.CurrentPage));
+                (o, a) => _bookVm.AddBlock(this, ImageBlock.FromRectangle(originalRect), _bookVm.CurrentPage));
 
             menu.Items.Add("Add Title Block", null,
-                (o, a) => _bookVm.AddBlock(TitleBlock.FromRectangle(originalRect), _bookVm.CurrentPage));
+                (o, a) => _bookVm.AddBlock(this, TitleBlock.FromRectangle(originalRect), _bookVm.CurrentPage));
 
             menu.Items.Add("Add Comment Link Block", null, 
-                (o, a) => _bookVm.AddBlock(CommentLinkBlock.FromRectangle(originalRect), _bookVm.CurrentPage));
+                (o, a) => _bookVm.AddBlock(this, CommentLinkBlock.FromRectangle(originalRect), _bookVm.CurrentPage));
 
             menu.Items.Add("Add Garbage Block", null, 
-                (o, a) => _bookVm.AddBlock(GarbageBlock.FromRectangle(originalRect), _bookVm.CurrentPage));
+                (o, a) => _bookVm.AddBlock(this, GarbageBlock.FromRectangle(originalRect), _bookVm.CurrentPage));
 
             menu.Items.Add("Recognize Text", null, async (o, a) =>
             {
@@ -503,7 +503,7 @@ namespace BookProject.WinForms
 
             if (_dragActivity != null)
             {
-                _dragActivity.Perform(pictureBox1, e);
+                _dragActivity.Perform(this, pictureBox1, e);
             }
         }
 
