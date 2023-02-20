@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using BookProject.Core.ImageRendering;
 using BookProject.Core.Models.Domain;
+using BookProject.Core.Settings;
 using BookProject.Core.Utilities;
 
 namespace BookProject.Core.Models.ViewModel
@@ -18,6 +20,10 @@ namespace BookProject.Core.Models.ViewModel
 
         public EventHandler<Block> BlockModified;
 
+        public EventHandler<IImageRenderer> ImageRendererChanged;
+
+        public EventHandler<BookProjectSettings> SettingsChanged;
+
         public Book Book { get; set; }
         public Page CurrentPage => GetBlockPage(SelectedBlock);
         public Point? OriginalSelectionStartPoint { get; set; }
@@ -26,6 +32,44 @@ namespace BookProject.Core.Models.ViewModel
         public Point PictureBoxMouseAt { get; set; }
         public Bitmap OriginalPageBitmap { get; private set; }
         public Block SelectedBlock { get; private set; }
+        public IImageRenderer ImageRenderer { get; private set; }
+        public BookProjectSettings Settings { get; private set; }
+
+        public IOcrUtility OcrUtility { get; } = new YandexVisionOcrUtility();
+
+        public void SetImageRenderer(object sender, IImageRenderer imageRenderer)
+        {
+            ImageRenderer = imageRenderer;
+            ImageRendererChanged?.Invoke(sender, imageRenderer);
+        }
+
+        public void SetAndSaveDetectImageSettings(object sender, DetectImageSettings settings)
+        {
+            Settings.ImageDetection = settings;
+            Settings.Save();
+            SettingsChanged?.Invoke(sender, Settings);
+        }
+
+        public void SetAndSaveDetectTitleSettings(object sender, DetectTitleSettings settings)
+        {
+            Settings.TitleDetection = settings;
+            Settings.Save();
+            SettingsChanged?.Invoke(sender, Settings);
+        }
+
+        public void SetAndSaveDetectGarbageSettings(object sender, DetectGarbageSettings settings)
+        {
+            Settings.GarbageDetection = settings;
+            Settings.Save();
+            SettingsChanged?.Invoke(sender, Settings);
+        }
+
+        public void SetAndSaveDetectCommentLinkSettings(object sender, DetectCommentLinkSettings settings)
+        {
+            Settings.CommentLinkDetection = settings;
+            Settings.Save();
+            SettingsChanged?.Invoke(sender, Settings);
+        }
 
         public void AddBlock(object sender, Block block, Page page, bool setEdit = true)
         {
@@ -146,6 +190,7 @@ namespace BookProject.Core.Models.ViewModel
             var page = GetBlockPage(block);
             var imageFile = Path.Combine(Book.Folder, $"{page.ImageFile}.jpg");
             OriginalPageBitmap = ImageUtility.Load(imageFile);
+            ImageRenderer = new PageStateRenderer(this);
             SelectedBlockChanged?.Invoke(sender, block);
         }
 
@@ -173,6 +218,17 @@ namespace BookProject.Core.Models.ViewModel
             if (block == null) return null;
 
             return Book.Pages?.FirstOrDefault(p => p.GetAllBlocks().Contains(block));
+        }
+
+        public static BookViewModel Initialize(string bookFolder)
+        {
+            var book = Book.Load(bookFolder);
+            var settings = BookProjectSettings.Load();
+            return new BookViewModel
+            {
+                Book = book,
+                Settings = settings
+            };
         }
     }
 }

@@ -1,19 +1,26 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
 using System.Windows.Forms;
+using BookProject.Core.Detectors;
+using BookProject.Core.ImageRendering;
+using BookProject.Core.Models.Domain;
+using BookProject.Core.Models.ViewModel;
 using BookProject.Core.Settings;
+using BookProject.Core.Utilities;
 
 namespace BookProject.WinForms.Controls.Detect
 {
     public partial class DetectTitleControl : UserControl
     {
-        public event EventHandler TestStart;
+        private BookViewModel _bookVm;
+        public void Bind(BookViewModel bookVm)
+        {
+            _bookVm = bookVm;
+            SetSettings(_bookVm.Settings.TitleDetection);
+        }
 
-        public event EventHandler TestEnd;
-
-        public event EventHandler Detect;
-
-        public event EventHandler Save;
-        public DetectTitleSettings GetSettings()
+        private DetectTitleSettings GetSettings()
         {
             return new DetectTitleSettings
             {
@@ -28,7 +35,7 @@ namespace BookProject.WinForms.Controls.Detect
             };
         }
 
-        public void SetSettings(DetectTitleSettings settings)
+        private void SetSettings(DetectTitleSettings settings)
         {
             minLeft_nud.Value = settings.MinLeft;
             minRight_nud.Value = settings.MinRight;
@@ -76,10 +83,67 @@ namespace BookProject.WinForms.Controls.Detect
             addPadding_nud.Maximum = 50;
             addPadding_nud.Value = 5;
 
-            test_btn.MouseDown += (sender, args) => TestStart?.Invoke(this, EventArgs.Empty);
-            test_btn.MouseUp += (sender, args) => TestEnd?.Invoke(this, EventArgs.Empty);
-            detect_btn.Click += (sender, args) => Detect?.Invoke(this, EventArgs.Empty);
-            save_btn.Click += (sender, args) => Save?.Invoke(this, EventArgs.Empty);
+            test_btn.MouseDown += TestBtnOnMouseDown;
+            test_btn.MouseUp += TestBtnOnMouseUp;
+            detect_btn.Click += DetectBtnOnClick;
+            save_btn.Click += SaveBtnOnClick;
+
+            progressBar1.Value = 0;
+        }
+
+        private void SaveBtnOnClick(object sender, EventArgs e)
+        {
+            if (_bookVm == null) return;
+
+            var settings = GetSettings();
+            _bookVm.SetAndSaveDetectTitleSettings(this, settings);
+            MessageBox.Show("Saved!", "Title detection settings", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void DetectBtnOnClick(object sender, EventArgs e)
+        {
+            if (_bookVm == null) return;
+
+            var dialog = new ImageScopeDialog();
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+
+            var imageFiles = dialog.GetMatchingImages(_bookVm.Book.Folder);
+
+            progressBar1.Minimum = 0;
+            progressBar1.Maximum = imageFiles.Length;
+            progressBar1.Value = 0;
+            var settings = GetSettings();
+
+            for (var i = 0; i < imageFiles.Length; i++)
+            {
+                var imageFile = imageFiles[i];
+                var page = _bookVm.Book.GetPage(Path.GetFileNameWithoutExtension(imageFile));
+                var excludeRects = page.ImageBlocks.Select(b => b.Rectangle).ToArray();
+                var titleRects = new TitleDetector().Detect(ImageUtility.Load(imageFile), settings, excludeRects, null);
+                _bookVm.SetPageBlocks(this, page, titleRects.Select(TitleBlock.FromRectangle));
+                progressBar1.Value = i + 1;
+                Application.DoEvents();
+            }
+
+            MessageBox.Show("Completed!", "Detect Titles", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            progressBar1.Value = 0;
+        }
+
+        private void TestBtnOnMouseUp(object sender, MouseEventArgs e)
+        {
+            if (_bookVm == null) return;
+
+            var renderer = new PageStateRenderer(_bookVm);
+            _bookVm.SetImageRenderer(this, renderer);
+        }
+
+        private void TestBtnOnMouseDown(object sender, MouseEventArgs e)
+        {
+            if (_bookVm == null) return;
+
+            var settings = GetSettings();
+            var renderer = new TestDetectTitleImageRenderer(settings);
+            _bookVm.SetImageRenderer(this, renderer);
         }
     }
 }

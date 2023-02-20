@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using BookProject.Core.Utilities;
@@ -31,7 +32,12 @@ namespace BookProject.Core.Models.Domain
 
         public IEnumerable<Block> GetAllBlocks()
         {
-            var blocks = new List<Block> { this };
+            return new[] { this }.Concat(GetNonPageBlocks());
+        }
+
+        public IEnumerable<Block> GetNonPageBlocks()
+        {
+            var blocks = new List<Block>();
 
             if (ImageBlocks?.Any() == true)
             {
@@ -59,6 +65,12 @@ namespace BookProject.Core.Models.Domain
             }
 
             return blocks;
+        }
+
+        public Block GetBlockAtPoint(Point p)
+        {
+            var blockAtPoint = GetNonPageBlocks().FirstOrDefault(b => b.Rectangle.Contains(p));
+            return blockAtPoint ?? this;
         }
 
         public static Page ConstructEmpty(string imageFile)

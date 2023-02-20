@@ -8,7 +8,7 @@ namespace BookProject.Core.Settings
     {
         public DetectImageSettings ImageDetection { get; set; }
         public DetectTitleSettings TitleDetection { get; set; }
-        public DetectCommentLinkNumberSettings CommentLinkDetection { get; set; }
+        public DetectCommentLinkSettings CommentLinkDetection { get; set; }
         public DetectGarbageSettings GarbageDetection { get; set; }
 
         public static BookProjectSettings Load()
@@ -58,7 +58,7 @@ namespace BookProject.Core.Settings
                     MinBottom = 100,
                     MinLeft = 100
                 },
-                CommentLinkDetection = new DetectCommentLinkNumberSettings
+                CommentLinkDetection = new DetectCommentLinkSettings
                 {
                     AllowedSymbols = "*1234567890",
                     LineGaussSigma1 = 16,

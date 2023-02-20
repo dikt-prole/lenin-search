@@ -1,6 +1,6 @@
 ﻿namespace BookProject.Core.Settings
 {
-    public class DetectCommentLinkNumberSettings
+    public class DetectCommentLinkSettings
     {
         public int MinWidth { get; set; }
         public int MinHeight { get; set; }

@@ -33,7 +33,6 @@ namespace BookProject.WinForms
         private void InitializeComponent()
         {
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tableLayoutPanel5 = new System.Windows.Forms.TableLayoutPanel();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.tableLayoutPanel7 = new System.Windows.Forms.TableLayoutPanel();
@@ -53,10 +52,10 @@ namespace BookProject.WinForms
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.generateLines_btn = new System.Windows.Forms.Button();
             this.generateFb2_btn = new System.Windows.Forms.Button();
-            this.blockDetails_panel = new System.Windows.Forms.Panel();
             this.blockListControl1 = new BookProject.WinForms.Controls.BlockListControl();
+            this.pageControl1 = new BookProject.WinForms.Controls.PageControl();
+            this.blockDetailsControl1 = new BookProject.WinForms.Controls.BlockDetailsControl();
             this.tableLayoutPanel3.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.tableLayoutPanel5.SuspendLayout();
             this.tableLayoutPanel7.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -74,9 +73,9 @@ namespace BookProject.WinForms
             this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 300F));
             this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 500F));
-            this.tableLayoutPanel3.Controls.Add(this.pictureBox1, 1, 0);
             this.tableLayoutPanel3.Controls.Add(this.tableLayoutPanel5, 2, 0);
             this.tableLayoutPanel3.Controls.Add(this.blockListControl1, 0, 0);
+            this.tableLayoutPanel3.Controls.Add(this.pageControl1, 1, 0);
             this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel3.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel3.Margin = new System.Windows.Forms.Padding(0);
@@ -86,17 +85,6 @@ namespace BookProject.WinForms
             this.tableLayoutPanel3.Size = new System.Drawing.Size(1170, 681);
             this.tableLayoutPanel3.TabIndex = 1;
             // 
-            // pictureBox1
-            // 
-            this.pictureBox1.BackColor = System.Drawing.Color.Silver;
-            this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pictureBox1.Location = new System.Drawing.Point(303, 3);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(364, 675);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox1.TabIndex = 1;
-            this.pictureBox1.TabStop = false;
-            // 
             // tableLayoutPanel5
             // 
             this.tableLayoutPanel5.ColumnCount = 1;
@@ -104,7 +92,7 @@ namespace BookProject.WinForms
             this.tableLayoutPanel5.Controls.Add(this.progressBar1, 0, 1);
             this.tableLayoutPanel5.Controls.Add(this.tableLayoutPanel7, 0, 0);
             this.tableLayoutPanel5.Controls.Add(this.tabControl1, 0, 3);
-            this.tableLayoutPanel5.Controls.Add(this.blockDetails_panel, 0, 2);
+            this.tableLayoutPanel5.Controls.Add(this.blockDetailsControl1, 0, 2);
             this.tableLayoutPanel5.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel5.Location = new System.Drawing.Point(670, 0);
             this.tableLayoutPanel5.Margin = new System.Windows.Forms.Padding(0);
@@ -323,16 +311,6 @@ namespace BookProject.WinForms
             this.generateFb2_btn.UseVisualStyleBackColor = true;
             this.generateFb2_btn.Click += new System.EventHandler(this.GenerateFb2Click);
             // 
-            // blockDetails_panel
-            // 
-            this.blockDetails_panel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.blockDetails_panel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.blockDetails_panel.Location = new System.Drawing.Point(0, 48);
-            this.blockDetails_panel.Margin = new System.Windows.Forms.Padding(0);
-            this.blockDetails_panel.Name = "blockDetails_panel";
-            this.blockDetails_panel.Size = new System.Drawing.Size(500, 150);
-            this.blockDetails_panel.TabIndex = 8;
-            // 
             // blockListControl1
             // 
             this.blockListControl1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -340,6 +318,22 @@ namespace BookProject.WinForms
             this.blockListControl1.Name = "blockListControl1";
             this.blockListControl1.Size = new System.Drawing.Size(294, 675);
             this.blockListControl1.TabIndex = 7;
+            // 
+            // pageControl1
+            // 
+            this.pageControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pageControl1.Location = new System.Drawing.Point(303, 3);
+            this.pageControl1.Name = "pageControl1";
+            this.pageControl1.Size = new System.Drawing.Size(364, 675);
+            this.pageControl1.TabIndex = 8;
+            // 
+            // blockDetailsControl1
+            // 
+            this.blockDetailsControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.blockDetailsControl1.Location = new System.Drawing.Point(3, 51);
+            this.blockDetailsControl1.Name = "blockDetailsControl1";
+            this.blockDetailsControl1.Size = new System.Drawing.Size(494, 144);
+            this.blockDetailsControl1.TabIndex = 7;
             // 
             // BookProjectForm
             // 
@@ -350,7 +344,6 @@ namespace BookProject.WinForms
             this.Name = "BookProjectForm";
             this.Text = "LabelingForm";
             this.tableLayoutPanel3.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.tableLayoutPanel5.ResumeLayout(false);
             this.tableLayoutPanel7.ResumeLayout(false);
             this.tableLayoutPanel7.PerformLayout();
@@ -367,7 +360,6 @@ namespace BookProject.WinForms
 
         #endregion
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
-        private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.TextBox bookFolder_tb;
         private System.Windows.Forms.Button openBookFolder_btn;
         private System.Windows.Forms.Button generateLines_btn;
@@ -382,12 +374,13 @@ namespace BookProject.WinForms
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.TabPage tabPage4;
         private System.Windows.Forms.TabPage tabPage3;
-        private System.Windows.Forms.Panel blockDetails_panel;
         private System.Windows.Forms.TabPage tabPage6;
         private BlockListControl blockListControl1;
         private DetectImageControl detectImageControl1;
         private DetectTitleControl detectTitleControl1;
         private DetectCommentLinkNumberControl detectCommentLinkNumberControl1;
         private DetectGarbageControl detectGarbageControl1;
+        private PageControl pageControl1;
+        private BlockDetailsControl blockDetailsControl1;
     }
 }

@@ -56,6 +56,7 @@
             this.test_btn = new System.Windows.Forms.Button();
             this.detect_btn = new System.Windows.Forms.Button();
             this.save_btn = new System.Windows.Forms.Button();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.minWidth_nud)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.minHeight_nud)).BeginInit();
@@ -106,11 +107,12 @@
             this.tableLayoutPanel1.Controls.Add(this.test_btn, 0, 6);
             this.tableLayoutPanel1.Controls.Add(this.detect_btn, 1, 6);
             this.tableLayoutPanel1.Controls.Add(this.save_btn, 2, 6);
+            this.tableLayoutPanel1.Controls.Add(this.progressBar1, 0, 7);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 8;
+            this.tableLayoutPanel1.RowCount = 9;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
@@ -118,6 +120,7 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 5F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(598, 416);
             this.tableLayoutPanel1.TabIndex = 0;
@@ -367,6 +370,17 @@
             this.save_btn.Text = "Save";
             this.save_btn.UseVisualStyleBackColor = true;
             // 
+            // progressBar1
+            // 
+            this.tableLayoutPanel1.SetColumnSpan(this.progressBar1, 6);
+            this.progressBar1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.progressBar1.Location = new System.Drawing.Point(1, 197);
+            this.progressBar1.Margin = new System.Windows.Forms.Padding(1);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(596, 3);
+            this.progressBar1.TabIndex = 27;
+            this.progressBar1.Value = 40;
+            // 
             // DetectCommentLinkNumberControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -421,5 +435,6 @@
         private System.Windows.Forms.TextBox allowedSymbols_tb;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.NumericUpDown addPadding_nud;
+        private System.Windows.Forms.ProgressBar progressBar1;
     }
 }

@@ -28,7 +28,7 @@ namespace BookProject.Core.Detectors
             _ocrUtility = ocrUtility;
         }
 
-        public Rectangle[] Detect(Bitmap image, DetectCommentLinkNumberSettings settings, Rectangle[] excludeAreas,
+        public Rectangle[] Detect(Bitmap image, DetectCommentLinkSettings settings, Rectangle[] excludeAreas,
             Dictionary<string, object> internalValues)
         {
 
@@ -77,7 +77,7 @@ namespace BookProject.Core.Detectors
             }
         }
 
-        private bool GeometricMatch(Rectangle lineRectangle, Rectangle linkRectangle, DetectCommentLinkNumberSettings settings)
+        private bool GeometricMatch(Rectangle lineRectangle, Rectangle linkRectangle, DetectCommentLinkSettings settings)
         {
             return 
                 linkRectangle.Height > 0 && 
@@ -89,7 +89,7 @@ namespace BookProject.Core.Detectors
         private List<Rectangle> FilterByAllowedSymbols(
             Bitmap originalBitmap, 
             Rectangle[] candidateRectangles,
-            DetectCommentLinkNumberSettings settings)
+            DetectCommentLinkSettings settings)
         {
             if (candidateRectangles.Length == 0)
             {

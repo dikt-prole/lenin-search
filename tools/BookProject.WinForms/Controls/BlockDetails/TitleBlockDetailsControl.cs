@@ -11,9 +11,7 @@ namespace BookProject.WinForms.Controls.BlockDetails
     public partial class TitleBlockDetailsControl : UserControl
     {
         private TitleBlock _titleBlock;
-
         private BookViewModel _bookVm;
-        public IOcrUtility OcrUtility { get; set; }
         public TitleBlockDetailsControl()
         {
             InitializeComponent();
@@ -44,14 +42,14 @@ namespace BookProject.WinForms.Controls.BlockDetails
 
             recognizeText_btn.Click += (sender, args) =>
             {
-                if (_titleBlock != null && OcrUtility != null)
+                if (_titleBlock != null)
                 {
                     _bookVm.ModifyBlock(this, _titleBlock, b =>
                     {
                         using var ocrBitmap = ImageUtility.Crop(_bookVm.OriginalPageBitmap, _titleBlock.Rectangle);
                         using var ocrStream = new MemoryStream();
                         ocrBitmap.Save(ocrStream, ImageFormat.Jpeg);
-                        var ocrPage = Task.Run(() => OcrUtility.GetPageAsync(ocrStream.ToArray())).Result;
+                        var ocrPage = Task.Run(() => _bookVm.OcrUtility.GetPageAsync(ocrStream.ToArray())).Result;
                         b.Text = ocrPage.GetText();
                         text_tb.Text = b.Text;
                     });

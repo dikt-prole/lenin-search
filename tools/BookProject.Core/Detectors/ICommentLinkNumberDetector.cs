@@ -6,6 +6,6 @@ namespace BookProject.Core.Detectors
 {
     public interface ICommentLinkNumberDetector
     {
-        Rectangle[] Detect(Bitmap image, DetectCommentLinkNumberSettings settings, Rectangle[] excludeAreas, Dictionary<string, object> internalValues);
+        Rectangle[] Detect(Bitmap image, DetectCommentLinkSettings settings, Rectangle[] excludeAreas, Dictionary<string, object> internalValues);
     }
 }

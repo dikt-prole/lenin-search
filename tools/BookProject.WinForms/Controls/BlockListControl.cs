@@ -21,9 +21,18 @@ namespace BookProject.WinForms.Controls
             comments_chb.Checked = true;
             block_lb.DrawMode = DrawMode.OwnerDrawFixed;
             block_lb.DrawItem += OnDrawItem;
+            
+            pages_chb.CheckedChanged += OnCheckedChanged;
+            titles_chb.CheckedChanged += OnCheckedChanged;
+            comments_chb.CheckedChanged += OnCheckedChanged;
         }
 
-        public void SetBookVm(BookViewModel bookVm)
+        private void OnCheckedChanged(object sender, EventArgs e)
+        {
+            RefreshList(null);
+        }
+
+        public void Bind(BookViewModel bookVm)
         {
             if (_bookVm != null)
             {
@@ -37,10 +46,30 @@ namespace BookProject.WinForms.Controls
 
             _bookVm.BlockAdded += OnBlockAction;
             _bookVm.BlockRemoved += OnBlockAction;
-            _bookVm.BlockModified += OnBlockAction;
-            _bookVm.SelectedBlockChanged += OnBlockAction;
+            _bookVm.BlockModified += BookVmOnBlockModified;
+            _bookVm.SelectedBlockChanged += BookVmSelectedBlockChanged;
 
             RefreshList(null);
+        }
+
+        private void BookVmOnBlockModified(object sender, Block e)
+        {
+            var blockListItems = block_lb.Items.OfType<BlockListItem>().ToArray();
+            var selectedBlockListItem = blockListItems.FirstOrDefault(bli => bli.Block == e);
+            if (selectedBlockListItem != null)
+            {
+                var index = blockListItems.IndexOf(selectedBlockListItem);
+                block_lb.Items[index] = selectedBlockListItem;
+            }
+        }
+
+        private void BookVmSelectedBlockChanged(object sender, Block e)
+        {
+            var blockListItems = block_lb.Items.OfType<BlockListItem>().ToArray();
+            var selectedBlockListItem = blockListItems.FirstOrDefault(bli => bli.Block == e);
+            block_lb.SelectedIndex = selectedBlockListItem == null
+                ? -1
+                : blockListItems.IndexOf(selectedBlockListItem);
         }
 
         private void OnBlockAction(object sender, Block e)
@@ -82,6 +111,8 @@ namespace BookProject.WinForms.Controls
             block_lb.SelectedIndexChanged -= OnSelectedIndexChanged;
             block_lb.Items.Clear();
 
+            if (_bookVm == null) return;
+
             var blockListItems = GetBlockListItems(_bookVm.Book).ToArray();
             foreach (var blockListItem in blockListItems)
             {
@@ -100,7 +131,10 @@ namespace BookProject.WinForms.Controls
         private void OnSelectedIndexChanged(object sender, EventArgs e)
         {
             var blockListItem = block_lb.SelectedItem as BlockListItem;
-            _bookVm.SetBlockSelected(this, blockListItem.Block);
+            if (blockListItem != null)
+            {
+                _bookVm.SetBlockSelected(this, blockListItem.Block);
+            }
         }
 
         private IEnumerable<BlockListItem> GetBlockListItems(Book book)

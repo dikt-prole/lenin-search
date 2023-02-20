@@ -9,10 +9,10 @@ namespace BookProject.Core.ImageRendering
     public class TestDetectCommentLinkNumberImageRenderer : ImageRendererBase
     {
         private readonly ICommentLinkNumberDetector _commentLinkNumberDetector;
-        private readonly DetectCommentLinkNumberSettings _settings;
-        public TestDetectCommentLinkNumberImageRenderer(DetectCommentLinkNumberSettings settings, IOcrUtility ocrUtility) : this(new CommentLinkDetector(ocrUtility), settings) { }
+        private readonly DetectCommentLinkSettings _settings;
+        public TestDetectCommentLinkNumberImageRenderer(DetectCommentLinkSettings settings, IOcrUtility ocrUtility) : this(new CommentLinkDetector(ocrUtility), settings) { }
 
-        public TestDetectCommentLinkNumberImageRenderer(ICommentLinkNumberDetector commentLinkNumberDetector, DetectCommentLinkNumberSettings settings)
+        public TestDetectCommentLinkNumberImageRenderer(ICommentLinkNumberDetector commentLinkNumberDetector, DetectCommentLinkSettings settings)
         {
             _commentLinkNumberDetector = commentLinkNumberDetector;
             _settings = settings;
