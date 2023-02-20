@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -186,6 +187,9 @@ namespace BookProject.Core.Models.ViewModel
 
         public void SetBlockSelected(object sender, Block block)
         {
+            Debug.WriteLine($"SetBlockSelected, sender = {sender}");
+
+
             SelectedBlock = block;
             var page = GetBlockPage(block);
             var imageFile = Path.Combine(Book.Folder, $"{page.ImageFile}.jpg");

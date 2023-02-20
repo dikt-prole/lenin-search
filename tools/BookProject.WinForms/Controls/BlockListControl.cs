@@ -54,6 +54,8 @@ namespace BookProject.WinForms.Controls
 
         private void BookVmOnBlockModified(object sender, Block e)
         {
+            block_lb.SelectedIndexChanged -= OnSelectedIndexChanged;
+
             var blockListItems = block_lb.Items.OfType<BlockListItem>().ToArray();
             var selectedBlockListItem = blockListItems.FirstOrDefault(bli => bli.Block == e);
             if (selectedBlockListItem != null)
@@ -61,15 +63,21 @@ namespace BookProject.WinForms.Controls
                 var index = blockListItems.IndexOf(selectedBlockListItem);
                 block_lb.Items[index] = selectedBlockListItem;
             }
+
+            block_lb.SelectedIndexChanged += OnSelectedIndexChanged;
         }
 
         private void BookVmSelectedBlockChanged(object sender, Block e)
         {
+            block_lb.SelectedIndexChanged -= OnSelectedIndexChanged;
+
             var blockListItems = block_lb.Items.OfType<BlockListItem>().ToArray();
             var selectedBlockListItem = blockListItems.FirstOrDefault(bli => bli.Block == e);
             block_lb.SelectedIndex = selectedBlockListItem == null
                 ? -1
                 : blockListItems.IndexOf(selectedBlockListItem);
+
+            block_lb.SelectedIndexChanged += OnSelectedIndexChanged;
         }
 
         private void OnBlockAction(object sender, Block e)

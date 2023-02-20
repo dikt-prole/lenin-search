@@ -25,7 +25,7 @@ namespace BookProject.WinForms.Controls.BlockDetails
             };
         }
 
-        public void SetBlock(BookViewModel bookVm, CommentLinkBlock commentLinkBlock)
+        public void Bind(BookViewModel bookVm, CommentLinkBlock commentLinkBlock)
         {
             _bookVm = bookVm;
             _commentLinkBlock = commentLinkBlock;

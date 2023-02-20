@@ -15,23 +15,23 @@ namespace BookProject.WinForms.Controls
         {
             _bookVm = bookVm;
 
-            _bookVm.SelectedBlockChanged += SelectedBlockChanged;
+            _bookVm.SelectedBlockChanged += BookVmSelectedBlockChanged;
         }
 
-        private void SelectedBlockChanged(object sender, Block e)
+        private void BookVmSelectedBlockChanged(object sender, Block e)
         {
             Controls.Clear();
 
             if (e is CommentLinkBlock commentLinkBlock)
             {
-                _commentLinkBlockDetailsControl.SetBlock(_bookVm, commentLinkBlock);
+                _commentLinkBlockDetailsControl.Bind(_bookVm, commentLinkBlock);
                 Controls.Add(_commentLinkBlockDetailsControl);
                 _commentLinkBlockDetailsControl.Dock = DockStyle.Fill;
             }
 
             if (e is TitleBlock titleBlock)
             {
-                _titleBlockDetailsControl.SetBlock(_bookVm, titleBlock);
+                _titleBlockDetailsControl.Bind(_bookVm, titleBlock);
                 Controls.Add(_titleBlockDetailsControl);
                 _titleBlockDetailsControl.Dock = DockStyle.Fill;
             }

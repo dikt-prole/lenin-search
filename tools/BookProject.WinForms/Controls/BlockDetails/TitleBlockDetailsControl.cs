@@ -80,7 +80,7 @@ namespace BookProject.WinForms.Controls.BlockDetails
             };
         }
 
-        public void SetBlock(BookViewModel bookVm, TitleBlock titleBlock)
+        public void Bind(BookViewModel bookVm, TitleBlock titleBlock)
         {
             _bookVm = bookVm;
             _titleBlock = titleBlock;
