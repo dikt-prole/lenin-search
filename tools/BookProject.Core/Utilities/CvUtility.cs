@@ -38,5 +38,33 @@ namespace BookProject.Core.Utilities
 
             return (contourRectangles.ToArray(), new Bitmap(invertedGray.ToBitmap()));
         }
+
+        public (Rectangle[] Rectangles, Bitmap InvertedBitmap) GetContourRectangles(Bitmap image)
+        {
+            using var bgrImage = image.ToImage<Bgr, byte>();
+
+            using var invertedGray = bgrImage.Convert<Gray, byte>()
+                .Not()
+                .ThresholdBinary(new Gray(25), new Gray(255));
+
+            var contours = new VectorOfVectorOfPoint();
+            var hierarchy = new Mat();
+            CvInvoke.FindContours(invertedGray, contours, hierarchy, RetrType.External, ChainApproxMethod.ChainApproxSimple);
+            CvInvoke.DrawContours(bgrImage, contours, -1, new MCvScalar(255, 0, 0));
+
+            var contourRectangles = new List<Rectangle>();
+            for (var i = 0; i < contours.Size; i++)
+            {
+                var points = contours[i].ToArray();
+                var cMinX = points.Select(p => p.X).Min();
+                var cMaxX = points.Select(p => p.X).Max();
+                var cMinY = points.Select(p => p.Y).Min();
+                var cMaxY = points.Select(p => p.Y).Max();
+                var rect = new Rectangle(cMinX, cMinY, cMaxX - cMinX, cMaxY - cMinY);
+                contourRectangles.Add(rect);
+            }
+
+            return (contourRectangles.ToArray(), new Bitmap(invertedGray.ToBitmap()));
+        }
     }
 }

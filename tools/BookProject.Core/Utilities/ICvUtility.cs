@@ -6,5 +6,7 @@ namespace BookProject.Core.Utilities
     {
         (Rectangle[] Rectangles, Bitmap SmoothBitmap) GetContourRectangles(Bitmap image, int gaussSigma1,
             int gaussSigma2);
+
+        (Rectangle[] Rectangles, Bitmap InvertedBitmap) GetContourRectangles(Bitmap image);
     }
 }

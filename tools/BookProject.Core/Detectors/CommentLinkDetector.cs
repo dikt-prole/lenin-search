@@ -17,8 +17,8 @@ namespace BookProject.Core.Detectors
         private readonly ICvUtility _cvUtility;
         private readonly IOcrUtility _ocrUtility;
 
-        public const string SmoothBitmapKey = "SMOOTH_BITMAP";
-        public const string MatchLineRectangleKey = "MATCH_LINE_RECTANGLE";
+        public const string InvertedBitmapKey = "INVERTED_BITMAP";
+        public const string LineGroupsKey = "LINE_GROUPS";
 
         public CommentLinkDetector(IOcrUtility ocrUtility) : this(new CvUtility(), ocrUtility) { }
 
@@ -31,40 +31,50 @@ namespace BookProject.Core.Detectors
         public Rectangle[] Detect(Bitmap image, DetectCommentLinkSettings settings, Rectangle[] excludeAreas,
             Dictionary<string, object> internalValues)
         {
-
-            var lineContourRectangleResult =
-                _cvUtility.GetContourRectangles(image, settings.LineGaussSigma1, settings.LineGaussSigma2);
-
-            var linkContourRectangleResult =
-                _cvUtility.GetContourRectangles(image, settings.LinkGaussSigma1, settings.LinkGaussSigma2);
-
-            var matchLinkRectangles = new List<Rectangle>();
-            var matchLineRectangles = new List<Rectangle>();
-            foreach (var lineRect in lineContourRectangleResult.Rectangles)
-            {
-                foreach (var linkRect in linkContourRectangleResult.Rectangles)
-                {
-                    if (GeometricMatch(lineRect, linkRect, settings))
-                    {
-                        if (excludeAreas == null || excludeAreas.All(ea => !ea.IntersectsWith(linkRect)))
-                        {
-                            matchLineRectangles.Add(lineRect);
-                            matchLinkRectangles.Add(linkRect);
-                        }
-                    }
-                }
-            }
-
-            matchLinkRectangles = FilterByAllowedSymbols(image, matchLinkRectangles.ToArray(), settings);
-            matchLineRectangles = matchLineRectangles.Where(l => matchLinkRectangles.Any(l.IntersectsWith)).ToList();
+            var contourRectanglesResult = _cvUtility.GetContourRectangles(image);
 
             if (internalValues != null)
             {
-                internalValues.Add(SmoothBitmapKey, new Bitmap(linkContourRectangleResult.SmoothBitmap));
-                internalValues.Add(MatchLineRectangleKey, matchLineRectangles.ToArray());
+                internalValues.Add(InvertedBitmapKey, contourRectanglesResult.InvertedBitmap);
             }
 
-            return matchLinkRectangles.Select(r => r.AddPadding(settings.AddPadding)).ToArray();
+            var rectangleHeap = new List<object>();
+            foreach (var rect in contourRectanglesResult.Rectangles)
+            {
+                if (rect.Height == 0 || excludeAreas?.Any(a => a.IntersectsWith(rect)) == true)
+                {
+                    continue;
+                }
+                rectangleHeap.Add(rect);
+            }
+
+            var lineGroups = new List<List<Rectangle>>();
+            while (rectangleHeap.Any())
+            {
+                var seedRectangleObj = rectangleHeap[0];
+                var seedPageWideRectangle = GetPageWideRectangle((Rectangle)seedRectangleObj, image.Width);
+                var lineObjs = rectangleHeap.Where(lo =>
+                    GetPageWideRectangle((Rectangle)lo, image.Width).IntersectsWith(seedPageWideRectangle)).ToArray();
+                var lineRectangles = new List<Rectangle>();
+                foreach (var lineObj in lineObjs)
+                {
+                    rectangleHeap.Remove(lineObj);
+                    lineRectangles.Add((Rectangle)lineObj);
+                }
+                lineGroups.Add(lineRectangles);
+            }
+
+            if (internalValues != null)
+            {
+                internalValues.Add(LineGroupsKey, lineGroups);
+            }
+
+            return Array.Empty<Rectangle>();
+        }
+
+        private static Rectangle GetPageWideRectangle(Rectangle rect, int width)
+        {
+            return new Rectangle(0, rect.Y, width, rect.Height);
         }
 
         public Bitmap CropImage(Bitmap source, Rectangle section)
