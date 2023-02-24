@@ -44,7 +44,7 @@ namespace BookProject.WinForms.Model
 
             if (Block is CommentLinkBlock commentLinkBlock)
             {
-                return commentLinkBlock.CommentText;
+                return string.IsNullOrEmpty(commentLinkBlock.CommentText) ? "-" : commentLinkBlock.CommentText;
             }
 
             return base.ToString();
