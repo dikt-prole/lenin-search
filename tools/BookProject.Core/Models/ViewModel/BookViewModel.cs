@@ -25,6 +25,8 @@ namespace BookProject.Core.Models.ViewModel
 
         public EventHandler<BookProjectSettings> SettingsChanged;
 
+        public EventHandler<KeyboardArgs> KeyboardEvent;
+
         public Book Book { get; set; }
         public Page CurrentPage => GetBlockPage(SelectedBlock);
         public Point? OriginalSelectionStartPoint { get; set; }
@@ -222,6 +224,11 @@ namespace BookProject.Core.Models.ViewModel
             if (block == null) return null;
 
             return Book.Pages?.FirstOrDefault(p => p.GetAllBlocks().Contains(block));
+        }
+
+        public void RegisterKeyboardEvent(object sender, KeyboardArgs args)
+        {
+            KeyboardEvent?.Invoke(sender, args);
         }
 
         public static BookViewModel Initialize(string bookFolder)

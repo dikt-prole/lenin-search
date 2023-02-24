@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using Accord.Math;
+using BookProject.Core.Models;
 using BookProject.Core.Models.Domain;
 using BookProject.Core.Models.ViewModel;
 using BookProject.WinForms.Model;
@@ -12,6 +13,8 @@ namespace BookProject.WinForms.Controls
 {
     public partial class BlockListControl : UserControl
     {
+        private readonly Dictionary<int, Action> KeyActions;
+
         private BookViewModel _bookVm;
         public BlockListControl()
         {
@@ -21,10 +24,47 @@ namespace BookProject.WinForms.Controls
             comments_chb.Checked = true;
             block_lb.DrawMode = DrawMode.OwnerDrawFixed;
             block_lb.DrawItem += OnDrawItem;
-            
             pages_chb.CheckedChanged += OnCheckedChanged;
             titles_chb.CheckedChanged += OnCheckedChanged;
             comments_chb.CheckedChanged += OnCheckedChanged;
+            block_lb.KeyDown += BlockLbOnKeyDown;
+
+            KeyActions = new Dictionary<int, Action>
+            {
+                { KeyTable.BlockListDown, () =>
+                {
+                    if (block_lb.SelectedIndex < block_lb.Items.Count - 1)
+                    {
+                        block_lb.SelectedIndex += 1;
+                    }
+                }
+                },
+                { KeyTable.BlockListUp, () =>
+                {
+                    if (block_lb.SelectedIndex > 0)
+                    {
+                        block_lb.SelectedIndex -= 1;
+                    }
+                }
+                }
+            };
+        }
+
+        private void BlockLbOnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (_bookVm == null) return;
+
+            e.SuppressKeyPress = true;
+            e.Handled = true;
+
+            if (KeyActions.ContainsKey(e.KeyValue))
+            {
+                KeyActions[e.KeyValue].Invoke();
+            }
+            else
+            {
+                OnBookVmKeyboardEvent(this, e.ToKeyboardArgs());
+            }
         }
 
         private void OnCheckedChanged(object sender, EventArgs e)
@@ -40,6 +80,7 @@ namespace BookProject.WinForms.Controls
                 _bookVm.BlockRemoved -= OnBlockAction;
                 _bookVm.BlockModified -= OnBlockAction;
                 _bookVm.SelectedBlockChanged -= OnBlockAction;
+                _bookVm.KeyboardEvent -= OnBookVmKeyboardEvent;
             }
 
             _bookVm = bookVm;
@@ -48,8 +89,17 @@ namespace BookProject.WinForms.Controls
             _bookVm.BlockRemoved += OnBlockAction;
             _bookVm.BlockModified += BookVmOnBlockModified;
             _bookVm.SelectedBlockChanged += BookVmSelectedBlockChanged;
+            _bookVm.KeyboardEvent += OnBookVmKeyboardEvent;
 
             RefreshList(null);
+        }
+
+        private void OnBookVmKeyboardEvent(object sender, KeyboardArgs args)
+        {
+            if (KeyActions.ContainsKey(args.KeyValue))
+            {
+                KeyActions[args.KeyValue].Invoke();
+            }
         }
 
         private void BookVmOnBlockModified(object sender, Block e)
