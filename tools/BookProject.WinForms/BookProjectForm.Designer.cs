@@ -52,9 +52,9 @@ namespace BookProject.WinForms
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.generateLines_btn = new System.Windows.Forms.Button();
             this.generateFb2_btn = new System.Windows.Forms.Button();
-            this.blockListControl1 = new BookProject.WinForms.Controls.BlockListControl();
-            this.pageControl1 = new BookProject.WinForms.Controls.PageControl();
             this.blockDetailsControl1 = new BookProject.WinForms.Controls.BlockDetailsControl();
+            this.pageControl1 = new BookProject.WinForms.Controls.PageControl();
+            this.blockListControl1 = new BookProject.WinForms.Controls.BlockListControl();
             this.tableLayoutPanel3.SuspendLayout();
             this.tableLayoutPanel5.SuspendLayout();
             this.tableLayoutPanel7.SuspendLayout();
@@ -74,8 +74,8 @@ namespace BookProject.WinForms
             this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 500F));
             this.tableLayoutPanel3.Controls.Add(this.tableLayoutPanel5, 2, 0);
-            this.tableLayoutPanel3.Controls.Add(this.blockListControl1, 0, 0);
             this.tableLayoutPanel3.Controls.Add(this.pageControl1, 1, 0);
+            this.tableLayoutPanel3.Controls.Add(this.blockListControl1, 0, 0);
             this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel3.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel3.Margin = new System.Windows.Forms.Padding(0);
@@ -311,13 +311,13 @@ namespace BookProject.WinForms
             this.generateFb2_btn.UseVisualStyleBackColor = true;
             this.generateFb2_btn.Click += new System.EventHandler(this.GenerateFb2Click);
             // 
-            // blockListControl1
+            // blockDetailsControl1
             // 
-            this.blockListControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.blockListControl1.Location = new System.Drawing.Point(3, 3);
-            this.blockListControl1.Name = "blockListControl1";
-            this.blockListControl1.Size = new System.Drawing.Size(294, 675);
-            this.blockListControl1.TabIndex = 7;
+            this.blockDetailsControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.blockDetailsControl1.Location = new System.Drawing.Point(3, 51);
+            this.blockDetailsControl1.Name = "blockDetailsControl1";
+            this.blockDetailsControl1.Size = new System.Drawing.Size(494, 144);
+            this.blockDetailsControl1.TabIndex = 7;
             // 
             // pageControl1
             // 
@@ -327,13 +327,13 @@ namespace BookProject.WinForms
             this.pageControl1.Size = new System.Drawing.Size(364, 675);
             this.pageControl1.TabIndex = 8;
             // 
-            // blockDetailsControl1
+            // blockListControl1
             // 
-            this.blockDetailsControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.blockDetailsControl1.Location = new System.Drawing.Point(3, 51);
-            this.blockDetailsControl1.Name = "blockDetailsControl1";
-            this.blockDetailsControl1.Size = new System.Drawing.Size(494, 144);
-            this.blockDetailsControl1.TabIndex = 7;
+            this.blockListControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.blockListControl1.Location = new System.Drawing.Point(3, 3);
+            this.blockListControl1.Name = "blockListControl1";
+            this.blockListControl1.Size = new System.Drawing.Size(294, 675);
+            this.blockListControl1.TabIndex = 9;
             // 
             // BookProjectForm
             // 
@@ -375,12 +375,12 @@ namespace BookProject.WinForms
         private System.Windows.Forms.TabPage tabPage4;
         private System.Windows.Forms.TabPage tabPage3;
         private System.Windows.Forms.TabPage tabPage6;
+        private BlockDetailsControl blockDetailsControl1;
+        private PageControl pageControl1;
         private BlockListControl blockListControl1;
         private DetectImageControl detectImageControl1;
         private DetectTitleControl detectTitleControl1;
         private DetectCommentLinkNumberControl detectCommentLinkNumberControl1;
         private DetectGarbageControl detectGarbageControl1;
-        private PageControl pageControl1;
-        private BlockDetailsControl blockDetailsControl1;
     }
 }

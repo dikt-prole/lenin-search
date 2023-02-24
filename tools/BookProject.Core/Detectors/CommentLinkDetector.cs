@@ -38,30 +38,17 @@ namespace BookProject.Core.Detectors
                 internalValues.Add(InvertedBitmapKey, contourRectanglesResult.InvertedBitmap);
             }
 
-            var rectangleHeap = new List<object>();
-            foreach (var rect in contourRectanglesResult.Rectangles)
-            {
-                if (rect.Height == 0 || excludeAreas?.Any(a => a.IntersectsWith(rect)) == true)
-                {
-                    continue;
-                }
-                rectangleHeap.Add(rect);
-            }
+            var lineRectanglesResult =
+                _cvUtility.GetContourRectangles(image, settings.LineGaussSigma1, settings.LineGaussSigma2);
 
             var lineGroups = new List<List<Rectangle>>();
-            while (rectangleHeap.Any())
+            foreach (var lineRectangle in lineRectanglesResult.Rectangles)
             {
-                var seedRectangleObj = rectangleHeap[0];
-                var seedPageWideRectangle = GetPageWideRectangle((Rectangle)seedRectangleObj, image.Width);
-                var lineObjs = rectangleHeap.Where(lo =>
-                    GetPageWideRectangle((Rectangle)lo, image.Width).IntersectsWith(seedPageWideRectangle)).ToArray();
-                var lineRectangles = new List<Rectangle>();
-                foreach (var lineObj in lineObjs)
+                var lineGroup = contourRectanglesResult.Rectangles.Where(r => r.IntersectsWith(lineRectangle)).ToList();
+                if (lineGroup.Any())
                 {
-                    rectangleHeap.Remove(lineObj);
-                    lineRectangles.Add((Rectangle)lineObj);
+                    lineGroups.Add(lineGroup);
                 }
-                lineGroups.Add(lineRectangles);
             }
 
             if (internalValues != null)
@@ -69,90 +56,24 @@ namespace BookProject.Core.Detectors
                 internalValues.Add(LineGroupsKey, lineGroups);
             }
 
-            return Array.Empty<Rectangle>();
-        }
-
-        private static Rectangle GetPageWideRectangle(Rectangle rect, int width)
-        {
-            return new Rectangle(0, rect.Y, width, rect.Height);
-        }
-
-        public Bitmap CropImage(Bitmap source, Rectangle section)
-        {
-            var bitmap = new Bitmap(section.Width, section.Height);
-            using (var g = Graphics.FromImage(bitmap))
+            var commentLinks = new List<Rectangle>();
+            var pad = settings.AddPadding;
+            foreach (var lineGroup in lineGroups)
             {
-                g.DrawImage(source, 0, 0, section, GraphicsUnit.Pixel);
-                return bitmap;
-            }
-        }
-
-        private bool GeometricMatch(Rectangle lineRectangle, Rectangle linkRectangle, DetectCommentLinkSettings settings)
-        {
-            return 
-                linkRectangle.Height > 0 && 
-                linkRectangle.Width > 0 &&
-                Math.Abs(lineRectangle.Y - linkRectangle.Y) <= settings.LineTopDistanceMax && 
-                linkRectangle.Height <= lineRectangle.Height * settings.LineHeightPartMax;
-        }
-
-        private List<Rectangle> FilterByAllowedSymbols(
-            Bitmap originalBitmap, 
-            Rectangle[] candidateRectangles,
-            DetectCommentLinkSettings settings)
-        {
-            if (candidateRectangles.Length == 0)
-            {
-                return candidateRectangles.ToList();
-            }
-
-            candidateRectangles = candidateRectangles.OrderBy(r => r.Y).ToArray();
-
-            var ocrCellWidth = candidateRectangles.Max(x => x.Width);
-            var ocrCellHeight = candidateRectangles.Min(x => x.Height);
-            var ocrCellPadding = 10;
-            var ocrBitmapWidth = ocrCellWidth + ocrCellPadding * 2;
-            var ocrBitmapHeight = (ocrCellHeight + ocrCellPadding * 2) * candidateRectangles.Length;
-
-            using var ocrBitmap = new Bitmap(ocrBitmapWidth, ocrBitmapHeight);
-            using var ocrBackgroundBrush = new SolidBrush(Color.White);
-            using var ocrGraphics = Graphics.FromImage(ocrBitmap);
-
-            ocrGraphics.FillRectangle(ocrBackgroundBrush, 0, 0, ocrBitmap.Width, ocrBitmap.Height);
-            for (var i = 0; i < candidateRectangles.Length; i++)
-            {
-                var ocrCellX = ocrCellPadding;
-                var ocrCellY = i * (ocrCellHeight + ocrCellPadding * 2) + ocrCellPadding;
-                using var croppedBitmap = CropImage(originalBitmap, candidateRectangles[i]);
-                ocrGraphics.DrawImage(croppedBitmap, ocrCellX, ocrCellY);
-            }
-
-            using var imageStream = new MemoryStream();
-            ocrBitmap.Save(imageStream, ImageFormat.Jpeg);
-            var imageBytes = imageStream.ToArray();
-            var ocrPage = Task.Run(() => _ocrUtility.GetPageAsync(imageBytes)).Result;
-
-            var resultRectangles = new List<Rectangle>();
-            for (var i = 0; i < candidateRectangles.Length; i++)
-            {
-                var ocrCellX = ocrCellPadding;
-                var ocrCellY = i * (ocrCellHeight + ocrCellPadding * 2) + ocrCellPadding;
-                var ocrCellRectangle = new Rectangle(
-                    ocrCellX,
-                    ocrCellY,
-                    ocrCellWidth + ocrCellPadding * 2,
-                    ocrCellHeight + ocrCellPadding * 2);
-                var ocrLine = ocrPage.Lines.FirstOrDefault(l => l.Rectangle.IntersectsWith(ocrCellRectangle));
-                
-                if (ocrLine == null || string.IsNullOrEmpty(ocrLine.Text)) continue;
-
-                if (settings.AllowedSymbols.Any(s => ocrLine.Text.Contains(s)))
+                var topLineY = lineGroup.Sum(r => r.Y) / lineGroup.Count;
+                var bottomLineY = lineGroup.Sum(r => r.Y + r.Height) / lineGroup.Count;
+                foreach (var r in lineGroup)
                 {
-                    resultRectangles.Add(candidateRectangles[i]);
+                    var topDelta = Math.Abs(0.5 - 1.0 * (topLineY - r.Y) / r.Height);
+                    var bottomDelta = bottomLineY - r.Y - r.Height;
+                    if (topDelta <= settings.TopDeltaMax && bottomDelta > settings.BottomDeltaMin)
+                    {
+                        commentLinks.Add(new Rectangle(r.X - pad, r.Y - pad, r.Width + 2 * pad, r.Height + 2 * pad));
+                    }
                 }
             }
 
-            return resultRectangles;
+            return commentLinks.ToArray();
         }
     }
 }

@@ -29,7 +29,7 @@ namespace BookProject.Core.Settings
             var settingsFile = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
                 "settings.json");
 
-            File.WriteAllText(settingsFile, JsonConvert.SerializeObject(this));
+            File.WriteAllText(settingsFile, JsonConvert.SerializeObject(this, Formatting.Indented));
         }
 
         private static BookProjectSettings Default()
@@ -60,17 +60,10 @@ namespace BookProject.Core.Settings
                 },
                 CommentLinkDetection = new DetectCommentLinkSettings
                 {
-                    AllowedSymbols = "*1234567890",
                     LineGaussSigma1 = 16,
                     LineGaussSigma2 = 1,
-                    LinkGaussSigma1 = 1,
-                    LinkGaussSigma2 = 1,
-                    LineHeightPartMax = 0.8,
-                    LineTopDistanceMax = 2,
-                    MaxHeight = 20,
-                    MaxWidth = 20,
-                    MinHeight = 12,
-                    MinWidth = 12,
+                    TopDeltaMax = 0.15,
+                    BottomDeltaMin = 5,
                     AddPadding = 2
                 },
                 GarbageDetection = new DetectGarbageSettings

@@ -66,5 +66,17 @@ namespace BookProject.Core.Utilities
 
             return (contourRectangles.ToArray(), new Bitmap(invertedGray.ToBitmap()));
         }
+
+        public Rectangle GetCoverRectangle(Rectangle[] rectangles)
+        {
+            if (rectangles?.Any() != true) return new Rectangle(0, 0, 0, 0);
+
+            var minX = rectangles.Min(r => r.X);
+            var maxX = rectangles.Max(r => r.X + r.Width);
+            var minY = rectangles.Min(r => r.Y);
+            var maxY = rectangles.Max(r => r.Y + r.Height);
+
+            return new Rectangle(minX, minY, maxX - minX, maxY - minY);
+        }
     }
 }

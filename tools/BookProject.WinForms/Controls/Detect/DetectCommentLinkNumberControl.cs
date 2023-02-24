@@ -25,64 +25,26 @@ namespace BookProject.WinForms.Controls.Detect
         {
             return new DetectCommentLinkSettings
             {
-                MinWidth = (int)minWidth_nud.Value,
-                MinHeight = (int)minHeight_nud.Value,
-                MaxHeight = (int)maxHeight_nud.Value,
-                MaxWidth = (int)maxWidth_nud.Value,
-                LinkGaussSigma1 = (int)linkGaussSigma1_nud.Value,
-                LinkGaussSigma2 = (int)linkGaussSigma2_nud.Value,
                 LineGaussSigma1 = (int)lineGaussSigma1_nud.Value,
                 LineGaussSigma2 = (int)lineGaussSigma2_nud.Value,
-                LineHeightPartMax = (double)lineHeightPartMax_nud.Value,
-                LineTopDistanceMax = (int)lineTopDistMax_nud.Value,
-                AllowedSymbols = allowedSymbols_tb.Text,
+                TopDeltaMax = (double)topDeltaMax_nud.Value,
+                BottomDeltaMin = (int)bottomDeltaMin_nud.Value,
                 AddPadding = (int)addPadding_nud.Value
             };
         }
 
         private void SetSettings(DetectCommentLinkSettings settings)
         {
-            minWidth_nud.Value = settings.MinWidth;
-            minHeight_nud.Value = settings.MinHeight;
-            maxWidth_nud.Value = settings.MaxWidth;
-            maxHeight_nud.Value = settings.MaxHeight;
-            linkGaussSigma1_nud.Value = settings.LinkGaussSigma1;
-            linkGaussSigma2_nud.Value = settings.LinkGaussSigma2;
             lineGaussSigma1_nud.Value = settings.LineGaussSigma1;
             lineGaussSigma2_nud.Value = settings.LineGaussSigma2;
-            lineHeightPartMax_nud.Value = (decimal)settings.LineHeightPartMax;
-            lineTopDistMax_nud.Value = settings.LineTopDistanceMax;
-            allowedSymbols_tb.Text = settings.AllowedSymbols;
+            topDeltaMax_nud.Value = (decimal)settings.TopDeltaMax;
+            bottomDeltaMin_nud.Value = settings.BottomDeltaMin;
             addPadding_nud.Value = settings.AddPadding;
         }
 
         public DetectCommentLinkNumberControl()
         {
             InitializeComponent();
-
-            minWidth_nud.Minimum = 1;
-            minWidth_nud.Maximum = 50;
-            minWidth_nud.Value = 12;
-
-            minHeight_nud.Minimum = 1;
-            minHeight_nud.Maximum = 50;
-            minHeight_nud.Value = 12;
-
-            maxWidth_nud.Minimum = 1;
-            maxWidth_nud.Maximum = 100;
-            maxWidth_nud.Value = 20;
-
-            maxHeight_nud.Minimum = 1;
-            maxHeight_nud.Maximum = 100;
-            maxHeight_nud.Value = 20;
-
-            linkGaussSigma1_nud.Minimum = 0;
-            linkGaussSigma1_nud.Maximum = 25;
-            linkGaussSigma1_nud.Value = 1;
-
-            linkGaussSigma2_nud.Minimum = 0;
-            linkGaussSigma2_nud.Maximum = 25;
-            linkGaussSigma2_nud.Value = 1;
 
             lineGaussSigma1_nud.Minimum = 0;
             lineGaussSigma1_nud.Maximum = 25;
@@ -92,21 +54,19 @@ namespace BookProject.WinForms.Controls.Detect
             lineGaussSigma2_nud.Maximum = 25;
             lineGaussSigma2_nud.Value = 1;
 
-            lineHeightPartMax_nud.DecimalPlaces = 2;
-            lineHeightPartMax_nud.Increment = (decimal)0.1;
-            lineHeightPartMax_nud.Minimum = (decimal)0.25;
-            lineHeightPartMax_nud.Maximum = 1;
-            lineHeightPartMax_nud.Value = (decimal)0.75;
+            topDeltaMax_nud.DecimalPlaces = 2;
+            topDeltaMax_nud.Increment = (decimal)0.01;
+            topDeltaMax_nud.Minimum = (decimal)0.05;
+            topDeltaMax_nud.Maximum = 1;
+            topDeltaMax_nud.Value = (decimal)0.15;
 
-            lineTopDistMax_nud.Minimum = 0;
-            lineTopDistMax_nud.Maximum = 25;
-            lineTopDistMax_nud.Value = 2;
+            bottomDeltaMin_nud.Minimum = 0;
+            bottomDeltaMin_nud.Maximum = 100;
+            bottomDeltaMin_nud.Value = 5;
 
             addPadding_nud.Minimum = 0;
             addPadding_nud.Maximum = 100;
             addPadding_nud.Value = 2;
-
-            allowedSymbols_tb.Text = "*";
 
             test_btn.MouseDown += TestBtnOnMouseDown;
             test_btn.MouseUp += TestBtnOnMouseUp;
@@ -147,7 +107,7 @@ namespace BookProject.WinForms.Controls.Detect
                     .ToArray();
                 var commentLinkRects = new CommentLinkDetector(new YandexVisionOcrUtility())
                     .Detect(ImageUtility.Load(imageFile), settings, excludeRects, null);
-                _bookVm.SetPageBlocks(this, page, commentLinkRects.Select(GarbageBlock.FromRectangle));
+                _bookVm.SetPageBlocks(this, page, commentLinkRects.Select(CommentLinkBlock.FromRectangle));
                 progressBar1.Value = i + 1;
                 Application.DoEvents();
             }
