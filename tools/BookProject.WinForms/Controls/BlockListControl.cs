@@ -22,6 +22,8 @@ namespace BookProject.WinForms.Controls
             pages_chb.Checked = true;
             titles_chb.Checked = true;
             comments_chb.Checked = true;
+            image_chb.Checked = true;
+            line_chb.Checked = true;
             block_lb.DrawMode = DrawMode.OwnerDrawFixed;
             block_lb.DrawItem += OnDrawItem;
             pages_chb.CheckedChanged += OnCheckedChanged;
@@ -219,7 +221,9 @@ namespace BookProject.WinForms.Controls
                 {
                     var include = block == bookVm.SelectedBlock ||
                                   block is TitleBlock && titles_chb.Checked ||
-                                  block is CommentLinkBlock && comments_chb.Checked;
+                                  block is CommentLinkBlock && comments_chb.Checked ||
+                                  block is ImageBlock && image_chb.Checked ||
+                                  block is Line && line_chb.Checked;
                     if (include)
                     {
                         yield return new BlockListItem(block);

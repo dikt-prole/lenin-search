@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using BookProject.Core.Detectors;
 using BookProject.Core.ImageRendering;
@@ -119,8 +121,20 @@ namespace BookProject.WinForms.Controls.Detect
                 var imageFile = imageFiles[i];
                 var page = _bookVm.Book.GetPage(Path.GetFileNameWithoutExtension(imageFile));
                 var excludeRects = page.ImageBlocks.Select(b => b.Rectangle).ToArray();
-                var titleRects = new TitleDetector().Detect(ImageUtility.Load(imageFile), settings, excludeRects, null);
-                _bookVm.SetPageBlocks(this, page, titleRects.Select(TitleBlock.FromRectangle));
+                using var image = ImageUtility.Load(imageFile);
+                var titleRects = new TitleDetector().Detect(image, settings, excludeRects, null);
+                var titleBlocks = titleRects.Select(TitleBlock.FromRectangle).ToArray();
+                foreach (var titleBlock in titleBlocks)
+                {
+                    using var ocrImage = ImageUtility.Crop(image, titleBlock.Rectangle);
+                    using var ocrImageStream = new MemoryStream();
+                    ocrImage.Save(ocrImageStream, ImageFormat.Jpeg);
+                    var ocrImageBytes = ocrImageStream.ToArray();
+                    var ocrPageResult = Task.Run(() => _bookVm.OcrUtility.GetPageAsync(ocrImageBytes)).Result;
+                    titleBlock.Text = ocrPageResult.GetText();
+                }
+
+                _bookVm.SetPageBlocks(this, page, titleBlocks);
                 progressBar1.Value = i + 1;
                 Application.DoEvents();
             }

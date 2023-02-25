@@ -70,7 +70,7 @@ namespace BookProject.WinForms
             // tableLayoutPanel3
             // 
             this.tableLayoutPanel3.ColumnCount = 3;
-            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 300F));
+            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 400F));
             this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 500F));
             this.tableLayoutPanel3.Controls.Add(this.tableLayoutPanel5, 2, 0);
@@ -183,7 +183,7 @@ namespace BookProject.WinForms
             this.tabPage1.Location = new System.Drawing.Point(4, 24);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(490, 453);
+            this.tabPage1.Size = new System.Drawing.Size(490, 303);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Detect Image";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -193,7 +193,7 @@ namespace BookProject.WinForms
             this.detectImageControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.detectImageControl1.Location = new System.Drawing.Point(3, 3);
             this.detectImageControl1.Name = "detectImageControl1";
-            this.detectImageControl1.Size = new System.Drawing.Size(484, 447);
+            this.detectImageControl1.Size = new System.Drawing.Size(484, 297);
             this.detectImageControl1.TabIndex = 0;
             // 
             // tabPage2
@@ -202,7 +202,7 @@ namespace BookProject.WinForms
             this.tabPage2.Location = new System.Drawing.Point(4, 24);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(490, 453);
+            this.tabPage2.Size = new System.Drawing.Size(490, 303);
             this.tabPage2.TabIndex = 2;
             this.tabPage2.Text = "Detect Title";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -212,7 +212,7 @@ namespace BookProject.WinForms
             this.detectTitleControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.detectTitleControl1.Location = new System.Drawing.Point(3, 3);
             this.detectTitleControl1.Name = "detectTitleControl1";
-            this.detectTitleControl1.Size = new System.Drawing.Size(484, 447);
+            this.detectTitleControl1.Size = new System.Drawing.Size(484, 297);
             this.detectTitleControl1.TabIndex = 0;
             // 
             // tabPage4
@@ -221,7 +221,7 @@ namespace BookProject.WinForms
             this.tabPage4.Location = new System.Drawing.Point(4, 24);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(490, 453);
+            this.tabPage4.Size = new System.Drawing.Size(490, 303);
             this.tabPage4.TabIndex = 4;
             this.tabPage4.Text = "Detect Comment Links";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -231,7 +231,7 @@ namespace BookProject.WinForms
             this.detectCommentLinkNumberControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.detectCommentLinkNumberControl1.Location = new System.Drawing.Point(3, 3);
             this.detectCommentLinkNumberControl1.Name = "detectCommentLinkNumberControl1";
-            this.detectCommentLinkNumberControl1.Size = new System.Drawing.Size(484, 447);
+            this.detectCommentLinkNumberControl1.Size = new System.Drawing.Size(484, 297);
             this.detectCommentLinkNumberControl1.TabIndex = 0;
             // 
             // tabPage3
@@ -240,7 +240,7 @@ namespace BookProject.WinForms
             this.tabPage3.Location = new System.Drawing.Point(4, 24);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(490, 453);
+            this.tabPage3.Size = new System.Drawing.Size(490, 303);
             this.tabPage3.TabIndex = 5;
             this.tabPage3.Text = "Detect Garbage";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -250,7 +250,7 @@ namespace BookProject.WinForms
             this.detectGarbageControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.detectGarbageControl1.Location = new System.Drawing.Point(3, 3);
             this.detectGarbageControl1.Name = "detectGarbageControl1";
-            this.detectGarbageControl1.Size = new System.Drawing.Size(484, 447);
+            this.detectGarbageControl1.Size = new System.Drawing.Size(484, 297);
             this.detectGarbageControl1.TabIndex = 0;
             // 
             // tabPage6
@@ -321,9 +321,9 @@ namespace BookProject.WinForms
             // pageControl1
             // 
             this.pageControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pageControl1.Location = new System.Drawing.Point(303, 3);
+            this.pageControl1.Location = new System.Drawing.Point(403, 3);
             this.pageControl1.Name = "pageControl1";
-            this.pageControl1.Size = new System.Drawing.Size(364, 675);
+            this.pageControl1.Size = new System.Drawing.Size(264, 675);
             this.pageControl1.TabIndex = 8;
             // 
             // blockListControl1
@@ -331,7 +331,7 @@ namespace BookProject.WinForms
             this.blockListControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.blockListControl1.Location = new System.Drawing.Point(3, 3);
             this.blockListControl1.Name = "blockListControl1";
-            this.blockListControl1.Size = new System.Drawing.Size(294, 675);
+            this.blockListControl1.Size = new System.Drawing.Size(394, 675);
             this.blockListControl1.TabIndex = 9;
             // 
             // BookProjectForm
