@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -197,23 +196,31 @@ namespace BookProject.Core.Models.ViewModel
             SelectedBlockChanged?.Invoke(sender, block);
         }
 
-        public void SetNextBlockSelected(object sender)
+        public void SelectNextCurrentPageBlock(object sender)
         {
-            var blocks = CurrentPage.GetAllBlocks().OrderBy(b => b.TopLeftY).ThenBy(b => b.TopLeftX).ToList();
+            var blocks = CurrentPage.GetNonPageBlocks().OrderBy(b => b.TopLeftY).ThenBy(b => b.TopLeftX).ToList();
 
-            if (blocks.Count == 0) return;
-
-            var editIndex = blocks.FindIndex(b => b == SelectedBlock);
-
-            if (editIndex == -1)
+            if (SelectedBlock == CurrentPage)
             {
-                SetBlockSelected(sender, blocks[0]);
-                return;
+                if (blocks.Count > 0)
+                {
+                    SetBlockSelected(sender, blocks[0]);
+                }
             }
+            else if (blocks.Count > 0)
+            {
+                var editIndex = blocks.FindIndex(b => b == SelectedBlock);
 
-            var nextEditIndex = (editIndex + 1) % blocks.Count;
+                if (editIndex == -1)
+                {
+                    SetBlockSelected(sender, blocks[0]);
+                    return;
+                }
 
-            SetBlockSelected(sender, blocks[nextEditIndex]);
+                var nextEditIndex = (editIndex + 1) % blocks.Count;
+
+                SetBlockSelected(sender, blocks[nextEditIndex]);
+            }
         }
 
         public Page GetBlockPage(Block block)

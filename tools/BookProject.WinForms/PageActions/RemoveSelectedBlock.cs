@@ -11,7 +11,7 @@ namespace BookProject.WinForms.PageActions
             var selectedBlock = bookVm.SelectedBlock;
             if (selectedBlock != null && !(selectedBlock is Page))
             {
-                bookVm.SetNextBlockSelected(sender);
+                bookVm.SelectNextCurrentPageBlock(sender);
                 bookVm.RemoveBlock(sender, selectedBlock);
             }
         }

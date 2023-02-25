@@ -27,6 +27,7 @@ namespace BookProject.WinForms.Controls
             pages_chb.CheckedChanged += OnCheckedChanged;
             titles_chb.CheckedChanged += OnCheckedChanged;
             comments_chb.CheckedChanged += OnCheckedChanged;
+            block_lb.PreviewKeyDown += BlockLbOnPreviewKeyDown;
             block_lb.KeyDown += BlockLbOnKeyDown;
 
             KeyboardActions = new Dictionary<int, Action<KeyboardArgs>>
@@ -48,6 +49,11 @@ namespace BookProject.WinForms.Controls
                 }
                 }
             };
+        }
+
+        private void BlockLbOnPreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            e.IsInputKey = true;
         }
 
         private void BlockLbOnKeyDown(object sender, KeyEventArgs args)
@@ -180,7 +186,7 @@ namespace BookProject.WinForms.Controls
             var selectedBlockListItem = blockListItems.FirstOrDefault(b => b.Block == selectedBlock);
             if (selectedBlockListItem != null)
             {
-                block_lb.SelectedItem = blockListItems.IndexOf(selectedBlockListItem);
+                block_lb.SelectedIndex = blockListItems.IndexOf(selectedBlockListItem);
             }
 
             block_lb.SelectedIndexChanged += OnSelectedIndexChanged;

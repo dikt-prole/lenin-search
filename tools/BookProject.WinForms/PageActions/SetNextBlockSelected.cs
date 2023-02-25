@@ -7,7 +7,7 @@ namespace BookProject.WinForms.PageActions
     {
         public void Execute(object sender, BookViewModel bookVm, KeyboardArgs args)
         {
-            bookVm.SetNextBlockSelected(sender);
+            bookVm.SelectNextCurrentPageBlock(sender);
         }
     }
 }
