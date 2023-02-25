@@ -13,7 +13,7 @@ namespace BookProject.WinForms.Controls
 {
     public partial class BlockListControl : UserControl
     {
-        private readonly Dictionary<int, Action> KeyActions;
+        private readonly Dictionary<int, Action<KeyboardArgs>> KeyboardActions;
 
         private BookViewModel _bookVm;
         public BlockListControl()
@@ -29,9 +29,9 @@ namespace BookProject.WinForms.Controls
             comments_chb.CheckedChanged += OnCheckedChanged;
             block_lb.KeyDown += BlockLbOnKeyDown;
 
-            KeyActions = new Dictionary<int, Action>
+            KeyboardActions = new Dictionary<int, Action<KeyboardArgs>>
             {
-                { KeyTable.BlockListDown, () =>
+                { KeyTable.BlockListDown, args =>
                 {
                     if (block_lb.SelectedIndex < block_lb.Items.Count - 1)
                     {
@@ -39,7 +39,7 @@ namespace BookProject.WinForms.Controls
                     }
                 }
                 },
-                { KeyTable.BlockListUp, () =>
+                { KeyTable.BlockListUp, args =>
                 {
                     if (block_lb.SelectedIndex > 0)
                     {
@@ -50,20 +50,20 @@ namespace BookProject.WinForms.Controls
             };
         }
 
-        private void BlockLbOnKeyDown(object sender, KeyEventArgs e)
+        private void BlockLbOnKeyDown(object sender, KeyEventArgs args)
         {
             if (_bookVm == null) return;
 
-            e.SuppressKeyPress = true;
-            e.Handled = true;
+            args.SuppressKeyPress = true;
+            args.Handled = true;
 
-            if (KeyActions.ContainsKey(e.KeyValue))
+            if (KeyboardActions.ContainsKey(args.KeyValue))
             {
-                KeyActions[e.KeyValue].Invoke();
+                KeyboardActions[args.KeyValue].Invoke(args.ToKeyboardArgs());
             }
             else
             {
-                OnBookVmKeyboardEvent(this, e.ToKeyboardArgs());
+                _bookVm.RegisterKeyboardEvent(this, args.ToKeyboardArgs());
             }
         }
 
@@ -96,9 +96,9 @@ namespace BookProject.WinForms.Controls
 
         private void OnBookVmKeyboardEvent(object sender, KeyboardArgs args)
         {
-            if (KeyActions.ContainsKey(args.KeyValue))
+            if (KeyboardActions.ContainsKey(args.KeyValue))
             {
-                KeyActions[args.KeyValue].Invoke();
+                KeyboardActions[args.KeyValue].Invoke(args);
             }
         }
 

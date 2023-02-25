@@ -4,5 +4,17 @@
     {
         public const int BlockListUp = 87; // W
         public const int BlockListDown = 83; // S
+        public const int NextBlock = 9; // TAB
+        public const int DeleteBlock = 46; // DELETE
+        public const int MoveBlockUp = 38; // UP ARROW
+        public const int MoveBlockDown = 40; // DOWN ARROW
+        public const int MoveBlockLeft = 37; // LEFT ARROW
+        public const int MoveBlockRight = 39; // RIGHT ARROW
+        public const int AddImageBlock = 73; // I
+        public const int AddTitleBlock = 84; // T
+        public const int AddGarbageBlock = 71; // G
+        public const int AddCommentLinkBlock = 78; // N
+        public const int CopyBlock = 67; // C
+        public const int PasteBlock = 86; // V
     }
 }

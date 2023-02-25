@@ -104,7 +104,7 @@ namespace BookProject.Core.Models.ViewModel
             }
         }
 
-        public void RemoveBlock(object sender, Block block, bool setEdit = true)
+        public void RemoveBlock(object sender, Block block)
         {
             var page = Book.Pages.FirstOrDefault(p => p.GetAllBlocks().Count(b => b == block) > 0);
 
@@ -131,11 +131,11 @@ namespace BookProject.Core.Models.ViewModel
                 page.Lines.Remove(line);
             }
 
-            BlockRemoved?.Invoke(sender, block);
-            if (setEdit)
+            if (SelectedBlock == block)
             {
-                SetNextEditBlock(sender, page);
+                SetBlockSelected(sender, page);
             }
+            BlockRemoved?.Invoke(sender, block);
         }
 
         public void ModifyBlock<TBlock>(object sender, TBlock block, Action<TBlock> modifyAction)  where TBlock : Block
@@ -177,7 +177,7 @@ namespace BookProject.Core.Models.ViewModel
             {
                 foreach (var b in removeBlocks)
                 {
-                    RemoveBlock(sender, b, false);
+                    RemoveBlock(sender, b);
                 }
             }
 
@@ -189,9 +189,6 @@ namespace BookProject.Core.Models.ViewModel
 
         public void SetBlockSelected(object sender, Block block)
         {
-            Debug.WriteLine($"SetBlockSelected, sender = {sender}");
-
-
             SelectedBlock = block;
             var page = GetBlockPage(block);
             var imageFile = Path.Combine(Book.Folder, $"{page.ImageFile}.jpg");
@@ -200,9 +197,9 @@ namespace BookProject.Core.Models.ViewModel
             SelectedBlockChanged?.Invoke(sender, block);
         }
 
-        public void SetNextEditBlock(object sender, Page page)
+        public void SetNextBlockSelected(object sender)
         {
-            var blocks = page.GetAllBlocks().OrderBy(b => b.TopLeftY).ThenBy(b => b.TopLeftX).ToList();
+            var blocks = CurrentPage.GetAllBlocks().OrderBy(b => b.TopLeftY).ThenBy(b => b.TopLeftX).ToList();
 
             if (blocks.Count == 0) return;
 

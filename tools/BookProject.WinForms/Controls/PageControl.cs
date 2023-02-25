@@ -1,24 +1,26 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using BookProject.Core.ImageRendering;
+using BookProject.Core.Models;
 using BookProject.Core.Models.Domain;
 using BookProject.Core.Models.ViewModel;
 using BookProject.Core.Utilities;
 using BookProject.WinForms.DragActivities;
 using BookProject.WinForms.PageActions;
+using BookProject.WinForms.PageActions.Clipboard;
 
 namespace BookProject.WinForms.Controls
 {
     public partial class PageControl : UserControl
     {
+        private readonly Dictionary<int, Action<KeyboardArgs>> KeyboardActions;
         private IDragActivity _dragActivity;
         private BookViewModel _bookVm;
-        private readonly PreviewKeyDownPageActionFactory
-            _previewKeyDownPageActionFactory = new PreviewKeyDownPageActionFactory();
         public PageControl()
         {
             InitializeComponent();
@@ -26,16 +28,44 @@ namespace BookProject.WinForms.Controls
             page_pb.MouseDown += PagePbOnMouseDown;
             page_pb.MouseUp += PagePbOnMouseUp;
             page_pb.MouseMove += PagePbOnMouseMove;
+            page_pb.KeyDown += PagePbOnKeyDown;
             page_pb.PreviewKeyDown += PagePbOnPreviewKeyDown;
+            KeyboardActions = new Dictionary<int, Action<KeyboardArgs>>
+            {
+                { KeyTable.NextBlock, args => new SetNextBlockSelected().Execute(this, _bookVm, args) },
+                { KeyTable.DeleteBlock, args => new RemoveSelectedBlock().Execute(this, _bookVm, args) },
+                { KeyTable.MoveBlockUp, args => new MoveupOrUpsizeSelectedBlock().Execute(this, _bookVm, args) },
+                { KeyTable.MoveBlockDown, args => new MovedownOrDownsizeSelectedBlock().Execute(this, _bookVm, args) },
+                { KeyTable.MoveBlockLeft, args => new MoveleftOrDownsizeSelectedBlock().Execute(this, _bookVm, args) },
+                { KeyTable.MoveBlockRight, args => new MoverightOrUpsizeSelectedBlock().Execute(this, _bookVm, args) },
+                { KeyTable.AddImageBlock, args => new AddBlock<ImageBlock>(200, 200).Execute(this, _bookVm, args) },
+                { KeyTable.AddTitleBlock, args => new AddBlock<TitleBlock>(100, 100).Execute(this, _bookVm, args) },
+                { KeyTable.AddGarbageBlock, args => new AddBlock<GarbageBlock>(100, 100).Execute(this, _bookVm, args) },
+                { KeyTable.AddCommentLinkBlock, args => new AddBlock<CommentLinkBlock>(25, 25).Execute(this, _bookVm, args) },
+                { KeyTable.CopyBlock, args => new CopySelectedBlock().Execute(this, _bookVm, args) },
+                { KeyTable.PasteBlock, args => new PasteSelectedBlock().Execute(this, _bookVm, args) },
+            };
         }
 
         private void PagePbOnPreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
-            var pageAction = _previewKeyDownPageActionFactory.Construct(e);
-            if (pageAction != null)
+            e.IsInputKey = true;
+        }
+
+        private void PagePbOnKeyDown(object sender, KeyEventArgs args)
+        {
+            if (_bookVm == null) return;
+
+            args.SuppressKeyPress = true;
+            args.Handled = true;
+
+            if (KeyboardActions.ContainsKey(args.KeyValue))
             {
-                e.IsInputKey = true;
-                pageAction.Execute(this, _bookVm);
+                KeyboardActions[args.KeyValue].Invoke(args.ToKeyboardArgs());
+            }
+            else
+            {
+                _bookVm.RegisterKeyboardEvent(this, args.ToKeyboardArgs());
             }
         }
 
@@ -45,6 +75,10 @@ namespace BookProject.WinForms.Controls
             {
                 _bookVm.ImageRendererChanged -= OnImageRendererChanged;
                 _bookVm.SelectedBlockChanged -= OnSelectedBlockChanged;
+                _bookVm.BlockAdded -= BlockAdded;
+                _bookVm.BlockModified -= BlockModified;
+                _bookVm.BlockRemoved -= BlockRemoved;
+                _bookVm.KeyboardEvent -= OnBookVmKeyboardEvent;
             }
 
             _bookVm = bookVm;
@@ -54,6 +88,15 @@ namespace BookProject.WinForms.Controls
             _bookVm.BlockAdded += BlockAdded;
             _bookVm.BlockModified += BlockModified;
             _bookVm.BlockRemoved += BlockRemoved;
+            _bookVm.KeyboardEvent += OnBookVmKeyboardEvent;
+        }
+
+        private void OnBookVmKeyboardEvent(object sender, KeyboardArgs args)
+        {
+            if (KeyboardActions.ContainsKey(args.KeyValue))
+            {
+                KeyboardActions[args.KeyValue].Invoke(args);
+            }
         }
 
         private void BlockRemoved(object sender, Block e)

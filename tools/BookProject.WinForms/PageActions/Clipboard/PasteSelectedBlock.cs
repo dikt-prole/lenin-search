@@ -1,13 +1,14 @@
-﻿using BookProject.Core.Models.Domain;
+﻿using BookProject.Core.Models;
+using BookProject.Core.Models.Domain;
 using BookProject.Core.Models.ViewModel;
 
 namespace BookProject.WinForms.PageActions.Clipboard
 {
-    public class PasteEditBlockPageAction : BlockClipboardPageAction
+    public class PasteSelectedBlock : BlockClipboardKeyboardAction
     {
-        public override void Execute(object sender, BookViewModel bookVm)
+        public override void Execute(object sender, BookViewModel bookVm, KeyboardArgs args)
         {
-            if (ProtoBlock == null) return;
+            if (ProtoBlock == null || !args.Control) return;
 
             if (ProtoBlock is ImageBlock protoImageBlock)
             {
