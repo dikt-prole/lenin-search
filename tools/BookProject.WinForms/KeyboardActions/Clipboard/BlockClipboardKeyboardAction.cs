@@ -1,9 +1,8 @@
-﻿using System.Drawing;
-using BookProject.Core.Models;
+﻿using BookProject.Core.Models;
 using BookProject.Core.Models.Domain;
 using BookProject.Core.Models.ViewModel;
 
-namespace BookProject.WinForms.PageActions.Clipboard
+namespace BookProject.WinForms.KeyboardActions.Clipboard
 {
     public abstract class BlockClipboardKeyboardAction : IKeyboardAction
     {

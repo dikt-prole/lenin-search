@@ -105,7 +105,7 @@ namespace BookProject.WinForms.Controls.Detect
                 var page = _bookVm.Book.GetPage(Path.GetFileNameWithoutExtension(imageFile));
                 var excludeRects = page.ImageBlocks.Select(b => b.Rectangle)
                     .ToArray();
-                var commentLinkRects = new CommentLinkDetector(new YandexVisionOcrUtility())
+                var commentLinkRects = new CommentLinkDetector(new CvUtility())
                     .Detect(ImageUtility.Load(imageFile), settings, excludeRects, null);
                 _bookVm.SetPageBlocks(this, page, commentLinkRects.Select(CommentLinkBlock.FromRectangle));
                 progressBar1.Value = i + 1;
@@ -129,7 +129,7 @@ namespace BookProject.WinForms.Controls.Detect
             if (_bookVm == null) return;
 
             var settings = GetSettings();
-            var renderer = new TestDetectCommentLinkNumberImageRenderer(settings, _bookVm.OcrUtility);
+            var renderer = new TestDetectCommentLinkNumberImageRenderer(new CommentLinkDetector(new CvUtility()), settings);
             _bookVm.SetImageRenderer(this, renderer);
         }
     }

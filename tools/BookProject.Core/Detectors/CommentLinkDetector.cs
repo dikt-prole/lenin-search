@@ -1,31 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using BookProject.Core.Misc;
 using BookProject.Core.Settings;
 using BookProject.Core.Utilities;
 
 namespace BookProject.Core.Detectors
 {
-    public class CommentLinkDetector : ICommentLinkNumberDetector
+    public class CommentLinkDetector : ICommentLinkDetector
     {
         private readonly ICvUtility _cvUtility;
-        private readonly IOcrUtility _ocrUtility;
 
         public const string InvertedBitmapKey = "INVERTED_BITMAP";
         public const string LineGroupsKey = "LINE_GROUPS";
 
-        public CommentLinkDetector(IOcrUtility ocrUtility) : this(new CvUtility(), ocrUtility) { }
-
-        public CommentLinkDetector(ICvUtility cvUtility, IOcrUtility ocrUtility)
+        public CommentLinkDetector(ICvUtility cvUtility)
         {
             _cvUtility = cvUtility;
-            _ocrUtility = ocrUtility;
         }
 
         public Rectangle[] Detect(Bitmap image, DetectCommentLinkSettings settings, Rectangle[] excludeAreas,
@@ -69,6 +60,19 @@ namespace BookProject.Core.Detectors
                     if (topDelta <= settings.TopDeltaMax && bottomDelta > settings.BottomDeltaMin)
                     {
                         commentLinks.Add(new Rectangle(r.X - pad, r.Y - pad, r.Width + 2 * pad, r.Height + 2 * pad));
+                    }
+                }
+            }
+
+            for (var i = 0; i < commentLinks.Count; i++)
+            {
+                for (var j = i + 1; j < commentLinks.Count; j++)
+                {
+                    if (commentLinks[i].IntersectsWith(commentLinks[j]))
+                    {
+                        commentLinks[i] = _cvUtility.GetCoverRectangle(commentLinks[i], commentLinks[j]);
+                        commentLinks.RemoveAt(j);
+                        j--;
                     }
                 }
             }

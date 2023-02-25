@@ -3,26 +3,24 @@ using System.Drawing;
 using System.Linq;
 using BookProject.Core.Detectors;
 using BookProject.Core.Settings;
-using BookProject.Core.Utilities;
 
 namespace BookProject.Core.ImageRendering
 {
     public class TestDetectCommentLinkNumberImageRenderer : ImageRendererBase
     {
-        private readonly ICommentLinkNumberDetector _commentLinkNumberDetector;
+        private readonly ICommentLinkDetector _commentLinkDetector;
         private readonly DetectCommentLinkSettings _settings;
-        public TestDetectCommentLinkNumberImageRenderer(DetectCommentLinkSettings settings, IOcrUtility ocrUtility) : this(new CommentLinkDetector(ocrUtility), settings) { }
 
-        public TestDetectCommentLinkNumberImageRenderer(ICommentLinkNumberDetector commentLinkNumberDetector, DetectCommentLinkSettings settings)
+        public TestDetectCommentLinkNumberImageRenderer(ICommentLinkDetector commentLinkDetector, DetectCommentLinkSettings settings)
         {
-            _commentLinkNumberDetector = commentLinkNumberDetector;
+            _commentLinkDetector = commentLinkDetector;
             _settings = settings;
         }
 
         public override void Render(Bitmap originalBitmap, Graphics g)
         {
             var internalValues = new Dictionary<string, object>();
-            var commentLinks = _commentLinkNumberDetector.Detect(originalBitmap, _settings, null, internalValues);
+            var commentLinks = _commentLinkDetector.Detect(originalBitmap, _settings, null, internalValues);
 
             originalBitmap = internalValues[CommentLinkDetector.InvertedBitmapKey] as Bitmap;
             var lineGroups = internalValues[CommentLinkDetector.LineGroupsKey] as List<List<Rectangle>>;

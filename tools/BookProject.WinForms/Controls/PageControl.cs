@@ -11,8 +11,9 @@ using BookProject.Core.Models.Domain;
 using BookProject.Core.Models.ViewModel;
 using BookProject.Core.Utilities;
 using BookProject.WinForms.DragActivities;
-using BookProject.WinForms.PageActions;
-using BookProject.WinForms.PageActions.Clipboard;
+using BookProject.WinForms.KeyboardActions;
+using BookProject.WinForms.KeyboardActions.Clipboard;
+using BookProject.WinForms.KeyboardActions.MoveResize;
 
 namespace BookProject.WinForms.Controls
 {

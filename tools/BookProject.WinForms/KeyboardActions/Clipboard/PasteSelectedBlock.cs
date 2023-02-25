@@ -2,7 +2,7 @@
 using BookProject.Core.Models.Domain;
 using BookProject.Core.Models.ViewModel;
 
-namespace BookProject.WinForms.PageActions.Clipboard
+namespace BookProject.WinForms.KeyboardActions.Clipboard
 {
     public class PasteSelectedBlock : BlockClipboardKeyboardAction
     {

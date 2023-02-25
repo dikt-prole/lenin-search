@@ -84,8 +84,8 @@ namespace BookProject.WinForms.Controls
             {
                 _bookVm.BlockAdded -= OnBlockAction;
                 _bookVm.BlockRemoved -= OnBlockAction;
-                _bookVm.BlockModified -= OnBlockAction;
-                _bookVm.SelectedBlockChanged -= OnBlockAction;
+                _bookVm.BlockModified -= BookVmOnBlockModified;
+                _bookVm.SelectedBlockChanged -= BookVmSelectedBlockChanged;
                 _bookVm.KeyboardEvent -= OnBookVmKeyboardEvent;
             }
 
@@ -125,15 +125,18 @@ namespace BookProject.WinForms.Controls
 
         private void BookVmSelectedBlockChanged(object sender, Block e)
         {
-            block_lb.SelectedIndexChanged -= OnSelectedIndexChanged;
-
             var blockListItems = block_lb.Items.OfType<BlockListItem>().ToArray();
             var selectedBlockListItem = blockListItems.FirstOrDefault(bli => bli.Block == e);
-            block_lb.SelectedIndex = selectedBlockListItem == null
-                ? -1
-                : blockListItems.IndexOf(selectedBlockListItem);
-
-            block_lb.SelectedIndexChanged += OnSelectedIndexChanged;
+            if (selectedBlockListItem == null)
+            {
+                RefreshList(e);
+            }
+            else
+            {
+                block_lb.SelectedIndexChanged -= OnSelectedIndexChanged;
+                block_lb.SelectedIndex = blockListItems.IndexOf(selectedBlockListItem);
+                block_lb.SelectedIndexChanged += OnSelectedIndexChanged;
+            }
         }
 
         private void OnBlockAction(object sender, Block e)
@@ -177,7 +180,7 @@ namespace BookProject.WinForms.Controls
 
             if (_bookVm == null) return;
 
-            var blockListItems = GetBlockListItems(_bookVm.Book).ToArray();
+            var blockListItems = GetBlockListItems(_bookVm).ToArray();
             foreach (var blockListItem in blockListItems)
             {
                 block_lb.Items.Add(blockListItem);
@@ -201,25 +204,23 @@ namespace BookProject.WinForms.Controls
             }
         }
 
-        private IEnumerable<BlockListItem> GetBlockListItems(Book book)
+        private IEnumerable<BlockListItem> GetBlockListItems(BookViewModel bookVm)
         {
-            var pages = book.Pages.OrderBy(p => p.Index).ToArray();
+            var pages = bookVm.Book.Pages.OrderBy(p => p.Index).ToArray();
             foreach (var page in pages)
             {
-                if (pages_chb.Checked)
+                if (pages_chb.Checked || bookVm.SelectedBlock == page)
                 {
                     yield return new BlockListItem(page);
                 }
 
-                var blocks = page.GetAllBlocks().OrderBy(b => b.TopLeftY).ThenBy(b => b.TopLeftX).ToArray();
+                var blocks = page.GetNonPageBlocks().OrderBy(b => b.TopLeftY).ThenBy(b => b.TopLeftX).ToArray();
                 foreach (var block in blocks)
                 {
-                    if (block is TitleBlock && titles_chb.Checked)
-                    {
-                        yield return new BlockListItem(block);
-                    }
-
-                    if (block is CommentLinkBlock && comments_chb.Checked)
+                    var include = block == bookVm.SelectedBlock ||
+                                  block is TitleBlock && titles_chb.Checked ||
+                                  block is CommentLinkBlock && comments_chb.Checked;
+                    if (include)
                     {
                         yield return new BlockListItem(block);
                     }

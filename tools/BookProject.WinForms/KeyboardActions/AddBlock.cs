@@ -3,7 +3,7 @@ using BookProject.Core.Models;
 using BookProject.Core.Models.Domain;
 using BookProject.Core.Models.ViewModel;
 
-namespace BookProject.WinForms.PageActions
+namespace BookProject.WinForms.KeyboardActions
 {
     public class AddBlock<TBlock> : IKeyboardAction where TBlock : Block
     {

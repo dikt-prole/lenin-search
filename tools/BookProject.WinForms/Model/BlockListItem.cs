@@ -26,6 +26,18 @@ namespace BookProject.WinForms.Model
                 return Color.FromArgb(50, BookProjectPalette.CommentLinkBlockColor);
             }
 
+            if (Block is ImageBlock)
+            {
+                return Color.FromArgb(50, BookProjectPalette.ImageBlockColor);
+            }
+
+            if (Block is Line line)
+            {
+                return Color.FromArgb(50, line.Type == LineType.Normal 
+                    ? BookProjectPalette.LineNormalBlockColor 
+                    : BookProjectPalette.LineStartBlockColor);
+            }
+
             return Color.White;
         }
 
@@ -39,12 +51,24 @@ namespace BookProject.WinForms.Model
             if (Block is TitleBlock titleBlock)
             {
                 var prefix = string.Join("", Enumerable.Repeat("    ", titleBlock.Level));
-                return $"{prefix}{titleBlock.Text}";
+                var titleText = string.IsNullOrEmpty(titleBlock.Text) ? "-" : titleBlock.Text;
+                return $"{prefix}{titleText}";
             }
 
             if (Block is CommentLinkBlock commentLinkBlock)
             {
                 return string.IsNullOrEmpty(commentLinkBlock.CommentText) ? "-" : commentLinkBlock.CommentText;
+            }
+
+            if (Block is ImageBlock imageBlock)
+            {
+                return $"{imageBlock.Rectangle.Width}x{imageBlock.Rectangle.Height}";
+            }
+
+            if (Block is Line line)
+            {
+                var textPreview = line.GetTextPreview();
+                return string.IsNullOrEmpty(textPreview) ? "-" : textPreview;
             }
 
             return base.ToString();

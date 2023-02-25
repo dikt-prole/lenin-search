@@ -9,6 +9,6 @@ namespace BookProject.Core.Utilities
 
         (Rectangle[] Rectangles, Bitmap InvertedBitmap) GetContourRectangles(Bitmap image);
 
-        Rectangle GetCoverRectangle(Rectangle[] rectangles);
+        Rectangle GetCoverRectangle(params Rectangle[] rectangles);
     }
 }

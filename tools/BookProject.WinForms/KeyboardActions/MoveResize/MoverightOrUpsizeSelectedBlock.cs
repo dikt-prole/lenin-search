@@ -2,36 +2,30 @@
 using BookProject.Core.Models.Domain;
 using BookProject.Core.Models.ViewModel;
 
-namespace BookProject.WinForms.PageActions
+namespace BookProject.WinForms.KeyboardActions.MoveResize
 {
-    public class MoverightOrUpsizeSelectedBlock : IKeyboardAction
+    public class MoverightOrUpsizeSelectedBlock : MoveResizeBase
     {
-        private readonly int _step;
-
-        public MoverightOrUpsizeSelectedBlock(int step = 10)
-        {
-            _step = step;
-        }
-
-        public void Execute(object sender, BookViewModel bookVm, KeyboardArgs args)
+        public override void Execute(object sender, BookViewModel bookVm, KeyboardArgs args)
         {
             var selectedBlock = bookVm.SelectedBlock;
             if (selectedBlock != null && !(selectedBlock is Page))
             {
+                var step = GetStep(selectedBlock);
                 if (args.Shift)
                 {
                     bookVm.ModifyBlock(sender, selectedBlock, b =>
                     {
-                        b.TopLeftX -= _step;
-                        b.BottomRightX += _step;
+                        b.TopLeftX -= step;
+                        b.BottomRightX += step;
                     });
                 }
                 else
                 {
                     bookVm.ModifyBlock(sender, selectedBlock, b =>
                     {
-                        b.TopLeftX += _step;
-                        b.BottomRightX += _step;
+                        b.TopLeftX += step;
+                        b.BottomRightX += step;
                     });
                 }
             }

@@ -150,26 +150,26 @@ namespace BookProject.Core.Models.ViewModel
 
         public void SetPageBlocks<TBlock>(object sender, Page page, IEnumerable<TBlock> blocks) where TBlock : Block
         {
-            IEnumerable<Block> removeBlocks = null;
+            Block[] removeBlocks = null;
 
             if (typeof(TBlock) == typeof(ImageBlock))
             {
-                removeBlocks = page.ImageBlocks;
+                removeBlocks = page.ImageBlocks.ToArray();
             }
 
             if (typeof(TBlock) == typeof(TitleBlock))
             {
-                removeBlocks = page.TitleBlocks;
+                removeBlocks = page.TitleBlocks.ToArray();
             }
 
             if (typeof(TBlock) == typeof(CommentLinkBlock))
             {
-                removeBlocks = page.CommentLinkBlocks;
+                removeBlocks = page.CommentLinkBlocks.ToArray();
             }
 
             if (typeof(TBlock) == typeof(GarbageBlock))
             {
-                removeBlocks = page.GarbageBlocks;
+                removeBlocks = page.GarbageBlocks.ToArray();
             }
 
             if (removeBlocks != null)

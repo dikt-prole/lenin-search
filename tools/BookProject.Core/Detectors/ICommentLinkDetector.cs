@@ -4,7 +4,7 @@ using BookProject.Core.Settings;
 
 namespace BookProject.Core.Detectors
 {
-    public interface ICommentLinkNumberDetector
+    public interface ICommentLinkDetector
     {
         Rectangle[] Detect(Bitmap image, DetectCommentLinkSettings settings, Rectangle[] excludeAreas, Dictionary<string, object> internalValues);
     }
