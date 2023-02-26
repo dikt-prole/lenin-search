@@ -7,6 +7,7 @@ using Accord.Math;
 using BookProject.Core.Models;
 using BookProject.Core.Models.Domain;
 using BookProject.Core.Models.ViewModel;
+using BookProject.WinForms.Controls.Detect;
 using BookProject.WinForms.Model;
 
 namespace BookProject.WinForms.Controls
@@ -20,15 +21,26 @@ namespace BookProject.WinForms.Controls
         {
             InitializeComponent();
             pages_chb.Checked = true;
+            pages_chb.CheckedChanged += OnCheckedChanged;
+
             titles_chb.Checked = true;
+            titles_chb.CheckedChanged += OnCheckedChanged;
+
             comments_chb.Checked = true;
+            comments_chb.CheckedChanged += OnCheckedChanged;
+
             image_chb.Checked = true;
+            image_chb.CheckedChanged += OnCheckedChanged;
+
             line_chb.Checked = true;
+            line_chb.CheckedChanged += OnCheckedChanged;
+
+            garbage_chb.Checked = true;
+            garbage_chb.CheckedChanged += OnCheckedChanged;
+
             block_lb.DrawMode = DrawMode.OwnerDrawFixed;
             block_lb.DrawItem += OnDrawItem;
-            pages_chb.CheckedChanged += OnCheckedChanged;
-            titles_chb.CheckedChanged += OnCheckedChanged;
-            comments_chb.CheckedChanged += OnCheckedChanged;
+
             block_lb.PreviewKeyDown += BlockLbOnPreviewKeyDown;
             block_lb.KeyDown += BlockLbOnKeyDown;
 
@@ -127,6 +139,8 @@ namespace BookProject.WinForms.Controls
 
         private void BookVmSelectedBlockChanged(object sender, Block e)
         {
+            if (sender.GetType() == typeof(DetectLineControl)) return;
+
             var blockListItems = block_lb.Items.OfType<BlockListItem>().ToArray();
             var selectedBlockListItem = blockListItems.FirstOrDefault(bli => bli.Block == e);
             if (selectedBlockListItem == null)
@@ -143,6 +157,8 @@ namespace BookProject.WinForms.Controls
 
         private void OnBlockAction(object sender, Block e)
         {
+            if (sender.GetType() == typeof(DetectLineControl)) return;
+
             if (sender != this)
             {
                 RefreshList(_bookVm.SelectedBlock);
@@ -223,7 +239,8 @@ namespace BookProject.WinForms.Controls
                                   block is TitleBlock && titles_chb.Checked ||
                                   block is CommentLinkBlock && comments_chb.Checked ||
                                   block is ImageBlock && image_chb.Checked ||
-                                  block is Line && line_chb.Checked;
+                                  block is Line && line_chb.Checked ||
+                                  block is GarbageBlock && garbage_chb.Checked;
                     if (include)
                     {
                         yield return new BlockListItem(block);

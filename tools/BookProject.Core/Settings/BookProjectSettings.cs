@@ -10,6 +10,7 @@ namespace BookProject.Core.Settings
         public DetectTitleSettings TitleDetection { get; set; }
         public DetectCommentLinkSettings CommentLinkDetection { get; set; }
         public DetectGarbageSettings GarbageDetection { get; set; }
+        public DetectLineSettings LineDetection { get; set; }
 
         public static BookProjectSettings Load()
         {
@@ -75,6 +76,10 @@ namespace BookProject.Core.Settings
                     MinHeight = 15,
                     MinLeft = 100,
                     MinRight = 100
+                },
+                LineDetection = new DetectLineSettings
+                {
+                    MinIndent = 20
                 }
             };
         }

@@ -47,6 +47,10 @@ namespace BookProject.Core.Detectors
                 r.Width + settings.AddPadding * 2,
                 r.Height + settings.AddPadding * 2)).ToArray();
 
+            garbageRectangles = garbageRectangles
+                .Where(r => excludeAreas?.Any() != true || excludeAreas.All(a => !a.IntersectsWith(r)))
+                .ToArray();
+
             return garbageRectangles;
         }
     }

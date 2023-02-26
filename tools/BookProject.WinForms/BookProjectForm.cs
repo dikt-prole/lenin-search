@@ -21,31 +21,6 @@ namespace BookProject.WinForms
             InitializeComponent();
             saveBook_btn.Click += OnSaveBookClick;
             openBookFolder_btn.Click += OnOpenBookFolderClick;
-            generateLines_btn.Click += GenerateLinesClick;
-        }
-
-        private async void GenerateLinesClick(object? sender, EventArgs e)
-        {
-            /*
-            var dialog = new ImageScopeDialog();
-            if (dialog.ShowDialog() != DialogResult.OK) return;
-
-            var imageFiles = GetImageFiles(bookFolder_tb.Text)
-                .Where(f => dialog.ImageMatch(int.Parse(new string(Path.GetFileNameWithoutExtension(f).Where(char.IsNumber).ToArray()))))
-                .ToList();
-
-            progressBar1.Minimum = 0;
-            progressBar1.Maximum = imageFiles.Count;
-            progressBar1.Value = 0;
-
-            for (var i = 0; i < imageFiles.Count; i++)
-            {
-                var imageFile = imageFiles[i];
-                progressBar1.Value = i + 1;
-            }
-
-            MessageBox.Show("Ocr completed", "Ocr", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            */
         }
 
         private void UncoveredLinksClick(object sender, EventArgs e)
@@ -106,6 +81,7 @@ namespace BookProject.WinForms
             detectTitleControl1.Bind(_bookVm);
             detectGarbageControl1.Bind(_bookVm);
             detectCommentLinkNumberControl1.Bind(_bookVm);
+            detectLineControl1.Bind(_bookVm);
             blockDetailsControl1.Bind(_bookVm);
             blockListControl1.Bind(_bookVm);
             pageControl1.Bind(_bookVm);

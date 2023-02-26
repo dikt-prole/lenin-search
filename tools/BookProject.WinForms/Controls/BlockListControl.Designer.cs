@@ -35,16 +35,18 @@
             this.block_lb = new System.Windows.Forms.ListBox();
             this.image_chb = new System.Windows.Forms.CheckBox();
             this.line_chb = new System.Windows.Forms.CheckBox();
+            this.garbage_chb = new System.Windows.Forms.CheckBox();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // tableLayoutPanel1
             // 
-            this.tableLayoutPanel1.ColumnCount = 5;
+            this.tableLayoutPanel1.ColumnCount = 6;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 60F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 60F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 90F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 70F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 60F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.Controls.Add(this.pages_chb, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.titles_chb, 1, 0);
@@ -52,13 +54,14 @@
             this.tableLayoutPanel1.Controls.Add(this.block_lb, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.image_chb, 3, 0);
             this.tableLayoutPanel1.Controls.Add(this.line_chb, 4, 0);
+            this.tableLayoutPanel1.Controls.Add(this.garbage_chb, 5, 0);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 2;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 24F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(362, 384);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(471, 384);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // pages_chb
@@ -96,13 +99,13 @@
             // 
             // block_lb
             // 
-            this.tableLayoutPanel1.SetColumnSpan(this.block_lb, 5);
+            this.tableLayoutPanel1.SetColumnSpan(this.block_lb, 6);
             this.block_lb.Dock = System.Windows.Forms.DockStyle.Fill;
             this.block_lb.FormattingEnabled = true;
             this.block_lb.ItemHeight = 15;
             this.block_lb.Location = new System.Drawing.Point(3, 27);
             this.block_lb.Name = "block_lb";
-            this.block_lb.Size = new System.Drawing.Size(356, 354);
+            this.block_lb.Size = new System.Drawing.Size(465, 354);
             this.block_lb.TabIndex = 3;
             // 
             // image_chb
@@ -127,13 +130,24 @@
             this.line_chb.Text = "Line";
             this.line_chb.UseVisualStyleBackColor = true;
             // 
+            // garbage_chb
+            // 
+            this.garbage_chb.AutoSize = true;
+            this.garbage_chb.Location = new System.Drawing.Point(345, 3);
+            this.garbage_chb.Margin = new System.Windows.Forms.Padding(5, 3, 3, 3);
+            this.garbage_chb.Name = "garbage_chb";
+            this.garbage_chb.Size = new System.Drawing.Size(70, 18);
+            this.garbage_chb.TabIndex = 6;
+            this.garbage_chb.Text = "Garbage";
+            this.garbage_chb.UseVisualStyleBackColor = true;
+            // 
             // BlockListControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.tableLayoutPanel1);
             this.Name = "BlockListControl";
-            this.Size = new System.Drawing.Size(362, 384);
+            this.Size = new System.Drawing.Size(471, 384);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);
@@ -149,5 +163,6 @@
         private System.Windows.Forms.ListBox block_lb;
         private System.Windows.Forms.CheckBox image_chb;
         private System.Windows.Forms.CheckBox line_chb;
+        private System.Windows.Forms.CheckBox garbage_chb;
     }
 }

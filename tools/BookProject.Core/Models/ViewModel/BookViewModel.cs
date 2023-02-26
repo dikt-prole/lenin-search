@@ -77,22 +77,27 @@ namespace BookProject.Core.Models.ViewModel
         {
             if (block is ImageBlock imageBlock)
             {
+                page.ImageBlocks ??= new List<ImageBlock>();
                 page.ImageBlocks.Add(imageBlock);
             }
             else if (block is TitleBlock titleBlock)
             {
+                page.TitleBlocks ??= new List<TitleBlock>();
                 page.TitleBlocks.Add(titleBlock);
             }
             else if (block is CommentLinkBlock commentLinkBlock)
             {
+                page.CommentLinkBlocks ??= new List<CommentLinkBlock>();
                 page.CommentLinkBlocks.Add(commentLinkBlock);
             }
             else if (block is GarbageBlock garbageBlock)
             {
+                page.GarbageBlocks ??= new List<GarbageBlock>();
                 page.GarbageBlocks.Add(garbageBlock);
             }
             else if (block is Line line)
             {
+                page.Lines ??= new List<Line>();
                 page.Lines.Add(line);
             }
 
@@ -244,6 +249,13 @@ namespace BookProject.Core.Models.ViewModel
                 Book = book,
                 Settings = settings
             };
+        }
+
+        public void SetAndSaveDetectLineSettings(object sender, DetectLineSettings settings)
+        {
+            Settings.LineDetection = settings;
+            Settings.Save();
+            SettingsChanged?.Invoke(sender, Settings);
         }
     }
 }

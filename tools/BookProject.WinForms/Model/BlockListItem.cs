@@ -38,6 +38,11 @@ namespace BookProject.WinForms.Model
                     : BookProjectPalette.LineStartBlockColor);
             }
 
+            if (Block is GarbageBlock)
+            {
+                return Color.FromArgb(50, BookProjectPalette.GarbageBlockColor);
+            }
+
             return Color.White;
         }
 
@@ -69,6 +74,11 @@ namespace BookProject.WinForms.Model
             {
                 var textPreview = line.GetTextPreview();
                 return string.IsNullOrEmpty(textPreview) ? "-" : textPreview;
+            }
+
+            if (Block is GarbageBlock garbageBlock)
+            {
+                return $"{garbageBlock.Rectangle.Width}x{garbageBlock.Rectangle.Height}";
             }
 
             return base.ToString();

@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 
 namespace BookProject.Core.Utilities
@@ -20,6 +21,26 @@ namespace BookProject.Core.Utilities
                 GraphicsUnit.Pixel);
 
             return targetBitmap;
+        }
+
+        public static Bitmap WhiteOut(Bitmap sourceBitmap, Rectangle[] rectangles)
+        {
+            var resultBitmap = new Bitmap(sourceBitmap);
+            using var g = Graphics.FromImage(resultBitmap);
+            using var brush = new SolidBrush(Color.White);
+            foreach (var rectangle in rectangles)
+            {
+                g.FillRectangle(brush, rectangle);
+            }
+
+            return resultBitmap;
+        }
+
+        public static byte[] GetJpegBytes(Bitmap image)
+        {
+            using var stream = new MemoryStream();
+            image.Save(stream, ImageFormat.Jpeg);
+            return stream.ToArray();
         }
     }
 }

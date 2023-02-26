@@ -40,6 +40,9 @@
     <Compile Update="Controls\Detect\DetectCommentLinkNumberControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="Controls\Detect\DetectLineControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="ImageScopeDialog.cs">
       <SubType>Form</SubType>
     </Compile>
