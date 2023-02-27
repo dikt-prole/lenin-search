@@ -100,7 +100,7 @@ namespace BookProject.WinForms.Controls.Detect
                     var prevX = lines[j - 1].TopLeftX;
                     if (prevX - currX > settings.MinIndent)
                     {
-                        lines[j - 1].Type = LineType.LineStart;
+                        lines[j - 1].Type = LineType.First;
                     }
                 }
 

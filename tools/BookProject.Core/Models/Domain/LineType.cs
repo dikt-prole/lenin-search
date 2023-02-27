@@ -2,6 +2,6 @@
 {
     public enum LineType
     {
-        None = 0, LineStart = 1, Normal = 2
+        None = 0, First = 1, Normal = 2
     }
 }

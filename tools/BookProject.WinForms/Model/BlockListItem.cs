@@ -72,7 +72,7 @@ namespace BookProject.WinForms.Model
 
             if (Block is Line line)
             {
-                var textPreview = line.GetTextPreview();
+                var textPreview = line.GetOriginalTextPreview();
                 return string.IsNullOrEmpty(textPreview) ? "-" : textPreview;
             }
 

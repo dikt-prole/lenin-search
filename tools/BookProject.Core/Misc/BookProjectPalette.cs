@@ -31,7 +31,7 @@ namespace BookProject.Core.Misc
 
                 if (lineBlock.Type == LineType.Normal) return new Pen(LineNormalBlockColor, penWidth);
 
-                if (lineBlock.Type == LineType.LineStart) return new Pen(LineStartBlockColor, penWidth);
+                if (lineBlock.Type == LineType.First) return new Pen(LineStartBlockColor, penWidth);
             }
 
             throw new Exception("Unknown block type");
@@ -55,7 +55,7 @@ namespace BookProject.Core.Misc
 
                 if (lineBlock.Type == LineType.Normal) return new SolidBrush(LineNormalBlockColor);
 
-                if (lineBlock.Type == LineType.LineStart) return new SolidBrush(LineStartBlockColor);
+                if (lineBlock.Type == LineType.First) return new SolidBrush(LineStartBlockColor);
             }
 
             throw new Exception("Unknown block type");

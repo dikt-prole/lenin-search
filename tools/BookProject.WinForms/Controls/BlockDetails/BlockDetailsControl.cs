@@ -10,6 +10,7 @@ namespace BookProject.WinForms.Controls
         private BookViewModel _bookVm;
         private readonly CommentLinkBlockDetailsControl _commentLinkBlockDetailsControl;
         private readonly TitleBlockDetailsControl _titleBlockDetailsControl;
+        private readonly LineBlockDetailsControl _lineBlockDetailsControl;
 
         public void Bind(BookViewModel bookVm)
         {
@@ -35,6 +36,13 @@ namespace BookProject.WinForms.Controls
                 Controls.Add(_titleBlockDetailsControl);
                 _titleBlockDetailsControl.Dock = DockStyle.Fill;
             }
+
+            if (e is Line line)
+            {
+                _lineBlockDetailsControl.Bind(_bookVm, line);
+                Controls.Add(_lineBlockDetailsControl);
+                _lineBlockDetailsControl.Dock = DockStyle.Fill;
+            }
         }
 
         public BlockDetailsControl()
@@ -42,6 +50,7 @@ namespace BookProject.WinForms.Controls
             InitializeComponent();
             _commentLinkBlockDetailsControl = new CommentLinkBlockDetailsControl();
             _titleBlockDetailsControl = new TitleBlockDetailsControl();
+            _lineBlockDetailsControl = new LineBlockDetailsControl();
         }
     }
 }
