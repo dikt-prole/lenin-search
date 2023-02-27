@@ -80,7 +80,7 @@ namespace BookProject.WinForms
             detectImageControl1.Bind(_bookVm);
             detectTitleControl1.Bind(_bookVm);
             detectGarbageControl1.Bind(_bookVm);
-            detectCommentLinkNumberControl1.Bind(_bookVm);
+            _detectCommentLinkControl1.Bind(_bookVm);
             detectLineControl1.Bind(_bookVm);
             blockDetailsControl1.Bind(_bookVm);
             blockListControl1.Bind(_bookVm);

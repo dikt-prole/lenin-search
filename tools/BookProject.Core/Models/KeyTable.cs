@@ -16,5 +16,8 @@
         public const int AddCommentLinkBlock = 78; // N
         public const int CopyBlock = 67; // C
         public const int PasteBlock = 86; // V
+        public const int HeadingLevelIncrease = 107; // +
+        public const int HeadingLevelDecrease = 109; // -
+        public static int ShowBlockDialog = 13; // ENTER
     }
 }

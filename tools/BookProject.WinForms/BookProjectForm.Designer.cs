@@ -44,7 +44,7 @@ namespace BookProject.WinForms
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.detectTitleControl1 = new BookProject.WinForms.Controls.Detect.DetectTitleControl();
             this.tabPage4 = new System.Windows.Forms.TabPage();
-            this.detectCommentLinkNumberControl1 = new BookProject.WinForms.Controls.Detect.DetectCommentLinkNumberControl();
+            this._detectCommentLinkControl1 = new BookProject.WinForms.Controls.Detect.DetectCommentLinkControl();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.detectGarbageControl1 = new BookProject.WinForms.Controls.Detect.DetectGarbageControl();
             this.tabPage6 = new System.Windows.Forms.TabPage();
@@ -206,7 +206,7 @@ namespace BookProject.WinForms
             // 
             // tabPage4
             // 
-            this.tabPage4.Controls.Add(this.detectCommentLinkNumberControl1);
+            this.tabPage4.Controls.Add(this._detectCommentLinkControl1);
             this.tabPage4.Location = new System.Drawing.Point(4, 24);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
@@ -217,11 +217,11 @@ namespace BookProject.WinForms
             // 
             // detectCommentLinkNumberControl1
             // 
-            this.detectCommentLinkNumberControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.detectCommentLinkNumberControl1.Location = new System.Drawing.Point(3, 3);
-            this.detectCommentLinkNumberControl1.Name = "detectCommentLinkNumberControl1";
-            this.detectCommentLinkNumberControl1.Size = new System.Drawing.Size(434, 297);
-            this.detectCommentLinkNumberControl1.TabIndex = 0;
+            this._detectCommentLinkControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this._detectCommentLinkControl1.Location = new System.Drawing.Point(3, 3);
+            this._detectCommentLinkControl1.Name = "_detectCommentLinkControl1";
+            this._detectCommentLinkControl1.Size = new System.Drawing.Size(434, 297);
+            this._detectCommentLinkControl1.TabIndex = 0;
             // 
             // tabPage3
             // 
@@ -336,7 +336,7 @@ namespace BookProject.WinForms
         private BlockListControl blockListControl1;
         private DetectImageControl detectImageControl1;
         private DetectTitleControl detectTitleControl1;
-        private DetectCommentLinkNumberControl detectCommentLinkNumberControl1;
+        private DetectCommentLinkControl _detectCommentLinkControl1;
         private DetectGarbageControl detectGarbageControl1;
         private DetectLineControl detectLineControl1;
         private System.Windows.Forms.Label label1;

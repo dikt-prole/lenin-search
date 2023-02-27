@@ -61,6 +61,32 @@ namespace BookProject.WinForms.Controls
                         block_lb.SelectedIndex -= 1;
                     }
                 }
+                },
+                { KeyTable.HeadingLevelIncrease, args =>
+                    {
+                        if (_bookVm.SelectedBlock is TitleBlock titleBlock)
+                        {
+                            _bookVm.ModifyBlock(this, titleBlock, tb =>
+                            {
+                                tb.Level += 1;
+                            });
+                        }
+                    }
+                }
+                ,
+                { KeyTable.HeadingLevelDecrease, args =>
+                    {
+                        if (_bookVm.SelectedBlock is TitleBlock titleBlock)
+                        {
+                            _bookVm.ModifyBlock(this, titleBlock, tb =>
+                            {
+                                if (tb.Level > 0)
+                                {
+                                    tb.Level -= 1;
+                                }
+                            });
+                        }
+                    }
                 }
             };
         }
@@ -140,6 +166,10 @@ namespace BookProject.WinForms.Controls
         private void BookVmSelectedBlockChanged(object sender, Block e)
         {
             if (sender.GetType() == typeof(DetectLineControl)) return;
+            if (sender.GetType() == typeof(DetectCommentLinkControl)) return;
+            if (sender.GetType() == typeof(DetectTitleControl)) return;
+            if (sender.GetType() == typeof(DetectImageControl)) return;
+            if (sender.GetType() == typeof(DetectGarbageControl)) return;
 
             var blockListItems = block_lb.Items.OfType<BlockListItem>().ToArray();
             var selectedBlockListItem = blockListItems.FirstOrDefault(bli => bli.Block == e);
@@ -158,6 +188,10 @@ namespace BookProject.WinForms.Controls
         private void OnBlockAction(object sender, Block e)
         {
             if (sender.GetType() == typeof(DetectLineControl)) return;
+            if (sender.GetType() == typeof(DetectCommentLinkControl)) return;
+            if (sender.GetType() == typeof(DetectTitleControl)) return;
+            if (sender.GetType() == typeof(DetectImageControl)) return;
+            if (sender.GetType() == typeof(DetectGarbageControl)) return;
 
             if (sender != this)
             {

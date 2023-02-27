@@ -10,6 +10,7 @@ using BookProject.Core.Models;
 using BookProject.Core.Models.Domain;
 using BookProject.Core.Models.ViewModel;
 using BookProject.Core.Utilities;
+using BookProject.WinForms.Dialogs;
 using BookProject.WinForms.DragActivities;
 using BookProject.WinForms.KeyboardActions;
 using BookProject.WinForms.KeyboardActions.Clipboard;
@@ -45,6 +46,19 @@ namespace BookProject.WinForms.Controls
                 { KeyTable.AddCommentLinkBlock, args => new AddBlock<CommentLinkBlock>(25, 25).Execute(this, _bookVm, args) },
                 { KeyTable.CopyBlock, args => new CopySelectedBlock().Execute(this, _bookVm, args) },
                 { KeyTable.PasteBlock, args => new PasteSelectedBlock().Execute(this, _bookVm, args) },
+                {
+                    KeyTable.ShowBlockDialog, args =>
+                    {
+                        if (_bookVm.SelectedBlock is CommentLinkBlock commentLinkBlock)
+                        {
+                            var dialog = new CommentLinkDialog().Init(commentLinkBlock);
+                            if (dialog.ShowDialog() == DialogResult.OK)
+                            {
+                                _bookVm.ModifyBlock(this, commentLinkBlock, clb => dialog.Apply(clb));
+                            }
+                        }
+                    }
+                },
             };
         }
 

@@ -11,7 +11,7 @@ using BookProject.Core.Utilities;
 
 namespace BookProject.WinForms.Controls.Detect
 {
-    public partial class DetectCommentLinkNumberControl : UserControl
+    public partial class DetectCommentLinkControl : UserControl
     {
         private BookViewModel _bookVm;
 
@@ -42,7 +42,7 @@ namespace BookProject.WinForms.Controls.Detect
             addPadding_nud.Value = settings.AddPadding;
         }
 
-        public DetectCommentLinkNumberControl()
+        public DetectCommentLinkControl()
         {
             InitializeComponent();
 

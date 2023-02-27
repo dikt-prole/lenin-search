@@ -1,6 +1,6 @@
 ﻿namespace BookProject.WinForms.Controls.Detect
 {
-    partial class DetectCommentLinkNumberControl
+    partial class DetectCommentLinkControl
     {
         /// <summary> 
         /// Required designer variable.
@@ -228,7 +228,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.tableLayoutPanel1);
-            this.Name = "DetectCommentLinkNumberControl";
+            this.Name = "DetectCommentLinkControl";
             this.Size = new System.Drawing.Size(598, 416);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
