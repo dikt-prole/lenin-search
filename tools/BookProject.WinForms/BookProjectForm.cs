@@ -85,12 +85,13 @@ namespace BookProject.WinForms
             blockDetailsControl1.Bind(_bookVm);
             blockListControl1.Bind(_bookVm);
             pageControl1.Bind(_bookVm);
+            messageControl1.Bind(_bookVm);
         }
 
         private void OnSaveBookClick(object? sender, EventArgs e)
         {
             _bookVm.Book.Save(bookFolder_tb.Text);
-            MessageBox.Show("Ocr data saved", "Ocr data", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            _bookVm.SendInfo(this, "Book saved");
         }
         private void GenerateFb2Click(object sender, EventArgs e)
         {

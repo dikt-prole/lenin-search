@@ -8,6 +8,7 @@ using BookProject.Core.Models;
 using BookProject.Core.Models.Domain;
 using BookProject.Core.Models.ViewModel;
 using BookProject.WinForms.Controls.Detect;
+using BookProject.WinForms.Dialogs;
 using BookProject.WinForms.Model;
 
 namespace BookProject.WinForms.Controls
@@ -43,26 +44,30 @@ namespace BookProject.WinForms.Controls
 
             block_lb.PreviewKeyDown += BlockLbOnPreviewKeyDown;
             block_lb.KeyDown += BlockLbOnKeyDown;
+            block_lb.MouseDoubleClick += BlockLbOnMouseDoubleClick;
 
             KeyboardActions = new Dictionary<int, Action<KeyboardArgs>>
             {
-                { KeyTable.BlockListDown, args =>
-                {
-                    if (block_lb.SelectedIndex < block_lb.Items.Count - 1)
+                { 
+                    KeyTable.BlockListDown, args =>
                     {
-                        block_lb.SelectedIndex += 1;
+                        if (block_lb.SelectedIndex < block_lb.Items.Count - 1)
+                        {
+                            block_lb.SelectedIndex += 1;
+                        }
                     }
-                }
                 },
-                { KeyTable.BlockListUp, args =>
                 {
-                    if (block_lb.SelectedIndex > 0)
+                    KeyTable.BlockListUp, args =>
                     {
-                        block_lb.SelectedIndex -= 1;
+                        if (block_lb.SelectedIndex > 0)
+                        {
+                            block_lb.SelectedIndex -= 1;
+                        }
                     }
-                }
                 },
-                { KeyTable.HeadingLevelIncrease, args =>
+                {
+                    KeyTable.HeadingLevelIncrease, args =>
                     {
                         if (_bookVm.SelectedBlock is TitleBlock titleBlock)
                         {
@@ -72,9 +77,9 @@ namespace BookProject.WinForms.Controls
                             });
                         }
                     }
-                }
-                ,
-                { KeyTable.HeadingLevelDecrease, args =>
+                },
+                {
+                    KeyTable.HeadingLevelDecrease, args =>
                     {
                         if (_bookVm.SelectedBlock is TitleBlock titleBlock)
                         {
@@ -87,8 +92,35 @@ namespace BookProject.WinForms.Controls
                             });
                         }
                     }
+                },
+                {
+                    KeyTable.ShowBlockDialog, args =>
+                    {
+                        if (_bookVm.SelectedBlock is CommentLinkBlock commentLinkBlock)
+                        {
+                            var dialog = new CommentLinkDialog().Init(commentLinkBlock);
+                            if (dialog.ShowDialog() == DialogResult.OK)
+                            {
+                                _bookVm.ModifyBlock(this, commentLinkBlock, clb => dialog.Apply(clb));
+                            }
+                        }
+                    }
                 }
             };
+        }
+
+        private void BlockLbOnMouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Left) return;
+
+            if (_bookVm.SelectedBlock is CommentLinkBlock commentLinkBlock)
+            {
+                var dialog = new CommentLinkDialog().Init(commentLinkBlock);
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    _bookVm.ModifyBlock(this, commentLinkBlock, clb => dialog.Apply(clb));
+                }
+            }
         }
 
         private void BlockLbOnPreviewKeyDown(object sender, PreviewKeyDownEventArgs e)

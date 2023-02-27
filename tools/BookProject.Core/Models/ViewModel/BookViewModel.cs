@@ -12,19 +12,21 @@ namespace BookProject.Core.Models.ViewModel
 {
     public class BookViewModel
     {
-        public EventHandler<Block> SelectedBlockChanged;
+        public event EventHandler<Block> SelectedBlockChanged;
 
-        public EventHandler<Block> BlockAdded;
+        public event EventHandler<Block> BlockAdded;
 
-        public EventHandler<Block> BlockRemoved;
+        public event EventHandler<Block> BlockRemoved;
 
-        public EventHandler<Block> BlockModified;
+        public event EventHandler<Block> BlockModified;
 
-        public EventHandler<IImageRenderer> ImageRendererChanged;
+        public event EventHandler<IImageRenderer> ImageRendererChanged;
 
-        public EventHandler<BookProjectSettings> SettingsChanged;
+        public event EventHandler<BookProjectSettings> SettingsChanged;
 
-        public EventHandler<KeyboardArgs> KeyboardEvent;
+        public event EventHandler<KeyboardArgs> KeyboardEvent;
+
+        public event EventHandler<MessageArgs> Message;
 
         public Book Book { get; set; }
         public Page CurrentPage => GetBlockPage(SelectedBlock);
@@ -249,6 +251,16 @@ namespace BookProject.Core.Models.ViewModel
                 Book = book,
                 Settings = settings
             };
+        }
+
+        public void SendInfo(object sender, string text)
+        {
+            var args = new MessageArgs
+            {
+                MessageType = MessageType.Info,
+                Text = text
+            };
+            Message?.Invoke(sender, args);
         }
 
         public void SetAndSaveDetectLineSettings(object sender, DetectLineSettings settings)

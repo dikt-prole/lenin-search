@@ -45,20 +45,7 @@ namespace BookProject.WinForms.Controls
                 { KeyTable.AddGarbageBlock, args => new AddBlock<GarbageBlock>(100, 100).Execute(this, _bookVm, args) },
                 { KeyTable.AddCommentLinkBlock, args => new AddBlock<CommentLinkBlock>(25, 25).Execute(this, _bookVm, args) },
                 { KeyTable.CopyBlock, args => new CopySelectedBlock().Execute(this, _bookVm, args) },
-                { KeyTable.PasteBlock, args => new PasteSelectedBlock().Execute(this, _bookVm, args) },
-                {
-                    KeyTable.ShowBlockDialog, args =>
-                    {
-                        if (_bookVm.SelectedBlock is CommentLinkBlock commentLinkBlock)
-                        {
-                            var dialog = new CommentLinkDialog().Init(commentLinkBlock);
-                            if (dialog.ShowDialog() == DialogResult.OK)
-                            {
-                                _bookVm.ModifyBlock(this, commentLinkBlock, clb => dialog.Apply(clb));
-                            }
-                        }
-                    }
-                },
+                { KeyTable.PasteBlock, args => new PasteSelectedBlock().Execute(this, _bookVm, args) }
             };
         }
 
@@ -200,6 +187,16 @@ namespace BookProject.WinForms.Controls
         {
             var menu = new ContextMenuStrip();
 
+            menu.Items.Add("Recognize Text", null, async (o, a) =>
+            {
+                using var ocrBitmap = ImageUtility.Crop(_bookVm.OriginalPageBitmap, originalRect);
+                using var ocrStream = new MemoryStream();
+                ocrBitmap.Save(ocrStream, ImageFormat.Jpeg);
+                var ocrPage = await _bookVm.OcrUtility.GetPageAsync(ocrStream.ToArray());
+                Clipboard.SetText(ocrPage.GetText());
+                _bookVm.SendInfo(this, "Copied text to clipboard");
+            });
+
             menu.Items.Add("Add Image Block", null,
                 (o, a) => _bookVm.AddBlock(this, ImageBlock.FromRectangle(originalRect), _bookVm.CurrentPage));
 
@@ -211,16 +208,6 @@ namespace BookProject.WinForms.Controls
 
             menu.Items.Add("Add Garbage Block", null,
                 (o, a) => _bookVm.AddBlock(this, GarbageBlock.FromRectangle(originalRect), _bookVm.CurrentPage));
-
-            menu.Items.Add("Recognize Text", null, async (o, a) =>
-            {
-                using var ocrBitmap = ImageUtility.Crop(_bookVm.OriginalPageBitmap, originalRect);
-                using var ocrStream = new MemoryStream();
-                ocrBitmap.Save(ocrStream, ImageFormat.Jpeg);
-                var ocrPage = await _bookVm.OcrUtility.GetPageAsync(ocrStream.ToArray());
-                Clipboard.SetText(ocrPage.GetText());
-                MessageBox.Show("Text copied to clipboard", "Recognize Text", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            });
 
             return menu;
         }
