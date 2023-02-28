@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using Accord.Math;
 using BookProject.Core.Models;
 using BookProject.Core.Models.Domain;
 using BookProject.Core.Models.ViewModel;
@@ -105,6 +104,16 @@ namespace BookProject.WinForms.Controls
                             }
                         }
                     }
+                },
+                {
+                    KeyTable.SwitchLineType, args =>
+                    {
+                        if (_bookVm.SelectedBlock is Line line && args.Control)
+                        {
+                            var targetType = line.Type == LineType.Normal ? LineType.First : LineType.Normal;
+                            _bookVm.ModifyBlock(this, line, l => l.Type = targetType);
+                        }
+                    }
                 }
             };
         }
@@ -164,12 +173,21 @@ namespace BookProject.WinForms.Controls
             _bookVm = bookVm;
 
             _bookVm.BlockAdded += OnBlockAction;
-            _bookVm.BlockRemoved += OnBlockAction;
+            _bookVm.BlockRemoved += BookVmOnBlockRemoved;
             _bookVm.BlockModified += BookVmOnBlockModified;
             _bookVm.SelectedBlockChanged += BookVmSelectedBlockChanged;
             _bookVm.KeyboardEvent += OnBookVmKeyboardEvent;
 
             RefreshList(null);
+        }
+
+        private void BookVmOnBlockRemoved(object sender, Block e)
+        {
+            var blockListItem = block_lb.Items.OfType<BlockListItem>().FirstOrDefault(b => b.Block == e);
+            if (blockListItem != null)
+            {
+                block_lb.Items.Remove(blockListItem);
+            }
         }
 
         private void OnBookVmKeyboardEvent(object sender, KeyboardArgs args)
@@ -184,7 +202,7 @@ namespace BookProject.WinForms.Controls
         {
             block_lb.SelectedIndexChanged -= OnSelectedIndexChanged;
 
-            var blockListItems = block_lb.Items.OfType<BlockListItem>().ToArray();
+            var blockListItems = block_lb.Items.OfType<BlockListItem>().ToList();
             var selectedBlockListItem = blockListItems.FirstOrDefault(bli => bli.Block == e);
             if (selectedBlockListItem != null)
             {
@@ -203,7 +221,7 @@ namespace BookProject.WinForms.Controls
             if (sender.GetType() == typeof(DetectImageControl)) return;
             if (sender.GetType() == typeof(DetectGarbageControl)) return;
 
-            var blockListItems = block_lb.Items.OfType<BlockListItem>().ToArray();
+            var blockListItems = block_lb.Items.OfType<BlockListItem>().ToList();
             var selectedBlockListItem = blockListItems.FirstOrDefault(bli => bli.Block == e);
             if (selectedBlockListItem == null)
             {
@@ -264,7 +282,7 @@ namespace BookProject.WinForms.Controls
 
             if (_bookVm == null) return;
 
-            var blockListItems = GetBlockListItems(_bookVm).ToArray();
+            var blockListItems = GetBlockListItems(_bookVm).ToList();
             foreach (var blockListItem in blockListItems)
             {
                 block_lb.Items.Add(blockListItem);

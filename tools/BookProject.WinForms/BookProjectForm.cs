@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 using BookProject.Core.Models.Domain;
 using BookProject.Core.Models.ViewModel;
@@ -19,6 +20,7 @@ namespace BookProject.WinForms
         public BookProjectForm()
         {
             InitializeComponent();
+            Icon = new Icon("book_project_icon.ico");
             saveBook_btn.Click += OnSaveBookClick;
             openBookFolder_btn.Click += OnOpenBookFolderClick;
         }

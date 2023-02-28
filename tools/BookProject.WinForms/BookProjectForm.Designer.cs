@@ -314,7 +314,7 @@ namespace BookProject.WinForms
             this.ClientSize = new System.Drawing.Size(1170, 681);
             this.Controls.Add(this.tableLayoutPanel3);
             this.Name = "BookProjectForm";
-            this.Text = "LabelingForm";
+            this.Text = "Book Project";
             this.tableLayoutPanel3.ResumeLayout(false);
             this.tableLayoutPanel5.ResumeLayout(false);
             this.tableLayoutPanel5.PerformLayout();

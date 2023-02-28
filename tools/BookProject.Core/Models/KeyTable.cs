@@ -18,6 +18,7 @@
         public const int PasteBlock = 86; // V
         public const int HeadingLevelIncrease = 107; // +
         public const int HeadingLevelDecrease = 109; // -
-        public static int ShowBlockDialog = 13; // ENTER
+        public const int ShowBlockDialog = 13; // ENTER
+        public const int SwitchLineType = 70; // F
     }
 }
