@@ -116,6 +116,7 @@ namespace BookProject.WinForms.Controls.Detect
             progressBar1.Value = 0;
             var settings = GetSettings();
 
+            _bookVm.SendInfo(this, "Started title detection");
             for (var i = 0; i < imageFiles.Length; i++)
             {
                 var imageFile = imageFiles[i];
@@ -139,7 +140,7 @@ namespace BookProject.WinForms.Controls.Detect
                 Application.DoEvents();
             }
 
-            MessageBox.Show("Completed!", "Detect Titles", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            _bookVm.SendInfo(this, "Title detection complete");
             progressBar1.Value = 0;
         }
 

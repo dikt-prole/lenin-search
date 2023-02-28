@@ -26,19 +26,19 @@ namespace BookProject.WinForms.Controls
             pages_chb.Checked = true;
             pages_chb.CheckedChanged += OnCheckedChanged;
 
-            titles_chb.Checked = true;
+            titles_chb.Checked = false;
             titles_chb.CheckedChanged += OnCheckedChanged;
 
-            comments_chb.Checked = true;
+            comments_chb.Checked = false;
             comments_chb.CheckedChanged += OnCheckedChanged;
 
-            image_chb.Checked = true;
+            image_chb.Checked = false;
             image_chb.CheckedChanged += OnCheckedChanged;
 
-            line_chb.Checked = true;
+            line_chb.Checked = false;
             line_chb.CheckedChanged += OnCheckedChanged;
 
-            garbage_chb.Checked = true;
+            garbage_chb.Checked = false;
             garbage_chb.CheckedChanged += OnCheckedChanged;
 
             block_lb.DrawMode = DrawMode.OwnerDrawFixed;

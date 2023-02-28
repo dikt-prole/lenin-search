@@ -99,6 +99,8 @@ namespace BookProject.WinForms.Controls.Detect
             progressBar1.Value = 0;
             var settings = GetSettings();
 
+            _bookVm.SendInfo(this, "Started comment link detection");
+
             for (var i = 0; i < imageFiles.Length; i++)
             {
                 var imageFile = imageFiles[i];
@@ -112,7 +114,7 @@ namespace BookProject.WinForms.Controls.Detect
                 Application.DoEvents();
             }
 
-            MessageBox.Show("Completed!", "Detect Comment Links", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            _bookVm.SendInfo(this, "Comment link detection complete");
             progressBar1.Value = 0;
         }
 
