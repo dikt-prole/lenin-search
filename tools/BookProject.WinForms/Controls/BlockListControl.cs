@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -15,6 +16,8 @@ namespace BookProject.WinForms.Controls
     public partial class BlockListControl : UserControl
     {
         private readonly Dictionary<int, Action<KeyboardArgs>> KeyboardActions;
+
+        private BindingList<BlockListItem> _blockListItems;
 
         private BookViewModel _bookVm;
         public BlockListControl()
@@ -156,7 +159,7 @@ namespace BookProject.WinForms.Controls
 
         private void OnCheckedChanged(object sender, EventArgs e)
         {
-            RefreshList(null);
+            RefreshList();
         }
 
         public void Bind(BookViewModel bookVm)
@@ -164,7 +167,7 @@ namespace BookProject.WinForms.Controls
             if (_bookVm != null)
             {
                 _bookVm.BlockAdded -= OnBlockAction;
-                _bookVm.BlockRemoved -= OnBlockAction;
+                _bookVm.BlockRemoved -= BookVmOnBlockRemoved;
                 _bookVm.BlockModified -= BookVmOnBlockModified;
                 _bookVm.SelectedBlockChanged -= BookVmSelectedBlockChanged;
                 _bookVm.KeyboardEvent -= OnBookVmKeyboardEvent;
@@ -178,15 +181,17 @@ namespace BookProject.WinForms.Controls
             _bookVm.SelectedBlockChanged += BookVmSelectedBlockChanged;
             _bookVm.KeyboardEvent += OnBookVmKeyboardEvent;
 
-            RefreshList(null);
+            RefreshList();
         }
 
         private void BookVmOnBlockRemoved(object sender, Block e)
         {
-            var blockListItem = block_lb.Items.OfType<BlockListItem>().FirstOrDefault(b => b.Block == e);
+            var blockListItem = _blockListItems?.FirstOrDefault(b => b.Block == e);
             if (blockListItem != null)
             {
-                block_lb.Items.Remove(blockListItem);
+                block_lb.SelectedIndexChanged -= OnSelectedIndexChanged;
+                _blockListItems.Remove(blockListItem);
+                block_lb.SelectedIndexChanged += OnSelectedIndexChanged;
             }
         }
 
@@ -202,12 +207,11 @@ namespace BookProject.WinForms.Controls
         {
             block_lb.SelectedIndexChanged -= OnSelectedIndexChanged;
 
-            var blockListItems = block_lb.Items.OfType<BlockListItem>().ToList();
-            var selectedBlockListItem = blockListItems.FirstOrDefault(bli => bli.Block == e);
-            if (selectedBlockListItem != null)
+            var blockListItem = _blockListItems.FirstOrDefault(bli => bli.Block == e);
+            if (blockListItem != null)
             {
-                var index = blockListItems.IndexOf(selectedBlockListItem);
-                block_lb.Items[index] = selectedBlockListItem;
+                var index = _blockListItems.IndexOf(blockListItem);
+                _blockListItems[index] = new BlockListItem(e);
             }
 
             block_lb.SelectedIndexChanged += OnSelectedIndexChanged;
@@ -225,7 +229,7 @@ namespace BookProject.WinForms.Controls
             var selectedBlockListItem = blockListItems.FirstOrDefault(bli => bli.Block == e);
             if (selectedBlockListItem == null)
             {
-                RefreshList(e);
+                RefreshList();
             }
             else
             {
@@ -245,7 +249,7 @@ namespace BookProject.WinForms.Controls
 
             if (sender != this)
             {
-                RefreshList(_bookVm.SelectedBlock);
+                RefreshList();
             }
         }
 
@@ -275,23 +279,21 @@ namespace BookProject.WinForms.Controls
             e.DrawFocusRectangle();
         }
 
-        private void RefreshList(Block selectedBlock)
+        private void RefreshList()
         {
             block_lb.SelectedIndexChanged -= OnSelectedIndexChanged;
-            block_lb.Items.Clear();
 
             if (_bookVm == null) return;
 
-            var blockListItems = GetBlockListItems(_bookVm).ToList();
-            foreach (var blockListItem in blockListItems)
-            {
-                block_lb.Items.Add(blockListItem);
-            }
+            _blockListItems = new BindingList<BlockListItem>(GetBlockListItems(_bookVm).ToList());
+            var bindingSource = new BindingSource();
+            bindingSource.DataSource = _blockListItems;
+            block_lb.DataSource = bindingSource;
 
-            var selectedBlockListItem = blockListItems.FirstOrDefault(b => b.Block == selectedBlock);
+            var selectedBlockListItem = _blockListItems.FirstOrDefault(b => b.Block == _bookVm.SelectedBlock);
             if (selectedBlockListItem != null)
             {
-                block_lb.SelectedIndex = blockListItems.IndexOf(selectedBlockListItem);
+                block_lb.SelectedIndex = _blockListItems.IndexOf(selectedBlockListItem);
             }
 
             block_lb.SelectedIndexChanged += OnSelectedIndexChanged;
