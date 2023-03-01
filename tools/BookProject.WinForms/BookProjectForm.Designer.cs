@@ -49,7 +49,6 @@ namespace BookProject.WinForms
             this.detectGarbageControl1 = new BookProject.WinForms.Controls.Detect.DetectGarbageControl();
             this.tabPage6 = new System.Windows.Forms.TabPage();
             this.detectLineControl1 = new BookProject.WinForms.Controls.Detect.DetectLineControl();
-            this.blockDetailsControl1 = new BookProject.WinForms.Controls.BlockDetailsControl();
             this.label1 = new System.Windows.Forms.Label();
             this.messageControl1 = new BookProject.WinForms.Controls.MessageControl();
             this.pageControl1 = new BookProject.WinForms.Controls.PageControl();
@@ -89,7 +88,6 @@ namespace BookProject.WinForms
             this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel5.Controls.Add(this.tableLayoutPanel7, 0, 0);
             this.tableLayoutPanel5.Controls.Add(this.tabControl1, 0, 4);
-            this.tableLayoutPanel5.Controls.Add(this.blockDetailsControl1, 0, 2);
             this.tableLayoutPanel5.Controls.Add(this.label1, 0, 3);
             this.tableLayoutPanel5.Controls.Add(this.messageControl1, 0, 1);
             this.tableLayoutPanel5.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -265,14 +263,6 @@ namespace BookProject.WinForms
             this.detectLineControl1.Size = new System.Drawing.Size(434, 247);
             this.detectLineControl1.TabIndex = 0;
             // 
-            // blockDetailsControl1
-            // 
-            this.blockDetailsControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.blockDetailsControl1.Location = new System.Drawing.Point(3, 81);
-            this.blockDetailsControl1.Name = "blockDetailsControl1";
-            this.blockDetailsControl1.Size = new System.Drawing.Size(444, 294);
-            this.blockDetailsControl1.TabIndex = 7;
-            // 
             // label1
             // 
             this.label1.AutoSize = true;
@@ -343,7 +333,6 @@ namespace BookProject.WinForms
         private System.Windows.Forms.TabPage tabPage4;
         private System.Windows.Forms.TabPage tabPage3;
         private System.Windows.Forms.TabPage tabPage6;
-        private BlockDetailsControl blockDetailsControl1;
         private PageControl pageControl1;
         private BlockListControl blockListControl1;
         private DetectImageControl detectImageControl1;

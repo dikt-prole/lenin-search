@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 using BookProject.Core.Models.Domain;
 using Keys = System.Windows.Forms.Keys;
@@ -10,6 +11,8 @@ namespace BookProject.WinForms.Dialogs
         public CommentLinkDialog()
         {
             InitializeComponent();
+            Icon = new Icon("book_project_icon.ico");
+            ShowInTaskbar = false;
             Shown += OnShown;
             commentText_tb.KeyDown += CommentTextTbOnKeyDown;
             ok_btn.Click += OkBtnOnClick;

@@ -84,7 +84,6 @@ namespace BookProject.WinForms
             detectGarbageControl1.Bind(_bookVm);
             _detectCommentLinkControl1.Bind(_bookVm);
             detectLineControl1.Bind(_bookVm);
-            blockDetailsControl1.Bind(_bookVm);
             blockListControl1.Bind(_bookVm);
             pageControl1.Bind(_bookVm);
             messageControl1.Bind(_bookVm);

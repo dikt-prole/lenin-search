@@ -49,7 +49,7 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(429, 278);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(434, 261);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // commentText_tb
@@ -58,13 +58,13 @@
             this.commentText_tb.Location = new System.Drawing.Point(3, 23);
             this.commentText_tb.Multiline = true;
             this.commentText_tb.Name = "commentText_tb";
-            this.commentText_tb.Size = new System.Drawing.Size(423, 224);
+            this.commentText_tb.Size = new System.Drawing.Size(428, 207);
             this.commentText_tb.TabIndex = 0;
             // 
             // ok_btn
             // 
             this.ok_btn.Dock = System.Windows.Forms.DockStyle.Right;
-            this.ok_btn.Location = new System.Drawing.Point(353, 251);
+            this.ok_btn.Location = new System.Drawing.Point(358, 234);
             this.ok_btn.Margin = new System.Windows.Forms.Padding(1);
             this.ok_btn.Name = "ok_btn";
             this.ok_btn.Size = new System.Drawing.Size(75, 26);
@@ -86,7 +86,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(429, 278);
+            this.ClientSize = new System.Drawing.Size(434, 261);
             this.Controls.Add(this.tableLayoutPanel1);
             this.MaximizeBox = false;
             this.MinimizeBox = false;

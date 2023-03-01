@@ -106,6 +106,24 @@ namespace BookProject.WinForms.Controls
                                 _bookVm.ModifyBlock(this, commentLinkBlock, clb => dialog.Apply(clb));
                             }
                         }
+
+                        if (_bookVm.SelectedBlock is Line line)
+                        {
+                            var dialog = new LineDialog().Init(line);
+                            if (dialog.ShowDialog() == DialogResult.OK)
+                            {
+                                _bookVm.ModifyBlock(this, line, l => dialog.Apply(l));
+                            }
+                        }
+
+                        if (_bookVm.SelectedBlock is TitleBlock titleBlock)
+                        {
+                            var dialog = new TitleDialog().Init(titleBlock, _bookVm);
+                            if (dialog.ShowDialog() == DialogResult.OK)
+                            {
+                                _bookVm.ModifyBlock(this, titleBlock, tb => dialog.Apply(tb));
+                            }
+                        }
                     }
                 },
                 {
