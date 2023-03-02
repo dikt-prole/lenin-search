@@ -69,33 +69,6 @@ namespace BookProject.WinForms.Controls
                     }
                 },
                 {
-                    KeyTable.HeadingLevelIncrease, args =>
-                    {
-                        if (_bookVm.SelectedBlock is TitleBlock titleBlock)
-                        {
-                            _bookVm.ModifyBlock(this, titleBlock, tb =>
-                            {
-                                tb.Level += 1;
-                            });
-                        }
-                    }
-                },
-                {
-                    KeyTable.HeadingLevelDecrease, args =>
-                    {
-                        if (_bookVm.SelectedBlock is TitleBlock titleBlock)
-                        {
-                            _bookVm.ModifyBlock(this, titleBlock, tb =>
-                            {
-                                if (tb.Level > 0)
-                                {
-                                    tb.Level -= 1;
-                                }
-                            });
-                        }
-                    }
-                },
-                {
                     KeyTable.ShowBlockDialog, args =>
                     {
                         if (_bookVm.SelectedBlock is CommentLinkBlock commentLinkBlock)
@@ -123,16 +96,6 @@ namespace BookProject.WinForms.Controls
                             {
                                 _bookVm.ModifyBlock(this, titleBlock, tb => dialog.Apply(tb));
                             }
-                        }
-                    }
-                },
-                {
-                    KeyTable.SwitchLineType, args =>
-                    {
-                        if (_bookVm.SelectedBlock is Line line && args.Control)
-                        {
-                            var targetType = line.Type == LineType.Normal ? LineType.First : LineType.Normal;
-                            _bookVm.ModifyBlock(this, line, l => l.Type = targetType);
                         }
                     }
                 }

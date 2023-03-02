@@ -11,9 +11,6 @@ namespace BookProject.Core.Models.Domain
         [JsonIgnore]
         public override int PbDragPointSize => 6;
 
-        [JsonIgnore]
-        public override int BorderWidth => 2;
-
         public override DragPointLabel[] GetActiveDragLabels()
         {
             return new[]

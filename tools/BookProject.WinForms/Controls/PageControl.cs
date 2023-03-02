@@ -45,7 +45,11 @@ namespace BookProject.WinForms.Controls
                 { KeyTable.AddGarbageBlock, args => new AddBlock<GarbageBlock>(100, 100).Execute(this, _bookVm, args) },
                 { KeyTable.AddCommentLinkBlock, args => new AddBlock<CommentLinkBlock>(25, 25).Execute(this, _bookVm, args) },
                 { KeyTable.CopyBlock, args => new CopySelectedBlock().Execute(this, _bookVm, args) },
-                { KeyTable.PasteBlock, args => new PasteSelectedBlock().Execute(this, _bookVm, args) }
+                { KeyTable.PasteBlock, args => new PasteSelectedBlock().Execute(this, _bookVm, args) },
+                { KeyTable.DoOcr, args => new BlockOcrAction().Execute(this, _bookVm, args) },
+                { KeyTable.SwitchLineType, args => new SwitchLineTypeAction().Execute(this, _bookVm, args) },
+                { KeyTable.TitleLevelIncrease, args => new TitleLevelIncreaseAction().Execute(this, _bookVm, args) },
+                { KeyTable.TitleLevelDecrease, args => new TitleLevelDecreaseAction().Execute(this, _bookVm, args) }
             };
         }
 

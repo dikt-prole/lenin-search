@@ -26,6 +26,7 @@ namespace BookProject.Core.ImageRendering
             var blocks = _bookVm.CurrentPage.GetAllBlocks().Where(b => !(b is Page)).ToArray();
             foreach (var block in blocks)
             {
+                /*
                 if (block is TitleBlock titleBlock)
                 {
                     if (!string.IsNullOrEmpty(titleBlock.Text))
@@ -45,7 +46,9 @@ namespace BookProject.Core.ImageRendering
                         levelX, 
                         levelY );
                 }
+                */
 
+                /*
                 if (block is CommentLinkBlock commentLinkBlock)
                 {
                     if (!string.IsNullOrEmpty(commentLinkBlock.CommentText))
@@ -54,16 +57,20 @@ namespace BookProject.Core.ImageRendering
                         FillOriginalRect(block.Rectangle, commentLinkBlockFillBrush, g, originalBitmap);
                     }
                 }
+                */
 
-                using var blockBorderPen = BookProjectPalette.GetBlockBorderPen(block, block.BorderWidth);
-                DrawOriginalRect(block.Rectangle, blockBorderPen, g, originalBitmap);
+                using var blockBrush = BookProjectPalette.GetBlockBrush(block, 80);
+                FillOriginalRect(block.Rectangle, blockBrush, g, originalBitmap);
                 if (block == _bookVm.SelectedBlock)
                 {
-                    using var blockElementBrush = BookProjectPalette.GetBlockElementBrush(block);
+                    using var selectedPen = BookProjectPalette.GetBlockPen(block, 1);
+                    DrawOriginalRect(block.Rectangle, selectedPen, g, originalBitmap);
+
+                    using var selectedBrush = BookProjectPalette.GetBlockBrush(block, 255);
                     foreach (var dragPoint in block.GetActiveDragPoints())
                     {
                         var dragPbPoint = g.ToPictureBoxPoint(dragPoint, originalBitmap);
-                        g.FillRectangle(blockElementBrush, block.GetPbDragRectangle(dragPbPoint));
+                        g.FillRectangle(selectedBrush, block.GetPbDragRectangle(dragPbPoint));
                     }
                 }
             }

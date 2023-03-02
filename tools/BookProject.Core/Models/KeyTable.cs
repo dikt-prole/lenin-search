@@ -16,9 +16,10 @@
         public const int AddCommentLinkBlock = 78; // N
         public const int CopyBlock = 67; // C
         public const int PasteBlock = 86; // V
-        public const int HeadingLevelIncrease = 107; // +
-        public const int HeadingLevelDecrease = 109; // -
+        public const int TitleLevelIncrease = 107; // +
+        public const int TitleLevelDecrease = 109; // -
         public const int ShowBlockDialog = 13; // ENTER
         public const int SwitchLineType = 70; // F
+        public const int DoOcr = 79; // O
     }
 }

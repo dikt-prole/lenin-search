@@ -7,10 +7,7 @@ namespace BookProject.Core.Models.Domain
     public class Block
     {
         [JsonIgnore]
-        public virtual int PbDragPointSize => 10;
-
-        [JsonIgnore]
-        public virtual int BorderWidth => 2;
+        public virtual int PbDragPointSize => 6;
 
         [JsonProperty("tlx")]
         public int TopLeftX { get; set; }

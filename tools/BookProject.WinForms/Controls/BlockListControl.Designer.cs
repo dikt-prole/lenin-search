@@ -101,8 +101,9 @@
             // 
             this.tableLayoutPanel1.SetColumnSpan(this.block_lb, 6);
             this.block_lb.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.block_lb.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.block_lb.FormattingEnabled = true;
-            this.block_lb.ItemHeight = 15;
+            this.block_lb.ItemHeight = 21;
             this.block_lb.Location = new System.Drawing.Point(3, 27);
             this.block_lb.Name = "block_lb";
             this.block_lb.Size = new System.Drawing.Size(465, 354);

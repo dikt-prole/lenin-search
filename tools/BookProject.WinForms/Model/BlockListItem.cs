@@ -35,7 +35,7 @@ namespace BookProject.WinForms.Model
             {
                 return Color.FromArgb(50, line.Type == LineType.Normal 
                     ? BookProjectPalette.LineNormalBlockColor 
-                    : BookProjectPalette.LineStartBlockColor);
+                    : BookProjectPalette.LineFirstBlockColor);
             }
 
             if (Block is GarbageBlock)

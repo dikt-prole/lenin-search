@@ -253,6 +253,13 @@ namespace BookProject.Core.Models.ViewModel
             };
         }
 
+        public void SetAndSaveDetectLineSettings(object sender, DetectLineSettings settings)
+        {
+            Settings.LineDetection = settings;
+            Settings.Save();
+            SettingsChanged?.Invoke(sender, Settings);
+        }
+
         public void SendInfo(object sender, string text)
         {
             var args = new MessageArgs
@@ -263,11 +270,14 @@ namespace BookProject.Core.Models.ViewModel
             Message?.Invoke(sender, args);
         }
 
-        public void SetAndSaveDetectLineSettings(object sender, DetectLineSettings settings)
+        public void SendError(object sender, string text)
         {
-            Settings.LineDetection = settings;
-            Settings.Save();
-            SettingsChanged?.Invoke(sender, Settings);
+            var args = new MessageArgs
+            {
+                MessageType = MessageType.Error,
+                Text = text
+            };
+            Message?.Invoke(sender, args);
         }
     }
 }

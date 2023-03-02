@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using BookProject.Core.Detectors;
 using BookProject.Core.ImageRendering;
@@ -109,7 +111,21 @@ namespace BookProject.WinForms.Controls.Detect
                     .ToArray();
                 var commentLinkRects = new CommentLinkDetector(new CvUtility())
                     .Detect(ImageUtility.Load(imageFile), settings, excludeRects, null);
-                _bookVm.SetPageBlocks(this, page, commentLinkRects.Select(CommentLinkBlock.FromRectangle));
+
+                var commentLinkBlocks = new List<CommentLinkBlock>();
+                using var image = ImageUtility.Load(imageFile);
+                foreach (var commentLinkRect in commentLinkRects)
+                {
+                    var commentLinkBlock = CommentLinkBlock.FromRectangle(commentLinkRect);
+
+                    using var commentLinkBitmap = ImageUtility.Crop(image, commentLinkRect);
+                    var commentLinkBytes = ImageUtility.GetJpegBytes(commentLinkBitmap);
+                    commentLinkBlock.CommentText =
+                        Task.Run(() => _bookVm.OcrUtility.GetPageAsync(commentLinkBytes)).Result.GetText();
+                    commentLinkBlocks.Add(commentLinkBlock);
+                }
+
+                _bookVm.SetPageBlocks(this, page, commentLinkBlocks);
                 progressBar1.Value = i + 1;
                 Application.DoEvents();
             }
