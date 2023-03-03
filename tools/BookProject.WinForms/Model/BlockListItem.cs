@@ -72,7 +72,7 @@ namespace BookProject.WinForms.Model
 
             if (Block is Line line)
             {
-                var textPreview = line.GetOriginalTextPreview();
+                var textPreview = line.Replace ? line.ReplaceText : line.GetOriginalTextPreview();
                 return string.IsNullOrEmpty(textPreview) ? "-" : textPreview;
             }
 

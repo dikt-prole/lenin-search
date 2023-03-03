@@ -53,7 +53,12 @@ namespace BookProject.WinForms.Controls
                 { 
                     KeyTable.BlockListDown_Save, args =>
                     {
-                        if (block_lb.SelectedIndex < block_lb.Items.Count - 1)
+                        if (args.Control)
+                        {
+                            _bookVm.Book.Save(_bookVm.Book.Folder);
+                            _bookVm.SendInfo(this, "Book saved");
+                        }
+                        else if (block_lb.SelectedIndex < block_lb.Items.Count - 1)
                         {
                             block_lb.SelectedIndex += 1;
                         }
