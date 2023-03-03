@@ -51,7 +51,7 @@ namespace BookProject.WinForms.Controls
             KeyboardActions = new Dictionary<int, Action<KeyboardArgs>>
             {
                 { 
-                    KeyTable.BlockListDown, args =>
+                    KeyTable.BlockListDown_Save, args =>
                     {
                         if (block_lb.SelectedIndex < block_lb.Items.Count - 1)
                         {

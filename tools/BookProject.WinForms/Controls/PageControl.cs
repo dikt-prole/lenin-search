@@ -44,6 +44,7 @@ namespace BookProject.WinForms.Controls
                 { KeyTable.AddTitleBlock, args => new AddBlock<TitleBlock>(100, 100).Execute(this, _bookVm, args) },
                 { KeyTable.AddGarbageBlock, args => new AddBlock<GarbageBlock>(100, 100).Execute(this, _bookVm, args) },
                 { KeyTable.AddCommentLinkBlock, args => new AddBlock<CommentLinkBlock>(25, 25).Execute(this, _bookVm, args) },
+                { KeyTable.AddLineBlock, args => new AddBlock<Line>(200, 25).Execute(this, _bookVm, args) },
                 { KeyTable.CopyBlock, args => new CopySelectedBlock().Execute(this, _bookVm, args) },
                 { KeyTable.PasteBlock, args => new PasteSelectedBlock().Execute(this, _bookVm, args) },
                 { KeyTable.DoOcr, args => new BlockOcrAction().Execute(this, _bookVm, args) },
@@ -60,7 +61,6 @@ namespace BookProject.WinForms.Controls
 
         private void PagePbOnKeyDown(object sender, KeyEventArgs args)
         {
-            if (_bookVm == null) return;
 
             args.SuppressKeyPress = true;
             args.Handled = true;

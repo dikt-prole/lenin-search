@@ -3,7 +3,7 @@
     public static class KeyTable
     {
         public const int BlockListUp = 87; // W
-        public const int BlockListDown = 83; // S
+        public const int BlockListDown_Save = 83; // S
         public const int NextBlock = 9; // TAB
         public const int DeleteBlock = 46; // DELETE
         public const int MoveBlockUp = 38; // UP ARROW
@@ -21,5 +21,6 @@
         public const int ShowBlockDialog = 13; // ENTER
         public const int SwitchLineType = 70; // F
         public const int DoOcr = 79; // O
+        public const int AddLineBlock = 76; // L;
     }
 }

@@ -47,6 +47,11 @@ namespace BookProject.WinForms.KeyboardActions
             {
                 bookVm.AddBlock(sender, CommentLinkBlock.FromRectangle(blockRect), bookVm.CurrentPage);
             }
+
+            if (blockType == typeof(Line))
+            {
+                bookVm.AddBlock(sender, Line.FromRectangle(blockRect), bookVm.CurrentPage);
+            }
         }
     }
 }

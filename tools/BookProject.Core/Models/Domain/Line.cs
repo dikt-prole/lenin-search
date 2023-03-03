@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using Newtonsoft.Json;
 
@@ -30,6 +31,19 @@ namespace BookProject.Core.Models.Domain
         public override string ToString()
         {
             return GetOriginalTextPreview();
+        }
+
+        public static Line FromRectangle(Rectangle rect)
+        {
+            return new Line
+            {
+                TopLeftX = rect.X,
+                TopLeftY = rect.Y,
+                BottomRightX = rect.X + rect.Width,
+                BottomRightY = rect.Y + rect.Height,
+                Type = LineType.Normal,
+                Replace = true
+            };
         }
     }
 }
