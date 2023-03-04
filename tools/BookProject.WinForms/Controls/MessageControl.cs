@@ -26,7 +26,7 @@ namespace BookProject.WinForms.Controls
 
         private void ToolTip1OnPopup(object sender, PopupEventArgs e)
         {
-            e.ToolTipSize = panel1.Size;
+            e.ToolTipSize = new Size(panel1.Width, 40);
         }
 
         public void Bind(BookViewModel bookVm)

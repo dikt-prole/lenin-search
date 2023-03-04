@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using BookProject.Core.ImageRendering;
+using BookProject.Core.Misc;
 using BookProject.Core.Models;
 using BookProject.Core.Models.Domain;
 using BookProject.Core.Models.ViewModel;
@@ -23,6 +24,9 @@ namespace BookProject.WinForms.Controls
         private readonly Dictionary<int, Action<KeyboardArgs>> KeyboardActions;
         private IDragActivity _dragActivity;
         private BookViewModel _bookVm;
+        private readonly ToolTip _commentToolTip;
+        private const int CommentToolTipDuration = 15000;
+        public const int CommentToolTipBorderWidth = 3;
         public PageControl()
         {
             InitializeComponent();
@@ -52,6 +56,30 @@ namespace BookProject.WinForms.Controls
                 { KeyTable.TitleLevelIncrease, args => new TitleLevelIncreaseAction().Execute(this, _bookVm, args) },
                 { KeyTable.TitleLevelDecrease, args => new TitleLevelDecreaseAction().Execute(this, _bookVm, args) }
             };
+
+            _commentToolTip = new ToolTip();
+            _commentToolTip.OwnerDraw = true;
+            _commentToolTip.Popup += CommentToolTipOnPopup;
+            _commentToolTip.Draw += CommentToolTipOnDraw;
+            _commentToolTip.BackColor = BookProjectPalette.CommentLinkBlockColor;
+        }
+
+        private void CommentToolTipOnDraw(object sender, DrawToolTipEventArgs e)
+        {
+            e.DrawBackground();
+            using var bitmap = ImageUtility.Crop(_bookVm.OriginalPageBitmap, _bookVm.SelectedBlock.Rectangle);
+            e.Graphics.DrawImage(bitmap, CommentToolTipBorderWidth, CommentToolTipBorderWidth);
+        }
+
+        private void CommentToolTipOnPopup(object sender, PopupEventArgs e)
+        {
+            var selectedBlock = _bookVm.SelectedBlock;
+            if (selectedBlock != null)
+            {
+                e.ToolTipSize = new Size(
+                    selectedBlock.Rectangle.Width + CommentToolTipBorderWidth * 2, 
+                    selectedBlock.Rectangle.Height + CommentToolTipBorderWidth * 2);
+            }
         }
 
         private void PagePbOnPreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
@@ -115,6 +143,7 @@ namespace BookProject.WinForms.Controls
             if (_bookVm.GetBlockPage(e) == _bookVm.CurrentPage)
             {
                 page_pb.Refresh();
+                ShowHideCommentLinkToolTip();
             }
         }
 
@@ -130,6 +159,21 @@ namespace BookProject.WinForms.Controls
         {
             page_pb.Image = _bookVm.OriginalPageBitmap;
             page_pb.Refresh();
+            ShowHideCommentLinkToolTip();
+        }
+
+        private void ShowHideCommentLinkToolTip()
+        {
+            if (_bookVm.SelectedBlock is CommentLinkBlock commentLinkBlock)
+            {
+                var topRightCorner = page_pb.ToPictureBoxPoint(new Point(commentLinkBlock.BottomRightX, commentLinkBlock.TopLeftY));
+                var toolTipLocation = new Point(topRightCorner.X, topRightCorner.Y - commentLinkBlock.Rectangle.Height);
+                _commentToolTip.Show("c", page_pb, toolTipLocation, CommentToolTipDuration);
+            }
+            else
+            {
+                _commentToolTip.Hide(page_pb);
+            }
         }
 
         private void OnImageRendererChanged(object sender, IImageRenderer e)

@@ -26,39 +26,6 @@ namespace BookProject.Core.ImageRendering
             var blocks = _bookVm.CurrentPage.GetAllBlocks().Where(b => !(b is Page)).ToArray();
             foreach (var block in blocks)
             {
-                /*
-                if (block is TitleBlock titleBlock)
-                {
-                    if (!string.IsNullOrEmpty(titleBlock.Text))
-                    {
-                        using var titleBlockFillBrush = new SolidBrush(Color.FromArgb(50, BookProjectPalette.TitleBlockColor));
-                        FillOriginalRect(block.Rectangle, titleBlockFillBrush, g, originalBitmap);
-                    }
-
-                    var pbRectangle = g.ToPictureBoxRectangle(block.Rectangle, originalBitmap);
-                    var levelX = pbRectangle.X - 20;
-                    var levelY = pbRectangle.Y;
-                    using var titleBlockLevelBrush = new SolidBrush(BookProjectPalette.TitleBlockColor);
-                    g.DrawString(
-                        titleBlock.Level.ToString(), 
-                        new Font(FontFamily.GenericSansSerif, 12),
-                        titleBlockLevelBrush, 
-                        levelX, 
-                        levelY );
-                }
-                */
-
-                /*
-                if (block is CommentLinkBlock commentLinkBlock)
-                {
-                    if (!string.IsNullOrEmpty(commentLinkBlock.CommentText))
-                    {
-                        using var commentLinkBlockFillBrush = new SolidBrush(Color.FromArgb(50, BookProjectPalette.CommentLinkBlockColor));
-                        FillOriginalRect(block.Rectangle, commentLinkBlockFillBrush, g, originalBitmap);
-                    }
-                }
-                */
-
                 using var blockBrush = BookProjectPalette.GetBlockBrush(block, 80);
                 FillOriginalRect(block.Rectangle, blockBrush, g, originalBitmap);
                 if (block == _bookVm.SelectedBlock)
