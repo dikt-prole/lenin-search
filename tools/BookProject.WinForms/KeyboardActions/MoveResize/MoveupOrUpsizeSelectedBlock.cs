@@ -16,8 +16,7 @@ namespace BookProject.WinForms.KeyboardActions.MoveResize
                 {
                     bookVm.ModifyBlock(sender, selectedBlock, b =>
                     {
-                        b.BottomRightY += step;
-                        b.TopLeftY -= step;
+                        b.BottomRightY -= step;
                     });
                 }
                 else
