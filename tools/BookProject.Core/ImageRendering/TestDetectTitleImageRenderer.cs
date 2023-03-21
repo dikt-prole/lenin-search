@@ -37,7 +37,7 @@ namespace BookProject.Core.ImageRendering
             DrawOriginalLine(_settings.MinLeft, 0, _settings.MinLeft, height, linePen, g, originalBitmap);
             DrawOriginalLine(width - _settings.MinRight, 0, width - _settings.MinRight, height, linePen, g, originalBitmap);
 
-            var rectangles = internalValues[TitleDetector.IntermediateRectanglesKey] as List<Rectangle>;
+            var rectangles = internalValues[TitleDetector.IntermediateRectanglesKey] as Rectangle[];
             using var rectPen = new Pen(Color.Aqua, 2);
             foreach (var rect in rectangles)
             {

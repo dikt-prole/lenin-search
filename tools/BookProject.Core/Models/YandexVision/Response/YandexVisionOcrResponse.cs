@@ -15,7 +15,24 @@ namespace BookProject.Core.Models.YandexVision.Response
                 Lines = new List<OcrLine>()
             };
 
-            var responseBlocks = Results[0].Results[0]?.TextDetection?.Pages[0]?.Blocks;
+            var responseBlocks = new List<YandexVisionOcrBlock>();
+            if (Results?.Any() == true)
+            {
+                if (Results[0].Results?.Any() == true)
+                {
+                    if (Results[0].Results[0].TextDetection != null)
+                    {
+                        if (Results[0].Results[0].TextDetection.Pages?.Any() == true)
+                        {
+                            if (Results[0].Results[0]?.TextDetection?.Pages[0]?.Blocks?.Any() == true)
+                            {
+                                responseBlocks.AddRange(Results[0].Results[0]?.TextDetection?.Pages[0]?.Blocks);
+                            }
+                        }
+                    }
+                }
+            }
+
             if (responseBlocks?.Any() != true)
             {
                 return page;

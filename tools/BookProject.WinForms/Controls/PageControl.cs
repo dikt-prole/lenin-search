@@ -40,8 +40,8 @@ namespace BookProject.WinForms.Controls
             {
                 { KeyTable.NextBlock, args => new SetNextBlockSelected().Execute(this, _bookVm, args) },
                 { KeyTable.DeleteBlock, args => new RemoveSelectedBlock().Execute(this, _bookVm, args) },
-                { KeyTable.MoveBlockUp, args => new MoveupOrUpsizeSelectedBlock().Execute(this, _bookVm, args) },
-                { KeyTable.MoveBlockDown, args => new MovedownOrDownsizeSelectedBlock().Execute(this, _bookVm, args) },
+                { KeyTable.MoveBlockUp, args => new MoveupOrDownsizeSelectedBlock().Execute(this, _bookVm, args) },
+                { KeyTable.MoveBlockDown, args => new MovedownOrUpsizeSelectedBlock().Execute(this, _bookVm, args) },
                 { KeyTable.MoveBlockLeft, args => new MoveleftOrDownsizeSelectedBlock().Execute(this, _bookVm, args) },
                 { KeyTable.MoveBlockRight, args => new MoverightOrUpsizeSelectedBlock().Execute(this, _bookVm, args) },
                 { KeyTable.AddImageBlock, args => new AddBlock<ImageBlock>(200, 200).Execute(this, _bookVm, args) },
