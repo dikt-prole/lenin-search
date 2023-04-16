@@ -27,7 +27,7 @@
                 TabStripPlacement="Bottom"
                 TabStripBackgroundColor="White"
                 TabIndicatorPlacement="Top"
-                TabIndicatorColor="#D6181F"
+                TabIndicatorColor="#414A67"
                 TabIndicatorHeight="2"
                 TabStripHeight="48"
                 Padding="0"
@@ -39,12 +39,12 @@
         <!-- CORPUS TAB -->
         <views:TabViewItem ControlTemplate="{StaticResource TabItemTemplate}" x:Name="CorpusTabViewItem">
             <StackLayout Orientation="Vertical">
-                <StackLayout Orientation="Horizontal" HeightRequest="36" Spacing="0" BackgroundColor="#D6181F" HorizontalOptions="FillAndExpand">
+                <StackLayout Orientation="Horizontal" HeightRequest="36" Spacing="0" BackgroundColor="#414A67" HorizontalOptions="FillAndExpand">
                     <StackLayout HeightRequest="36" WidthRequest="36"></StackLayout>
                     <Label FontSize="Small" Text="Корпус" HorizontalOptions="FillAndExpand" HorizontalTextAlignment="Center" TextColor="White" 
-                           Margin="0, 8, 0, 0" BackgroundColor="#D6181F"></Label>
+                           Margin="0, 8, 0, 0" BackgroundColor="#414A67"></Label>
                     <ImageButton WidthRequest="36" HeightRequest="36" Padding="8" 
-                                 BackgroundColor="#D6181F" Source="tg.png" Clicked="OnTgButtonClicked"></ImageButton>
+                                 BackgroundColor="#414A67" Source="tg.png" Clicked="OnTgButtonClicked"></ImageButton>
                 </StackLayout>
                 <CollectionView x:Name="CorpusCollectionView" VerticalOptions="FillAndExpand" 
                                 BackgroundColor="White" HorizontalOptions="FillAndExpand">
@@ -73,9 +73,9 @@
         <!-- LIBRARY TAB -->
         <views:TabViewItem Icon="library.png" ControlTemplate="{StaticResource TabItemTemplate}">
             <StackLayout Orientation="Vertical">
-                <StackLayout Orientation="Horizontal" HeightRequest="36" Spacing="0" BackgroundColor="#D6181F" HorizontalOptions="FillAndExpand">
+                <StackLayout Orientation="Horizontal" HeightRequest="36" Spacing="0" BackgroundColor="#414A67" HorizontalOptions="FillAndExpand">
                     <Label FontSize="Small" Text="Библиотека" HorizontalOptions="FillAndExpand" HorizontalTextAlignment="Center" TextColor="White" 
-                           Margin="0, 8, 0, 0" BackgroundColor="#D6181F"></Label>
+                           Margin="0, 8, 0, 0" BackgroundColor="#414A67"></Label>
                 </StackLayout>
                 <CollectionView x:Name="LibraryCollectionView" VerticalOptions="FillAndExpand" 
                                 BackgroundColor="White" HorizontalOptions="FillAndExpand">
@@ -91,7 +91,7 @@
                                              BackgroundColor="White" Source="download.png" 
                                              IsVisible="{Binding IsNotDownloading}"
                                              CommandParameter="{Binding Self}" Clicked="OnLibraryDownloadClicked"></ImageButton>
-                                <ActivityIndicator x:Name="SearchActivityIndicator" Color="#D6181F" 
+                                <ActivityIndicator x:Name="SearchActivityIndicator" Color="#414A67" 
                                                    IsVisible="{Binding IsDownloading}"
                                                    IsRunning="{Binding IsDownloading}" 
                                                    VerticalOptions="Start" WidthRequest="24" HeightRequest="24" 
@@ -113,9 +113,9 @@
         <!-- BOOKMARK TAB -->
         <views:TabViewItem Icon="bookmark.png" ControlTemplate="{StaticResource TabItemTemplate}">
             <StackLayout Orientation="Vertical" x:Name="BookmarkTab" Spacing="0">
-                <StackLayout Orientation="Horizontal" HeightRequest="36" Spacing="0" BackgroundColor="#D6181F" HorizontalOptions="FillAndExpand">
+                <StackLayout Orientation="Horizontal" HeightRequest="36" Spacing="0" BackgroundColor="#414A67" HorizontalOptions="FillAndExpand">
                     <Label FontSize="Small" Text="Закладки" HorizontalOptions="FillAndExpand" HorizontalTextAlignment="Center" TextColor="White" 
-                           Margin="0, 8, 0, 0" BackgroundColor="#D6181F"></Label>
+                           Margin="0, 8, 0, 0" BackgroundColor="#414A67"></Label>
                 </StackLayout>
                 <CollectionView x:Name="BookmarkCollectionView" VerticalOptions="FillAndExpand" 
                                 BackgroundColor="White" HorizontalOptions="FillAndExpand"  EmptyView="Закладок пока нет">
@@ -147,17 +147,17 @@
         <!-- SEARCH TAB -->
         <views:TabViewItem Icon="search.png" ControlTemplate="{StaticResource TabItemTemplate}">
             <StackLayout Orientation="Vertical" HorizontalOptions="FillAndExpand" Margin="0" Padding="0" Spacing="0">
-                <StackLayout Orientation="Horizontal" HorizontalOptions="Fill" Spacing="0" BackgroundColor="#D6181F" 
+                <StackLayout Orientation="Horizontal" HorizontalOptions="Fill" Spacing="0" BackgroundColor="#414A67" 
                              HeightRequest="34" Margin="0" IsClippedToBounds="True">
                     <ActivityIndicator x:Name="SearchActivityIndicator" Color="White" IsRunning="False" VerticalOptions="Start" 
                                        WidthRequest="24" HeightRequest="24" Margin="6" IsVisible="False">                                                
                     </ActivityIndicator>
                     <ImageButton Padding="6" x:Name="SearchModeButton" WidthRequest="36" HeightRequest="36" Source="paragraph.png" 
-                                 BackgroundColor="#D6181F" HorizontalOptions="Start" Margin="0" 
+                                 BackgroundColor="#414A67" HorizontalOptions="Start" Margin="0" 
                                  Clicked="OnSearchModeButtonClick" CommandParameter="0"></ImageButton>
                     <controls:WhiteBorderedEntry x:Name="SearchEntry" Placeholder="Введите запрос" ReturnType="Search"
                            HorizontalOptions="FillAndExpand" Margin="0, 0, 0, -2" FontSize="Small" TextColor="White" 
-                           BackgroundColor="#D6181F" HeightRequest="36" PlaceholderColor="White"></controls:WhiteBorderedEntry>
+                           BackgroundColor="#414A67" HeightRequest="36" PlaceholderColor="White"></controls:WhiteBorderedEntry>
                 </StackLayout>
                 <CollectionView x:Name="SearchCollectionView" EmptyView="Ничего не найдено, попробуйте другой запрос">
                     <CollectionView.ItemsLayout>
@@ -172,7 +172,7 @@
                                         NumberOfTapsRequired="1"
                                         CommandParameter="{Binding Self}"/>
                                 </StackLayout.GestureRecognizers>
-                                <Label TextColor="#D6181F" Margin="0, 0, 0, 0" FontSize="Small" Text="{Binding Title}" LineBreakMode="NoWrap"></Label>
+                                <Label TextColor="#414A67" Margin="0, 0, 0, 0" FontSize="Small" Text="{Binding Title}" LineBreakMode="NoWrap"></Label>
                                 <controls:ExtendedLabel TextColor="Black" Margin="0" FontSize="Micro" LineBreakMode="WordWrap" 
                                                         Text="{Binding Preview}" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" JustifyText="True">
                                 </controls:ExtendedLabel>
@@ -188,10 +188,10 @@
         <!-- READ TAB -->
         <views:TabViewItem x:Name="ReadTabViewItem" Icon="read.png" ControlTemplate="{StaticResource TabItemTemplate}">
             <StackLayout Orientation="Vertical" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" BackgroundColor="White" Spacing="0">
-                <StackLayout Orientation="Horizontal" HeightRequest="36" Spacing="0" BackgroundColor="#D6181F" HorizontalOptions="FillAndExpand">
+                <StackLayout Orientation="Horizontal" HeightRequest="36" Spacing="0" BackgroundColor="#414A67" HorizontalOptions="FillAndExpand">
                     <Label x:Name="ReadBookTitleLabel" FontSize="Small" Text="Книга не выбрана" 
                            HorizontalOptions="FillAndExpand" HorizontalTextAlignment="Center" TextColor="White" 
-                           Margin="0, 8, 0, 0" BackgroundColor="#D6181F"></Label>
+                           Margin="0, 8, 0, 0" BackgroundColor="#414A67"></Label>
                 </StackLayout>
                 <CollectionView x:Name="ReadCollectionView" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                     <CollectionView.ItemsLayout>
@@ -234,11 +234,11 @@
         <!-- SUMMARY TAB -->
         <views:TabViewItem Icon="summary.png" ControlTemplate="{StaticResource TabItemTemplate}">
             <StackLayout Orientation="Vertical" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" Spacing="0">
-                <StackLayout Orientation="Horizontal" HorizontalOptions="Fill" Spacing="0" BackgroundColor="#D6181F" 
+                <StackLayout Orientation="Horizontal" HorizontalOptions="Fill" Spacing="0" BackgroundColor="#414A67" 
                              HeightRequest="34" Margin="0" IsClippedToBounds="True">
-                    <Label FontSize="Small" Text="Содержание: " HorizontalOptions="Start" TextColor="White" Margin="5, 8, 0, 5" BackgroundColor="#D6181F"></Label>
+                    <Label FontSize="Small" Text="Содержание: " HorizontalOptions="Start" TextColor="White" Margin="5, 8, 0, 5" BackgroundColor="#414A67"></Label>
                     <controls:WhiteBorderedPicker x:Name="SummaryBookPicker" HeightRequest="36" FontSize="Small" TextColor="White" 
-                            HorizontalOptions="FillAndExpand" BackgroundColor="#D6181F" Margin="0, 0, 0, -2" SelectedIndexChanged="SummaryBookPickerOnSelectedIndexChanged"></controls:WhiteBorderedPicker>
+                            HorizontalOptions="FillAndExpand" BackgroundColor="#414A67" Margin="0, 0, 0, -2" SelectedIndexChanged="SummaryBookPickerOnSelectedIndexChanged"></controls:WhiteBorderedPicker>
                 </StackLayout>
                 <CollectionView x:Name="SummaryCollectionView" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                     <CollectionView.ItemsLayout>

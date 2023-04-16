@@ -24,8 +24,8 @@ namespace LeninSearch.Xam.Droid
         {
             base.OnCreate(savedInstanceState);
 
-            Window.SetStatusBarColor(Android.Graphics.Color.Argb(255, 214, 24, 31));
-            
+            Window.SetStatusBarColor(Android.Graphics.Color.Argb(255, 65, 74, 103));
+
             AppCenter.Start("82046ff3-062c-4160-870a-62dbb982859b", typeof(Analytics), typeof(Crashes));
 
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);

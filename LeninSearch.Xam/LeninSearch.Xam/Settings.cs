@@ -43,11 +43,11 @@ namespace LeninSearch.Xam
 
             public static class Colors
             {
-                public static Color MainColor => Color.FromRgb(214, 24, 31);
+                public static Color MainColor => Color.FromRgb(65, 74, 103);
 
-                public const string MainColorHex = "#D6181F";
-                public static Color ReadSearchMatchColor => new Color(1, 0, 0, 0.20);
-                public static string SearchUnitHighlightColorHex = "#FFE5E6";
+                public const string MainColorHex = "#414A67";
+                public static Color ReadSearchMatchColor => new Color(65, 74, 103, 0.20);
+                public static string SearchUnitHighlightColorHex = "#91A5E2";
             }
 
             public static bool OldAndroidJustification { get; set; }
