@@ -1,0 +1,265 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:LenLib.Xam.Controls;assembly=LenLib.Xam"
+             xmlns:views="http://xamarin.com/schemas/2020/toolkit"
+             mc:Ignorable="d"
+             x:Class="LenLib.Xam.MainPage">
+    <ContentPage.Resources>
+        <ControlTemplate x:Key="TabItemTemplate">
+            <ImageButton
+                        InputTransparent="True"
+                        Source="{TemplateBinding CurrentIcon}"
+                        Margin="0, 5, 0, 5"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Start"
+                        BackgroundColor="White"
+                        HeightRequest="30"
+                        WidthRequest="30">
+            </ImageButton>
+        </ControlTemplate>
+    </ContentPage.Resources>
+    <!-- todo: fix TabStripHeight (Xamarin Community Toolkit bug) -->
+    <views:TabView
+                x:Name="MainTabs"
+                TabStripPlacement="Bottom"
+                TabStripBackgroundColor="White"
+                TabIndicatorPlacement="Top"
+                TabIndicatorColor="#414A67"
+                TabIndicatorHeight="2"
+                TabStripHeight="48"
+                Padding="0"
+                Margin="0, 0, 0, -8"
+                TabContentBackgroundColor="White"
+                BackgroundColor="White"
+                SelectionChanged="OnMainTabsSelectionChanged">
+
+        <!-- CORPUS TAB -->
+        <views:TabViewItem ControlTemplate="{StaticResource TabItemTemplate}" x:Name="CorpusTabViewItem">
+            <StackLayout Orientation="Vertical">
+                <StackLayout Orientation="Horizontal" HeightRequest="36" Spacing="0" BackgroundColor="#414A67" HorizontalOptions="FillAndExpand">
+                    <StackLayout HeightRequest="36" WidthRequest="36"></StackLayout>
+                    <Label FontSize="Small" Text="Корпус" HorizontalOptions="FillAndExpand" HorizontalTextAlignment="Center" TextColor="White" 
+                           Margin="0, 8, 0, 0" BackgroundColor="#414A67"></Label>
+                    <ImageButton WidthRequest="36" HeightRequest="36" Padding="8" 
+                                 BackgroundColor="#414A67" Source="tg.png" Clicked="OnTgButtonClicked"></ImageButton>
+                </StackLayout>
+                <CollectionView x:Name="CorpusCollectionView" VerticalOptions="FillAndExpand" 
+                                BackgroundColor="White" HorizontalOptions="FillAndExpand">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="5" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <StackLayout Orientation="Horizontal" Spacing="0" HeightRequest="48">
+                                <ImageButton WidthRequest="48" HeightRequest="48" Padding="4" 
+                                             BackgroundColor="White" Source="{Binding CorpusIconSource}" 
+                                             CommandParameter="{Binding CorpusId}" Clicked="OnCorpusIconClick"></ImageButton>
+                                <Label HorizontalOptions="FillAndExpand" Text="{Binding CorpusTitle}" 
+                                       HorizontalTextAlignment="Start" FontSize="Small" TextColor="Black" Margin="5, 12, 0, 0"></Label>
+                                <ImageButton WidthRequest="48" HeightRequest="48" Padding="12" 
+                                             BackgroundColor="White" Source="trashred.png" 
+                                             IsVisible="{Binding IsDeleteAllowed}" 
+                                             Clicked="OnDeleteCorpusClicked" CommandParameter="{Binding Self}"></ImageButton>
+                            </StackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </StackLayout>
+        </views:TabViewItem>
+
+        <!-- LIBRARY TAB -->
+        <views:TabViewItem Icon="library.png" ControlTemplate="{StaticResource TabItemTemplate}">
+            <StackLayout Orientation="Vertical">
+                <StackLayout Orientation="Horizontal" HeightRequest="36" Spacing="0" BackgroundColor="#414A67" HorizontalOptions="FillAndExpand">
+                    <Label FontSize="Small" Text="Библиотека" HorizontalOptions="FillAndExpand" HorizontalTextAlignment="Center" TextColor="White" 
+                           Margin="0, 8, 0, 0" BackgroundColor="#414A67"></Label>
+                </StackLayout>
+                <CollectionView x:Name="LibraryCollectionView" VerticalOptions="FillAndExpand" 
+                                BackgroundColor="White" HorizontalOptions="FillAndExpand">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="5" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <StackLayout Orientation="Horizontal" Spacing="0" HeightRequest="36">
+                                <Label HorizontalOptions="FillAndExpand" Text="{Binding Text}" 
+                                       HorizontalTextAlignment="Start" FontSize="Small" TextColor="Black" Margin="5, 6, 0, 0"></Label>
+                                <ImageButton WidthRequest="36" HeightRequest="36" Padding="6" 
+                                             BackgroundColor="White" Source="download.png" 
+                                             IsVisible="{Binding IsNotDownloading}"
+                                             CommandParameter="{Binding Self}" Clicked="OnLibraryDownloadClicked"></ImageButton>
+                                <ActivityIndicator x:Name="SearchActivityIndicator" Color="#414A67" 
+                                                   IsVisible="{Binding IsDownloading}"
+                                                   IsRunning="{Binding IsDownloading}" 
+                                                   VerticalOptions="Start" WidthRequest="24" HeightRequest="24" 
+                                                   Margin="6">
+                                    <ActivityIndicator.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Tapped="OnCancelLibraryDownload"
+                                            NumberOfTapsRequired="1"
+                                            CommandParameter="{Binding Self}"/>
+                                    </ActivityIndicator.GestureRecognizers>
+                                </ActivityIndicator>
+                            </StackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </StackLayout>
+        </views:TabViewItem>
+
+        <!-- BOOKMARK TAB -->
+        <views:TabViewItem Icon="bookmark.png" ControlTemplate="{StaticResource TabItemTemplate}">
+            <StackLayout Orientation="Vertical" x:Name="BookmarkTab" Spacing="0">
+                <StackLayout Orientation="Horizontal" HeightRequest="36" Spacing="0" BackgroundColor="#414A67" HorizontalOptions="FillAndExpand">
+                    <Label FontSize="Small" Text="Закладки" HorizontalOptions="FillAndExpand" HorizontalTextAlignment="Center" TextColor="White" 
+                           Margin="0, 8, 0, 0" BackgroundColor="#414A67"></Label>
+                </StackLayout>
+                <CollectionView x:Name="BookmarkCollectionView" VerticalOptions="FillAndExpand" 
+                                BackgroundColor="White" HorizontalOptions="FillAndExpand"  EmptyView="Закладок пока нет">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="5" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <StackLayout Orientation="Vertical" Spacing="0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                                <StackLayout Orientation="Horizontal" Spacing="0" HeightRequest="48">
+                                    <ImageButton WidthRequest="48" HeightRequest="48" Padding="4" BackgroundColor="White" 
+                                                 Source="{Binding CorpusImage}" Clicked="OnOpenBookmarkClick" 
+                                                 CommandParameter="{Binding Self}"></ImageButton>
+                                    <Label HorizontalOptions="FillAndExpand" Text="{Binding Text}" 
+                                                        HorizontalTextAlignment="Start" FontSize="Small" TextColor="Black" 
+                                                        Margin="0, 5, 0, 0"></Label>
+                                    <ImageButton WidthRequest="48" HeightRequest="48" Padding="12" 
+                                             BackgroundColor="White" Source="trashred.png" Clicked="OnDeleteBookmarkClick" 
+                                             CommandParameter="{Binding Self}"></ImageButton>
+                                </StackLayout>
+                                <Label FontSize="Micro" Text="{Binding Date}" Margin="5, 0, 0, 0" TextColor="Gray"></Label>
+                            </StackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </StackLayout>
+        </views:TabViewItem>
+
+        <!-- SEARCH TAB -->
+        <views:TabViewItem Icon="search.png" ControlTemplate="{StaticResource TabItemTemplate}">
+            <StackLayout Orientation="Vertical" HorizontalOptions="FillAndExpand" Margin="0" Padding="0" Spacing="0">
+                <StackLayout Orientation="Horizontal" HorizontalOptions="Fill" Spacing="0" BackgroundColor="#414A67" 
+                             HeightRequest="34" Margin="0" IsClippedToBounds="True">
+                    <ActivityIndicator x:Name="SearchActivityIndicator" Color="White" IsRunning="False" VerticalOptions="Start" 
+                                       WidthRequest="24" HeightRequest="24" Margin="6" IsVisible="False">                                                
+                    </ActivityIndicator>
+                    <ImageButton Padding="6" x:Name="SearchModeButton" WidthRequest="36" HeightRequest="36" Source="paragraph.png" 
+                                 BackgroundColor="#414A67" HorizontalOptions="Start" Margin="0" 
+                                 Clicked="OnSearchModeButtonClick" CommandParameter="0"></ImageButton>
+                    <controls:WhiteBorderedEntry x:Name="SearchEntry" Placeholder="Введите запрос" ReturnType="Search"
+                           HorizontalOptions="FillAndExpand" Margin="0, 0, 0, -2" FontSize="Small" TextColor="White" 
+                           BackgroundColor="#414A67" HeightRequest="36" PlaceholderColor="White"></controls:WhiteBorderedEntry>
+                </StackLayout>
+                <CollectionView x:Name="SearchCollectionView" EmptyView="Ничего не найдено, попробуйте другой запрос">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="0" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <StackLayout Orientation="Vertical" Padding="10, 5, 10, 5" Spacing="0" BackgroundColor="{Binding BackgroundColor}">
+                                <StackLayout.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Tapped="OnSearchUnitTapped"
+                                        NumberOfTapsRequired="1"
+                                        CommandParameter="{Binding Self}"/>
+                                </StackLayout.GestureRecognizers>
+                                <Label TextColor="#414A67" Margin="0, 0, 0, 0" FontSize="Small" Text="{Binding Title}" LineBreakMode="NoWrap"></Label>
+                                <controls:ExtendedLabel TextColor="Black" Margin="0" FontSize="Micro" LineBreakMode="WordWrap" 
+                                                        Text="{Binding Preview}" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" JustifyText="True">
+                                </controls:ExtendedLabel>
+                                <Label IsVisible="{Binding HasMissingTokens}" Margin="0" FontSize="Micro" 
+                                       Text="{Binding MissingTokensText}" LineBreakMode="NoWrap" TextDecorations="Strikethrough"></Label>
+                            </StackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </StackLayout>
+        </views:TabViewItem>
+
+        <!-- READ TAB -->
+        <views:TabViewItem x:Name="ReadTabViewItem" Icon="read.png" ControlTemplate="{StaticResource TabItemTemplate}">
+            <StackLayout Orientation="Vertical" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" BackgroundColor="White" Spacing="0">
+                <StackLayout Orientation="Horizontal" HeightRequest="36" Spacing="0" BackgroundColor="#414A67" HorizontalOptions="FillAndExpand">
+                    <Label x:Name="ReadBookTitleLabel" FontSize="Small" Text="Книга не выбрана" 
+                           HorizontalOptions="FillAndExpand" HorizontalTextAlignment="Center" TextColor="White" 
+                           Margin="0, 8, 0, 0" BackgroundColor="#414A67"></Label>
+                </StackLayout>
+                <CollectionView x:Name="ReadCollectionView" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="5" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <StackLayout Orientation="Vertical" Padding="10, 0, 10, 0" Spacing="0">
+                                
+                                <StackLayout Orientation="Horizontal" HeightRequest="24" Spacing="10" IsVisible="{Binding IsMenuShown}">
+                                    <ImageButton Source="share.png" BackgroundColor="White" HeightRequest="24" WidthRequest="24"
+                                                 Clicked="OnShareClicked" CommandParameter="{Binding Self}"></ImageButton>
+                                    <ImageButton Source="bookmark.png" BackgroundColor="White" HeightRequest="24" WidthRequest="24" 
+                                                 Clicked="OnAddBookmarkClick" CommandParameter="{Binding Self}"></ImageButton>
+                                    <Label Text="{Binding Info}" HorizontalOptions="End" FontSize="Micro"></Label>
+                                </StackLayout>
+
+                                <controls:ExtendedLabel IsVisible="{Binding IsText}"  FormattedText="{Binding FormattedText}" JustifyText="True" 
+                                                        HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                                </controls:ExtendedLabel>
+
+                                <ScrollView IsVisible="{Binding IsImage}" HeightRequest="{Binding ImageHeight}" 
+                                            HorizontalOptions="FillAndExpand" Orientation="Both">
+                                    <Image Source="{Binding ImageFile}" WidthRequest="{Binding ImageWidth}" HeightRequest="{Binding ImageHeight}">
+                                        <Image.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Tapped="OnReadImageTapped"
+                                                NumberOfTapsRequired="2"
+                                                CommandParameter="{Binding Self}"/>
+                                        </Image.GestureRecognizers>
+                                    </Image>
+                                </ScrollView>
+                            </StackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </StackLayout>
+        </views:TabViewItem>
+
+        <!-- SUMMARY TAB -->
+        <views:TabViewItem Icon="summary.png" ControlTemplate="{StaticResource TabItemTemplate}">
+            <StackLayout Orientation="Vertical" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" Spacing="0">
+                <StackLayout Orientation="Horizontal" HorizontalOptions="Fill" Spacing="0" BackgroundColor="#414A67" 
+                             HeightRequest="34" Margin="0" IsClippedToBounds="True">
+                    <Label FontSize="Small" Text="Содержание: " HorizontalOptions="Start" TextColor="White" Margin="5, 8, 0, 5" BackgroundColor="#414A67"></Label>
+                    <controls:WhiteBorderedPicker x:Name="SummaryBookPicker" HeightRequest="36" FontSize="Small" TextColor="White" 
+                            HorizontalOptions="FillAndExpand" BackgroundColor="#414A67" Margin="0, 0, 0, -2" SelectedIndexChanged="SummaryBookPickerOnSelectedIndexChanged"></controls:WhiteBorderedPicker>
+                </StackLayout>
+                <CollectionView x:Name="SummaryCollectionView" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="10" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <StackLayout Orientation="Vertical" Padding="{Binding Padding}">
+                                <StackLayout.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Tapped="OnSummaryItemTapped"
+                                        NumberOfTapsRequired="1"
+                                        CommandParameter="{Binding Self}"/>
+                                </StackLayout.GestureRecognizers>
+                                <Label Text="{Binding Title}" TextColor="Black" FontSize="Small" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"></Label>
+                            </StackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </StackLayout>
+        </views:TabViewItem>
+
+    </views:TabView>
+</ContentPage>
