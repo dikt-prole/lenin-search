@@ -8,7 +8,7 @@ using Xamarin.Forms;
 
 namespace LenLib.Xam
 {
-    public static class Settings
+    public static class Options
     {
         // paths
         public const int LsiVersion = 2;
@@ -60,35 +60,10 @@ namespace LenLib.Xam
         public static class Misc
         {
 
-            public const string SplashApiError = "Ошибка при запросе данных с сервера. Исправьте ваше подключение к интернету и перезапустите приложение.";
+            public const string SplashApiError = "Исправьте ваше подключение к интернету и перезапустите приложение.";
             public const string ApiError = "Ошибка при запросе данных с сервера. Исправьте ваше подключение к интернету.";
             public const string UpdateCompleteMessage = "Обновление установлено";
         }
-
-        public static class Query
-        {
-            public const string Token = "__";
-
-            public static readonly string InitialQuery = "дикт* проле* + науч* латин*";
-
-            public static readonly string Txt1 = $"{Token}* + {Token}*";
-
-            public static readonly string Txt2 = $"{Token}* {Token}* + {Token}* {Token}*";
-
-            public static readonly string Txt3 = $"{Token}* {Token}* {Token}* + {Token}* {Token}* {Token}*";
-
-            public static readonly string Title1 = $"* {Token}* + {Token}*";
-        }
-
-        public static readonly List<Tuple<string, string>> Learning = new List<Tuple<string, string>>
-        {
-            new Tuple<string, string>("Чтение и работа с текстом", "https://youtu.be/6WZ8ZEvmMk0"),
-            new Tuple<string, string>("О поисковом отчете", "https://youtu.be/kdfShMJn4As"),
-            new Tuple<string, string>("Работа с обновлениями", "https://youtu.be/kqvR4va6CP0"),
-            new Tuple<string, string>("Поисковой запрос, поиск", "https://youtu.be/aN8ACedX1NI"),
-            new Tuple<string, string>("Шаринг, закладки, история поиска", "https://youtu.be/w1LQOU1Wph8"),
-            new Tuple<string, string>("Просмотр видео", "https://youtu.be/PskQR3n6neo")
-        };
 
         public static bool CorpusExists(string corpusId)
         {
@@ -158,7 +133,7 @@ namespace LenLib.Xam
 
         public static IEnumerable<CorpusItem> GetCorpusItems()
         {
-            var corpusFolders = Directory.GetDirectories(Settings.CorpusRoot);
+            var corpusFolders = Directory.GetDirectories(Options.CorpusRoot);
 
             foreach (var corpusFolder in corpusFolders)
             {

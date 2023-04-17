@@ -35,7 +35,7 @@ namespace LenLib.Xam.ListItems
         }
 
         public string BackgroundColor => IsHighlighted 
-            ? Settings.UI.Colors.SearchUnitHighlightColorHex 
+            ? Options.UI.Colors.SearchUnitHighlightColorHex 
             : "#FFFFFF";
 
         public static List<SearchUnitListItem> FromSearchResult(SearchResult searchResult, string corpusId)

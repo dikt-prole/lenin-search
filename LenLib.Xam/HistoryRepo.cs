@@ -10,10 +10,10 @@ namespace LenLib.Xam
     {
         public static List<HistoryItem> GetHistory()
         {
-            if (!File.Exists(Settings.HistoryFile)) return new List<HistoryItem>();
+            if (!File.Exists(Options.HistoryFile)) return new List<HistoryItem>();
 
-            return JsonConvert.DeserializeObject<List<HistoryItem>>(File.ReadAllText(Settings.HistoryFile))
-                .Where(hi => Settings.CorpusExists(hi.CorpusId))
+            return JsonConvert.DeserializeObject<List<HistoryItem>>(File.ReadAllText(Options.HistoryFile))
+                .Where(hi => Options.CorpusExists(hi.CorpusId))
                 .ToList();
         }
 
@@ -23,15 +23,15 @@ namespace LenLib.Xam
 
             history.Add(historyItem);
 
-            history = history.OrderByDescending(hi => hi.QueryDateUtc).Take(Settings.UI.MaxHistoryLength).ToList();
+            history = history.OrderByDescending(hi => hi.QueryDateUtc).Take(Options.UI.MaxHistoryLength).ToList();
 
-            var historyFolder = Path.GetDirectoryName(Settings.HistoryFile);
+            var historyFolder = Path.GetDirectoryName(Options.HistoryFile);
             if (!Directory.Exists(historyFolder))
             {
                 Directory.CreateDirectory(historyFolder);
             }
 
-            File.WriteAllText(Settings.HistoryFile, JsonConvert.SerializeObject(history));
+            File.WriteAllText(Options.HistoryFile, JsonConvert.SerializeObject(history));
         }
     }
 }

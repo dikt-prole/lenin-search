@@ -17,6 +17,7 @@ using LenLib.Xam.State;
 using Xamarin.CommunityToolkit.UI.Views;
 using Xamarin.Essentials;
 using Xamarin.Forms;
+using Xamarin.Forms.Internals;
 
 namespace LenLib.Xam
 {
@@ -26,7 +27,7 @@ namespace LenLib.Xam
         private readonly GlobalEvents _globalEvents;
         private readonly CachedLsiProvider _lsiProvider;
         private readonly ICorpusSearch _corpusSearch;
-        private readonly ApiClientV1 _apiClientV1 = new ApiClientV1(Settings.Web.Host, Settings.Web.Port, Settings.Web.TimeoutMs);
+        private readonly ApiClientV1 _apiClientV1 = new ApiClientV1(Options.Web.Host, Options.Web.Port, Options.Web.TimeoutMs);
         private readonly IMessage _message = DependencyService.Get<IMessage>();
         private AppState _state = AppState.Default();
         private readonly ILibraryDownloadManager _libraryDownloadManager;
@@ -42,7 +43,7 @@ namespace LenLib.Xam
                 _lsiProvider, 
                 _apiClientV1, 
                 () => Connectivity.NetworkAccess == NetworkAccess.Internet, 
-                Settings.Search.MaxResultsPerBook);
+                Options.Search.MaxResultsPerBook);
 
             //_corpusSearch = new OnlineCorpusSearch(Settings.Web.Host, Settings.Web.Port, Settings.Web.TimeoutMs);
 
@@ -132,7 +133,7 @@ namespace LenLib.Xam
         {
             var corpusItem = _lsiProvider.GetCorpusItem(corpusId);
             var summaryBookListItems = SummaryBookListItem.Construct(corpusItem).ToList();
-            CorpusTabViewItem.Icon = Settings.IconFile(corpusId);
+            CorpusTabViewItem.Icon = Options.IconFile(corpusId);
             _state.ActiveCorpusId = corpusId;
 
             SummaryBookPicker.ItemsSource = summaryBookListItems;
@@ -222,7 +223,7 @@ namespace LenLib.Xam
 
         private void RefreshCorpusTab()
         {
-            var corpusItems = Settings.GetCorpusItems().ToList();
+            var corpusItems = Options.GetCorpusItems().ToList();
             var corpusListItems =
                 new ObservableCollection<CorpusListItem>(corpusItems.Select(CorpusListItem.FromCorpusItem));
             CorpusCollectionView.ItemsSource = corpusListItems;
@@ -233,12 +234,12 @@ namespace LenLib.Xam
             Task.Run(() =>
             {
                 ObservableCollection<LibraryListItem> libraryListItems = null;
-                var summaryResult = _apiClientV1.GetSummaryAsync(Settings.LsiVersion).Result;
+                var summaryResult = _apiClientV1.GetSummaryAsync(Options.LsiVersion).Result;
                 if (summaryResult.Success)
                 {
                     var summary = summaryResult.Summary;
                     var updates = new List<CorpusItem>();
-                    var finishedCorpusIds = Settings.GetFinishedCorpusIds();
+                    var finishedCorpusIds = Options.GetFinishedCorpusIds();
                     var existingCorpusItems = finishedCorpusIds.Select(id => summary.FirstOrDefault(ci => ci.Id == id))
                         .Where(ci => ci != null).ToList();
                     foreach (var existingCi in existingCorpusItems)
@@ -616,7 +617,7 @@ namespace LenLib.Xam
 
             if (!alertResult) return;
 
-            var corpusFolder = Path.Combine(Settings.CorpusRoot, corpusListItem.CorpusId);
+            var corpusFolder = Path.Combine(Options.CorpusRoot, corpusListItem.CorpusId);
             if (Directory.Exists(corpusFolder))
             {
                 Directory.Delete(corpusFolder, true);
@@ -649,6 +650,32 @@ namespace LenLib.Xam
                 _message.ShortAlert("Telegram не установлен");
                 await Task.Delay(500);
                 await Launcher.TryOpenAsync("https://play.google.com/store/apps/details?id=org.telegram.messenger");
+            }
+        }
+
+        private void OnFontSizeButtonClicked(object sender, EventArgs e)
+        {
+            var readItemList = ReadCollectionView.ItemsSource as List<ReadListItem>;
+
+            if (readItemList == null)
+            {
+                return;
+            }
+
+            var fontSizes = new[]
+            {
+                FontSize.Small,
+                FontSize.SmallToMedium,
+                FontSize.Medium,
+                FontSize.MediumToLarge,
+                FontSize.Large
+            };
+
+            foreach (var item in readItemList)
+            {
+                var currentSizeIndex = fontSizes.IndexOf(item.FontSize);
+                var nextFontSizeIndex = (currentSizeIndex + 1) % fontSizes.Length;
+                item.FontSize = fontSizes[nextFontSizeIndex];
             }
         }
     }

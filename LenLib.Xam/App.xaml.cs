@@ -54,11 +54,11 @@ namespace LenLib.Xam
 
         private static void SaveState(AppState state)
         {
-            var stateFilePath = Path.Combine(Settings.StateFolder, "state.json");
+            var stateFilePath = Path.Combine(Options.StateFolder, "state.json");
 
             if (File.Exists(stateFilePath)) File.Delete(stateFilePath);
 
-            if (!Directory.Exists(Settings.StateFolder)) Directory.CreateDirectory(Settings.StateFolder);
+            if (!Directory.Exists(Options.StateFolder)) Directory.CreateDirectory(Options.StateFolder);
 
             var json = JsonConvert.SerializeObject(state);
 
@@ -67,7 +67,7 @@ namespace LenLib.Xam
 
         private static AppState LoadState()
         {
-            var stateFilePath = Path.Combine(Settings.StateFolder, "state.json");
+            var stateFilePath = Path.Combine(Options.StateFolder, "state.json");
 
             if (File.Exists(stateFilePath))
             {

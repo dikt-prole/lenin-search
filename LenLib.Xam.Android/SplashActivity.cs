@@ -33,23 +33,23 @@ namespace LenLib.Xam.Droid
 
         private void Startup()
         {
-            if (!Directory.Exists(Settings.CorpusRoot))
+            if (!Directory.Exists(Options.CorpusRoot))
             {
-                Directory.CreateDirectory(Settings.CorpusRoot);
+                Directory.CreateDirectory(Options.CorpusRoot);
             }
 
-            var finishedCorpusIds = Settings.GetFinishedCorpusIds();
-            var apiService = new ApiClientV1(Settings.Web.Host, Settings.Web.Port, Settings.Web.TimeoutMs);
-            var summaryResult = apiService.GetSummary(Settings.LsiVersion);
+            var finishedCorpusIds = Options.GetFinishedCorpusIds();
+            var apiService = new ApiClientV1(Options.Web.Host, Options.Web.Port, Options.Web.TimeoutMs);
+            var summaryResult = apiService.GetSummary(Options.LsiVersion);
 
             // 1. failed to get summary case
             if (!summaryResult.Success)
             {
-                foreach (var series in Settings.InitialSeries)
+                foreach (var series in Options.InitialSeries)
                 {
                     if (finishedCorpusIds.All(cid => !cid.StartsWith(series)))
                     {
-                        SetSpalshText(Settings.Misc.SplashApiError);
+                        SetSpalshText(Options.Misc.SplashApiError);
                         return;
                     }
                 }
@@ -60,8 +60,8 @@ namespace LenLib.Xam.Droid
 
             // 2. calculate corpus ids that need to be repaired
             var summary = summaryResult.Summary;
-            var repairCorpusIds = new List<string>(Settings.GetUnfinishedCorpusIds());
-            foreach (var series in Settings.InitialSeries)
+            var repairCorpusIds = new List<string>(Options.GetUnfinishedCorpusIds());
+            foreach (var series in Options.InitialSeries)
             {
                 var corpusId = summary.Where(ci => ci.Series == series).OrderByDescending(ci => ci.CorpusVersion).First().Id;
                 repairCorpusIds.Add(corpusId);
@@ -70,7 +70,7 @@ namespace LenLib.Xam.Droid
             // 3. repair
             foreach (var corpusId in repairCorpusIds)
             {
-                var corpusFolder = Path.Combine(Settings.CorpusRoot, corpusId);
+                var corpusFolder = Path.Combine(Options.CorpusRoot, corpusId);
                 if (!Directory.Exists(corpusFolder))
                 {
                     Directory.CreateDirectory(corpusFolder);
@@ -88,7 +88,7 @@ namespace LenLib.Xam.Droid
 
                         if (!fileBytesResult.Success)
                         {
-                            SetSpalshText(Settings.Misc.SplashApiError);
+                            SetSpalshText(Options.Misc.SplashApiError);
                             return;
                         }
 

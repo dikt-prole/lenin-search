@@ -31,7 +31,7 @@ namespace LenLib.Xam.Core
 
             _currentLsiKey = lsiKey;
 
-            var lsiBytes = File.ReadAllBytes(Path.Combine(Settings.CorpusRoot, corpusId, file));
+            var lsiBytes = File.ReadAllBytes(Path.Combine(Options.CorpusRoot, corpusId, file));
 
             var lsiUtil = LsiUtilLocator.GetLsiUtil(lsiBytes[0]);
 
@@ -49,7 +49,7 @@ namespace LenLib.Xam.Core
 
             _currentDictionaryId = corpusId;
 
-            var dictionaryPath = Path.Combine(Settings.CorpusRoot, corpusId, "corpus.dic");
+            var dictionaryPath = Path.Combine(Options.CorpusRoot, corpusId, "corpus.dic");
 
             _currentDictionary = new LsDictionary(File.ReadAllLines(dictionaryPath).Where(s => !string.IsNullOrEmpty(s)).ToArray());
 
@@ -58,7 +58,7 @@ namespace LenLib.Xam.Core
 
         public CorpusItem GetCorpusItem(string corpusId)
         {
-            var corpusItemPath = Path.Combine(Settings.CorpusRoot, corpusId, "corpus.json");
+            var corpusItemPath = Path.Combine(Options.CorpusRoot, corpusId, "corpus.json");
 
             return JsonConvert.DeserializeObject<CorpusItem>(File.ReadAllText(corpusItemPath));
         }

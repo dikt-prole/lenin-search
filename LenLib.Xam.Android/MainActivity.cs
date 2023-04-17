@@ -35,7 +35,7 @@ namespace LenLib.Xam.Droid
 
             ReportItem.GlobalDeviceId = Android.Provider.Settings.Secure.GetString(Application.Context.ContentResolver, Android.Provider.Settings.Secure.AndroidId);
 
-            Settings.UI.OldAndroidJustification = Build.VERSION.SdkInt < BuildVersionCodes.O;
+            Options.UI.OldAndroidJustification = Build.VERSION.SdkInt < BuildVersionCodes.O;
 
             _globalEvents = new GlobalEvents();
             _app = new App(_globalEvents);

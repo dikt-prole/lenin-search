@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using LenLib.Standard.Core;
 using LenLib.Standard.Core.Corpus.Lsi;
 using LenLib.Standard.Core.Search;
+using LenLib.Xam.Core;
 using Xamarin.Forms;
 
 namespace LenLib.Xam.ListItems
@@ -54,6 +55,8 @@ namespace LenLib.Xam.ListItems
         }
 
         private bool _isMenuShown;
+        
+
         public bool IsMenuShown
         {
             get => IsText && _isMenuShown;
@@ -62,6 +65,24 @@ namespace LenLib.Xam.ListItems
                 if (value == _isMenuShown) return;
                 _isMenuShown = value;
                 OnPropertyChanged(nameof(IsMenuShown));
+            }
+        }
+
+        private FontSize _fontSize;
+        public FontSize FontSize
+        {
+            get => _fontSize;
+            set
+            {
+                _fontSize = value;
+                if (IsText && FormattedText != null)
+                {
+                    foreach (var span in FormattedText.Spans)
+                    {
+                        span.FontSize = (int)_fontSize;
+                    }
+                }
+                OnPropertyChanged(nameof(FormattedText));
             }
         }
 
@@ -84,9 +105,9 @@ namespace LenLib.Xam.ListItems
             if (readListItem.IsImage)
             {
                 readListItem.ImageZoomCoefficient = 1;
-                readListItem.ImageFile = Settings.ImageFile(corpusId, lsiParagraph.ImageIndex);
+                readListItem.ImageFile = Options.ImageFile(corpusId, lsiParagraph.ImageIndex);
                 readListItem._imageWidthInitial = imageWidthFunc();
-                var imageCfi = Settings.GetCorpusFileItem(corpusId, $"image{lsiParagraph.ImageIndex}.jpeg");
+                var imageCfi = Options.GetCorpusFileItem(corpusId, $"image{lsiParagraph.ImageIndex}.jpeg");
                 readListItem._imageHeightInitial = imageCfi == null
                     ? (ushort)0
                     : (ushort)(imageCfi.ImageHeight * readListItem._imageWidthInitial / imageCfi.ImageWidth);
@@ -112,7 +133,7 @@ namespace LenLib.Xam.ListItems
                 var span = new Span
                 {
                     Text = lsiSpan.Type == LsiSpanType.InlineImage
-                        ? Settings.ImageFile(corpusId, lsiSpan.ImageIndex)
+                        ? Options.ImageFile(corpusId, lsiSpan.ImageIndex)
                         : lsiSpan.GetText(dictionary.Words),
                     TextColor = TextColor(lsiSpan.Type),
                     FontAttributes = paragraph.IsHeading
@@ -123,7 +144,7 @@ namespace LenLib.Xam.ListItems
 
                 if (lsiSpan.Type == LsiSpanType.SearchResult)
                 {
-                    span.BackgroundColor = Settings.UI.Colors.ReadSearchMatchColor;
+                    span.BackgroundColor = Options.UI.Colors.ReadSearchMatchColor;
                 }
 
                 if (lsiSpan.Type == LsiSpanType.Comment)
@@ -194,12 +215,13 @@ namespace LenLib.Xam.ListItems
 
             return FontAttributes.None;
         }
+
         private static Color TextColor(LsiSpanType spanType)
         {
             switch (spanType)
             {
                 case LsiSpanType.Comment:
-                    return Settings.UI.Colors.MainColor;
+                    return Options.UI.Colors.MainColor;
                 default:
                     return Color.Black;
             }

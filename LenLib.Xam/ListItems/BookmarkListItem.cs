@@ -21,7 +21,7 @@ namespace LenLib.Xam.ListItems
             {
                 BookmarkId = bookmark.Id,
                 CorpusId = bookmark.CorpusItemId,
-                CorpusImage = Settings.IconFile(bookmark.CorpusItemId),
+                CorpusImage = Options.IconFile(bookmark.CorpusItemId),
                 Date = bookmark.When.ToString("dd.MM.yyyy"),
                 File = bookmark.File,
                 ParagraphIndex = bookmark.ParagraphIndex,

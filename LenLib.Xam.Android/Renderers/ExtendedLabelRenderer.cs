@@ -72,7 +72,7 @@ namespace LenLib.Xam.Droid.Renderers
                     {
                         var width = bitmap.Width;
                         var height = bitmap.Height;
-                        var newHeight = 3 * Settings.UI.Fonts.ReadingFontSize * Settings.UI.ScreenDensity;
+                        var newHeight = 3 * Options.UI.Fonts.ReadingFontSize * Options.UI.ScreenDensity;
                         var newWidth = newHeight * width / height;
                         var scaleWidth = (float)newWidth / width;
                         var scaleHeight = (float)newHeight / height;

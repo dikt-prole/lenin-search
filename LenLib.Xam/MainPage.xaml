@@ -189,9 +189,12 @@
         <views:TabViewItem x:Name="ReadTabViewItem" Icon="read.png" ControlTemplate="{StaticResource TabItemTemplate}">
             <StackLayout Orientation="Vertical" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" BackgroundColor="White" Spacing="0">
                 <StackLayout Orientation="Horizontal" HeightRequest="36" Spacing="0" BackgroundColor="#414A67" HorizontalOptions="FillAndExpand">
+                    <StackLayout Orientation="Horizontal" HeightRequest="36" WidthRequest="36" Spacing="0" Margin="0"></StackLayout>
                     <Label x:Name="ReadBookTitleLabel" FontSize="Small" Text="Книга не выбрана" 
                            HorizontalOptions="FillAndExpand" HorizontalTextAlignment="Center" TextColor="White" 
                            Margin="0, 8, 0, 0" BackgroundColor="#414A67"></Label>
+                    <ImageButton WidthRequest="36" HeightRequest="36" Padding="4" 
+                                 BackgroundColor="#414A67" Source="fontsize.png" Clicked="OnFontSizeButtonClicked"></ImageButton>
                 </StackLayout>
                 <CollectionView x:Name="ReadCollectionView" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                     <CollectionView.ItemsLayout>
@@ -209,7 +212,7 @@
                                     <Label Text="{Binding Info}" HorizontalOptions="End" FontSize="Micro"></Label>
                                 </StackLayout>
 
-                                <controls:ExtendedLabel IsVisible="{Binding IsText}"  FormattedText="{Binding FormattedText}" JustifyText="True" 
+                                <controls:ExtendedLabel IsVisible="{Binding IsText}" FormattedText="{Binding FormattedText}" JustifyText="True" 
                                                         HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                                 </controls:ExtendedLabel>
 

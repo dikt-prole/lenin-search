@@ -13,12 +13,12 @@ namespace LenLib.Xam.State
 
         public CorpusItem GetCurrentCorpusItem()
         {
-            return Settings.GetCorpusItems().FirstOrDefault(ci => ci.Id == ActiveCorpusId);
+            return Options.GetCorpusItems().FirstOrDefault(ci => ci.Id == ActiveCorpusId);
         }
 
         public static AppState Default()
         {
-            var corpusItems = Settings.GetCorpusItems().ToList();
+            var corpusItems = Options.GetCorpusItems().ToList();
             var selectedCorpusItem = corpusItems.First();
             return new AppState
             {

@@ -17,8 +17,8 @@ namespace LenLib.Xam.ListItems
             {
                 CorpusId = corpusItem.Id,
                 CorpusTitle = $"{corpusItem.Name} ({corpusItem.Files.Count(cfi => cfi.Path.EndsWith(".lsi"))})",
-                CorpusIconSource = Settings.IconFile(corpusItem.Id),
-                IsDeleteAllowed = !Settings.InitialSeries.Contains(corpusItem.Series)
+                CorpusIconSource = Options.IconFile(corpusItem.Id),
+                IsDeleteAllowed = !Options.InitialSeries.Contains(corpusItem.Series)
             };
         }
     }

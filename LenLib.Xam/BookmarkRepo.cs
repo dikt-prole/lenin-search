@@ -11,17 +11,17 @@ namespace LenLib.Xam
     {
         private static List<Bookmark> _bookmarks;
 
-        private static string FilePath(Guid id) => $"{Settings.BookmarkFolder}/{id}.json";
+        private static string FilePath(Guid id) => $"{Options.BookmarkFolder}/{id}.json";
 
         private static void LoadBookmarks()
         {
             if (_bookmarks == null)
             {
-                if (Directory.Exists(Settings.BookmarkFolder))
+                if (Directory.Exists(Options.BookmarkFolder))
                 {
-                    var jsonFiles = Directory.GetFiles(Settings.BookmarkFolder, "*.json");
+                    var jsonFiles = Directory.GetFiles(Options.BookmarkFolder, "*.json");
                     _bookmarks = jsonFiles.Select(jf => JsonConvert.DeserializeObject<Bookmark>(File.ReadAllText(jf)))
-                        .Where(b => Settings.CorpusExists(b.CorpusItemId))
+                        .Where(b => Options.CorpusExists(b.CorpusItemId))
                         .ToList();
                 }
                 else
@@ -33,12 +33,12 @@ namespace LenLib.Xam
 
         private static void WriteBookmark(Bookmark bm)
         {
-            if (!Directory.Exists(Settings.BookmarkFolder))
+            if (!Directory.Exists(Options.BookmarkFolder))
             {
-                Directory.CreateDirectory(Settings.BookmarkFolder);
+                Directory.CreateDirectory(Options.BookmarkFolder);
             }
 
-            var filePath = $"{Settings.BookmarkFolder}/{bm.Id}.json";
+            var filePath = $"{Options.BookmarkFolder}/{bm.Id}.json";
             var json = JsonConvert.SerializeObject(bm);
             File.WriteAllText(filePath, json);
         }

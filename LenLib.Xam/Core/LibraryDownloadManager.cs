@@ -50,13 +50,13 @@ namespace LenLib.Xam.Core
         {
             Task.Run(() =>
             {
-                var sameSeriesCorpusItems = Settings.GetFinishedCorpusIds()
+                var sameSeriesCorpusItems = Options.GetFinishedCorpusIds()
                     .Select(cid => _lsiProvider.GetCorpusItem(cid))
                     .Where(ci => ci.Series == download.Series)
                     .ToList();
 
                 // 1. create corpus folder
-                var corpusFolder = Path.Combine(Settings.CorpusRoot, download.Id);
+                var corpusFolder = Path.Combine(Options.CorpusRoot, download.Id);
                 if (Directory.Exists(corpusFolder))
                 {
                     Directory.Delete(corpusFolder, true);
@@ -89,7 +89,7 @@ namespace LenLib.Xam.Core
                 // 3. remove same series corpus
                 foreach (var corpusItem in sameSeriesCorpusItems)
                 {
-                    Directory.Delete(Path.Combine(Settings.CorpusRoot, corpusItem.Id), true);
+                    Directory.Delete(Path.Combine(Options.CorpusRoot, corpusItem.Id), true);
                 }
 
                 OnDownloadCompleted(download, sameSeriesCorpusItems);
