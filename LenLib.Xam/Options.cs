@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using LenLib.Standard.Core.Corpus;
+using LenLib.Xam.Core;
 using Newtonsoft.Json;
 using Xamarin.Forms;
 
@@ -13,7 +15,7 @@ namespace LenLib.Xam
         // paths
         public const int LsiVersion = 2;
 
-        public static readonly string[] InitialSeries = {"lenin"};
+        public static readonly string[] InitialSeries = { "lenin" };
         public static string CorpusRoot => Path.Combine(Path.GetTempPath(), "corpus");
         public static string BookmarkFolder => Path.Combine(Path.GetTempPath(), "bookmarks");
         public static string StateFolder => Path.Combine(Path.GetTempPath(), "state-055EEC7F");
@@ -39,6 +41,15 @@ namespace LenLib.Xam
             public static class Fonts
             {
                 public const double ReadingFontSize = 17;
+
+                public static readonly FontSize[] Sizes = new[]
+                {
+                    FontSize.Small,
+                    FontSize.SmallToMedium,
+                    FontSize.Medium,
+                    FontSize.MediumToLarge,
+                    FontSize.Large
+                };
             }
 
             public static class Colors
@@ -133,7 +144,7 @@ namespace LenLib.Xam
 
         public static IEnumerable<CorpusItem> GetCorpusItems()
         {
-            var corpusFolders = Directory.GetDirectories(Options.CorpusRoot);
+            var corpusFolders = Directory.GetDirectories(CorpusRoot);
 
             foreach (var corpusFolder in corpusFolders)
             {

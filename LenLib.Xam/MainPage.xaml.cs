@@ -523,6 +523,7 @@ namespace LenLib.Xam
                         lsiParagraph, _lsiProvider, searchUnit, () => (ushort)MainTabs.Width,
                         async s => await DisplayAlert("", s, "OK", FlowDirection.MatchParent),
                         OnReadItemTapped);
+                    readListItem.FontSize = Settings.Instance.FontSize;
                     readListItems.Add(readListItem);
                     if (paragraphIndex == selectedParagraphIndex)
                     {
@@ -662,21 +663,18 @@ namespace LenLib.Xam
                 return;
             }
 
-            var fontSizes = new[]
-            {
-                FontSize.Small,
-                FontSize.SmallToMedium,
-                FontSize.Medium,
-                FontSize.MediumToLarge,
-                FontSize.Large
-            };
+            var currentFontSize = Settings.Instance.FontSize;
+            var currentSizeIndex = Options.UI.Fonts.Sizes.IndexOf(currentFontSize);
+            var nextFontSizeIndex = (currentSizeIndex + 1) % Options.UI.Fonts.Sizes.Length;
+            Settings.Instance.FontSize = Options.UI.Fonts.Sizes[nextFontSizeIndex];
+            Settings.Instance.Save();
 
             foreach (var item in readItemList)
             {
-                var currentSizeIndex = fontSizes.IndexOf(item.FontSize);
-                var nextFontSizeIndex = (currentSizeIndex + 1) % fontSizes.Length;
-                item.FontSize = fontSizes[nextFontSizeIndex];
+                item.FontSize = Settings.Instance.FontSize;
             }
+
+
         }
     }
 }
