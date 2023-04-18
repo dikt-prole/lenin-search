@@ -249,15 +249,14 @@
                     </CollectionView.ItemsLayout>
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <StackLayout Orientation="Vertical" Padding="{Binding Padding}">
-                                <StackLayout.GestureRecognizers>
-                                    <TapGestureRecognizer
+                            <Label Text="{Binding Title}" LineBreakMode="WordWrap" Padding="{Binding Padding}" TextColor="#0074D8" TextDecorations="Underline">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer 
                                         Tapped="OnSummaryItemTapped"
                                         NumberOfTapsRequired="1"
                                         CommandParameter="{Binding Self}"/>
-                                </StackLayout.GestureRecognizers>
-                                <Label Text="{Binding Title}" TextColor="Black" FontSize="Small" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"></Label>
-                            </StackLayout>
+                                </Label.GestureRecognizers>
+                            </Label>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>

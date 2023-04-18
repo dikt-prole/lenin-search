@@ -437,9 +437,9 @@ namespace LenLib.Xam
 
         private void OnSummaryItemTapped(object sender, EventArgs e)
         {
-            var stackLayout = sender as StackLayout;
-            Animations.OpacityToZeroAndBack(stackLayout);
-            var summaryListItem = (stackLayout.GestureRecognizers[0] as TapGestureRecognizer).CommandParameter as SummaryListItem;
+            var label = sender as Label;
+            Animations.OpacityToZeroAndBack(label, 500);
+            var summaryListItem = (label.GestureRecognizers[0] as TapGestureRecognizer).CommandParameter as SummaryListItem;
             RunReadBook(summaryListItem.CorpusId, summaryListItem.File, summaryListItem.ParagraphIndex);
         }
 
@@ -673,8 +673,6 @@ namespace LenLib.Xam
             {
                 item.FontSize = Settings.Instance.FontSize;
             }
-
-
         }
     }
 }
