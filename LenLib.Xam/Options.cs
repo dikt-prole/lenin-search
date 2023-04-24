@@ -59,7 +59,7 @@ namespace LenLib.Xam
 
                 public const string MainColorHex = "#414A67";
                 
-                public static readonly Color ReadSearchMatchColor = new Color(124, 197, 238);
+                public static Color ReadSearchMatchColor => Color.FromRgb(1, 125, 199);
 
                 public static string SearchUnitHighlightColorHex = "#7CC5EE";
             }

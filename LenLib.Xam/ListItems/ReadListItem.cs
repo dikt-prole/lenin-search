@@ -126,8 +126,6 @@ namespace LenLib.Xam.ListItems
         private static FormattedString BuildFormattedText(List<LsiSpan> lsiSpans, LsiParagraph paragraph, LsDictionary dictionary, string corpusId,
             Action<string> alertAction, Action onReadItemTapped)
         {
-            var commentSpans = new Dictionary<LsiSpan, Span>();
-            var searchResultSpans = new Dictionary<LsiSpan, Span>();
             var formattedString = new FormattedString();
             foreach (var lsiSpan in lsiSpans)
             {
@@ -136,17 +134,12 @@ namespace LenLib.Xam.ListItems
                     Text = lsiSpan.Type == LsiSpanType.InlineImage
                         ? Options.ImageFile(corpusId, lsiSpan.ImageIndex)
                         : lsiSpan.GetText(dictionary.Words),
-                    TextColor = TextColor(lsiSpan.Type),
+                    TextColor = GetTextColor(lsiSpan.Type),
                     FontAttributes = paragraph.IsHeading
                         ? FontAttributes.Bold
                         : GetFontAttributes(lsiSpan.Type),
-                    TextDecorations = TextDecorations.None
+                    TextDecorations = GetTextDecorations(lsiSpan.Type)
                 };
-
-                if (lsiSpan.Type == LsiSpanType.SearchResult)
-                {
-                    span.BackgroundColor = Options.UI.Colors.ReadSearchMatchColor;
-                }
 
                 if (lsiSpan.Type == LsiSpanType.Comment)
                 {
@@ -171,11 +164,6 @@ namespace LenLib.Xam.ListItems
                     span.GestureRecognizers.Add(gestureRecognizer);
                 }
 
-                if (lsiSpan.Type == LsiSpanType.SearchResult)
-                {
-                    searchResultSpans.Add(lsiSpan, span);
-                }
-
                 if (lsiSpan.Type != LsiSpanType.Plain && lsiSpan.Type != LsiSpanType.InlineImage)
                 {
                     var beforeSpan = formattedString.Spans.LastOrDefault();
@@ -186,21 +174,6 @@ namespace LenLib.Xam.ListItems
                 formattedString.Spans.Add(span);
             }
 
-            foreach (var lsiSpan in commentSpans.Keys)
-            {
-                var gestureRecognizer = new TapGestureRecognizer
-                {
-                    Command = new Command(() =>
-                {
-                    var comment = paragraph.Comments.First(c => c.CommentIndex == lsiSpan.CommentIndex);
-                    var words = comment.WordIndexes.Select(wi => dictionary.Words[wi]).ToList();
-                    var commentText = $"[{lsiSpan.CommentIndex + 1}] {TextUtil.GetParagraph(words)}";
-                    alertAction(commentText);
-                })
-                };
-                commentSpans[lsiSpan].GestureRecognizers.Add(gestureRecognizer);
-            }
-
             return formattedString;
         }
 
@@ -208,6 +181,7 @@ namespace LenLib.Xam.ListItems
         {
             switch (spanType)
             {
+                case LsiSpanType.SearchResult:
                 case LsiSpanType.Strong:
                     return FontAttributes.Bold;
                 case LsiSpanType.Emphasis:
@@ -217,15 +191,27 @@ namespace LenLib.Xam.ListItems
             return FontAttributes.None;
         }
 
-        private static Color TextColor(LsiSpanType spanType)
+        private static Color GetTextColor(LsiSpanType spanType)
         {
             switch (spanType)
             {
+                case LsiSpanType.SearchResult:
+                    return Options.UI.Colors.ReadSearchMatchColor;
                 case LsiSpanType.Comment:
                     return Options.UI.Colors.MainColor;
                 default:
                     return Color.Black;
             }
+        }
+
+        private static TextDecorations GetTextDecorations(LsiSpanType spanType)
+        {
+            if (spanType == LsiSpanType.SearchResult)
+            {
+                return TextDecorations.Underline;
+            }
+
+            return TextDecorations.None;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
