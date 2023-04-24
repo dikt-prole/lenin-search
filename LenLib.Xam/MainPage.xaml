@@ -34,7 +34,8 @@
                 Margin="0, 0, 0, -8"
                 TabContentBackgroundColor="White"
                 BackgroundColor="White"
-                SelectionChanged="OnMainTabsSelectionChanged">
+                SelectionChanged="OnMainTabsSelectionChanged"
+                IsSwipeEnabled="False">
 
         <!-- CORPUS TAB -->
         <views:TabViewItem ControlTemplate="{StaticResource TabItemTemplate}" x:Name="CorpusTabViewItem">

@@ -55,7 +55,6 @@ namespace LenLib.Xam
             //    Settings.TokenIndexCountCutoff,
             //    Settings.ResultCountCutoff);
 
-            // search entry
             SearchEntry.ReturnCommand = new Command(OnSearchButtonPressed);
 
             _readSwap = new ReadSwapHelper(
@@ -489,13 +488,13 @@ namespace LenLib.Xam
             readListItem.ImageZoomCoefficient = readListItem.ImageZoomCoefficient > 1 ? 1 : (float)1.5;
 
             // hack: disable swipe when image is zoomed
-            MainTabs.IsSwipeEnabled = readListItem.ImageZoomCoefficient == 1;
+            //MainTabs.IsSwipeEnabled = readListItem.ImageZoomCoefficient == 1;
         }
 
         private void OnMainTabsSelectionChanged(object sender, TabSelectionChangedEventArgs e)
         {
             // hack: restore swipe after image zoom
-            MainTabs.IsSwipeEnabled = true;
+            //MainTabs.IsSwipeEnabled = true;
             _state.SelectedTabIndex = MainTabs.SelectedIndex;
         }
 
@@ -602,7 +601,7 @@ namespace LenLib.Xam
             Share.RequestAsync(new ShareTextRequest
             {
                 Text = shareText,
-                Title = "Lenin Search Share"
+                Title = "LenLib Share"
             }).Wait();
         }
 
