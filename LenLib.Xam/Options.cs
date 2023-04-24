@@ -34,6 +34,7 @@ namespace LenLib.Xam
             //public const string Host = "10.0.2.2";
             public const int Port = 5000;
             public const int TimeoutMs = 15000;
+            public const string TelegramLink = "https://t.me/lenlib_cht";
         }
 
         public static class UI
@@ -57,8 +58,10 @@ namespace LenLib.Xam
                 public static Color MainColor => Color.FromRgb(65, 74, 103);
 
                 public const string MainColorHex = "#414A67";
-                public static Color ReadSearchMatchColor => new Color(65, 74, 103, 0.20);
-                public static string SearchUnitHighlightColorHex = "#91A5E2";
+                
+                public static readonly Color ReadSearchMatchColor = new Color(124, 197, 238);
+
+                public static string SearchUnitHighlightColorHex = "#7CC5EE";
             }
 
             public static bool OldAndroidJustification { get; set; }

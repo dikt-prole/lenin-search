@@ -150,7 +150,7 @@
                 <StackLayout Orientation="Horizontal" HorizontalOptions="Fill" Spacing="0" BackgroundColor="#414A67" 
                              HeightRequest="34" Margin="0" IsClippedToBounds="True">
                     <ActivityIndicator x:Name="SearchActivityIndicator" Color="White" IsRunning="False" VerticalOptions="Start" 
-                                       WidthRequest="24" HeightRequest="24" Margin="6" IsVisible="False">                                                
+                                       WidthRequest="24" HeightRequest="24" Margin="6" IsVisible="False">
                     </ActivityIndicator>
                     <ImageButton Padding="6" x:Name="SearchModeButton" WidthRequest="36" HeightRequest="36" Source="paragraph.png" 
                                  BackgroundColor="#414A67" HorizontalOptions="Start" Margin="0" 
@@ -203,7 +203,7 @@
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <StackLayout Orientation="Vertical" Padding="10, 0, 10, 0" Spacing="0">
-                                
+                                <!--<Label Text="{Binding ParagraphIndex}" TextColor="Red"/>-->
                                 <StackLayout Orientation="Horizontal" HeightRequest="24" Spacing="10" IsVisible="{Binding IsMenuShown}">
                                     <ImageButton Source="share.png" BackgroundColor="White" HeightRequest="24" WidthRequest="24"
                                                  Clicked="OnShareClicked" CommandParameter="{Binding Self}"></ImageButton>

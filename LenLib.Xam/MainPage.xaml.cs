@@ -13,6 +13,7 @@ using LenLib.Standard.Core.Search.CorpusSearching;
 using LenLib.Xam.Core;
 using LenLib.Xam.Core.Interfaces;
 using LenLib.Xam.ListItems;
+using LenLib.Xam.Services;
 using LenLib.Xam.State;
 using Xamarin.CommunityToolkit.UI.Views;
 using Xamarin.Essentials;
@@ -31,6 +32,8 @@ namespace LenLib.Xam
         private readonly IMessage _message = DependencyService.Get<IMessage>();
         private AppState _state = AppState.Default();
         private readonly ILibraryDownloadManager _libraryDownloadManager;
+        public const int ReadSwapCount = 20;
+        private readonly ReadSwapHelper _readSwap;
 
         public MainPage(GlobalEvents globalEvents)
         {
@@ -54,8 +57,13 @@ namespace LenLib.Xam
 
             // search entry
             SearchEntry.ReturnCommand = new Command(OnSearchButtonPressed);
-            ReadCollectionView.Scrolled += OnReadCollectionViewScrolled;
 
+            _readSwap = new ReadSwapHelper(
+                _lsiProvider,
+                async s => await DisplayAlert("", s, "OK", FlowDirection.MatchParent),
+                () => (ushort)MainTabs.Width,
+                OnReadItemTapped);
+            ReadCollectionView.Scrolled += OnReadCollectionViewScrolled;
 
             _libraryDownloadManager = new LibraryDownloadManager(_lsiProvider, _apiClientV1);
             _libraryDownloadManager.Error += OnLibraryDownloadManagerError;
@@ -121,11 +129,38 @@ namespace LenLib.Xam
 
         private void OnReadCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e)
         {
-            var readListItems = ReadCollectionView.ItemsSource as List<ReadListItem>;
+            var readListItems = ReadCollectionView.ItemsSource as ObservableCollection<ReadListItem>;
             if (readListItems != null && e.FirstVisibleItemIndex < readListItems.Count)
             {
                 var currentReadListItem = readListItems[e.CenterItemIndex];
                 _state.ReadingTabState.SelectedParagraphIndex = currentReadListItem.ParagraphIndex;
+
+                var bottomReadListItem = readListItems[e.LastVisibleItemIndex];
+                if (readListItems.Last() == bottomReadListItem)
+                {
+                    var nextReadSwap = _readSwap.GetNextReadSwap(
+                        bottomReadListItem.CorpusId,
+                        bottomReadListItem.File,
+                        bottomReadListItem.ParagraphIndex);
+                    foreach (var readListItem in nextReadSwap)
+                    {
+                        readListItems.Add(readListItem);
+                    }
+                }
+
+                var topReadListItem = readListItems[e.FirstVisibleItemIndex];
+                if (readListItems.First() == topReadListItem)
+                {
+                    var prevReadSwap = _readSwap.GetPrevReadSwap(
+                        topReadListItem.CorpusId,
+                        topReadListItem.File,
+                        topReadListItem.ParagraphIndex);
+                    prevReadSwap.Reverse();
+                    foreach (var readListItem in prevReadSwap)
+                    {
+                        readListItems.Insert(0, readListItem);
+                    }
+                }
             }
         }
 
@@ -301,16 +336,6 @@ namespace LenLib.Xam
             RefreshCorpusTab();
             RefreshBookmarksTab();
             RunRefreshLibraryTab();
-        }
-
-        private async Task GenerateSearchReport()
-        {
-            //var ppsr = _state.SearchResult;
-            //var corpusItem = _state.GetCurrentCorpusItem();
-            //var query = SearchEntry.Text;
-            //var fishFile = SearchReportGenerator.GenerateSearchReportHtmlFile(ppsr, corpusItem, query, _lsiProvider);
-
-            //await Share.RequestAsync(new ShareFileRequest($"Lenin Search Report - {corpusItem.Name} ({query})", new ShareFile(fishFile)));
         }
 
         private void OnSearchButtonPressed()
@@ -510,31 +535,14 @@ namespace LenLib.Xam
                 _state.ReadingTabState.SelectedParagraphIndex = selectedParagraphIndex;
                 _state.ReadingTabState.SelectedFile = file;
 
-                var lsiData = _lsiProvider.GetLsiData(corpusId, file);
+                var initialReadSwap = _readSwap.GetInitialReadSwap(corpusId, file, selectedParagraphIndex, searchUnit);
                 var corpusFileItem = _lsiProvider.GetCorpusItem(corpusId)
                     .GetFileByPath(file);
-                var readListItems = new List<ReadListItem>();
-                ReadListItem scrollTo = null;
-                var paragraphIndexes = lsiData.Paragraphs.Keys.OrderBy(k => k).ToList();
-                foreach (var paragraphIndex in paragraphIndexes)
-                {
-                    var lsiParagraph = lsiData.Paragraphs[paragraphIndex];
-                    var readListItem = ReadListItem.Construct(corpusId, file,
-                        lsiParagraph, _lsiProvider, searchUnit, () => (ushort)MainTabs.Width,
-                        async s => await DisplayAlert("", s, "OK", FlowDirection.MatchParent),
-                        OnReadItemTapped);
-                    readListItem.FontSize = Settings.Instance.FontSize;
-                    readListItems.Add(readListItem);
-                    if (paragraphIndex == selectedParagraphIndex)
-                    {
-                        scrollTo = readListItem;
-                    }
-                }
-
+                var scrollTo = initialReadSwap.FirstOrDefault(i => i.ParagraphIndex == selectedParagraphIndex);
                 Device.BeginInvokeOnMainThread(() =>
                 {
                     ReadBookTitleLabel.Text = corpusFileItem.Name;
-                    ReadCollectionView.ItemsSource = readListItems;
+                    ReadCollectionView.ItemsSource = new ObservableCollection<ReadListItem>(initialReadSwap);
                     if (selectTab)
                     {
                         MainTabs.SelectedIndex = MainTabs.TabItems.IndexOf(ReadTabViewItem);
@@ -542,7 +550,10 @@ namespace LenLib.Xam
                     Task.Run(() =>
                     {
                         Task.Delay(500);
-                        ReadCollectionView.ScrollTo(scrollTo, null, ScrollToPosition.Center, false);
+                        if (scrollTo != null)
+                        {
+                            ReadCollectionView.ScrollTo(scrollTo, null, ScrollToPosition.Center, false);
+                        }
                     });
                 });
             });
@@ -645,7 +656,7 @@ namespace LenLib.Xam
 
         private async void OnTgButtonClicked(object sender, EventArgs e)
         {
-            var openResult = await Launcher.TryOpenAsync("https://t.me/leninsearch_chat");
+            var openResult = await Launcher.TryOpenAsync(Options.Web.TelegramLink);
             if (!openResult)
             {
                 _message.ShortAlert("Telegram не установлен");
@@ -656,7 +667,7 @@ namespace LenLib.Xam
 
         private void OnFontSizeButtonClicked(object sender, EventArgs e)
         {
-            var readItemList = ReadCollectionView.ItemsSource as List<ReadListItem>;
+            var readItemList = ReadCollectionView.ItemsSource as ObservableCollection<ReadListItem>;
 
             if (readItemList == null)
             {
