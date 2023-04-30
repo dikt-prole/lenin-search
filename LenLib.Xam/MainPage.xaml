@@ -47,6 +47,12 @@
                     <ImageButton WidthRequest="36" HeightRequest="36" Padding="8" 
                                  BackgroundColor="#414A67" Source="tg.png" Clicked="OnTgButtonClicked"></ImageButton>
                 </StackLayout>
+                <StackLayout Orientation="Vertical" x:Name="NoCorpusStackLayout" Spacing="0">
+                    <Label Text="Корпуса не установлены" HorizontalOptions="FillAndExpand" HorizontalTextAlignment="Center"/>
+                    <Label Text="Перейдите на вкладку Библиотека" HorizontalOptions="FillAndExpand" HorizontalTextAlignment="Center"/>
+                    <Image Source="library.png" HeightRequest="24" Margin="0"/>
+                    <Label Text="для установки корпусов по вашему выбору" HorizontalOptions="FillAndExpand" HorizontalTextAlignment="Center"/>
+                </StackLayout>
                 <CollectionView x:Name="CorpusCollectionView" VerticalOptions="FillAndExpand" 
                                 BackgroundColor="White" HorizontalOptions="FillAndExpand">
                     <CollectionView.ItemsLayout>

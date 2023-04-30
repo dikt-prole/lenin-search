@@ -165,11 +165,11 @@ namespace LenLib.Xam
 
         private void ActivateCorpus(string corpusId, bool alert = true)
         {
-            var corpusItem = _lsiProvider.GetCorpusItem(corpusId);
-            var summaryBookListItems = SummaryBookListItem.Construct(corpusItem).ToList();
             CorpusTabViewItem.Icon = Options.IconFile(corpusId);
             _state.ActiveCorpusId = corpusId;
 
+            var corpusItem = _lsiProvider.GetCorpusItem(corpusId);
+            var summaryBookListItems = SummaryBookListItem.Construct(corpusItem).ToList();
             SummaryBookPicker.ItemsSource = summaryBookListItems;
             SummaryBookPicker.SelectedIndex = 0;
             _state.SummaryTabState.SelectedFile = summaryBookListItems[0].File;
@@ -258,9 +258,19 @@ namespace LenLib.Xam
         private void RefreshCorpusTab()
         {
             var corpusItems = Options.GetCorpusItems().ToList();
-            var corpusListItems =
-                new ObservableCollection<CorpusListItem>(corpusItems.Select(CorpusListItem.FromCorpusItem));
-            CorpusCollectionView.ItemsSource = corpusListItems;
+            if (corpusItems.Any())
+            {
+                NoCorpusStackLayout.IsVisible = false;
+                CorpusCollectionView.IsVisible = true;
+                var corpusListItems =
+                    new ObservableCollection<CorpusListItem>(corpusItems.Select(CorpusListItem.FromCorpusItem));
+                CorpusCollectionView.ItemsSource = corpusListItems;
+            }
+            else
+            {
+                NoCorpusStackLayout.IsVisible = true;
+                CorpusCollectionView.IsVisible = false;
+            }
         }
 
         private void RunRefreshLibraryTab()

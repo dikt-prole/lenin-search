@@ -41,8 +41,6 @@ namespace LenLib.Xam
         {
             public static class Fonts
             {
-                public const double ReadingFontSize = 17;
-
                 public static readonly FontSize[] Sizes = new[]
                 {
                     FontSize.Small,
